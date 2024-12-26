@@ -1,0 +1,11 @@
+﻿###
+GET http://localhost:7071/api/presets
+Authorization: Bearer {{token}}
+
+###
+POST http://localhost:7071/api/auth/token
+Content-Type: application/json
+
+{
+  "userId": {{userId}}
+}
