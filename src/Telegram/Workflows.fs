@@ -137,9 +137,9 @@ let private getPlaylistButtons presetId playlistId playlistType enabled specific
   }
 
 let sendLoginMessage (initAuth: Auth.Init) (sendLink: SendLink) : SendLoginMessage =
-  fun userId ->
+  fun (otsom.fs.Core.UserId userId) ->
     initAuth
-      userId
+     (userId |> string |> AccountId)
       [ Scopes.PlaylistModifyPrivate
         Scopes.PlaylistModifyPublic
         Scopes.UserLibraryRead ]

@@ -13,6 +13,7 @@ open SpotifyAPI.Web
 open MusicPlatform.Spotify.Helpers
 open otsom.fs.Extensions
 open System.Collections.Generic
+open otsom.fs.Telegram.Bot.Auth.Spotify
 open otsom.fs.Telegram.Bot.Auth.Spotify.Settings
 open otsom.fs.Telegram.Bot.Auth.Spotify.Workflows
 open System.Threading.Tasks
@@ -29,7 +30,7 @@ module Core =
       | true, client -> client |> Some |> Task.FromResult
       | false, _ ->
         userId
-        |> (fun userId -> otsom.fs.Core.UserId(userId |> int64))
+        |> AccountId
         |> loadCompletedAuth
         |> TaskOption.taskMap (fun auth -> task {
           let! tokenResponse =

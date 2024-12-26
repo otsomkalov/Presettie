@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="otsom.fs.Telegram.Bot.Auth.Spotify.Mongo" Version="0.0.16" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.fsproj"/>
     <ProjectReference Include="..\Telegram\Telegram.fsproj"/>
     <ProjectReference Include="..\Resources\Resources.csproj"/>
