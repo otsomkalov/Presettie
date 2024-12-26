@@ -151,7 +151,7 @@ type MessageService
                     | Auth.CompleteError.StateDoesntBelongToUser ->
                       replyToMessage "State provided does not belong to your login request. Try to login via fresh link."
 
-                  completeAuth userId state
+                  completeAuth (userId |> UserId.value |> string |> AccountId) state
                   |> TaskResult.taskEither processSuccessfulLogin (sendErrorMessage >> Task.ignore)
                 | Equals "/generate" -> queueCurrentPresetRun userId (ChatMessageId message.MessageId)
                 | Equals "/version" ->
@@ -243,7 +243,7 @@ type MessageService
                     | Auth.CompleteError.StateDoesntBelongToUser ->
                       replyToMessage "State provided does not belong to your login request. Try to login via fresh link."
 
-                  completeAuth userId state
+                  completeAuth (userId |> UserId.value |> string |> AccountId) state
                   |> TaskResult.taskEither processSuccessfulLogin (sendErrorMessage >> Task.ignore)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
                 | Equals Buttons.CreatePreset -> chatCtx.AskForReply Messages.SendPresetName
