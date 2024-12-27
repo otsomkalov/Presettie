@@ -79,6 +79,17 @@ let private getPresetMessage =
       return (text, keyboard)
     }
 
+let private sendPresetsMessage sendOrEditButtons =
+  fun user message ->
+    task {
+      let keyboardMarkup =
+        user.Presets
+        |> Seq.map (fun p -> MessageButton(p.Name, $"p|{p.Id |> PresetId.value}|i"))
+        |> Seq.singleton
+
+      do! sendOrEditButtons message keyboardMarkup
+    }
+
 let internal createPlaylistsPage page (playlists: 'a list) playlistToButton presetId =
   let (Page page) = page
   let remainingPlaylists = playlists[page * buttonsPerPage ..]
@@ -584,12 +595,7 @@ module User =
       task {
         let! user = loadUser userId
 
-        let keyboardMarkup =
-          user.Presets
-          |> Seq.map (fun p -> MessageButton(p.Name, $"p|{p.Id |> PresetId.value}|i"))
-          |> Seq.singleton
-
-        do! sendOrEditButtons "Your presets" keyboardMarkup
+        return! sendPresetsMessage sendOrEditButtons user "Your presets"
       }
 
   let sendPresets (chatCtx: #ISendMessageButtons) loadUser : User.SendPresets =
@@ -627,18 +633,36 @@ module User =
 
         sendKeyboard "You did not select current preset" buttons)
 
-  let sendCurrentPresetSettings (chatCtx: #ISendKeyboard) (loadUser: User.Get) (getPreset: Preset.Get) : User.SendCurrentPresetSettings =
+  let runOnCurrentPresetId (getUser: User.Get) (chatCtx: #ISendKeyboard & #ISendMessageButtons) fn =
     fun userId ->
-      task {
-        let! currentPresetId = loadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
-        let! preset = getPreset currentPresetId
-        let! text, _ = getPresetMessage preset
+      userId
+      |> getUser
+      |> Task.bind (fun user ->
+        match user.CurrentPresetId with
+        | Some presetId -> fn presetId
+        | None when user.Presets.IsEmpty ->
+          let buttons: Keyboard = [ [ KeyboardButton(Buttons.CreatePreset) ] ]
 
-        let buttons : Keyboard =
+          chatCtx.SendKeyboard Messages.NoCurrentPreset buttons &|> ignore
+        | _ -> sendPresetsMessage (chatCtx.SendMessageButtons >> (fun a -> a >> Task.ignore)) user Messages.NoCurrentPreset)
+
+  let sendCurrentPresetSettings
+    (chatCtx: #ISendKeyboard)
+    (loadUser: User.Get)
+    (getPreset: Preset.Get)
+    : User.SendCurrentPresetSettings =
+
+    let handler presetId =
+      presetId
+      |> getPreset
+      |> Task.bind getPresetMessage
+      |> Task.bind (fun (text, _) ->
+        let buttons: Keyboard =
           [| [| KeyboardButton Buttons.SetPresetSize |]; [| KeyboardButton "Back" |] |]
 
-        return! chatCtx.SendKeyboard text buttons &|> ignore
-      }
+        chatCtx.SendKeyboard text buttons &|> ignore)
+
+    runOnCurrentPresetId loadUser chatCtx handler
 
   let removePreset (botMessageCtx: #IEditMessageButtons) loadUser (removePreset: User.RemovePreset) : User.RemovePreset =
     fun userId presetId ->
