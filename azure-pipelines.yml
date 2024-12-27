@@ -53,7 +53,7 @@ steps:
     inputs:
       command: 'publish'
       configuration: 'Release'
-      projects: 'src/**/Generator.fsproj'
+      projects: 'src/**/API.fsproj'
       arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/API /p:InformationalVersion=$(Build.BuildNumber)'
       publishWebProjects: false
   - task: PublishBuildArtifacts@1
