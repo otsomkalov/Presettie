@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AzureFunctionsVersion>V4</AzureFunctionsVersion>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>39424dbe-087d-4852-ad9a-686c0cdd94ac</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.21.0"/>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="1.2.1"/>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.17.2"/>
+    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0"/>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.2.0"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0"/>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Services.fs"/>
+    <Compile Include="Functions\AuthFunctions.fs"/>
+    <Compile Include="Functions\PresetFunctions.fs"/>
+    <Compile Include="Startup.fs"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.fsproj"/>
+  </ItemGroup>
+</Project>
