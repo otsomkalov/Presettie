@@ -179,4 +179,7 @@ Click "Generate" keyboard button or send "/generate" command. After a few second
     <data name="UnknownCommand" xml:space="preserve">
         <value>Unknown command!</value>
     </data>
+    <data name="NoCurrentPreset" xml:space="preserve">
+        <value>No current preset selected!</value>
+    </data>
 </root>

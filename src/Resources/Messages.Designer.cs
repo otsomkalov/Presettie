@@ -162,6 +162,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No current preset selected!.
+        /// </summary>
+        public static string NoCurrentPreset {
+            get {
+                return ResourceManager.GetString("NoCurrentPreset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot parse provided playlist id: {0}.
         /// </summary>
         public static string PlaylistIdCannotBeParsed {
