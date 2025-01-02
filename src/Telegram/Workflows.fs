@@ -799,50 +799,46 @@ module PresetSettings =
   let ignoreLikedTracks (getPreset: Preset.Get) botMessageCtx showNotification (ignoreLikedTracks: PresetSettings.IgnoreLikedTracks) : PresetSettings.IgnoreLikedTracks =
     setLikedTracksHandling getPreset botMessageCtx showNotification ignoreLikedTracks
 
-let faqMessageHandlerMatcher (buildChatContext: BuildChatContext) : MessageHandlerMatcher =
-  let handler =
-    fun message ->
-      let chatCtx = buildChatContext message.ChatId
-
-      chatCtx.SendMessage Messages.FAQ &|> ignore
-
-  fun message ->
+let faqMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
+  fun message -> task {
     match message.Text with
-    | Equals "/faq" -> Some(handler)
-    | _ -> None
+    | Equals "/faq" ->
+      do! chatCtx.SendMessage Messages.FAQ &|> ignore
 
-let privacyMessageHandlerMatcher (buildChatContext: BuildChatContext) : MessageHandlerMatcher =
-  let handler =
-    fun message ->
-      let chatCtx = buildChatContext message.ChatId
+      return Some()
+    | _ ->
+      return None
+  }
 
-      chatCtx.SendMessage Messages.Privacy &|> ignore
-
-  fun message ->
+let privacyMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
+  fun message -> task {
     match message.Text with
-    | Equals "/privacy" -> Some(handler)
-    | _ -> None
+    | Equals "/privacy" ->
+      do! chatCtx.SendMessage Messages.Privacy &|> ignore
 
-let guideMessageHandlerMatcher (buildChatContext: BuildChatContext) : MessageHandlerMatcher =
-  let handler =
-    fun message ->
-      let chatCtx = buildChatContext message.ChatId
+      return Some()
+    | _ ->
+      return None
+  }
 
-      chatCtx.SendMessage Messages.Guide &|> ignore
-
-  fun message ->
+let guideMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
+  fun message ->task {
     match message.Text with
-    | Equals "/guide" -> Some(handler)
-    | _ -> None
+    | Equals "/guide" ->
+      do! chatCtx.SendMessage Messages.Guide &|> ignore
 
-let helpMessageHandlerMatcher (buildChatContext: BuildChatContext) : MessageHandlerMatcher =
-  let handler =
-    fun message ->
-      let chatCtx = buildChatContext message.ChatId
+      return Some()
+    | _ ->
+      return None
+  }
 
-      chatCtx.SendMessage Messages.Help &|> ignore
-
-  fun message ->
+let helpMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
+  fun message -> task {
     match message.Text with
-    | Equals "/help" -> Some(handler)
-    | _ -> None
+    | Equals "/help" ->
+      do! chatCtx.SendMessage Messages.Help &|> ignore
+
+      return Some()
+    | _ ->
+      return None
+  }

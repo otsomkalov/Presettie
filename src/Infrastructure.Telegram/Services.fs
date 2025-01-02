@@ -55,14 +55,14 @@ type MessageService
     parsePlaylistId: Playlist.ParseId,
     buildMusicPlatform: BuildMusicPlatform,
     buildChatContext: BuildChatContext,
-    matchers: MessageHandlerMatcher seq,
     logger: ILogger<MessageService>,
     presetRepo: IPresetRepo,
     userRepo: IUserRepo,
-    getUser: User.Get
+    getUser: User.Get,
+    handlersFactories: MessageHandlerFactory seq
   ) =
 
-  let defaultMessageHandler (message: Telegram.Bot.Types.Message) : MessageHandler =
+  let defaultMessageHandler (message: Telegram.Bot.Types.Message) =
     let userId = message.From.Id |> UserId
     let musicPlatformUserId = message.From.Id |> string |> MusicPlatform.UserId
 
@@ -261,24 +261,29 @@ type MessageService
     let chatId = message.Chat.Id |> otsom.fs.Bot.ChatId
 
     let message' = { ChatId = chatId; Text = message.Text }
+    let chatCtx = buildChatContext chatId
 
-    let messageHandlers =
-      matchers
-      |> Seq.map (fun matcher -> matcher message')
-      |> Seq.filter Option.isSome
-      |> Seq.map Option.get
-      |> List.ofSeq
+    let handlers = handlersFactories |> Seq.map (fun f -> f chatCtx)
 
-    match messageHandlers with
-    | first :: _ :: _ ->
-      Logf.logfw logger "Message content matched to multiple (%i{ProcessorsCount}) handlers. Using the first." messageHandlers.Length
+    task {
+      use e = handlers.GetEnumerator()
 
-      first message'
-    | [ handler ] -> handler message'
-    | [] ->
-      Logf.logfw logger "Message content didn't match any handler. Running default one."
+      let mutable lastHandlerResult = None
 
-      defaultMessageHandler message message'
+      while lastHandlerResult.IsNone && e.MoveNext() do
+        let handler = e.Current
+        let! currentHandlerResult = handler message'
+
+        lastHandlerResult <- currentHandlerResult
+
+      match lastHandlerResult with
+      | Some () ->
+        return()
+      | None ->
+        Logf.logfw logger "Message content didn't match any handler. Running default one."
+
+        return! defaultMessageHandler message message'
+    }
 
 type CallbackQueryService
   (
