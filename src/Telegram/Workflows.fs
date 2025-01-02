@@ -6,7 +6,6 @@ open Domain.Workflows
 open Microsoft.FSharp.Core
 open Resources
 open SpotifyAPI.Web
-open Telegram.Bot.Types.ReplyMarkups
 open Telegram.Constants
 open Telegram.Core
 open Telegram.Repos
@@ -604,34 +603,32 @@ module User =
   let showPresets (botMessageCtx: #IEditMessageButtons) loadUser : User.ShowPresets =
     showPresets' botMessageCtx.EditMessageButtons loadUser
 
-  let sendCurrentPreset (loadUser: User.Get) (getPreset: Preset.Get) (sendUserKeyboard: SendUserKeyboard) : User.SendCurrentPreset =
+  let sendCurrentPreset (loadUser: User.Get) (getPreset: Preset.Get) (chatCtx: #ISendKeyboard)
+    : User.SendCurrentPreset
+    =
     fun userId ->
-      let sendKeyboard = sendUserKeyboard userId
-
       userId |> loadUser &|> _.CurrentPresetId
       &|&> (function
       | Some presetId -> task {
           let! preset = getPreset presetId
           let! text, _ = getPresetMessage preset
 
-          let buttons =
-            [| [| Buttons.RunPreset |]
-               [| Buttons.MyPresets |]
-               [| Buttons.CreatePreset |]
+          let keyboard : Keyboard =
+            [  [ KeyboardButton(Buttons.RunPreset) ]
+               [ KeyboardButton(Buttons.MyPresets) ]
+               [ KeyboardButton(Buttons.CreatePreset) ]
 
-               [| Buttons.IncludePlaylist; Buttons.ExcludePlaylist; Buttons.TargetPlaylist |]
+               [ KeyboardButton(Buttons.IncludePlaylist); KeyboardButton(Buttons.ExcludePlaylist); KeyboardButton(Buttons.TargetPlaylist) ]
 
-               [| Buttons.Settings |] |]
-            |> ReplyKeyboardMarkup.op_Implicit
+               [ Buttons.Settings ] ]
 
-          return! sendKeyboard text buttons
+          return! chatCtx.SendKeyboard text keyboard &|> ignore
         }
       | None ->
-        let buttons =
-          [| [| Buttons.MyPresets |]; [| Buttons.CreatePreset |] |]
-          |> ReplyKeyboardMarkup.op_Implicit
+        let keyboard : Keyboard =
+          [ [ KeyboardButton(Buttons.MyPresets) ]; [ KeyboardButton(Buttons.CreatePreset) ] ]
 
-        sendKeyboard "You did not select current preset" buttons)
+        chatCtx.SendKeyboard "You did not select current preset" keyboard &|> ignore)
 
   let runOnCurrentPresetId (getUser: User.Get) (chatCtx: #ISendKeyboard & #ISendMessageButtons) fn =
     fun userId ->
