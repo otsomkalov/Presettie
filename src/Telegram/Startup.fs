@@ -16,3 +16,4 @@ let addBot (cfg: IConfiguration) (services: IServiceCollection) =
     .AddSingleton<MessageHandlerFactory>(privacyMessageHandler)
     .AddSingleton<MessageHandlerFactory>(guideMessageHandler)
     .AddSingleton<MessageHandlerFactory>(helpMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, _, _>(myPresetsMessageHandler)

@@ -598,7 +598,7 @@ module User =
         return! sendPresetsMessage sendOrEditButtons user "Your presets"
       }
 
-  let sendPresets (chatCtx: #ISendMessageButtons) loadUser : User.SendPresets =
+  let internal sendPresets (chatCtx: #ISendMessageButtons) loadUser  =
     showPresets' (fun text buttons -> chatCtx.SendMessageButtons text buttons |> Task.map ignore) loadUser
 
   let showPresets (botMessageCtx: #IEditMessageButtons) loadUser : User.ShowPresets =
@@ -841,4 +841,22 @@ let helpMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
       return Some()
     | _ ->
       return None
+  }
+
+let myPresetsMessageHandler (getUser: User.Get) (chatRepo: #ILoadChat) (chatCtx: #ISendMessageButtons) : MessageHandler =
+  let sendUserPresets = User.sendPresets chatCtx getUser
+
+  fun message -> task {
+    let! chat = chatRepo.LoadChat message.ChatId
+
+    match message.Text with
+    | Equals Buttons.MyPresets ->
+      do! sendUserPresets chat.UserId
+
+      return Some()
+    | Equals "/presets" ->
+      do! sendUserPresets chat.UserId
+
+      return Some()
+    | _ -> return None
   }

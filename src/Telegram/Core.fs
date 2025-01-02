@@ -16,6 +16,8 @@ type ChatMessageId = ChatMessageId of int
 
 type SendLoginMessage = UserId -> Task<BotMessageId>
 
+type Chat = { Id: otsom.fs.Bot.ChatId; UserId: UserId }
+
 [<RequireQualifiedAccess>]
 module Playlist =
   type Include = UserId -> Playlist.RawPlaylistId -> Task<unit>
@@ -25,7 +27,6 @@ module Playlist =
 [<RequireQualifiedAccess>]
 module User =
   type ShowPresets = UserId -> Task<unit>
-  type SendPresets = UserId -> Task<unit>
   type SendCurrentPreset = UserId -> Task<unit>
   type SendCurrentPresetSettings = UserId -> Task<unit>
   type RemovePreset = UserId -> PresetId -> Task<unit>
