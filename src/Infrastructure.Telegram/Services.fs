@@ -10,7 +10,6 @@ open MusicPlatform.Spotify.Core
 open Resources
 open Telegram
 open Infrastructure
-open Infrastructure.Telegram.Helpers
 open Infrastructure.Workflows
 open System.Threading.Tasks
 open Azure.Storage.Queues
@@ -33,6 +32,7 @@ open otsom.fs.Core
 open Infrastructure.Repos
 open Domain.Repos
 open otsom.fs.Bot
+open Telegram.Helpers
 
 type AuthState =
   | Authorized
@@ -57,7 +57,6 @@ type MessageService
     buildChatContext: BuildChatContext,
     logger: ILogger<MessageService>,
     presetRepo: IPresetRepo,
-    userRepo: IUserRepo,
     getUser: User.Get,
     handlersFactories: MessageHandlerFactory seq
   ) =
