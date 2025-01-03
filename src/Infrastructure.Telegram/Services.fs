@@ -180,9 +180,6 @@ type MessageService
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
                 | Equals Buttons.CreatePreset -> chatCtx.AskForReply Messages.SendPresetName
                 | Equals Buttons.RunPreset -> queueCurrentPresetRun userId (ChatMessageId message.MessageId)
-                | Equals Buttons.MyPresets ->
-                  let sendUserPresets = Telegram.Workflows.User.sendPresets chatCtx getUser
-                  sendUserPresets (message.From.Id |> UserId)
                 | Equals Buttons.Settings -> sendSettingsMessage userId
                 | Equals Buttons.IncludePlaylist -> chatCtx.AskForReply Messages.SendIncludedPlaylist
                 | Equals Buttons.ExcludePlaylist -> chatCtx.AskForReply Messages.SendExcludedPlaylist
@@ -247,9 +244,6 @@ type MessageService
                   |> TaskResult.taskEither processSuccessfulLogin (sendErrorMessage >> Task.ignore)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
                 | Equals Buttons.CreatePreset -> chatCtx.AskForReply Messages.SendPresetName
-                | Equals Buttons.MyPresets ->
-                  let sendUserPresets = Telegram.Workflows.User.sendPresets chatCtx getUser
-                  sendUserPresets (message.From.Id |> UserId)
                 | Equals Buttons.Settings -> sendSettingsMessage userId
                 | Equals "Back" -> sendCurrentPreset userId
 
