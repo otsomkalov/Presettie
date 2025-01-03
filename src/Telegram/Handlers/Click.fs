@@ -1,7 +1,6 @@
 ﻿module Telegram.Handlers.Click
 
 open Domain.Core
-open Domain.Repos
 open Telegram.Constants
 open Telegram.Core
 open Telegram.Repos
@@ -41,14 +40,13 @@ let enableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : 
         Domain.Workflows.PresetSettings.enableUniqueArtists presetRepo
 
       let enableUniqueArtists =
-        PresetSettings.enableUniqueArtists presetRepo botMessageCtx enableUniqueArtists showNotification
+        PresetSettings.enableUniqueArtists presetRepo botMessageCtx enableUniqueArtists (showNotification click.Id)
 
       do! enableUniqueArtists (PresetId presetId)
 
       return Some()
-    | _ ->
-      return None
-    }
+    | _ -> return None
+  }
 
 let disableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
   fun click -> task {
@@ -57,12 +55,11 @@ let disableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx :
       let disableUniqueArtists =
         Domain.Workflows.PresetSettings.disableUniqueArtists presetRepo
 
-        let disableUniqueArtists =
-          PresetSettings.disableUniqueArtists presetRepo botMessageCtx disableUniqueArtists showNotification
+      let disableUniqueArtists =
+        PresetSettings.disableUniqueArtists presetRepo botMessageCtx disableUniqueArtists (showNotification click.Id)
 
-        do! disableUniqueArtists (PresetId presetId)
+      do! disableUniqueArtists (PresetId presetId)
 
       return Some()
-    | _ ->
-      return None
-    }
+    | _ -> return None
+  }
