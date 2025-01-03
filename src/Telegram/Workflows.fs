@@ -920,6 +920,34 @@ let createPresetMessageHandler createPreset (chatRepo: #ILoadChat) chatCtx : Mes
     | _ -> return None
   }
 
+let excludePlaylistButtonMessageHandler
+  (chatRepo: #ILoadChat)
+  (userRepo: #ILoadUser)
+  (buildMusicPlatform: BuildMusicPlatform)
+  initAuth
+  sendLink
+  (chatCtx: #IChatContext)
+  : MessageHandler =
+  fun message -> task {
+    match message.Text with
+    | Equals Buttons.TargetPlaylist ->
+
+      let! chat = chatRepo.LoadChat message.ChatId
+      let! user = userRepo.LoadUser chat.UserId
+      let! musicPlatform = buildMusicPlatform (user.Id |> UserId.value |> string |> MusicPlatform.UserId)
+
+      match musicPlatform with
+      | Some _ ->
+        do! chatCtx.AskForReply Messages.SendExcludedPlaylist
+
+        return Some()
+      | _ ->
+        do! sendLoginMessage initAuth sendLink chat.UserId &|> ignore
+
+        return None
+    | _ -> return None
+  }
+
 let targetPlaylistButtonMessageHandler
   (chatRepo: #ILoadChat)
   (userRepo: #ILoadUser)
