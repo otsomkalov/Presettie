@@ -51,7 +51,6 @@ type MessageService
     getSpotifyClient: GetClient,
     getPreset: Preset.Get,
     validatePreset: Preset.Validate,
-    sendCurrentPreset: User.SendCurrentPreset,
     parsePlaylistId: Playlist.ParseId,
     buildMusicPlatform: BuildMusicPlatform,
     buildChatContext: BuildChatContext,
@@ -133,7 +132,7 @@ type MessageService
                   createPreset userId message.Text
               | _ ->
                 match message.Text with
-                | Equals "/start" -> sendCurrentPreset userId
+                | Equals "/start" -> Telegram.Workflows.User.sendCurrentPreset getUser getPreset chatCtx userId
                 | CommandWithData "/start" state ->
                   let processSuccessfulLogin =
                     let create = UserRepo.create _database
@@ -142,7 +141,7 @@ type MessageService
 
                     fun () -> task {
                       do! createUserIfNotExists userId
-                      do! sendCurrentPreset userId
+                      do! Telegram.Workflows.User.sendCurrentPreset getUser getPreset chatCtx userId
                     }
 
                   let sendErrorMessage =
@@ -184,7 +183,7 @@ type MessageService
                 | Equals Buttons.IncludePlaylist -> chatCtx.AskForReply Messages.SendIncludedPlaylist
                 | Equals Buttons.ExcludePlaylist -> chatCtx.AskForReply Messages.SendExcludedPlaylist
                 | Equals Buttons.TargetPlaylist -> chatCtx.AskForReply Messages.SendTargetedPlaylist
-                | Equals "Back" -> sendCurrentPreset userId
+                | Equals "Back" -> Telegram.Workflows.User.sendCurrentPreset getUser getPreset chatCtx userId
 
                 | _ -> replyToMessage "Unknown command" |> Task.ignore
             | None ->
@@ -231,7 +230,7 @@ type MessageService
 
                     fun () -> task {
                       do! createUserIfNotExists userId
-                      do! sendCurrentPreset userId
+                      do! Telegram.Workflows.User.sendCurrentPreset getUser getPreset chatCtx userId
                     }
 
                   let sendErrorMessage =
@@ -245,14 +244,14 @@ type MessageService
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
                 | Equals Buttons.CreatePreset -> chatCtx.AskForReply Messages.SendPresetName
                 | Equals Buttons.Settings -> sendSettingsMessage userId
-                | Equals "Back" -> sendCurrentPreset userId
+                | Equals "Back" -> Telegram.Workflows.User.sendCurrentPreset getUser getPreset chatCtx userId
 
                 | _ -> replyToMessage "Unknown command" |> Task.ignore)
       }
 
 
   member this.ProcessAsync(message: Telegram.Bot.Types.Message) =
-    let chatId = message.Chat.Id |> otsom.fs.Bot.ChatId
+    let chatId = message.Chat.Id |> ChatId
 
     let message' = { ChatId = chatId; Text = message.Text }
     let chatCtx = buildChatContext chatId
@@ -295,10 +294,7 @@ type CallbackQueryService
 
   member this.ProcessAsync(callbackQuery: CallbackQuery) =
     let userId = callbackQuery.From.Id |> UserId
-    let chatId = callbackQuery.From.Id |> otsom.fs.Bot.ChatId
-
-    let botMessageId =
-      callbackQuery.Message.MessageId |> otsom.fs.Telegram.Bot.Core.BotMessageId
+    let chatId = callbackQuery.From.Id |> ChatId
 
     let showNotification = Workflows.showNotification _bot callbackQuery.Id
 
