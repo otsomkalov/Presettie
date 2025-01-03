@@ -907,7 +907,7 @@ let createPresetMessageHandler createPreset (chatRepo: #ILoadChat) chatCtx : Mes
 
     match message with
     | { Text = text
-        ReplyMessage = Some { Text = replyText } } when replyText = Buttons.CreatePreset ->
+        ReplyMessage = Some { Text = replyText } } when replyText = Messages.SendPresetName ->
       do! createPreset chat.UserId text
 
       return Some()
