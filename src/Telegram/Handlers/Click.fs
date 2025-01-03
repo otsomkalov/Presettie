@@ -41,7 +41,7 @@ let disableRecommendationsClickHandler presetRepo showNotification botMessageCtx
         Domain.Workflows.PresetSettings.disableRecommendations presetRepo
 
       let disableRecommendations =
-        PresetSettings.disableRecommendations presetRepo botMessageCtx disableRecommendations showNotification
+        PresetSettings.disableRecommendations presetRepo botMessageCtx disableRecommendations (showNotification click.Id)
 
       do! disableRecommendations (PresetId presetId)
 
