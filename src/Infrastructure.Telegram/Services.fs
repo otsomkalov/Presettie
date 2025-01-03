@@ -22,6 +22,7 @@ open Telegram.Bot
 open Telegram.Bot.Types
 open Telegram.Core
 open System
+open Telegram.Repos
 open otsom.fs.Extensions
 open otsom.fs.Extensions.String
 open otsom.fs.Telegram.Bot.Auth.Spotify
@@ -58,7 +59,8 @@ type MessageService
     logger: ILogger<MessageService>,
     presetRepo: IPresetRepo,
     getUser: User.Get,
-    handlersFactories: MessageHandlerFactory seq
+    handlersFactories: MessageHandlerFactory seq,
+    sendLink: SendLink
   ) =
 
   let defaultMessageHandler (message: Telegram.Bot.Types.Message) =
@@ -66,7 +68,6 @@ type MessageService
     let musicPlatformUserId = message.From.Id |> string |> MusicPlatform.UserId
 
     let replyToMessage = replyToUserMessage userId message.MessageId
-    let sendLink = Repos.sendLink _bot userId
     let sendLoginMessage = Telegram.Workflows.sendLoginMessage initAuth sendLink
 
     fun m ->
@@ -158,7 +159,6 @@ type MessageService
                   else
                     targetPlaylist userId (rawPlaylistId |> Playlist.RawPlaylistId)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
-                | Equals Buttons.CreatePreset -> chatCtx.AskForReply Messages.SendPresetName
                 | Equals Buttons.RunPreset -> queueCurrentPresetRun userId (ChatMessageId message.MessageId)
                 | Equals Buttons.IncludePlaylist -> chatCtx.AskForReply Messages.SendIncludedPlaylist
 
@@ -176,7 +176,6 @@ type MessageService
                 | StartsWith "/include"
                 | StartsWith "/exclude"
                 | StartsWith "/target"
-                | Equals Buttons.IncludePlaylist
                 | Equals Buttons.RunPreset
                 | StartsWith "/generate"
                 | Equals "/start" -> sendLoginMessage userId &|> ignore
@@ -201,7 +200,6 @@ type MessageService
                   completeAuth (userId |> UserId.value |> string |> AccountId) state
                   |> TaskResult.taskEither processSuccessfulLogin (sendErrorMessage >> Task.ignore)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
-                | Equals Buttons.CreatePreset -> chatCtx.AskForReply Messages.SendPresetName
 
                 | _ -> replyToMessage "Unknown command" |> Task.ignore)
       }
@@ -437,7 +435,6 @@ type CallbackQueryService
           Workflows.PresetSettings.enableUniqueArtists presetRepo botMessageCtx enableUniqueArtists showNotification
 
         enableUniqueArtists presetId
-
 
     let handlers = handlersFactories |> Seq.map (fun f -> f botMessageCtx)
 
