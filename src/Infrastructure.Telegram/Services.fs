@@ -422,14 +422,6 @@ type CallbackQueryService
           Workflows.PresetSettings.enableRecommendations presetRepo botMessageCtx enableRecommendations showNotification
 
         enableRecommendations presetId
-      | Action.PresetSettings(PresetSettingsActions.DisableRecommendations presetId) ->
-        let disableRecommendations =
-          PresetSettings.disableRecommendations presetRepo
-
-        let disableRecommendations =
-          Workflows.PresetSettings.disableRecommendations presetRepo botMessageCtx disableRecommendations showNotification
-
-        disableRecommendations presetId
 
     let handlers = handlersFactories |> Seq.map (fun f -> f botMessageCtx)
 

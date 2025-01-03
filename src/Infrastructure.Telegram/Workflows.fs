@@ -72,5 +72,3 @@ let parseAction: ParseAction =
 
     | [| "p"; presetId; CallbackQueryConstants.enableRecommendations |] ->
       PresetSettingsActions.EnableRecommendations(PresetId presetId) |> Action.PresetSettings
-    | [| "p"; presetId; CallbackQueryConstants.disableRecommendations |] ->
-      PresetSettingsActions.DisableRecommendations(PresetId presetId) |> Action.PresetSettings

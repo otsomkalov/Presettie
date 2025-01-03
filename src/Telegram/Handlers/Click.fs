@@ -33,6 +33,23 @@ let showPresetsClickHandler getUser (chatRepo: #ILoadChat) botMessageCtx : Click
     | _ -> return None
   }
 
+let disableRecommendationsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; CallbackQueryConstants.disableRecommendations |] ->
+      let disableRecommendations =
+        Domain.Workflows.PresetSettings.disableRecommendations presetRepo
+
+      let disableRecommendations =
+        PresetSettings.disableRecommendations presetRepo botMessageCtx disableRecommendations showNotification
+
+      do! disableRecommendations (PresetId presetId)
+
+      return Some()
+    | _ ->
+      return None
+    }
+
 let enableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
   fun click -> task {
     match click.Data.Split("|") with
