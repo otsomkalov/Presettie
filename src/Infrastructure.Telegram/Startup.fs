@@ -26,6 +26,7 @@ let addTelegram (configuration: IConfiguration) (services: IServiceCollection) =
   services.Configure<TelegramSettings>(configuration.GetSection(TelegramSettings.SectionName))
 
   services.BuildSingleton<ITelegramBotClient, IOptions<TelegramSettings>>(configureTelegramBotClient)
+  services.BuildSingleton<SendLink, ITelegramBotClient>(sendLink)
 
   services.AddSingleton<IChatRepo, MockChatRepo>()
 

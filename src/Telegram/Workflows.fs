@@ -150,13 +150,13 @@ let private getPlaylistButtons presetId playlistId playlistType enabled specific
   }
 
 let sendLoginMessage (initAuth: Auth.Init) (sendLink: SendLink) : SendLoginMessage =
-  fun (otsom.fs.Core.UserId userId) ->
+  fun userId ->
     initAuth
-     (userId |> string |> AccountId)
+     (userId |> UserId.value |> string |> AccountId)
       [ Scopes.PlaylistModifyPrivate
         Scopes.PlaylistModifyPublic
         Scopes.UserLibraryRead ]
-    |> Task.bind (sendLink Messages.LoginToSpotify Buttons.Login)
+    |> Task.bind (sendLink userId Messages.LoginToSpotify Buttons.Login)
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
@@ -893,12 +893,22 @@ let setPresetSizeMessageHandler setPresetSize loadUser getPreset (chatRepo: #ILo
     let! chat = chatRepo.LoadChat message.ChatId
 
     match message.ReplyMessage with
-    | Some { Text = text } when text = Messages.SendPresetSize ->
+    | Some { Text = text } when text = Buttons.SetPresetSize ->
       do! setTargetPresetSize chat.UserId (PresetSettings.RawPresetSize message.Text)
 
       return Some()
     | _ ->
       return None
+  }
+
+let createPresetButtonMessageHandler (chatCtx: #IAskForReply) : MessageHandler =
+  fun message -> task {
+    match message.Text with
+    | Equals Buttons.CreatePreset ->
+      do! chatCtx.AskForReply Messages.SendPresetName
+
+      return Some()
+    | _ -> return None
   }
 
 let createPresetMessageHandler createPreset (chatRepo: #ILoadChat) chatCtx : MessageHandler =
@@ -917,6 +927,34 @@ let createPresetMessageHandler createPreset (chatRepo: #ILoadChat) chatCtx : Mes
       do! createPreset chat.UserId text
 
       return Some()
+    | _ -> return None
+  }
+
+let includePlaylistButtonMessageHandler
+  (chatRepo: #ILoadChat)
+  (userRepo: #ILoadUser)
+  (buildMusicPlatform: BuildMusicPlatform)
+  initAuth
+  sendLink
+  (chatCtx: #IChatContext)
+  : MessageHandler =
+  fun message -> task {
+    match message.Text with
+    | Equals Buttons.IncludePlaylist ->
+
+      let! chat = chatRepo.LoadChat message.ChatId
+      let! user = userRepo.LoadUser chat.UserId
+      let! musicPlatform = buildMusicPlatform (user.Id |> UserId.value |> string |> MusicPlatform.UserId)
+
+      match musicPlatform with
+      | Some _ ->
+        do! chatCtx.AskForReply Messages.SendIncludedPlaylist
+
+        return Some()
+      | _ ->
+        do! sendLoginMessage initAuth sendLink chat.UserId &|> ignore
+
+        return None
     | _ -> return None
   }
 
