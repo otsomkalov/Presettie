@@ -150,13 +150,13 @@ let private getPlaylistButtons presetId playlistId playlistType enabled specific
   }
 
 let sendLoginMessage (initAuth: Auth.Init) (sendLink: SendLink) : SendLoginMessage =
-  fun (otsom.fs.Core.UserId userId) ->
+  fun userId ->
     initAuth
-     (userId |> string |> AccountId)
+     (userId |> UserId.value |> string |> AccountId)
       [ Scopes.PlaylistModifyPrivate
         Scopes.PlaylistModifyPublic
         Scopes.UserLibraryRead ]
-    |> Task.bind (sendLink Messages.LoginToSpotify Buttons.Login)
+    |> Task.bind (sendLink userId Messages.LoginToSpotify Buttons.Login)
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
@@ -927,6 +927,34 @@ let createPresetMessageHandler createPreset (chatRepo: #ILoadChat) chatCtx : Mes
       do! createPreset chat.UserId text
 
       return Some()
+    | _ -> return None
+  }
+
+let excludePlaylistButtonMessageHandler
+  (chatRepo: #ILoadChat)
+  (userRepo: #ILoadUser)
+  (buildMusicPlatform: BuildMusicPlatform)
+  initAuth
+  sendLink
+  (chatCtx: #IChatContext)
+  : MessageHandler =
+  fun message -> task {
+    match message.Text with
+    | Equals Buttons.ExcludePlaylist ->
+
+      let! chat = chatRepo.LoadChat message.ChatId
+      let! user = userRepo.LoadUser chat.UserId
+      let! musicPlatform = buildMusicPlatform (user.Id |> UserId.value |> string |> MusicPlatform.UserId)
+
+      match musicPlatform with
+      | Some _ ->
+        do! chatCtx.AskForReply Messages.SendExcludedPlaylist
+
+        return Some()
+      | _ ->
+        do! sendLoginMessage initAuth sendLink chat.UserId &|> ignore
+
+        return None
     | _ -> return None
   }
 

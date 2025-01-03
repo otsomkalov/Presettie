@@ -22,6 +22,7 @@ open Telegram.Bot
 open Telegram.Bot.Types
 open Telegram.Core
 open System
+open Telegram.Repos
 open otsom.fs.Extensions
 open otsom.fs.Extensions.String
 open otsom.fs.Telegram.Bot.Auth.Spotify
@@ -58,7 +59,8 @@ type MessageService
     logger: ILogger<MessageService>,
     presetRepo: IPresetRepo,
     getUser: User.Get,
-    handlersFactories: MessageHandlerFactory seq
+    handlersFactories: MessageHandlerFactory seq,
+    sendLink: SendLink
   ) =
 
   let defaultMessageHandler (message: Telegram.Bot.Types.Message) =
@@ -66,7 +68,6 @@ type MessageService
     let musicPlatformUserId = message.From.Id |> string |> MusicPlatform.UserId
 
     let replyToMessage = replyToUserMessage userId message.MessageId
-    let sendLink = Repos.sendLink _bot userId
     let sendLoginMessage = Telegram.Workflows.sendLoginMessage initAuth sendLink
 
     fun m ->
