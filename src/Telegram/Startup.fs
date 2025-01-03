@@ -11,7 +11,7 @@ open otsom.fs.Extensions.DependencyInjection
 
 let private addClickHandlers (services: IServiceCollection) =
   services
-    .BuildSingleton<ClickHandlerFactory, _>(presetInfoClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(presetInfoClickHandler)
     .BuildSingleton<ClickHandlerFactory, _, IChatRepo>(showPresetsClickHandler)
 
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(enableRecommendationsClickHandler)
@@ -31,8 +31,10 @@ let private addMessageHandlers (services: IServiceCollection) =
     .BuildSingleton<MessageHandlerFactory, _, _, IChatRepo>(presetSettingsMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, _, _, IChatRepo>(setPresetSizeMessageHandler)
 
+    .AddSingleton<MessageHandlerFactory>(createPresetButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, IChatRepo>(createPresetMessageHandler)
 
+    .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(includePlaylistButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(excludePlaylistButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(targetPlaylistButtonMessageHandler)
 

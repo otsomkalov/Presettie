@@ -7,11 +7,11 @@ open Telegram.Core
 open Telegram.Repos
 open Telegram.Workflows
 
-let presetInfoClickHandler getPreset botMessageCtx : ClickHandler =
+let presetInfoClickHandler presetRepo botMessageCtx : ClickHandler =
   fun click -> task {
     match click.Data.Split("|") with
     | [| "p"; id; "i" |] ->
-      let sendPresetInfo = Preset.show getPreset botMessageCtx
+      let sendPresetInfo = Preset.show presetRepo botMessageCtx
 
       do! sendPresetInfo (PresetId id)
 
@@ -58,7 +58,7 @@ let disableRecommendationsClickHandler presetRepo showNotification botMessageCtx
         Domain.Workflows.PresetSettings.disableRecommendations presetRepo
 
       let disableRecommendations =
-        PresetSettings.disableRecommendations presetRepo botMessageCtx disableRecommendations showNotification
+        PresetSettings.disableRecommendations presetRepo botMessageCtx disableRecommendations (showNotification click.Id)
 
       do! disableRecommendations (PresetId presetId)
 
@@ -75,7 +75,7 @@ let enableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : 
         Domain.Workflows.PresetSettings.enableUniqueArtists presetRepo
 
       let enableUniqueArtists =
-        PresetSettings.enableUniqueArtists presetRepo botMessageCtx enableUniqueArtists showNotification
+        PresetSettings.enableUniqueArtists presetRepo botMessageCtx enableUniqueArtists (showNotification click.Id)
 
       do! enableUniqueArtists (PresetId presetId)
 
@@ -92,7 +92,7 @@ let disableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx :
         Domain.Workflows.PresetSettings.disableUniqueArtists presetRepo
 
       let disableUniqueArtists =
-        PresetSettings.disableUniqueArtists presetRepo botMessageCtx disableUniqueArtists showNotification
+        PresetSettings.disableUniqueArtists presetRepo botMessageCtx disableUniqueArtists (showNotification click.Id)
 
       do! disableUniqueArtists (PresetId presetId)
 
