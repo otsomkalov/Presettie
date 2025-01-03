@@ -16,8 +16,8 @@ open MongoDB.Driver.Linq
 let private escapeMarkdownString (str: string) =
   Regex.Replace(str, "([\(\)`\.#\-!+])", "\$1")
 
-let sendLink (bot: ITelegramBotClient) userId : SendLink =
-  fun text linkText link ->
+let sendLink (bot: ITelegramBotClient) : SendLink =
+  fun userId text linkText link ->
     bot.SendTextMessageAsync(
       (userId |> UserId.value |> ChatId),
       text |> escapeMarkdownString,
