@@ -14,6 +14,7 @@ let private addClickHandlers (services: IServiceCollection) =
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(presetInfoClickHandler)
     .BuildSingleton<ClickHandlerFactory, _, IChatRepo>(showPresetsClickHandler)
 
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(enableRecommendationsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(disableRecommendationsClickHandler)
 
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(enableUniqueArtistsClickHandler)
