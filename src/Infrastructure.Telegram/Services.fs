@@ -4,6 +4,7 @@ open System.Reflection
 open FSharp
 open Microsoft.ApplicationInsights
 open Microsoft.Extensions.Logging
+open Microsoft.FSharp.Core
 open MusicPlatform.Spotify
 open MusicPlatform.Spotify.Core
 open Resources
@@ -72,9 +73,6 @@ type MessageService
     fun m ->
       let chatCtx = buildChatContext m.ChatId
 
-      let sendSettingsMessage =
-        Telegram.Workflows.User.sendCurrentPresetSettings chatCtx getUser getPreset
-
       task {
         let! musicPlatform = buildMusicPlatform musicPlatformUserId
 
@@ -111,15 +109,6 @@ type MessageService
               match isNull message.ReplyToMessage with
               | false ->
                 match message.ReplyToMessage.Text with
-                | Equals Messages.SendPresetSize ->
-                  let setTargetPresetSize = PresetSettings.setPresetSize presetRepo
-
-                  let setCurrentPresetSize = User.setCurrentPresetSize userRepo setTargetPresetSize
-
-                  let setTargetPresetSize =
-                    Workflows.User.setCurrentPresetSize sendUserMessage sendSettingsMessage setCurrentPresetSize
-
-                  setTargetPresetSize userId (PresetSettings.RawPresetSize message.Text)
                 | Equals Messages.SendIncludedPlaylist -> includePlaylist userId (Playlist.RawPlaylistId message.Text)
                 | Equals Messages.SendExcludedPlaylist -> excludePlaylist userId (Playlist.RawPlaylistId message.Text)
                 | Equals Messages.SendTargetedPlaylist -> targetPlaylist userId (Playlist.RawPlaylistId message.Text)
@@ -186,20 +175,10 @@ type MessageService
             | None ->
               match isNull message.ReplyToMessage with
               | false ->
-                match (message.ReplyToMessage.Text) with
+                match message.ReplyToMessage.Text with
                 | Equals Messages.SendIncludedPlaylist
                 | Equals Messages.SendExcludedPlaylist
                 | Equals Messages.SendTargetedPlaylist -> sendLoginMessage userId &|> ignore
-
-                | Equals Messages.SendPresetSize ->
-                  let setTargetPresetSize = PresetSettings.setPresetSize presetRepo
-
-                  let setCurrentPresetSize = User.setCurrentPresetSize userRepo setTargetPresetSize
-
-                  let setTargetPresetSize =
-                    Workflows.User.setCurrentPresetSize sendUserMessage sendSettingsMessage setCurrentPresetSize
-
-                  setTargetPresetSize userId (PresetSettings.RawPresetSize message.Text)
                 | Equals Messages.SendPresetName ->
                   let createPreset =
                     ((User.createPreset presetRepo userRepo)
@@ -248,7 +227,14 @@ type MessageService
   member this.ProcessAsync(message: Telegram.Bot.Types.Message) =
     let chatId = message.Chat.Id |> ChatId
 
-    let message' = { ChatId = chatId; Text = message.Text }
+    let message' =
+      { ChatId = chatId
+        Text = message.Text
+        ReplyMessage =
+          message.ReplyToMessage
+          |> Option.ofObj
+          |> Option.map (fun m -> { Text = m.Text }) }
+
     let chatCtx = buildChatContext chatId
 
     let handlers = handlersFactories |> Seq.map (fun f -> f chatCtx)

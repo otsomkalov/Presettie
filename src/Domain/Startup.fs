@@ -8,6 +8,8 @@ open otsom.fs.Extensions.DependencyInjection
 
 let addDomain (services: IServiceCollection) =
   services
+    .BuildSingleton<PresetSettings.SetPresetSize, IPresetRepo>(PresetSettings.setPresetSize)
+
     .BuildSingleton<Preset.Get, IPresetRepo>(Preset.get)
 
     .BuildSingleton<User.Get, IUserRepo>(User.get)

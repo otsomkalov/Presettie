@@ -129,9 +129,14 @@ module Preset =
   type Show = PresetId -> Task<unit>
   type Run = PresetId -> Task<unit>
 
+type ReplyMessage = {
+  Text: string
+}
+
 type Message = {
   ChatId: ChatId
   Text: string
+  ReplyMessage: ReplyMessage option
 }
 
 type MessageHandler = Message -> Task<unit option>
