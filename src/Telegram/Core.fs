@@ -133,6 +133,6 @@ type Message = {
   Text: string
 }
 
-type MessageHandler = Message -> Task<unit>
+type MessageHandler = Message -> Task<unit option>
 
-type MessageHandlerMatcher = Message -> MessageHandler option
+type MessageHandlerFactory = IChatContext -> MessageHandler

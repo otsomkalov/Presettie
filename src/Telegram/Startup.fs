@@ -12,7 +12,7 @@ let addBot (cfg: IConfiguration) (services: IServiceCollection) =
   services.BuildSingleton<User.SendCurrentPreset, User.Get, Preset.Get, SendUserKeyboard>(User.sendCurrentPreset)
 
   services
-    .BuildSingleton<MessageHandlerMatcher, _>(faqMessageHandlerMatcher)
-    .BuildSingleton<MessageHandlerMatcher, _>(privacyMessageHandlerMatcher)
-    .BuildSingleton<MessageHandlerMatcher, _>(guideMessageHandlerMatcher)
-    .BuildSingleton<MessageHandlerMatcher, _>(helpMessageHandlerMatcher)
+    .AddSingleton<MessageHandlerFactory>(faqMessageHandler)
+    .AddSingleton<MessageHandlerFactory>(privacyMessageHandler)
+    .AddSingleton<MessageHandlerFactory>(guideMessageHandler)
+    .AddSingleton<MessageHandlerFactory>(helpMessageHandler)
