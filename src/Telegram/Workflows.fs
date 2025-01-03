@@ -930,7 +930,7 @@ let excludePlaylistButtonMessageHandler
   : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals Buttons.TargetPlaylist ->
+    | Equals Buttons.ExcludePlaylist ->
 
       let! chat = chatRepo.LoadChat message.ChatId
       let! user = userRepo.LoadUser chat.UserId
