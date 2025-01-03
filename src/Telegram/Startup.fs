@@ -1,5 +1,6 @@
 ﻿module Telegram.Startup
 
+open Domain.Repos
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Telegram.Core
@@ -20,3 +21,5 @@ let addBot (cfg: IConfiguration) (services: IServiceCollection) =
 
     .AddSingleton<MessageHandlerFactory>(createPresetButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, IChatRepo>(createPresetMessageHandler)
+
+    .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(targetPlaylistButtonMessageHandler)
