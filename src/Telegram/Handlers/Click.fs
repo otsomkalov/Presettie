@@ -33,6 +33,23 @@ let showPresetsClickHandler getUser (chatRepo: #ILoadChat) botMessageCtx : Click
     | _ -> return None
   }
 
+let enableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; CallbackQueryConstants.enableUniqueArtists |] ->
+      let enableUniqueArtists =
+        Domain.Workflows.PresetSettings.enableUniqueArtists presetRepo
+
+      let enableUniqueArtists =
+        PresetSettings.enableUniqueArtists presetRepo botMessageCtx enableUniqueArtists showNotification
+
+      do! enableUniqueArtists (PresetId presetId)
+
+      return Some()
+    | _ ->
+      return None
+    }
+
 let disableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
   fun click -> task {
     match click.Data.Split("|") with

@@ -14,6 +14,7 @@ let private addClickHandlers (services: IServiceCollection) =
     .BuildSingleton<ClickHandlerFactory, _>(presetInfoClickHandler)
     .BuildSingleton<ClickHandlerFactory, _, IChatRepo>(showPresetsClickHandler)
 
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(enableUniqueArtistsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(disableUniqueArtistsClickHandler)
 
 let private addMessageHandlers (services: IServiceCollection) =
