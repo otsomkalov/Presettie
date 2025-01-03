@@ -13,5 +13,6 @@ let addDomain (services: IServiceCollection) =
     .BuildSingleton<Preset.Get, IPresetRepo>(Preset.get)
 
     .BuildSingleton<User.Get, IUserRepo>(User.get)
+    .BuildSingleton<User.CreatePreset, IPresetRepo, IUserRepo>(User.createPreset)
 
     .AddSingleton<Preset.Validate>(Preset.validate)

@@ -112,12 +112,6 @@ type MessageService
                 | Equals Messages.SendIncludedPlaylist -> includePlaylist userId (Playlist.RawPlaylistId message.Text)
                 | Equals Messages.SendExcludedPlaylist -> excludePlaylist userId (Playlist.RawPlaylistId message.Text)
                 | Equals Messages.SendTargetedPlaylist -> targetPlaylist userId (Playlist.RawPlaylistId message.Text)
-                | Equals Messages.SendPresetName ->
-                  let createPreset =
-                    ((User.createPreset presetRepo userRepo)
-                     |> Telegram.Workflows.User.createPreset chatCtx)
-
-                  createPreset userId message.Text
               | _ ->
                 match message.Text with
                 | Equals "/start" -> Telegram.Workflows.User.sendCurrentPreset getUser getPreset chatCtx userId
@@ -179,12 +173,6 @@ type MessageService
                 | Equals Messages.SendIncludedPlaylist
                 | Equals Messages.SendExcludedPlaylist
                 | Equals Messages.SendTargetedPlaylist -> sendLoginMessage userId &|> ignore
-                | Equals Messages.SendPresetName ->
-                  let createPreset =
-                    ((User.createPreset presetRepo userRepo)
-                     |> Telegram.Workflows.User.createPreset chatCtx)
-
-                  createPreset userId message.Text
                 | _ -> replyToMessage "Unknown command" |> Task.ignore
               | _ ->
                 match message.Text with
