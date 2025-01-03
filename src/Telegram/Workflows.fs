@@ -893,12 +893,22 @@ let setPresetSizeMessageHandler setPresetSize loadUser getPreset (chatRepo: #ILo
     let! chat = chatRepo.LoadChat message.ChatId
 
     match message.ReplyMessage with
-    | Some { Text = text } when text = Messages.SendPresetSize ->
+    | Some { Text = text } when text = Buttons.SetPresetSize ->
       do! setTargetPresetSize chat.UserId (PresetSettings.RawPresetSize message.Text)
 
       return Some()
     | _ ->
       return None
+  }
+
+let createPresetButtonMessageHandler (chatCtx: #IAskForReply) : MessageHandler =
+  fun message -> task {
+    match message.Text with
+    | Equals Buttons.CreatePreset ->
+      do! chatCtx.AskForReply Messages.SendPresetName
+
+      return Some()
+    | _ -> return None
   }
 
 let createPresetMessageHandler createPreset (chatRepo: #ILoadChat) chatCtx : MessageHandler =
