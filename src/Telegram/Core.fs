@@ -70,7 +70,6 @@ type PresetSettingsActions =
 
 [<RequireQualifiedAccess>]
 type UserActions =
-  | ListPresets of unit
   | SendCurrentPresetSettings of userId: UserId
   | QueueCurrentPresetGeneration of userId: UserId
   | GenerateCurrentPreset of presetId: PresetId

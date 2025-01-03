@@ -10,7 +10,9 @@ open Telegram.Workflows
 open otsom.fs.Extensions.DependencyInjection
 
 let private addClickHandlers (services: IServiceCollection) =
-  services.BuildSingleton<ClickHandlerFactory, _>(presetInfoClickHandler)
+  services
+    .BuildSingleton<ClickHandlerFactory, _>(presetInfoClickHandler)
+    .BuildSingleton<ClickHandlerFactory, _, IChatRepo>(showPresetsClickHandler)
 
 let private addMessageHandlers (services: IServiceCollection) =
   services

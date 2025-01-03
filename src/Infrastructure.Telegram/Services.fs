@@ -443,9 +443,6 @@ type CallbackQueryService
           Workflows.PresetSettings.disableUniqueArtists getPreset botMessageCtx disableUniqueArtists showNotification
 
         disableUniqueArtists presetId
-      | Action.User(UserActions.ListPresets()) ->
-        let listUserPresets = Workflows.User.showPresets botMessageCtx getUser
-        listUserPresets userId
 
     let handlers = handlersFactories |> Seq.map (fun f -> f botMessageCtx)
 
