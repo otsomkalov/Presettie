@@ -2,18 +2,11 @@
 module Infrastructure.Telegram.Workflows
 
 open MusicPlatform
-open Resources
-open System
 open Domain.Core
-open Domain.Workflows
-open Infrastructure.Core
 open Telegram.Bot
 open Telegram.Constants
 open Telegram.Core
-open Telegram.Workflows
 open Infrastructure.Telegram.Helpers
-open otsom.fs.Extensions
-open otsom.fs.Telegram.Bot.Core
 
 let answerCallbackQuery (bot: ITelegramBotClient) callbackQueryId : AnswerCallbackQuery =
   fun () ->
@@ -34,7 +27,6 @@ let showNotification (bot: ITelegramBotClient) callbackQueryId : ShowNotificatio
 let parseAction: ParseAction =
   fun (str: string) ->
     match str.Split("|") with
-    | [| "p"; id; "i" |] -> PresetId id |> PresetActions.Show |> Action.Preset
     | [| "p"; id; "c" |] -> PresetId id |> Action.SetCurrentPreset
     | [| "p"; id; "rm" |] -> PresetId id |> Action.RemovePreset
     | [| "p"; id; "r" |] -> PresetId id |> PresetActions.Run |> Action.Preset
