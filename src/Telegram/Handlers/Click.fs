@@ -7,11 +7,11 @@ open Telegram.Core
 open Telegram.Repos
 open Telegram.Workflows
 
-let presetInfoClickHandler getPreset botMessageCtx : ClickHandler =
+let presetInfoClickHandler presetRepo botMessageCtx : ClickHandler =
   fun click -> task {
     match click.Data.Split("|") with
     | [| "p"; id; "i" |] ->
-      let sendPresetInfo = Preset.show getPreset botMessageCtx
+      let sendPresetInfo = Preset.show presetRepo botMessageCtx
 
       do! sendPresetInfo (PresetId id)
 
@@ -57,10 +57,10 @@ let disableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx :
       let disableUniqueArtists =
         Domain.Workflows.PresetSettings.disableUniqueArtists presetRepo
 
-      let disableUniqueArtists =
-        PresetSettings.disableUniqueArtists presetRepo botMessageCtx disableUniqueArtists showNotification
+        let disableUniqueArtists =
+          PresetSettings.disableUniqueArtists presetRepo botMessageCtx disableUniqueArtists showNotification
 
-      do! disableUniqueArtists (PresetId presetId)
+        do! disableUniqueArtists (PresetId presetId)
 
       return Some()
     | _ ->
