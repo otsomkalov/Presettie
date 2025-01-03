@@ -204,7 +204,7 @@ module IncludedPlaylist =
 
   let enable
     (enableIncludedPlaylist: Domain.Core.IncludedPlaylist.Enable)
-    (showNotification: ShowNotification)
+    showNotification
     (showIncludedPlaylist: IncludedPlaylist.Show)
     : IncludedPlaylist.Enable =
     fun presetId playlistId ->
@@ -218,7 +218,7 @@ module IncludedPlaylist =
 
   let disable
     (disableIncludedPlaylist: Domain.Core.IncludedPlaylist.Disable)
-    (showNotification: ShowNotification)
+    showNotification
     (showIncludedPlaylist: IncludedPlaylist.Show)
     : IncludedPlaylist.Disable =
     fun presetId playlistId ->
@@ -233,7 +233,7 @@ module IncludedPlaylist =
   let remove
     (getPreset: Preset.Get) (botMessageCtx: #IEditMessageButtons)
     (removeIncludedPlaylist: Domain.Core.IncludedPlaylist.Remove)
-    (showNotification: ShowNotification)
+    showNotification
     : IncludedPlaylist.Remove =
     fun presetId playlistId ->
       task {
@@ -289,7 +289,7 @@ module ExcludedPlaylist =
 
   let enable
     (enableExcludedPlaylist: Domain.Core.ExcludedPlaylist.Enable)
-    (showNotification: ShowNotification)
+    showNotification
     (showExcludedPlaylist: ExcludedPlaylist.Show)
     : ExcludedPlaylist.Enable =
     fun presetId playlistId ->
@@ -303,7 +303,7 @@ module ExcludedPlaylist =
 
   let disable
     (disableExcludedPlaylist: Domain.Core.ExcludedPlaylist.Disable)
-    (showNotification: ShowNotification)
+    showNotification
     (showExcludedPlaylist: ExcludedPlaylist.Show)
     : ExcludedPlaylist.Enable =
     fun presetId playlistId ->
@@ -318,7 +318,7 @@ module ExcludedPlaylist =
   let remove
     (getPreset: Preset.Get) botMessageCtx
     (removeExcludedPlaylist: Domain.Core.ExcludedPlaylist.Remove)
-    (showNotification: ShowNotification)
+    showNotification
     : ExcludedPlaylist.Remove =
     fun presetId playlistId ->
       task {
@@ -387,7 +387,7 @@ module TargetedPlaylist =
 
   let appendTracks
     (appendToTargetedPlaylist: TargetedPlaylist.AppendTracks)
-    (showNotification: ShowNotification)
+    showNotification
     (showTargetedPlaylist: TargetedPlaylist.Show)
     : TargetedPlaylist.AppendTracks =
     fun presetId playlistId ->
@@ -400,7 +400,7 @@ module TargetedPlaylist =
 
   let overwritePlaylist
     (overwriteTargetedPlaylist: TargetedPlaylist.OverwriteTracks)
-    (showNotification: ShowNotification)
+    showNotification
     (showTargetedPlaylist: TargetedPlaylist.Show)
     : TargetedPlaylist.OverwriteTracks =
     fun presetId playlistId ->
@@ -414,7 +414,7 @@ module TargetedPlaylist =
   let remove
     (getPreset: Preset.Get) botMessageCtx
     (removeTargetedPlaylist: Domain.Core.TargetedPlaylist.Remove)
-    (showNotification: ShowNotification)
+    showNotification
     : TargetedPlaylist.Remove =
     fun presetId playlistId ->
       task {
@@ -690,7 +690,7 @@ module User =
       setPresetSize userId size
       |> TaskResult.taskEither onSuccess (onError >> Task.ignore)
 
-  let setCurrentPreset (showNotification: ShowNotification) (setCurrentPreset: Domain.Core.User.SetCurrentPreset) : User.SetCurrentPreset =
+  let setCurrentPreset showNotification (setCurrentPreset: Domain.Core.User.SetCurrentPreset) : User.SetCurrentPreset =
     fun userId presetId ->
       task {
         do! setCurrentPreset userId presetId
@@ -722,7 +722,7 @@ module PresetSettings =
     presetRepo
     botMessageCtx
     (enableUniqueArtists: PresetSettings.EnableUniqueArtists)
-    (showNotification: ShowNotification)
+    showNotification
     : PresetSettings.EnableUniqueArtists =
     fun presetId ->
       task {
@@ -737,7 +737,7 @@ module PresetSettings =
     presetRepo
     botMessageCtx
     (disableUniqueArtists: PresetSettings.DisableUniqueArtists)
-    (showNotification: ShowNotification)
+    showNotification
     : PresetSettings.DisableUniqueArtists =
     fun presetId ->
       task {
@@ -752,7 +752,7 @@ module PresetSettings =
     presetRepo
     botMessageCtx
     (enableRecommendations: PresetSettings.EnableRecommendations)
-    (showNotification: ShowNotification)
+    showNotification
     : PresetSettings.EnableRecommendations =
     fun presetId ->
       task {
@@ -767,7 +767,7 @@ module PresetSettings =
     presetRepo
     botMessageCtx
     (disableRecommendations: PresetSettings.DisableRecommendations)
-    (showNotification: ShowNotification)
+    showNotification
     : PresetSettings.DisableRecommendations =
     fun presetId ->
       task {
@@ -778,7 +778,7 @@ module PresetSettings =
         return! Preset.show presetRepo botMessageCtx presetId
       }
 
-  let private setLikedTracksHandling presetRepo botMessageCtx (showNotification: ShowNotification) setLikedTracksHandling =
+  let private setLikedTracksHandling presetRepo botMessageCtx showNotification setLikedTracksHandling =
     fun presetId ->
       task {
         do! setLikedTracksHandling presetId

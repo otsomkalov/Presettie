@@ -1,17 +1,16 @@
 ﻿module Telegram.Handlers.Click
 
 open Domain.Core
-open Domain.Repos
 open Telegram.Constants
 open Telegram.Core
 open Telegram.Repos
 open Telegram.Workflows
 
-let presetInfoClickHandler getPreset botMessageCtx : ClickHandler =
+let presetInfoClickHandler presetRepo botMessageCtx : ClickHandler =
   fun click -> task {
     match click.Data.Split("|") with
     | [| "p"; id; "i" |] ->
-      let sendPresetInfo = Preset.show getPreset botMessageCtx
+      let sendPresetInfo = Preset.show presetRepo botMessageCtx
 
       do! sendPresetInfo (PresetId id)
 
@@ -33,19 +32,21 @@ let showPresetsClickHandler getUser (chatRepo: #ILoadChat) botMessageCtx : Click
     | _ -> return None
   }
 
-let disableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
-  fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; CallbackQueryConstants.disableUniqueArtists |] ->
-      let disableUniqueArtists =
-        Domain.Workflows.PresetSettings.disableUniqueArtists presetRepo
+let disableUniqueArtistsClickHandler presetRepo (showNotification: ShowNotification) botMessageCtx : ClickHandler =
+  fun click ->
+    let showNotification = showNotification click.Id
 
-      let disableUniqueArtists =
-        PresetSettings.disableUniqueArtists presetRepo botMessageCtx disableUniqueArtists showNotification
+    task {
+      match click.Data.Split("|") with
+      | [| "p"; presetId; CallbackQueryConstants.disableUniqueArtists |] ->
+        let disableUniqueArtists =
+          Domain.Workflows.PresetSettings.disableUniqueArtists presetRepo
 
-      do! disableUniqueArtists (PresetId presetId)
+        let disableUniqueArtists =
+          PresetSettings.disableUniqueArtists presetRepo botMessageCtx disableUniqueArtists showNotification
 
-      return Some()
-    | _ ->
-      return None
+        do! disableUniqueArtists (PresetId presetId)
+
+        return Some()
+      | _ -> return None
     }

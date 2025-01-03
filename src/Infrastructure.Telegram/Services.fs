@@ -253,14 +253,16 @@ type CallbackQueryService
     getUser: User.Get,
     userRepo: IUserRepo,
     handlersFactories: ClickHandlerFactory seq,
-    logger: ILogger<CallbackQueryService>
+    logger: ILogger<CallbackQueryService>,
+    showNotification: ShowNotification
   ) =
 
   member this.ProcessAsync(callbackQuery: CallbackQuery) =
     let userId = callbackQuery.From.Id |> UserId
     let chatId = callbackQuery.From.Id |> ChatId
+    let clickId = callbackQuery.Id |> ClickId
 
-    let showNotification = Workflows.showNotification _bot callbackQuery.Id
+    let showNotification = showNotification clickId
 
     let countPlaylistTracks =
       Playlist.countTracks telemetryClient _connectionMultiplexer
@@ -278,6 +280,7 @@ type CallbackQueryService
       Workflows.TargetedPlaylist.show botMessageCtx getPreset countPlaylistTracks
 
     let click: Click = {
+      Id = clickId
       ChatId = chatId
       Data = callbackQuery.Data
     }

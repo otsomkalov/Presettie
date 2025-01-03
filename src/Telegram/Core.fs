@@ -9,7 +9,6 @@ open otsom.fs.Core
 open otsom.fs.Telegram.Bot.Core
 
 type AnswerCallbackQuery = unit -> Task<unit>
-type ShowNotification = string -> Task<unit>
 type Page = Page of int
 
 type ChatMessageId = ChatMessageId of int
@@ -18,7 +17,10 @@ type SendLoginMessage = UserId -> Task<BotMessageId>
 
 type Chat = { Id: otsom.fs.Bot.ChatId; UserId: UserId }
 
-type Click = { ChatId: otsom.fs.Bot.ChatId; Data: string }
+type ClickId = ClickId of string
+type Click = { Id: ClickId; ChatId: otsom.fs.Bot.ChatId; Data: string }
+
+type ShowNotification = ClickId -> string -> Task<unit>
 
 [<RequireQualifiedAccess>]
 module Playlist =

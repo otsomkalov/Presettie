@@ -10,6 +10,7 @@ open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Options
 open Telegram.Bot
+open Telegram.Core
 open Telegram.Repos
 open otsom.fs.Extensions.DependencyInjection
 open otsom.fs.Telegram.Bot
@@ -27,6 +28,7 @@ let addTelegram (configuration: IConfiguration) (services: IServiceCollection) =
 
   services.BuildSingleton<ITelegramBotClient, IOptions<TelegramSettings>>(configureTelegramBotClient)
   services.BuildSingleton<SendLink, ITelegramBotClient>(sendLink)
+  services.BuildSingleton<ShowNotification, ITelegramBotClient>(Workflows.showNotification)
 
   services.AddSingleton<IChatRepo, MockChatRepo>()
 
