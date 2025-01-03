@@ -20,5 +20,6 @@ let addBot (cfg: IConfiguration) (services: IServiceCollection) =
     .BuildSingleton<MessageHandlerFactory, _, _, _, IChatRepo>(setPresetSizeMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, IChatRepo>(createPresetMessageHandler)
 
+    .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(includePlaylistButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(excludePlaylistButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(targetPlaylistButtonMessageHandler)
