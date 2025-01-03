@@ -158,7 +158,6 @@ type MessageService
                   else
                     targetPlaylist userId (rawPlaylistId |> Playlist.RawPlaylistId)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
-                | Equals Buttons.CreatePreset -> chatCtx.AskForReply Messages.SendPresetName
                 | Equals Buttons.RunPreset -> queueCurrentPresetRun userId (ChatMessageId message.MessageId)
                 | Equals Buttons.IncludePlaylist -> chatCtx.AskForReply Messages.SendIncludedPlaylist
 
@@ -201,7 +200,6 @@ type MessageService
                   completeAuth (userId |> UserId.value |> string |> AccountId) state
                   |> TaskResult.taskEither processSuccessfulLogin (sendErrorMessage >> Task.ignore)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
-                | Equals Buttons.CreatePreset -> chatCtx.AskForReply Messages.SendPresetName
 
                 | _ -> replyToMessage "Unknown command" |> Task.ignore)
       }
