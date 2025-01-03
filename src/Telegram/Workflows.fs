@@ -655,7 +655,7 @@ module User =
       |> Task.bind getPresetMessage
       |> Task.bind (fun (text, _) ->
         let buttons: Keyboard =
-          [| [| KeyboardButton Buttons.SetPresetSize |]; [| KeyboardButton "Back" |] |]
+          [| [| KeyboardButton Buttons.SetPresetSize |]; [| KeyboardButton(Buttons.Back) |] |]
 
         chatCtx.SendKeyboard text buttons &|> ignore)
 
@@ -853,6 +853,18 @@ let myPresetsMessageHandler (getUser: User.Get) (chatRepo: #ILoadChat) (chatCtx:
       return Some()
     | Equals "/presets" ->
       do! sendUserPresets chat.UserId
+
+      return Some()
+    | _ -> return None
+  }
+
+let backMessageHandler loadUser getPreset (chatRepo: #ILoadChat) (chatCtx: #ISendKeyboard) : MessageHandler =
+  fun message -> task {
+    let! chat = chatRepo.LoadChat message.ChatId
+
+    match message.Text with
+    | Equals Buttons.Back ->
+      do! User.sendCurrentPreset loadUser getPreset chatCtx chat.UserId
 
       return Some()
     | _ -> return None

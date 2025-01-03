@@ -14,3 +14,4 @@ let addBot (cfg: IConfiguration) (services: IServiceCollection) =
     .AddSingleton<MessageHandlerFactory>(guideMessageHandler)
     .AddSingleton<MessageHandlerFactory>(helpMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, IChatRepo>(myPresetsMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, _, _, IChatRepo>(backMessageHandler)
