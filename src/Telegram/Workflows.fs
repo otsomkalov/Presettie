@@ -15,6 +15,7 @@ open otsom.fs.Telegram.Bot.Auth.Spotify
 open otsom.fs.Telegram.Bot.Core
 open System
 open otsom.fs.Extensions.String
+open Telegram.Helpers
 
 [<Literal>]
 let keyboardColumns = 4
@@ -896,4 +897,23 @@ let setPresetSizeMessageHandler setPresetSize loadUser getPreset (chatRepo: #ILo
       return Some()
     | _ ->
       return None
+  }
+
+let createPresetMessageHandler createPreset (chatRepo: #ILoadChat) chatCtx : MessageHandler =
+  let createPreset = User.createPreset chatCtx createPreset
+
+  fun message -> task {
+    let! chat = chatRepo.LoadChat message.ChatId
+
+    match message with
+    | { Text = text
+        ReplyMessage = Some { Text = replyText } } when replyText = Messages.SendPresetName ->
+      do! createPreset chat.UserId text
+
+      return Some()
+    | { Text = CommandWithData "/new" text } ->
+      do! createPreset chat.UserId text
+
+      return Some()
+    | _ -> return None
   }
