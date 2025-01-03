@@ -431,13 +431,6 @@ type CallbackQueryService
           Workflows.PresetSettings.disableRecommendations presetRepo botMessageCtx disableRecommendations showNotification
 
         disableRecommendations presetId
-      | Action.PresetSettings(PresetSettingsActions.EnableUniqueArtists(presetId)) ->
-        let enableUniqueArtists = PresetSettings.enableUniqueArtists presetRepo
-
-        let enableUniqueArtists =
-          Workflows.PresetSettings.enableUniqueArtists presetRepo botMessageCtx enableUniqueArtists showNotification
-
-        enableUniqueArtists presetId
 
     let handlers = handlersFactories |> Seq.map (fun f -> f botMessageCtx)
 

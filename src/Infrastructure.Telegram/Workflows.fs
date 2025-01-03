@@ -74,6 +74,3 @@ let parseAction: ParseAction =
       PresetSettingsActions.EnableRecommendations(PresetId presetId) |> Action.PresetSettings
     | [| "p"; presetId; CallbackQueryConstants.disableRecommendations |] ->
       PresetSettingsActions.DisableRecommendations(PresetId presetId) |> Action.PresetSettings
-
-    | [| "p"; presetId; CallbackQueryConstants.enableUniqueArtists |] ->
-      PresetSettingsActions.EnableUniqueArtists(PresetId presetId) |> Action.PresetSettings

@@ -32,21 +32,34 @@ let showPresetsClickHandler getUser (chatRepo: #ILoadChat) botMessageCtx : Click
     | _ -> return None
   }
 
-let disableUniqueArtistsClickHandler presetRepo (showNotification: ShowNotification) botMessageCtx : ClickHandler =
-  fun click ->
-    let showNotification = showNotification click.Id
+let enableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; CallbackQueryConstants.enableUniqueArtists |] ->
+      let enableUniqueArtists =
+        Domain.Workflows.PresetSettings.enableUniqueArtists presetRepo
 
-    task {
-      match click.Data.Split("|") with
-      | [| "p"; presetId; CallbackQueryConstants.disableUniqueArtists |] ->
-        let disableUniqueArtists =
-          Domain.Workflows.PresetSettings.disableUniqueArtists presetRepo
+      let enableUniqueArtists =
+        PresetSettings.enableUniqueArtists presetRepo botMessageCtx enableUniqueArtists (showNotification click.Id)
 
-        let disableUniqueArtists =
-          PresetSettings.disableUniqueArtists presetRepo botMessageCtx disableUniqueArtists showNotification
+      do! enableUniqueArtists (PresetId presetId)
 
-        do! disableUniqueArtists (PresetId presetId)
+      return Some()
+    | _ -> return None
+  }
 
-        return Some()
-      | _ -> return None
-    }
+let disableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; CallbackQueryConstants.disableUniqueArtists |] ->
+      let disableUniqueArtists =
+        Domain.Workflows.PresetSettings.disableUniqueArtists presetRepo
+
+      let disableUniqueArtists =
+        PresetSettings.disableUniqueArtists presetRepo botMessageCtx disableUniqueArtists (showNotification click.Id)
+
+      do! disableUniqueArtists (PresetId presetId)
+
+      return Some()
+    | _ -> return None
+  }
