@@ -160,7 +160,6 @@ type MessageService
                     targetPlaylist userId (rawPlaylistId |> Playlist.RawPlaylistId)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
                 | Equals Buttons.RunPreset -> queueCurrentPresetRun userId (ChatMessageId message.MessageId)
-                | Equals Buttons.IncludePlaylist -> chatCtx.AskForReply Messages.SendIncludedPlaylist
 
                 | _ -> replyToMessage "Unknown command" |> Task.ignore
             | None ->
@@ -176,7 +175,6 @@ type MessageService
                 | StartsWith "/include"
                 | StartsWith "/exclude"
                 | StartsWith "/target"
-                | Equals Buttons.IncludePlaylist
                 | Equals Buttons.RunPreset
                 | StartsWith "/generate"
                 | Equals "/start" -> sendLoginMessage userId &|> ignore
