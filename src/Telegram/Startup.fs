@@ -16,3 +16,4 @@ let addBot (cfg: IConfiguration) (services: IServiceCollection) =
     .BuildSingleton<MessageHandlerFactory, _, IChatRepo>(myPresetsMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, _, IChatRepo>(backMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, _, IChatRepo>(presetSettingsMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, Domain.Core.User.SetCurrentPresetSize, _, _, IChatRepo>(setPresetSizeMessageHandler)

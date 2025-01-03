@@ -643,7 +643,7 @@ module User =
           chatCtx.SendKeyboard Messages.NoCurrentPreset buttons &|> ignore
         | _ -> sendPresetsMessage (chatCtx.SendMessageButtons >> (fun a -> a >> Task.ignore)) user Messages.NoCurrentPreset)
 
-  let sendCurrentPresetSettings
+  let internal sendCurrentPresetSettings
     (chatCtx: #ISendKeyboard)
     (loadUser: User.Get)
     (getPreset: Preset.Get)
@@ -669,22 +669,20 @@ module User =
         return! showPresets' botMessageCtx.EditMessageButtons loadUser userId
       }
 
-  let setCurrentPresetSize
-    (sendUserMessage: SendUserMessage)
+  let internal setCurrentPresetSize
+    (chatCtx: #ISendMessage)
     (sendSettingsMessage: User.SendCurrentPresetSettings)
     (setPresetSize: Domain.Core.User.SetCurrentPresetSize)
     : User.SetCurrentPresetSize
     =
     fun userId size ->
-      let sendMessage = sendUserMessage userId
-
       let onSuccess () = sendSettingsMessage userId
 
       let onError =
         function
-        | PresetSettings.Size.TooSmall -> sendMessage Messages.PresetSizeTooSmall
-        | PresetSettings.Size.TooBig -> sendMessage Messages.PresetSizeTooBig
-        | PresetSettings.Size.NotANumber -> sendMessage Messages.PresetSizeNotANumber
+        | PresetSettings.Size.TooSmall -> chatCtx.SendMessage Messages.PresetSizeTooSmall
+        | PresetSettings.Size.TooBig -> chatCtx.SendMessage Messages.PresetSizeTooBig
+        | PresetSettings.Size.NotANumber -> chatCtx.SendMessage Messages.PresetSizeNotANumber
 
       setPresetSize userId size
       |> TaskResult.taskEither onSuccess (onError >> Task.ignore)
@@ -882,4 +880,20 @@ let presetSettingsMessageHandler getUser getPreset (chatRepo: #ILoadChat) chatCt
 
       return Some()
     | _ -> return None
+  }
+
+let setPresetSizeMessageHandler setPresetSize loadUser getPreset (chatRepo: #ILoadChat) chatCtx : MessageHandler =
+  let setTargetPresetSize =
+    User.setCurrentPresetSize chatCtx (User.sendCurrentPresetSettings chatCtx loadUser getPreset) setPresetSize
+
+  fun message -> task {
+    let! chat = chatRepo.LoadChat message.ChatId
+
+    match message.ReplyMessage with
+    | Some { Text = text } when text = Messages.SendPresetSize ->
+      do! setTargetPresetSize chat.UserId (PresetSettings.RawPresetSize message.Text)
+
+      return Some()
+    | _ ->
+      return None
   }
