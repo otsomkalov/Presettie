@@ -75,7 +75,6 @@ type MessageService
       let sendSettingsMessage =
         Telegram.Workflows.User.sendCurrentPresetSettings chatCtx getUser getPreset
 
-
       task {
         let! musicPlatform = buildMusicPlatform musicPlatformUserId
 
@@ -179,7 +178,6 @@ type MessageService
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
                 | Equals Buttons.CreatePreset -> chatCtx.AskForReply Messages.SendPresetName
                 | Equals Buttons.RunPreset -> queueCurrentPresetRun userId (ChatMessageId message.MessageId)
-                | Equals Buttons.Settings -> sendSettingsMessage userId
                 | Equals Buttons.IncludePlaylist -> chatCtx.AskForReply Messages.SendIncludedPlaylist
                 | Equals Buttons.ExcludePlaylist -> chatCtx.AskForReply Messages.SendExcludedPlaylist
                 | Equals Buttons.TargetPlaylist -> chatCtx.AskForReply Messages.SendTargetedPlaylist
@@ -242,7 +240,6 @@ type MessageService
                   |> TaskResult.taskEither processSuccessfulLogin (sendErrorMessage >> Task.ignore)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
                 | Equals Buttons.CreatePreset -> chatCtx.AskForReply Messages.SendPresetName
-                | Equals Buttons.Settings -> sendSettingsMessage userId
 
                 | _ -> replyToMessage "Unknown command" |> Task.ignore)
       }

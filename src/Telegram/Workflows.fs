@@ -869,3 +869,17 @@ let backMessageHandler loadUser getPreset (chatRepo: #ILoadChat) (chatCtx: #ISen
       return Some()
     | _ -> return None
   }
+
+let presetSettingsMessageHandler getUser getPreset (chatRepo: #ILoadChat) chatCtx : MessageHandler =
+  let sendSettingsMessage = User.sendCurrentPresetSettings chatCtx getUser getPreset
+
+  fun message -> task {
+    let! chat = chatRepo.LoadChat message.ChatId
+
+    match message.Text with
+    | Equals Buttons.Settings ->
+      do! sendSettingsMessage chat.UserId
+
+      return Some()
+    | _ -> return None
+  }
