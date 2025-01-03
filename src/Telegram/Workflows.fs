@@ -891,7 +891,7 @@ let setPresetSizeMessageHandler setPresetSize loadUser getPreset (chatRepo: #ILo
     let! chat = chatRepo.LoadChat message.ChatId
 
     match message.ReplyMessage with
-    | Some { Text = text } when text = Buttons.SetPresetSize ->
+    | Some { Text = text } when text = Messages.SendPresetSize ->
       do! setTargetPresetSize chat.UserId (PresetSettings.RawPresetSize message.Text)
 
       return Some()
