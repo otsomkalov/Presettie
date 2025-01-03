@@ -11,7 +11,7 @@ open otsom.fs.Extensions.DependencyInjection
 
 let private addClickHandlers (services: IServiceCollection) =
   services
-    .BuildSingleton<ClickHandlerFactory, _>(presetInfoClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(presetInfoClickHandler)
     .BuildSingleton<ClickHandlerFactory, _, IChatRepo>(showPresetsClickHandler)
 
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(enableUniqueArtistsClickHandler)
