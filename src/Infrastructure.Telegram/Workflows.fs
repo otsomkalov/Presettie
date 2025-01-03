@@ -16,10 +16,10 @@ let answerCallbackQuery (bot: ITelegramBotClient) callbackQueryId : AnswerCallba
       return ()
     }
 
-let showNotification (bot: ITelegramBotClient) callbackQueryId : ShowNotification =
-  fun text ->
+let showNotification (bot: ITelegramBotClient) : ShowNotification =
+  fun (ClickId clickId) text ->
     task {
-      do! bot.AnswerCallbackQueryAsync(callbackQueryId, text)
+      do! bot.AnswerCallbackQueryAsync(clickId, text)
 
       return ()
     }
@@ -77,5 +77,3 @@ let parseAction: ParseAction =
 
     | [| "p"; presetId; CallbackQueryConstants.enableUniqueArtists |] ->
       PresetSettingsActions.EnableUniqueArtists(PresetId presetId) |> Action.PresetSettings
-    | [| "p"; presetId; CallbackQueryConstants.disableUniqueArtists |] ->
-      PresetSettingsActions.DisableUniqueArtists(PresetId presetId) |> Action.PresetSettings
