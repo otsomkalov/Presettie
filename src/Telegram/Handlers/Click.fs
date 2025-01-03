@@ -33,6 +33,23 @@ let showPresetsClickHandler getUser (chatRepo: #ILoadChat) botMessageCtx : Click
     | _ -> return None
   }
 
+let enableRecommendationsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; CallbackQueryConstants.enableRecommendations |] ->
+      let enableRecommendations =
+        Domain.Workflows.PresetSettings.enableRecommendations presetRepo
+
+      let enableRecommendations =
+        PresetSettings.enableRecommendations presetRepo botMessageCtx enableRecommendations showNotification
+
+      do! enableRecommendations (PresetId presetId)
+
+      return Some()
+    | _ ->
+      return None
+    }
+
 let disableRecommendationsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
   fun click -> task {
     match click.Data.Split("|") with

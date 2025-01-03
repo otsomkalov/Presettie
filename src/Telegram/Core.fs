@@ -58,8 +58,6 @@ type TargetedPlaylistActions =
 
 [<RequireQualifiedAccess>]
 type PresetSettingsActions =
-  | EnableRecommendations of presetId: PresetId
-
   | IncludeLikedTracks of presetId: PresetId
   | ExcludeLikedTracks of presetId: PresetId
   | IgnoreLikedTracks of presetId: PresetId

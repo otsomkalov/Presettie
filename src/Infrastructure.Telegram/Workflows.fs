@@ -69,6 +69,3 @@ let parseAction: ParseAction =
       PresetSettingsActions.ExcludeLikedTracks(PresetId presetId) |> Action.PresetSettings
     | [| "p"; presetId; CallbackQueryConstants.ignoreLikedTracks |] ->
       PresetSettingsActions.IgnoreLikedTracks(PresetId presetId) |> Action.PresetSettings
-
-    | [| "p"; presetId; CallbackQueryConstants.enableRecommendations |] ->
-      PresetSettingsActions.EnableRecommendations(PresetId presetId) |> Action.PresetSettings
