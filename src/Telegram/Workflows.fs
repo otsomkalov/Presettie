@@ -455,8 +455,8 @@ module Preset =
         do! showButtons text keyboardMarkup
       }
 
-  let show (getPreset: Preset.Get) (botMessageCtx: #IEditMessageButtons) : Preset.Show =
-    getPreset
+  let show (presetRepo: #ILoadPreset) (botMessageCtx: #IEditMessageButtons) : Preset.Show =
+    presetRepo.LoadPreset
     >> Task.bind (show' botMessageCtx.EditMessageButtons)
 
   let queueRun
@@ -719,7 +719,7 @@ module User =
 [<RequireQualifiedAccess>]
 module PresetSettings =
   let enableUniqueArtists
-    (getPreset: Preset.Get)
+    presetRepo
     botMessageCtx
     (enableUniqueArtists: PresetSettings.EnableUniqueArtists)
     (showNotification: ShowNotification)
@@ -730,11 +730,11 @@ module PresetSettings =
 
         do! showNotification Messages.Updated
 
-        return! Preset.show getPreset botMessageCtx presetId
+        return! Preset.show presetRepo botMessageCtx presetId
       }
 
   let disableUniqueArtists
-    (getPreset: Preset.Get)
+    presetRepo
     botMessageCtx
     (disableUniqueArtists: PresetSettings.DisableUniqueArtists)
     (showNotification: ShowNotification)
@@ -745,11 +745,11 @@ module PresetSettings =
 
         do! showNotification Messages.Updated
 
-        return! Preset.show getPreset botMessageCtx presetId
+        return! Preset.show presetRepo botMessageCtx presetId
       }
 
   let enableRecommendations
-    (getPreset: Preset.Get)
+    presetRepo
     botMessageCtx
     (enableRecommendations: PresetSettings.EnableRecommendations)
     (showNotification: ShowNotification)
@@ -760,11 +760,11 @@ module PresetSettings =
 
         do! showNotification Messages.Updated
 
-        return! Preset.show getPreset botMessageCtx presetId
+        return! Preset.show presetRepo botMessageCtx presetId
       }
 
   let disableRecommendations
-    (getPreset: Preset.Get)
+    presetRepo
     botMessageCtx
     (disableRecommendations: PresetSettings.DisableRecommendations)
     (showNotification: ShowNotification)
@@ -775,27 +775,27 @@ module PresetSettings =
 
         do! showNotification Messages.Updated
 
-        return! Preset.show getPreset botMessageCtx presetId
+        return! Preset.show presetRepo botMessageCtx presetId
       }
 
-  let private setLikedTracksHandling (getPreset: Preset.Get) botMessageCtx (showNotification: ShowNotification) setLikedTracksHandling =
+  let private setLikedTracksHandling presetRepo botMessageCtx (showNotification: ShowNotification) setLikedTracksHandling =
     fun presetId ->
       task {
         do! setLikedTracksHandling presetId
 
         do! showNotification Messages.Updated
 
-        return! Preset.show getPreset botMessageCtx presetId
+        return! Preset.show presetRepo botMessageCtx presetId
       }
 
-  let includeLikedTracks (getPreset: Preset.Get) botMessageCtx showNotification (includeLikedTracks: PresetSettings.IncludeLikedTracks) : PresetSettings.IncludeLikedTracks =
-    setLikedTracksHandling getPreset botMessageCtx showNotification includeLikedTracks
+  let includeLikedTracks presetRepo botMessageCtx showNotification (includeLikedTracks: PresetSettings.IncludeLikedTracks) : PresetSettings.IncludeLikedTracks =
+    setLikedTracksHandling presetRepo botMessageCtx showNotification includeLikedTracks
 
-  let excludeLikedTracks (getPreset: Preset.Get) botMessageCtx showNotification (excludeLikedTracks: PresetSettings.ExcludeLikedTracks) : PresetSettings.ExcludeLikedTracks =
-    setLikedTracksHandling getPreset botMessageCtx showNotification excludeLikedTracks
+  let excludeLikedTracks presetRepo botMessageCtx showNotification (excludeLikedTracks: PresetSettings.ExcludeLikedTracks) : PresetSettings.ExcludeLikedTracks =
+    setLikedTracksHandling presetRepo botMessageCtx showNotification excludeLikedTracks
 
-  let ignoreLikedTracks (getPreset: Preset.Get) botMessageCtx showNotification (ignoreLikedTracks: PresetSettings.IgnoreLikedTracks) : PresetSettings.IgnoreLikedTracks =
-    setLikedTracksHandling getPreset botMessageCtx showNotification ignoreLikedTracks
+  let ignoreLikedTracks presetRepo botMessageCtx showNotification (ignoreLikedTracks: PresetSettings.IgnoreLikedTracks) : PresetSettings.IgnoreLikedTracks =
+    setLikedTracksHandling presetRepo botMessageCtx showNotification ignoreLikedTracks
 
 let faqMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {

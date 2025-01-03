@@ -397,21 +397,21 @@ type CallbackQueryService
         let includeLikedTracks = PresetSettings.includeLikedTracks presetRepo
 
         let includeLikedTracks =
-          Workflows.PresetSettings.includeLikedTracks getPreset botMessageCtx showNotification includeLikedTracks
+          Workflows.PresetSettings.includeLikedTracks presetRepo botMessageCtx showNotification includeLikedTracks
 
         includeLikedTracks presetId
       | Action.PresetSettings(PresetSettingsActions.ExcludeLikedTracks presetId) ->
         let excludeLikedTracks = PresetSettings.excludeLikedTracks presetRepo
 
         let excludeLikedTracks =
-          Workflows.PresetSettings.excludeLikedTracks getPreset botMessageCtx showNotification excludeLikedTracks
+          Workflows.PresetSettings.excludeLikedTracks presetRepo botMessageCtx showNotification excludeLikedTracks
 
         excludeLikedTracks presetId
       | Action.PresetSettings(PresetSettingsActions.IgnoreLikedTracks presetId) ->
         let ignoreLikedTracks = PresetSettings.ignoreLikedTracks presetRepo
 
         let ignoreLikedTracks =
-          Workflows.PresetSettings.ignoreLikedTracks getPreset botMessageCtx showNotification ignoreLikedTracks
+          Workflows.PresetSettings.ignoreLikedTracks presetRepo botMessageCtx showNotification ignoreLikedTracks
 
         ignoreLikedTracks presetId
       | Action.PresetSettings(PresetSettingsActions.EnableRecommendations presetId) ->
@@ -419,7 +419,7 @@ type CallbackQueryService
           PresetSettings.enableRecommendations presetRepo
 
         let enableRecommendations =
-          Workflows.PresetSettings.enableRecommendations getPreset botMessageCtx enableRecommendations showNotification
+          Workflows.PresetSettings.enableRecommendations presetRepo botMessageCtx enableRecommendations showNotification
 
         enableRecommendations presetId
       | Action.PresetSettings(PresetSettingsActions.DisableRecommendations presetId) ->
@@ -427,24 +427,17 @@ type CallbackQueryService
           PresetSettings.disableRecommendations presetRepo
 
         let disableRecommendations =
-          Workflows.PresetSettings.disableRecommendations getPreset botMessageCtx disableRecommendations showNotification
+          Workflows.PresetSettings.disableRecommendations presetRepo botMessageCtx disableRecommendations showNotification
 
         disableRecommendations presetId
       | Action.PresetSettings(PresetSettingsActions.EnableUniqueArtists(presetId)) ->
         let enableUniqueArtists = PresetSettings.enableUniqueArtists presetRepo
 
         let enableUniqueArtists =
-          Workflows.PresetSettings.enableUniqueArtists getPreset botMessageCtx enableUniqueArtists showNotification
+          Workflows.PresetSettings.enableUniqueArtists presetRepo botMessageCtx enableUniqueArtists showNotification
 
         enableUniqueArtists presetId
-      | Action.PresetSettings(PresetSettingsActions.DisableUniqueArtists(presetId)) ->
-        let disableUniqueArtists =
-          PresetSettings.disableUniqueArtists presetRepo
 
-        let disableUniqueArtists =
-          Workflows.PresetSettings.disableUniqueArtists getPreset botMessageCtx disableUniqueArtists showNotification
-
-        disableUniqueArtists presetId
 
     let handlers = handlersFactories |> Seq.map (fun f -> f botMessageCtx)
 
