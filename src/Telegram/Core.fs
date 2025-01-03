@@ -18,6 +18,8 @@ type SendLoginMessage = UserId -> Task<BotMessageId>
 
 type Chat = { Id: otsom.fs.Bot.ChatId; UserId: UserId }
 
+type Click = { ChatId: otsom.fs.Bot.ChatId; Data: string }
+
 [<RequireQualifiedAccess>]
 module Playlist =
   type Include = UserId -> Playlist.RawPlaylistId -> Task<unit>
@@ -75,7 +77,6 @@ type UserActions =
 
 [<RequireQualifiedAccess>]
 type PresetActions =
-  | Show of presetId: PresetId
   | Run of presetId: PresetId
 
 [<RequireQualifiedAccess>]
@@ -142,3 +143,7 @@ type Message = {
 type MessageHandler = Message -> Task<unit option>
 
 type MessageHandlerFactory = IChatContext -> MessageHandler
+
+type ClickHandler = Click -> Task<unit option>
+
+type ClickHandlerFactory = IBotMessageContext -> ClickHandler

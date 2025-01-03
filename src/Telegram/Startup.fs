@@ -4,11 +4,15 @@ open Domain.Repos
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Telegram.Core
+open Telegram.Handlers.Click
 open Telegram.Repos
 open Telegram.Workflows
 open otsom.fs.Extensions.DependencyInjection
 
-let addBot (cfg: IConfiguration) (services: IServiceCollection) =
+let private addClickHandlers (services: IServiceCollection) =
+  services.BuildSingleton<ClickHandlerFactory, _>(presetInfoClickHandler)
+
+let private addMessageHandlers (services: IServiceCollection) =
   services
     .AddSingleton<MessageHandlerFactory>(faqMessageHandler)
     .AddSingleton<MessageHandlerFactory>(privacyMessageHandler)
@@ -18,7 +22,11 @@ let addBot (cfg: IConfiguration) (services: IServiceCollection) =
     .BuildSingleton<MessageHandlerFactory, _, _, IChatRepo>(backMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, _, IChatRepo>(presetSettingsMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, _, _, IChatRepo>(setPresetSizeMessageHandler)
+
     .BuildSingleton<MessageHandlerFactory, _, IChatRepo>(createPresetMessageHandler)
 
     .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(excludePlaylistButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(targetPlaylistButtonMessageHandler)
+
+let addBot (cfg: IConfiguration) (services: IServiceCollection) =
+  services |> addClickHandlers |> addMessageHandlers

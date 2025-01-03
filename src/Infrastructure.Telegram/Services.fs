@@ -253,7 +253,9 @@ type CallbackQueryService
     buildChatContext: BuildChatContext,
     presetRepo: IPresetRepo,
     getUser: User.Get,
-    userRepo: IUserRepo
+    userRepo: IUserRepo,
+    handlersFactories: ClickHandlerFactory seq,
+    logger: ILogger<CallbackQueryService>
   ) =
 
   member this.ProcessAsync(callbackQuery: CallbackQuery) =
@@ -277,170 +279,194 @@ type CallbackQueryService
     let showTargetedPlaylist =
       Workflows.TargetedPlaylist.show botMessageCtx getPreset countPlaylistTracks
 
-    match callbackQuery.Data |> Workflows.parseAction with
-    | Action.Preset presetAction ->
-      match presetAction with
-      | PresetActions.Show presetId ->
-        let sendPresetInfo = Workflows.Preset.show getPreset botMessageCtx
+    let click: Click = {
+      ChatId = chatId
+      Data = callbackQuery.Data
+    }
 
-        sendPresetInfo presetId
-      | PresetActions.Run presetId ->
+    let defaultMessageHandler () =
+      match callbackQuery.Data |> Workflows.parseAction with
+      | Action.Preset presetAction ->
+        match presetAction with
+        | PresetActions.Run presetId ->
 
-        let answerCallbackQuery = Telegram.Workflows.answerCallbackQuery _bot callbackQuery.Id
-        let queuePresetRun = PresetRepo.queueRun _queueClient userId
-        let queuePresetRun = Domain.Workflows.Preset.queueRun getPreset Preset.validate queuePresetRun
-        let queuePresetRun = Telegram.Workflows.Preset.queueRun chatCtx queuePresetRun answerCallbackQuery
+          let answerCallbackQuery = Telegram.Workflows.answerCallbackQuery _bot callbackQuery.Id
+          let queuePresetRun = PresetRepo.queueRun _queueClient userId
+          let queuePresetRun = Domain.Workflows.Preset.queueRun getPreset Preset.validate queuePresetRun
+          let queuePresetRun = Telegram.Workflows.Preset.queueRun chatCtx queuePresetRun answerCallbackQuery
 
-        queuePresetRun presetId
+          queuePresetRun presetId
 
-    | Action.SetCurrentPreset presetId ->
-      let setCurrentPreset = Domain.Workflows.User.setCurrentPreset userRepo
+      | Action.SetCurrentPreset presetId ->
+        let setCurrentPreset = Domain.Workflows.User.setCurrentPreset userRepo
 
-      let setCurrentPreset =
-        Workflows.User.setCurrentPreset showNotification setCurrentPreset
+        let setCurrentPreset =
+          Workflows.User.setCurrentPreset showNotification setCurrentPreset
 
-      setCurrentPreset userId presetId
-    | Action.RemovePreset presetId ->
-      let removePreset = PresetRepo.remove _database
+        setCurrentPreset userId presetId
+      | Action.RemovePreset presetId ->
+        let removePreset = PresetRepo.remove _database
 
-      let removeUserPreset =
-        Domain.Workflows.User.removePreset userRepo removePreset
+        let removeUserPreset =
+          Domain.Workflows.User.removePreset userRepo removePreset
 
-      let removeUserPreset =
-        Telegram.Workflows.User.removePreset botMessageCtx getUser removeUserPreset
+        let removeUserPreset =
+          Telegram.Workflows.User.removePreset botMessageCtx getUser removeUserPreset
 
-      removeUserPreset userId presetId
-    | Action.IncludedPlaylist(IncludedPlaylistActions.Show(presetId, playlistId)) -> showIncludedPlaylist presetId playlistId
-    | Action.IncludedPlaylist(IncludedPlaylistActions.List(presetId, page)) ->
-      let listIncludedPlaylists =
-        Workflows.IncludedPlaylist.list getPreset botMessageCtx
-      listIncludedPlaylists presetId page
-    | Action.EnableIncludedPlaylist(presetId, playlistId) ->
-      let enableIncludedPlaylist = IncludedPlaylist.enable presetRepo
+        removeUserPreset userId presetId
+      | Action.IncludedPlaylist(IncludedPlaylistActions.Show(presetId, playlistId)) -> showIncludedPlaylist presetId playlistId
+      | Action.IncludedPlaylist(IncludedPlaylistActions.List(presetId, page)) ->
+        let listIncludedPlaylists =
+          Workflows.IncludedPlaylist.list getPreset botMessageCtx
+        listIncludedPlaylists presetId page
+      | Action.EnableIncludedPlaylist(presetId, playlistId) ->
+        let enableIncludedPlaylist = IncludedPlaylist.enable presetRepo
 
-      let enableIncludedPlaylist =
-        Workflows.IncludedPlaylist.enable enableIncludedPlaylist showNotification showIncludedPlaylist
+        let enableIncludedPlaylist =
+          Workflows.IncludedPlaylist.enable enableIncludedPlaylist showNotification showIncludedPlaylist
 
-      enableIncludedPlaylist presetId playlistId
-    | Action.DisableIncludedPlaylist(presetId, playlistId) ->
-      let disableIncludedPlaylist = IncludedPlaylist.disable presetRepo
+        enableIncludedPlaylist presetId playlistId
+      | Action.DisableIncludedPlaylist(presetId, playlistId) ->
+        let disableIncludedPlaylist = IncludedPlaylist.disable presetRepo
 
-      let disableIncludedPlaylist =
-        Workflows.IncludedPlaylist.disable disableIncludedPlaylist showNotification showIncludedPlaylist
+        let disableIncludedPlaylist =
+          Workflows.IncludedPlaylist.disable disableIncludedPlaylist showNotification showIncludedPlaylist
 
-      disableIncludedPlaylist presetId playlistId
-    | Action.IncludedPlaylist(IncludedPlaylistActions.Remove(presetId, playlistId)) ->
-      let removeIncludedPlaylist = IncludedPlaylist.remove presetRepo
+        disableIncludedPlaylist presetId playlistId
+      | Action.IncludedPlaylist(IncludedPlaylistActions.Remove(presetId, playlistId)) ->
+        let removeIncludedPlaylist = IncludedPlaylist.remove presetRepo
 
-      let removeIncludedPlaylist =
-        Workflows.IncludedPlaylist.remove getPreset botMessageCtx removeIncludedPlaylist showNotification
+        let removeIncludedPlaylist =
+          Workflows.IncludedPlaylist.remove getPreset botMessageCtx removeIncludedPlaylist showNotification
 
-      removeIncludedPlaylist presetId playlistId
-    | Action.ExcludedPlaylist(ExcludedPlaylistActions.List(presetId, page)) ->
-      let listExcludedPlaylists =
-        Workflows.ExcludedPlaylist.list getPreset botMessageCtx
-      listExcludedPlaylists presetId page
-    | Action.ExcludedPlaylist(ExcludedPlaylistActions.Show(presetId, playlistId)) -> showExcludedPlaylist presetId playlistId
-    | Action.EnableExcludedPlaylist(presetId, playlistId) ->
-      let enableExcludedPlaylist = ExcludedPlaylist.enable presetRepo
+        removeIncludedPlaylist presetId playlistId
+      | Action.ExcludedPlaylist(ExcludedPlaylistActions.List(presetId, page)) ->
+        let listExcludedPlaylists =
+          Workflows.ExcludedPlaylist.list getPreset botMessageCtx
+        listExcludedPlaylists presetId page
+      | Action.ExcludedPlaylist(ExcludedPlaylistActions.Show(presetId, playlistId)) -> showExcludedPlaylist presetId playlistId
+      | Action.EnableExcludedPlaylist(presetId, playlistId) ->
+        let enableExcludedPlaylist = ExcludedPlaylist.enable presetRepo
 
-      let enableExcludedPlaylist =
-        Workflows.ExcludedPlaylist.enable enableExcludedPlaylist showNotification showExcludedPlaylist
+        let enableExcludedPlaylist =
+          Workflows.ExcludedPlaylist.enable enableExcludedPlaylist showNotification showExcludedPlaylist
 
-      enableExcludedPlaylist presetId playlistId
-    | Action.DisableExcludedPlaylist(presetId, playlistId) ->
-      let disableExcludedPlaylist = ExcludedPlaylist.disable presetRepo
+        enableExcludedPlaylist presetId playlistId
+      | Action.DisableExcludedPlaylist(presetId, playlistId) ->
+        let disableExcludedPlaylist = ExcludedPlaylist.disable presetRepo
 
-      let disableExcludedPlaylist =
-        Workflows.ExcludedPlaylist.disable disableExcludedPlaylist showNotification showExcludedPlaylist
+        let disableExcludedPlaylist =
+          Workflows.ExcludedPlaylist.disable disableExcludedPlaylist showNotification showExcludedPlaylist
 
-      disableExcludedPlaylist presetId playlistId
-    | Action.ExcludedPlaylist(ExcludedPlaylistActions.Remove(presetId, playlistId)) ->
-      let removeExcludedPlaylist = ExcludedPlaylist.remove presetRepo
+        disableExcludedPlaylist presetId playlistId
+      | Action.ExcludedPlaylist(ExcludedPlaylistActions.Remove(presetId, playlistId)) ->
+        let removeExcludedPlaylist = ExcludedPlaylist.remove presetRepo
 
-      let removeExcludedPlaylist =
-        Workflows.ExcludedPlaylist.remove getPreset botMessageCtx removeExcludedPlaylist showNotification
+        let removeExcludedPlaylist =
+          Workflows.ExcludedPlaylist.remove getPreset botMessageCtx removeExcludedPlaylist showNotification
 
-      removeExcludedPlaylist presetId playlistId
-    | Action.TargetedPlaylist(TargetedPlaylistActions.List(presetId, page)) ->
-      let listTargetedPlaylists =
-        Workflows.TargetedPlaylist.list getPreset botMessageCtx
-      listTargetedPlaylists presetId page
-    | Action.TargetedPlaylist(TargetedPlaylistActions.Show(presetId, playlistId)) -> showTargetedPlaylist presetId playlistId
-    | Action.AppendToTargetedPlaylist(presetId, playlistId) ->
-      let appendToTargetedPlaylist = TargetedPlaylist.appendTracks presetRepo
+        removeExcludedPlaylist presetId playlistId
+      | Action.TargetedPlaylist(TargetedPlaylistActions.List(presetId, page)) ->
+        let listTargetedPlaylists =
+          Workflows.TargetedPlaylist.list getPreset botMessageCtx
+        listTargetedPlaylists presetId page
+      | Action.TargetedPlaylist(TargetedPlaylistActions.Show(presetId, playlistId)) -> showTargetedPlaylist presetId playlistId
+      | Action.AppendToTargetedPlaylist(presetId, playlistId) ->
+        let appendToTargetedPlaylist = TargetedPlaylist.appendTracks presetRepo
 
-      let appendToTargetedPlaylist =
-        Workflows.TargetedPlaylist.appendTracks appendToTargetedPlaylist showNotification showTargetedPlaylist
+        let appendToTargetedPlaylist =
+          Workflows.TargetedPlaylist.appendTracks appendToTargetedPlaylist showNotification showTargetedPlaylist
 
-      appendToTargetedPlaylist presetId playlistId
-    | Action.OverwriteTargetedPlaylist(presetId, playlistId) ->
-      let overwriteTargetedPlaylist =
-        TargetedPlaylist.overwriteTracks presetRepo
+        appendToTargetedPlaylist presetId playlistId
+      | Action.OverwriteTargetedPlaylist(presetId, playlistId) ->
+        let overwriteTargetedPlaylist =
+          TargetedPlaylist.overwriteTracks presetRepo
 
-      let overwriteTargetedPlaylist =
-        Workflows.TargetedPlaylist.overwritePlaylist overwriteTargetedPlaylist showNotification showTargetedPlaylist
+        let overwriteTargetedPlaylist =
+          Workflows.TargetedPlaylist.overwritePlaylist overwriteTargetedPlaylist showNotification showTargetedPlaylist
 
-      overwriteTargetedPlaylist presetId playlistId
-    | Action.TargetedPlaylist(TargetedPlaylistActions.Remove(presetId, playlistId)) ->
-      let removeTargetedPlaylist = TargetedPlaylist.remove presetRepo
+        overwriteTargetedPlaylist presetId playlistId
+      | Action.TargetedPlaylist(TargetedPlaylistActions.Remove(presetId, playlistId)) ->
+        let removeTargetedPlaylist = TargetedPlaylist.remove presetRepo
 
-      let removeTargetedPlaylist =
-        Workflows.TargetedPlaylist.remove getPreset botMessageCtx removeTargetedPlaylist showNotification
+        let removeTargetedPlaylist =
+          Workflows.TargetedPlaylist.remove getPreset botMessageCtx removeTargetedPlaylist showNotification
 
-      removeTargetedPlaylist presetId playlistId
-    | Action.PresetSettings(PresetSettingsActions.IncludeLikedTracks presetId) ->
-      let includeLikedTracks = PresetSettings.includeLikedTracks presetRepo
+        removeTargetedPlaylist presetId playlistId
+      | Action.PresetSettings(PresetSettingsActions.IncludeLikedTracks presetId) ->
+        let includeLikedTracks = PresetSettings.includeLikedTracks presetRepo
 
-      let includeLikedTracks =
-        Workflows.PresetSettings.includeLikedTracks getPreset botMessageCtx showNotification includeLikedTracks
+        let includeLikedTracks =
+          Workflows.PresetSettings.includeLikedTracks getPreset botMessageCtx showNotification includeLikedTracks
 
-      includeLikedTracks presetId
-    | Action.PresetSettings(PresetSettingsActions.ExcludeLikedTracks presetId) ->
-      let excludeLikedTracks = PresetSettings.excludeLikedTracks presetRepo
+        includeLikedTracks presetId
+      | Action.PresetSettings(PresetSettingsActions.ExcludeLikedTracks presetId) ->
+        let excludeLikedTracks = PresetSettings.excludeLikedTracks presetRepo
 
-      let excludeLikedTracks =
-        Workflows.PresetSettings.excludeLikedTracks getPreset botMessageCtx showNotification excludeLikedTracks
+        let excludeLikedTracks =
+          Workflows.PresetSettings.excludeLikedTracks getPreset botMessageCtx showNotification excludeLikedTracks
 
-      excludeLikedTracks presetId
-    | Action.PresetSettings(PresetSettingsActions.IgnoreLikedTracks presetId) ->
-      let ignoreLikedTracks = PresetSettings.ignoreLikedTracks presetRepo
+        excludeLikedTracks presetId
+      | Action.PresetSettings(PresetSettingsActions.IgnoreLikedTracks presetId) ->
+        let ignoreLikedTracks = PresetSettings.ignoreLikedTracks presetRepo
 
-      let ignoreLikedTracks =
-        Workflows.PresetSettings.ignoreLikedTracks getPreset botMessageCtx showNotification ignoreLikedTracks
+        let ignoreLikedTracks =
+          Workflows.PresetSettings.ignoreLikedTracks getPreset botMessageCtx showNotification ignoreLikedTracks
 
-      ignoreLikedTracks presetId
-    | Action.PresetSettings(PresetSettingsActions.EnableRecommendations presetId) ->
-      let enableRecommendations =
-        PresetSettings.enableRecommendations presetRepo
+        ignoreLikedTracks presetId
+      | Action.PresetSettings(PresetSettingsActions.EnableRecommendations presetId) ->
+        let enableRecommendations =
+          PresetSettings.enableRecommendations presetRepo
 
-      let enableRecommendations =
-        Workflows.PresetSettings.enableRecommendations getPreset botMessageCtx enableRecommendations showNotification
+        let enableRecommendations =
+          Workflows.PresetSettings.enableRecommendations getPreset botMessageCtx enableRecommendations showNotification
 
-      enableRecommendations presetId
-    | Action.PresetSettings(PresetSettingsActions.DisableRecommendations presetId) ->
-      let disableRecommendations =
-        PresetSettings.disableRecommendations presetRepo
+        enableRecommendations presetId
+      | Action.PresetSettings(PresetSettingsActions.DisableRecommendations presetId) ->
+        let disableRecommendations =
+          PresetSettings.disableRecommendations presetRepo
 
-      let disableRecommendations =
-        Workflows.PresetSettings.disableRecommendations getPreset botMessageCtx disableRecommendations showNotification
+        let disableRecommendations =
+          Workflows.PresetSettings.disableRecommendations getPreset botMessageCtx disableRecommendations showNotification
 
-      disableRecommendations presetId
-    | Action.PresetSettings(PresetSettingsActions.EnableUniqueArtists(presetId)) ->
-      let enableUniqueArtists = PresetSettings.enableUniqueArtists presetRepo
+        disableRecommendations presetId
+      | Action.PresetSettings(PresetSettingsActions.EnableUniqueArtists(presetId)) ->
+        let enableUniqueArtists = PresetSettings.enableUniqueArtists presetRepo
 
-      let enableUniqueArtists =
-        Workflows.PresetSettings.enableUniqueArtists getPreset botMessageCtx enableUniqueArtists showNotification
+        let enableUniqueArtists =
+          Workflows.PresetSettings.enableUniqueArtists getPreset botMessageCtx enableUniqueArtists showNotification
 
-      enableUniqueArtists presetId
-    | Action.PresetSettings(PresetSettingsActions.DisableUniqueArtists(presetId)) ->
-      let disableUniqueArtists =
-        PresetSettings.disableUniqueArtists presetRepo
+        enableUniqueArtists presetId
+      | Action.PresetSettings(PresetSettingsActions.DisableUniqueArtists(presetId)) ->
+        let disableUniqueArtists =
+          PresetSettings.disableUniqueArtists presetRepo
 
-      let disableUniqueArtists =
-        Workflows.PresetSettings.disableUniqueArtists getPreset botMessageCtx disableUniqueArtists showNotification
+        let disableUniqueArtists =
+          Workflows.PresetSettings.disableUniqueArtists getPreset botMessageCtx disableUniqueArtists showNotification
 
-      disableUniqueArtists presetId
-    | Action.User(UserActions.ListPresets()) ->
-      let listUserPresets = Workflows.User.showPresets botMessageCtx getUser
-      listUserPresets userId
+        disableUniqueArtists presetId
+      | Action.User(UserActions.ListPresets()) ->
+        let listUserPresets = Workflows.User.showPresets botMessageCtx getUser
+        listUserPresets userId
+
+    let handlers = handlersFactories |> Seq.map (fun f -> f botMessageCtx)
+
+    task {
+      use e = handlers.GetEnumerator()
+
+      let mutable lastHandlerResult = None
+
+      while lastHandlerResult.IsNone && e.MoveNext() do
+        let handler = e.Current
+        let! currentHandlerResult = handler click
+
+        lastHandlerResult <- currentHandlerResult
+
+      match lastHandlerResult with
+      | Some () ->
+        return()
+      | None ->
+        Logf.logfw logger "Button click data didn't match any handler. Running default one."
+
+        return! defaultMessageHandler ()
+    }
