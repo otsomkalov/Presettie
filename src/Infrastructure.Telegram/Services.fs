@@ -415,14 +415,6 @@ type CallbackQueryService
           Workflows.PresetSettings.ignoreLikedTracks presetRepo botMessageCtx showNotification ignoreLikedTracks
 
         ignoreLikedTracks presetId
-      | Action.PresetSettings(PresetSettingsActions.EnableRecommendations presetId) ->
-        let enableRecommendations =
-          PresetSettings.enableRecommendations presetRepo
-
-        let enableRecommendations =
-          Workflows.PresetSettings.enableRecommendations presetRepo botMessageCtx enableRecommendations showNotification
-
-        enableRecommendations presetId
 
     let handlers = handlersFactories |> Seq.map (fun f -> f botMessageCtx)
 
