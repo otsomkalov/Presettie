@@ -394,27 +394,6 @@ type CallbackQueryService
           Workflows.TargetedPlaylist.remove getPreset botMessageCtx removeTargetedPlaylist showNotification
 
         removeTargetedPlaylist presetId playlistId
-      | Action.PresetSettings(PresetSettingsActions.IncludeLikedTracks presetId) ->
-        let includeLikedTracks = PresetSettings.includeLikedTracks presetRepo
-
-        let includeLikedTracks =
-          Workflows.PresetSettings.includeLikedTracks presetRepo botMessageCtx showNotification includeLikedTracks
-
-        includeLikedTracks presetId
-      | Action.PresetSettings(PresetSettingsActions.ExcludeLikedTracks presetId) ->
-        let excludeLikedTracks = PresetSettings.excludeLikedTracks presetRepo
-
-        let excludeLikedTracks =
-          Workflows.PresetSettings.excludeLikedTracks presetRepo botMessageCtx showNotification excludeLikedTracks
-
-        excludeLikedTracks presetId
-      | Action.PresetSettings(PresetSettingsActions.IgnoreLikedTracks presetId) ->
-        let ignoreLikedTracks = PresetSettings.ignoreLikedTracks presetRepo
-
-        let ignoreLikedTracks =
-          Workflows.PresetSettings.ignoreLikedTracks presetRepo botMessageCtx showNotification ignoreLikedTracks
-
-        ignoreLikedTracks presetId
 
     let handlers = handlersFactories |> Seq.map (fun f -> f botMessageCtx)
 

@@ -1,7 +1,6 @@
 ﻿module Telegram.Handlers.Click
 
 open Domain.Core
-open Domain.Repos
 open Telegram.Constants
 open Telegram.Core
 open Telegram.Repos
@@ -46,9 +45,8 @@ let enableRecommendationsClickHandler presetRepo showNotification botMessageCtx 
       do! enableRecommendations (PresetId presetId)
 
       return Some()
-    | _ ->
-      return None
-    }
+    | _ -> return None
+  }
 
 let disableRecommendationsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
   fun click -> task {
@@ -63,9 +61,8 @@ let disableRecommendationsClickHandler presetRepo showNotification botMessageCtx
       do! disableRecommendations (PresetId presetId)
 
       return Some()
-    | _ ->
-      return None
-    }
+    | _ -> return None
+  }
 
 let enableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
   fun click -> task {
@@ -80,9 +77,8 @@ let enableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : 
       do! enableUniqueArtists (PresetId presetId)
 
       return Some()
-    | _ ->
-      return None
-    }
+    | _ -> return None
+  }
 
 let disableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
   fun click -> task {
@@ -97,6 +93,52 @@ let disableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx :
       do! disableUniqueArtists (PresetId presetId)
 
       return Some()
-    | _ ->
-      return None
-    }
+    | _ -> return None
+  }
+
+let includeLikedTracksClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; CallbackQueryConstants.includeLikedTracks |] ->
+      let includeLikedTracks =
+        Domain.Workflows.PresetSettings.includeLikedTracks presetRepo
+
+      let includeLikedTracks =
+        PresetSettings.includeLikedTracks presetRepo botMessageCtx (showNotification click.Id) includeLikedTracks
+
+      do! includeLikedTracks (PresetId presetId)
+
+      return Some()
+    | _ -> return None
+  }
+
+let excludeLikedTracksClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; CallbackQueryConstants.excludeLikedTracks |] ->
+      let excludeLikedTracks =
+        Domain.Workflows.PresetSettings.excludeLikedTracks presetRepo
+
+      let excludeLikedTracks =
+        PresetSettings.excludeLikedTracks presetRepo botMessageCtx (showNotification click.Id) excludeLikedTracks
+
+      do! excludeLikedTracks (PresetId presetId)
+
+      return Some()
+    | _ -> return None
+  }
+
+let ignoreLikedTracksClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; CallbackQueryConstants.ignoreLikedTracks |] ->
+      let ignoreLikedTracks = Domain.Workflows.PresetSettings.ignoreLikedTracks presetRepo
+
+      let ignoreLikedTracks =
+        PresetSettings.ignoreLikedTracks presetRepo botMessageCtx (showNotification click.Id) ignoreLikedTracks
+
+      do! ignoreLikedTracks (PresetId presetId)
+
+      return Some()
+    | _ -> return None
+  }

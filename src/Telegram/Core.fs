@@ -59,12 +59,6 @@ type TargetedPlaylistActions =
   | Remove of presetId: PresetId * playlistId: WritablePlaylistId
 
 [<RequireQualifiedAccess>]
-type PresetSettingsActions =
-  | IncludeLikedTracks of presetId: PresetId
-  | ExcludeLikedTracks of presetId: PresetId
-  | IgnoreLikedTracks of presetId: PresetId
-
-[<RequireQualifiedAccess>]
 type UserActions =
   | SendCurrentPresetSettings of userId: UserId
   | QueueCurrentPresetGeneration of userId: UserId
@@ -82,8 +76,6 @@ type Action =
   | TargetedPlaylist of TargetedPlaylistActions
   | Preset of PresetActions
   | User of UserActions
-
-  | PresetSettings of PresetSettingsActions
 
   | EnableIncludedPlaylist of presetId: PresetId * playlistId: ReadablePlaylistId
   | DisableIncludedPlaylist of presetId: PresetId * playlistId: ReadablePlaylistId
