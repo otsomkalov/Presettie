@@ -48,7 +48,7 @@ let ``show should send included playlist details`` () =
       playlistId
       |> should equal (Mocks.includedPlaylist.Id |> ReadablePlaylistId.value)
 
-      0L |> Task.FromResult
+      0 |> Task.FromResult
 
   let sut = IncludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
