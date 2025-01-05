@@ -22,7 +22,7 @@ let private configureTelegramBotClient (options: IOptions<TelegramSettings>) =
 
 let addTelegram (configuration: IConfiguration) (services: IServiceCollection) =
   services
-  |> Startup.addTelegramBotCore
+  |> otsom.fs.Bot.Telegram.Startup.addTelegramBot configuration
 
   services.Configure<TelegramSettings>(configuration.GetSection(TelegramSettings.SectionName))
 

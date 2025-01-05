@@ -4,13 +4,13 @@ open System.Text.RegularExpressions
 open System.Threading.Tasks
 open MongoDB.Driver
 open Telegram.Bot
+open otsom.fs.Bot
 open Telegram.Bot.Types
 open Telegram.Bot.Types.Enums
 open Telegram.Bot.Types.ReplyMarkups
 open Telegram.Repos
 open otsom.fs.Core
 open otsom.fs.Extensions
-open otsom.fs.Telegram.Bot.Core
 open MongoDB.Driver.Linq
 
 let private escapeMarkdownString (str: string) =

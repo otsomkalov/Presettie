@@ -16,7 +16,6 @@ open Telegram.Bot
 open otsom.fs.Bot
 open otsom.fs.Core
 open otsom.fs.Extensions
-open otsom.fs.Telegram.Bot.Core
 open MusicPlatform.Spotify
 
 type RunEnv(telemetryClient, connectionMultiplexer, client, logger, userId) =
@@ -43,7 +42,7 @@ type GeneratorFunctions
     use _ =
       _logger.BeginScope(
         "Running playlist generation for user %i{TelegramId} and preset %s{PresetId}",
-        (command.UserId),
+        command.UserId,
         (command.PresetId |> PresetId.value)
       )
 
@@ -70,7 +69,7 @@ type GeneratorFunctions
         TargetedPlaylistRepo.replaceTracks telemetryClient client connectionMultiplexer
 
       do
-        Logf.logfi _logger "Received request to generate playlist for user with Telegram id %i{TelegramId}" (command.UserId)
+        Logf.logfi _logger "Received request to generate playlist for user with Telegram id %i{TelegramId}" command.UserId
 
       let io: Domain.Workflows.Preset.RunIO =
         { ListExcludedTracks = listExcludedTracks
