@@ -80,9 +80,6 @@ type Action =
   | EnableExcludedPlaylist of presetId: PresetId * playlistId: ReadablePlaylistId
   | DisableExcludedPlaylist of presetId: PresetId * playlistId: ReadablePlaylistId
 
-  | AppendToTargetedPlaylist of presetId: PresetId * playlistId: WritablePlaylistId
-  | OverwriteTargetedPlaylist of presetId: PresetId * playlistId: WritablePlaylistId
-
   | SetCurrentPreset of presetId: PresetId
   | RemovePreset of presetId: PresetId
 

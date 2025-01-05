@@ -7,14 +7,16 @@ open Domain.Core
 open Domain.Repos
 open Infrastructure.Repos
 open Infrastructure.Settings
+open Microsoft.ApplicationInsights
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Options
 open MongoDB.ApplicationInsights
 open MongoDB.Driver
+open MusicPlatform
+open MusicPlatform.Spotify
 open StackExchange.Redis
 open MongoDB.ApplicationInsights.DependencyInjection
-open otsom.fs.Telegram.Bot.Auth.Spotify.Settings
 open otsom.fs.Extensions.DependencyInjection
 
 let private configureRedisCache (options: IOptions<RedisSettings>) =
@@ -52,3 +54,4 @@ let addInfrastructure (configuration: IConfiguration) (services: IServiceCollect
 
   services.AddSingleton<IPresetRepo, PresetRepo>()
   services.AddSingleton<IUserRepo, UserRepo>()
+  services.BuildSingleton<Playlist.CountTracks, TelemetryClient, IConnectionMultiplexer>(Cache.Redis.Playlist.countTracks)

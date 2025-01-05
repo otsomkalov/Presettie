@@ -353,21 +353,6 @@ type CallbackQueryService
           Workflows.TargetedPlaylist.list presetRepo botMessageCtx
         listTargetedPlaylists presetId page
       | Action.TargetedPlaylist(TargetedPlaylistActions.Show(presetId, playlistId)) -> showTargetedPlaylist presetId playlistId
-      | Action.AppendToTargetedPlaylist(presetId, playlistId) ->
-        let appendToTargetedPlaylist = TargetedPlaylist.appendTracks presetRepo
-
-        let appendToTargetedPlaylist =
-          Workflows.TargetedPlaylist.appendTracks appendToTargetedPlaylist showNotification showTargetedPlaylist
-
-        appendToTargetedPlaylist presetId playlistId
-      | Action.OverwriteTargetedPlaylist(presetId, playlistId) ->
-        let overwriteTargetedPlaylist =
-          TargetedPlaylist.overwriteTracks presetRepo
-
-        let overwriteTargetedPlaylist =
-          Workflows.TargetedPlaylist.overwritePlaylist overwriteTargetedPlaylist showNotification showTargetedPlaylist
-
-        overwriteTargetedPlaylist presetId playlistId
 
     let handlers = handlersFactories |> Seq.map (fun f -> f botMessageCtx)
 

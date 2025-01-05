@@ -66,5 +66,5 @@ let listLength (telemetryClient: TelemetryClient) (cache: IDatabase) =
 
       operation.Telemetry.Success <- true
 
-      return value
+      return value |> int
     }

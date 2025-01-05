@@ -3,6 +3,7 @@
 open Domain.Repos
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
+open MusicPlatform
 open Telegram.Core
 open Telegram.Handlers.Click
 open Telegram.Repos
@@ -28,6 +29,8 @@ let private addClickHandlers (services: IServiceCollection) =
 
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(removeExcludedPlaylistClickHandler)
 
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks, ShowNotification>(appendToTargetedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks, ShowNotification>(overwriteTargetedPlaylistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(removeTargetedPlaylistClickHandler)
 
 let private addMessageHandlers (services: IServiceCollection) =

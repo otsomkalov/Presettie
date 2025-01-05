@@ -404,8 +404,6 @@ module Playlist =
   type ExcludeInStorage = ExcludedPlaylist -> Async<ExcludedPlaylist>
   type TargetInStorage = TargetedPlaylist -> Async<TargetedPlaylist>
 
-  type CountTracks = PlaylistId -> Task<int64>
-
   let includePlaylist
     (musicPlatform: #ILoadPlaylist option)
     (parseId: Playlist.ParseId)

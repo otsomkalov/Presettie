@@ -398,7 +398,7 @@ module TargetedPlaylist =
         return! showTargetedPlaylist presetId playlistId
       }
 
-  let overwritePlaylist
+  let overwriteTracks
     (overwriteTargetedPlaylist: TargetedPlaylist.OverwriteTracks)
     showNotification
     (showTargetedPlaylist: TargetedPlaylist.Show)

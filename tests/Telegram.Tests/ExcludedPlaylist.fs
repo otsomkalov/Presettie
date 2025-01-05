@@ -47,7 +47,7 @@ let ``show should send excluded playlist details`` () =
       playlistId
       |> should equal (Mocks.excludedPlaylist.Id |> ReadablePlaylistId.value)
 
-      0L |> Task.FromResult
+      0 |> Task.FromResult
 
   let sut = ExcludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
