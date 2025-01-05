@@ -39,28 +39,24 @@ module IncludedPlaylist =
   let fromDb (playlist: Entities.IncludedPlaylist) : IncludedPlaylist =
     { Id = playlist.Id |> PlaylistId |> ReadablePlaylistId
       Name = playlist.Name
-      Enabled = not playlist.Disabled
       LikedOnly = playlist.LikedOnly }
 
   let toDb (playlist: IncludedPlaylist) : Entities.IncludedPlaylist =
     Entities.IncludedPlaylist(
       Id = (playlist.Id |> ReadablePlaylistId.value |> PlaylistId.value),
-      Name = playlist.Name,
-      Disabled = not playlist.Enabled
+      Name = playlist.Name
     )
 
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
   let fromDb (playlist: Entities.ExcludedPlaylist) : ExcludedPlaylist =
     { Id = playlist.Id |> PlaylistId |> ReadablePlaylistId
-      Name = playlist.Name
-      Enabled = not playlist.Disabled }
+      Name = playlist.Name }
 
   let toDb (playlist: ExcludedPlaylist) : Entities.ExcludedPlaylist =
     Entities.ExcludedPlaylist(
       Id = (playlist.Id |> ReadablePlaylistId.value |> PlaylistId.value),
-      Name = playlist.Name,
-      Disabled = not playlist.Enabled
+      Name = playlist.Name
     )
 
 [<RequireQualifiedAccess>]
@@ -68,15 +64,13 @@ module TargetedPlaylist =
   let private fromDb (playlist: Entities.TargetedPlaylist) : TargetedPlaylist =
     { Id = playlist.Id |> PlaylistId |> WritablePlaylistId
       Name = playlist.Name
-      Overwrite = playlist.Overwrite
-      Enabled = not playlist.Disabled }
+      Overwrite = playlist.Overwrite }
 
   let toDb (playlist: TargetedPlaylist) : Entities.TargetedPlaylist =
     Entities.TargetedPlaylist(
       Id = (playlist.Id |> WritablePlaylistId.value |> PlaylistId.value),
       Name = playlist.Name,
-      Overwrite = playlist.Overwrite,
-      Disabled = not playlist.Enabled
+      Overwrite = playlist.Overwrite
     )
 
   let mapPlaylists (playlists: Entities.TargetedPlaylist seq) =

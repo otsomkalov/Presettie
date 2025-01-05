@@ -127,22 +127,16 @@ let internal createPlaylistsPage page (playlists: 'a list) playlistToButton pres
 
   Seq.append playlistsButtons (serviceButtons |> Seq.ofList |> Seq.singleton)
 
-let private getPlaylistButtons presetId playlistId playlistType enabled specificButtons =
+let private getPlaylistButtons presetId playlistId playlistType specificButtons =
   let presetId = presetId |> PresetId.value
 
   let buttonDataTemplate =
     sprintf "p|%s|%s|%s|%s" presetId playlistType (playlistId |> PlaylistId.value)
 
-  let enableDisableButtonText, enableDisableButtonData =
-    match enabled with
-    | true -> "Disable", buttonDataTemplate "d"
-    | false -> "Enable", buttonDataTemplate "e"
-
   seq {
     yield specificButtons
 
     yield seq {
-      MessageButton(enableDisableButtonText, enableDisableButtonData)
       MessageButton("Remove", buttonDataTemplate "rm")
     }
 
@@ -197,37 +191,9 @@ module IncludedPlaylist =
         let messageText =
           String.Format(Messages.IncludedPlaylistDetails, includedPlaylist.Name, playlistTracksCount, includedPlaylist.LikedOnly)
 
-        let buttons = getPlaylistButtons presetId (playlistId |> ReadablePlaylistId.value) "ip" includedPlaylist.Enabled Seq.empty
+        let buttons = getPlaylistButtons presetId (playlistId |> ReadablePlaylistId.value) "ip" Seq.empty
 
         return! chatCtx.EditMessageButtons messageText buttons
-      }
-
-  let enable
-    (enableIncludedPlaylist: Domain.Core.IncludedPlaylist.Enable)
-    showNotification
-    (showIncludedPlaylist: IncludedPlaylist.Show)
-    : IncludedPlaylist.Enable =
-    fun presetId playlistId ->
-      task {
-        do! enableIncludedPlaylist presetId playlistId
-
-        do! showNotification "Enabled"
-
-        return! showIncludedPlaylist presetId playlistId
-      }
-
-  let disable
-    (disableIncludedPlaylist: Domain.Core.IncludedPlaylist.Disable)
-    showNotification
-    (showIncludedPlaylist: IncludedPlaylist.Show)
-    : IncludedPlaylist.Disable =
-    fun presetId playlistId ->
-      task {
-        do! disableIncludedPlaylist presetId playlistId
-
-        do! showNotification "Disabled"
-
-        return! showIncludedPlaylist presetId playlistId
       }
 
   let remove
@@ -282,37 +248,9 @@ module ExcludedPlaylist =
         let messageText =
           sprintf "*Name:* %s\n*Tracks count:* %i" excludedPlaylist.Name playlistTracksCount
 
-        let buttons = getPlaylistButtons presetId (playlistId |> ReadablePlaylistId.value) "ep" excludedPlaylist.Enabled Seq.empty
+        let buttons = getPlaylistButtons presetId (playlistId |> ReadablePlaylistId.value) "ep" Seq.empty
 
         return! botMessageCtx.EditMessageButtons messageText buttons
-      }
-
-  let enable
-    (enableExcludedPlaylist: Domain.Core.ExcludedPlaylist.Enable)
-    showNotification
-    (showExcludedPlaylist: ExcludedPlaylist.Show)
-    : ExcludedPlaylist.Enable =
-    fun presetId playlistId ->
-      task {
-        do! enableExcludedPlaylist presetId playlistId
-
-        do! showNotification "Enabled"
-
-        return! showExcludedPlaylist presetId playlistId
-      }
-
-  let disable
-    (disableExcludedPlaylist: Domain.Core.ExcludedPlaylist.Disable)
-    showNotification
-    (showExcludedPlaylist: ExcludedPlaylist.Show)
-    : ExcludedPlaylist.Enable =
-    fun presetId playlistId ->
-      task {
-        do! disableExcludedPlaylist presetId playlistId
-
-        do! showNotification "Disabled"
-
-        return! showExcludedPlaylist presetId playlistId
       }
 
   let remove
@@ -377,7 +315,7 @@ module TargetedPlaylist =
 
         let additionalButtons = Seq.singleton (MessageButton(buttonText, buttonData))
 
-        let buttons = getPlaylistButtons presetId (playlistId |> WritablePlaylistId.value) "tp" targetPlaylist.Enabled additionalButtons
+        let buttons = getPlaylistButtons presetId (playlistId |> WritablePlaylistId.value) "tp" additionalButtons
 
         let messageText =
           sprintf "*Name:* %s\n*Tracks count:* %i\n*Overwrite?:* %b" targetPlaylist.Name playlistTracksCount targetPlaylist.Overwrite

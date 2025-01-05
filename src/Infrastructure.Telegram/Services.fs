@@ -258,20 +258,8 @@ type CallbackQueryService
 
     let showNotification = showNotification clickId
 
-    let countPlaylistTracks =
-      Playlist.countTracks telemetryClient _connectionMultiplexer
-
     let chatCtx = buildChatContext chatId
     let botMessageCtx = chatCtx.BuildBotMessageContext (callbackQuery.Message.MessageId |> BotMessageId)
-
-    let showIncludedPlaylist =
-      Workflows.IncludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
-
-    let showExcludedPlaylist =
-      Workflows.ExcludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
-
-    let showTargetedPlaylist =
-      Workflows.TargetedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
     let click: Click = {
       Id = clickId
@@ -313,38 +301,10 @@ type CallbackQueryService
         let listIncludedPlaylists =
           Workflows.IncludedPlaylist.list presetRepo botMessageCtx
         listIncludedPlaylists presetId page
-      | Action.EnableIncludedPlaylist(presetId, playlistId) ->
-        let enableIncludedPlaylist = IncludedPlaylist.enable presetRepo
-
-        let enableIncludedPlaylist =
-          Workflows.IncludedPlaylist.enable enableIncludedPlaylist showNotification showIncludedPlaylist
-
-        enableIncludedPlaylist presetId playlistId
-      | Action.DisableIncludedPlaylist(presetId, playlistId) ->
-        let disableIncludedPlaylist = IncludedPlaylist.disable presetRepo
-
-        let disableIncludedPlaylist =
-          Workflows.IncludedPlaylist.disable disableIncludedPlaylist showNotification showIncludedPlaylist
-
-        disableIncludedPlaylist presetId playlistId
       | Action.ExcludedPlaylist(ExcludedPlaylistActions.List(presetId, page)) ->
         let listExcludedPlaylists =
           Workflows.ExcludedPlaylist.list presetRepo botMessageCtx
         listExcludedPlaylists presetId page
-      | Action.EnableExcludedPlaylist(presetId, playlistId) ->
-        let enableExcludedPlaylist = ExcludedPlaylist.enable presetRepo
-
-        let enableExcludedPlaylist =
-          Workflows.ExcludedPlaylist.enable enableExcludedPlaylist showNotification showExcludedPlaylist
-
-        enableExcludedPlaylist presetId playlistId
-      | Action.DisableExcludedPlaylist(presetId, playlistId) ->
-        let disableExcludedPlaylist = ExcludedPlaylist.disable presetRepo
-
-        let disableExcludedPlaylist =
-          Workflows.ExcludedPlaylist.disable disableExcludedPlaylist showNotification showExcludedPlaylist
-
-        disableExcludedPlaylist presetId playlistId
       | Action.TargetedPlaylist(TargetedPlaylistActions.List(presetId, page)) ->
         let listTargetedPlaylists =
           Workflows.TargetedPlaylist.list presetRepo botMessageCtx

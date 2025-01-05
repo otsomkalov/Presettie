@@ -71,12 +71,6 @@ type Action =
   | Preset of PresetActions
   | User of UserActions
 
-  | EnableIncludedPlaylist of presetId: PresetId * playlistId: ReadablePlaylistId
-  | DisableIncludedPlaylist of presetId: PresetId * playlistId: ReadablePlaylistId
-
-  | EnableExcludedPlaylist of presetId: PresetId * playlistId: ReadablePlaylistId
-  | DisableExcludedPlaylist of presetId: PresetId * playlistId: ReadablePlaylistId
-
   | SetCurrentPreset of presetId: PresetId
   | RemovePreset of presetId: PresetId
 

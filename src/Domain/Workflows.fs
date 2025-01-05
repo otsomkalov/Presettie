@@ -132,35 +132,10 @@ module IncludedPlaylist =
   let internal listTracks env =
     fun (playlists: IncludedPlaylist list) ->
       playlists
-      |> List.filter _.Enabled
       |> List.map (listPlaylistTracks env)
       |> Task.WhenAll
       |> Task.map Seq.concat
       |> Task.map List.ofSeq
-
-  let private updatePresetPlaylist (presetRepo: #ILoadPreset & #ISavePreset) enable =
-    fun presetId playlistId ->
-      task {
-        let! preset = presetRepo.LoadPreset presetId
-
-        let playlist = preset.IncludedPlaylists |> List.find (fun p -> p.Id = playlistId)
-        let updatedPlaylist = { playlist with Enabled = enable }
-
-        let updatedPreset =
-          { preset with
-              IncludedPlaylists =
-                preset.IncludedPlaylists
-                |> List.except [ playlist ]
-                |> List.append [ updatedPlaylist ] }
-
-        return! presetRepo.SavePreset updatedPreset
-      }
-
-  let enable presetRepo : IncludedPlaylist.Enable =
-    updatePresetPlaylist presetRepo true
-
-  let disable presetRepo : IncludedPlaylist.Disable =
-    updatePresetPlaylist presetRepo false
 
   let remove (presetRepo: #ILoadPreset & #ISavePreset) : IncludedPlaylist.Remove =
     fun presetId includedPlaylistId ->
@@ -243,7 +218,6 @@ module Preset =
     let saveTracks preset =
       fun (tracks: Track list) ->
         preset.TargetedPlaylists
-        |> Seq.filter _.Enabled
         |> Seq.map (fun p ->
           match p.Overwrite with
           | true -> io.ReplaceTracks (p.Id |> WritablePlaylistId.value) tracks
@@ -359,30 +333,6 @@ module User =
 
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
-  let private updatePresetPlaylist (presetRepo: #ILoadPreset & #ISavePreset) enable =
-    fun presetId playlistId ->
-      task {
-        let! preset = presetRepo.LoadPreset presetId
-
-        let playlist = preset.ExcludedPlaylists |> List.find (fun p -> p.Id = playlistId)
-        let updatedPlaylist = { playlist with Enabled = enable }
-
-        let updatedPreset =
-          { preset with
-              ExcludedPlaylists =
-                preset.ExcludedPlaylists
-                |> List.except [ playlist ]
-                |> List.append [ updatedPlaylist ] }
-
-        return! presetRepo.SavePreset updatedPreset
-      }
-
-  let enable presetRepo : ExcludedPlaylist.Enable =
-    updatePresetPlaylist presetRepo true
-
-  let disable presetRepo : ExcludedPlaylist.Disable =
-    updatePresetPlaylist presetRepo false
-
   let remove (presetRepo: #ILoadPreset & #ISavePreset) : ExcludedPlaylist.Remove =
     fun presetId excludedPlaylistId ->
       task {
@@ -528,30 +478,6 @@ module Playlist =
 
 [<RequireQualifiedAccess>]
 module TargetedPlaylist =
-  let private updatePresetPlaylist (presetRepo: #ILoadPreset & #ISavePreset) enable =
-    fun presetId playlistId ->
-      task {
-        let! preset = presetRepo.LoadPreset presetId
-
-        let playlist = preset.TargetedPlaylists |> List.find (fun p -> p.Id = playlistId)
-        let updatedPlaylist = { playlist with Enabled = enable }
-
-        let updatedPreset =
-          { preset with
-              TargetedPlaylists =
-                preset.TargetedPlaylists
-                |> List.except [ playlist ]
-                |> List.append [ updatedPlaylist ] }
-
-        return! presetRepo.SavePreset updatedPreset
-      }
-
-  let enable presetRepo : TargetedPlaylist.Enable =
-    updatePresetPlaylist presetRepo true
-
-  let disable presetRepo : TargetedPlaylist.Disable =
-    updatePresetPlaylist presetRepo false
-
   let private setPlaylistOverwriting (presetRepo: #ILoadPreset & #ISavePreset) overwriting =
     fun presetId targetedPlaylistId ->
       task {
