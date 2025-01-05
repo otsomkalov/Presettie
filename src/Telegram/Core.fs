@@ -43,17 +43,14 @@ module User =
 [<RequireQualifiedAccess>]
 type IncludedPlaylistActions =
   | List of presetId: PresetId * page: Page
-  | Show of presetId: PresetId * playlistId: ReadablePlaylistId
 
 [<RequireQualifiedAccess>]
 type ExcludedPlaylistActions =
   | List of presetId: PresetId * page: Page
-  | Show of presetId: PresetId * playlistId: ReadablePlaylistId
 
 [<RequireQualifiedAccess>]
 type TargetedPlaylistActions =
   | List of presetId: PresetId * page: Page
-  | Show of presetId: PresetId * playlistId: WritablePlaylistId
 
 [<RequireQualifiedAccess>]
 type UserActions =

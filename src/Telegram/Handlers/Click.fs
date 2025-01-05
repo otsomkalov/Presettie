@@ -145,6 +145,19 @@ let ignoreLikedTracksClickHandler presetRepo showNotification botMessageCtx : Cl
     | _ -> return None
   }
 
+let showIncludedPlaylistClickHandler presetRepo countPlaylistTracks botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; "ip"; playlistId; "i" |] ->
+      let showIncludedPlaylist =
+        IncludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
+
+      do! showIncludedPlaylist (PresetId presetId) (PlaylistId playlistId |> ReadablePlaylistId)
+
+      return Some()
+    | _ -> return None
+  }
+
 let removeIncludedPlaylistClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
   let removeIncludedPlaylist = Domain.Workflows.IncludedPlaylist.remove presetRepo
 
@@ -160,6 +173,19 @@ let removeIncludedPlaylistClickHandler presetRepo showNotification botMessageCtx
     | _ -> return None
   }
 
+let showExcludedPlaylistClickHandler presetRepo countPlaylistTracks botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; "ep"; playlistId; "i" |] ->
+      let showExcludedPlaylist =
+        ExcludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
+
+      do! showExcludedPlaylist (PresetId presetId) (PlaylistId playlistId |> ReadablePlaylistId)
+
+      return Some()
+    | _ -> return None
+  }
+
 let removeExcludedPlaylistClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
   let removeExcludedPlaylist = Domain.Workflows.ExcludedPlaylist.remove presetRepo
 
@@ -170,6 +196,19 @@ let removeExcludedPlaylistClickHandler presetRepo showNotification botMessageCtx
         ExcludedPlaylist.remove presetRepo botMessageCtx removeExcludedPlaylist (showNotification click.Id)
 
       do! removeExcludedPlaylist (PresetId presetId) (PlaylistId playlistId |> ReadablePlaylistId)
+
+      return Some()
+    | _ -> return None
+  }
+
+let showTargetedPlaylistClickHandler presetRepo countPlaylistTracks botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; "tp"; playlistId; "i" |] ->
+      let showTargetedPlaylist =
+        TargetedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
+
+      do! showTargetedPlaylist (PresetId presetId) (PlaylistId playlistId |> WritablePlaylistId)
 
       return Some()
     | _ -> return None
