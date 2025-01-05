@@ -4,7 +4,6 @@ module Infrastructure.Telegram.Workflows
 open MusicPlatform
 open Domain.Core
 open Telegram.Bot
-open Telegram.Constants
 open Telegram.Core
 open Infrastructure.Telegram.Helpers
 
@@ -39,8 +38,6 @@ let parseAction: ParseAction =
       Action.EnableIncludedPlaylist(PresetId presetId, PlaylistId playlistId |> ReadablePlaylistId)
     | [| "p"; presetId; "ip"; playlistId; "d" |] ->
       Action.DisableIncludedPlaylist(PresetId presetId, PlaylistId playlistId |> ReadablePlaylistId)
-    | [| "p"; presetId; "ip"; playlistId; "rm" |] ->
-      IncludedPlaylistActions.Remove(PresetId presetId, PlaylistId playlistId |> ReadablePlaylistId) |> Action.IncludedPlaylist
 
     | [| "p"; id; "ep"; Int page |] ->
       ExcludedPlaylistActions.List(PresetId id, (Page page)) |> Action.ExcludedPlaylist
@@ -50,8 +47,6 @@ let parseAction: ParseAction =
       Action.EnableExcludedPlaylist(PresetId presetId, PlaylistId playlistId |> ReadablePlaylistId)
     | [| "p"; presetId; "ep"; playlistId; "d" |] ->
       Action.DisableExcludedPlaylist(PresetId presetId, PlaylistId playlistId |> ReadablePlaylistId)
-    | [| "p"; presetId; "ep"; playlistId; "rm" |] ->
-      ExcludedPlaylistActions.Remove(PresetId presetId, PlaylistId playlistId |> ReadablePlaylistId) |> Action.ExcludedPlaylist
 
     | [| "p"; id; "tp"; Int page |] -> TargetedPlaylistActions.List(PresetId id, (Page page)) |> Action.TargetedPlaylist
     | [| "p"; presetId; "tp"; playlistId; "i" |] ->
@@ -60,5 +55,3 @@ let parseAction: ParseAction =
       Action.AppendToTargetedPlaylist(PresetId presetId, PlaylistId playlistId |> WritablePlaylistId)
     | [| "p"; presetId; "tp"; playlistId; "o" |] ->
       Action.OverwriteTargetedPlaylist(PresetId presetId, PlaylistId playlistId |> WritablePlaylistId)
-    | [| "p"; presetId; "tp"; playlistId; "rm" |] ->
-      TargetedPlaylistActions.Remove(PresetId presetId, PlaylistId playlistId |> WritablePlaylistId) |> Action.TargetedPlaylist

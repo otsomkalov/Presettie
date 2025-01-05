@@ -2,8 +2,8 @@
 
 open System.Threading.Tasks
 open Domain.Core
+open Domain.Repos
 open Domain.Tests
-open Telegram.Bot.Types.ReplyMarkups
 open Telegram.Core
 open FsUnit.Xunit
 open Xunit
@@ -11,11 +11,12 @@ open Domain.Workflows
 open Telegram.Workflows
 open otsom.fs.Bot
 
-let getPreset =
-  fun presetId ->
-    presetId |> should equal Mocks.preset.Id
+let presetRepo =
+  { new ILoadPreset with
+      member this.LoadPreset(presetId) =
+        presetId |> should equal Mocks.preset.Id
 
-    Mocks.preset |> Task.FromResult
+        Mocks.preset |> Task.FromResult }
 
 [<Fact>]
 let ``list should send targeted playlists`` () =
@@ -27,7 +28,7 @@ let ``list should send targeted playlists`` () =
 
             Task.FromResult() }
 
-  let sut = TargetedPlaylist.list getPreset botMessageCtx
+  let sut = TargetedPlaylist.list presetRepo botMessageCtx
 
   sut Mocks.presetId (Page 0)
 
@@ -48,7 +49,7 @@ let ``show should send targeted playlist details`` () =
 
       0L |> Task.FromResult
 
-  let sut = TargetedPlaylist.show botMessageCtx getPreset countPlaylistTracks
+  let sut = TargetedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
   sut Mocks.presetId Mocks.targetedPlaylist.Id
 
@@ -71,6 +72,6 @@ let ``remove should delete playlist and show targeted playlists`` () =
             Task.FromResult() }
 
   let sut =
-    TargetedPlaylist.remove getPreset botMessageCtx removePlaylist showNotification
+    TargetedPlaylist.remove presetRepo botMessageCtx removePlaylist showNotification
 
   sut Mocks.presetId Mocks.targetedPlaylist.Id

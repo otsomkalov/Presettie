@@ -2,8 +2,8 @@
 
 open System.Threading.Tasks
 open Domain.Core
+open Domain.Repos
 open Domain.Tests
-open Telegram.Bot.Types.ReplyMarkups
 open Telegram.Core
 open FsUnit.Xunit
 open Xunit
@@ -11,11 +11,12 @@ open Domain.Workflows
 open Telegram.Workflows
 open otsom.fs.Bot
 
-let getPreset =
-  fun presetId ->
-    presetId |> should equal Mocks.preset.Id
+let presetRepo =
+  { new ILoadPreset with
+      member this.LoadPreset(presetId) =
+        presetId |> should equal Mocks.preset.Id
 
-    Mocks.preset |> Task.FromResult
+        Mocks.preset |> Task.FromResult }
 
 [<Fact>]
 let ``list should send excluded playlists`` () =
@@ -27,7 +28,7 @@ let ``list should send excluded playlists`` () =
 
             Task.FromResult() }
 
-  let sut = ExcludedPlaylist.list getPreset botMessageCtx
+  let sut = ExcludedPlaylist.list presetRepo botMessageCtx
 
   sut Mocks.preset.Id (Page 0)
 
@@ -48,7 +49,7 @@ let ``show should send excluded playlist details`` () =
 
       0L |> Task.FromResult
 
-  let sut = ExcludedPlaylist.show botMessageCtx getPreset countPlaylistTracks
+  let sut = ExcludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
   sut Mocks.presetId Mocks.excludedPlaylist.Id
 
@@ -71,6 +72,6 @@ let ``remove should delete playlist and show excluded playlists`` () =
   let showNotification = fun _ -> Task.FromResult()
 
   let sut =
-    ExcludedPlaylist.remove getPreset botMessageCtx removePlaylist showNotification
+    ExcludedPlaylist.remove presetRepo botMessageCtx removePlaylist showNotification
 
   sut Mocks.presetId Mocks.excludedPlaylist.Id

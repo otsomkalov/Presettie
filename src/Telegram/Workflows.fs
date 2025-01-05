@@ -160,7 +160,7 @@ let sendLoginMessage (initAuth: Auth.Init) (sendLink: SendLink) : SendLoginMessa
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
-  let list (getPreset: Preset.Get) (botMessageCtx: #IEditMessageButtons) : IncludedPlaylist.List =
+  let list (presetRepo: #ILoadPreset) (botMessageCtx: #IEditMessageButtons) : IncludedPlaylist.List =
     let createButtonFromPlaylist presetId =
       fun (playlist: IncludedPlaylist) ->
         MessageButton(
@@ -172,7 +172,7 @@ module IncludedPlaylist =
       let createButtonFromPlaylist = createButtonFromPlaylist presetId
 
       task {
-        let! preset = getPreset presetId
+        let! preset = presetRepo.LoadPreset presetId
 
         let replyMarkup =
           createPlaylistsPage page preset.IncludedPlaylists createButtonFromPlaylist preset.Id
@@ -182,12 +182,12 @@ module IncludedPlaylist =
 
   let show
     (chatCtx: #IEditMessageButtons)
-    (getPreset: Preset.Get)
+    (presetRepo: #ILoadPreset)
     (countPlaylistTracks: Playlist.CountTracks)
     : IncludedPlaylist.Show =
     fun presetId playlistId ->
       task {
-        let! preset = getPreset presetId
+        let! preset = presetRepo.LoadPreset presetId
 
         let includedPlaylist =
           preset.IncludedPlaylists |> List.find (fun p -> p.Id = playlistId)
@@ -231,7 +231,7 @@ module IncludedPlaylist =
       }
 
   let remove
-    (getPreset: Preset.Get) (botMessageCtx: #IEditMessageButtons)
+    (presetRepo: #ILoadPreset) (botMessageCtx: #IEditMessageButtons)
     (removeIncludedPlaylist: Domain.Core.IncludedPlaylist.Remove)
     showNotification
     : IncludedPlaylist.Remove =
@@ -240,12 +240,12 @@ module IncludedPlaylist =
         do! removeIncludedPlaylist presetId playlistId
         do! showNotification "Included playlist successfully removed"
 
-        return! list getPreset botMessageCtx presetId (Page 0)
+        return! list presetRepo botMessageCtx presetId (Page 0)
       }
 
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
-  let list (getPreset: Preset.Get) (botMessageCtx: #IEditMessageButtons) : ExcludedPlaylist.List =
+  let list (presetRepo: #ILoadPreset) (botMessageCtx: #IEditMessageButtons) : ExcludedPlaylist.List =
     let createButtonFromPlaylist presetId =
       fun (playlist: ExcludedPlaylist) ->
         MessageButton(
@@ -257,7 +257,7 @@ module ExcludedPlaylist =
       let createButtonFromPlaylist = createButtonFromPlaylist presetId
 
       task {
-        let! preset = getPreset presetId
+        let! preset = presetRepo.LoadPreset presetId
 
         let replyMarkup =
           createPlaylistsPage page preset.ExcludedPlaylists createButtonFromPlaylist preset.Id
@@ -267,12 +267,12 @@ module ExcludedPlaylist =
 
   let show
     (botMessageCtx: #IEditMessageButtons)
-    (getPreset: Preset.Get)
+    (presetRepo: #ILoadPreset)
     (countPlaylistTracks: Playlist.CountTracks)
     : ExcludedPlaylist.Show =
     fun presetId playlistId ->
       task {
-        let! preset = getPreset presetId
+        let! preset = presetRepo.LoadPreset presetId
 
         let excludedPlaylist =
           preset.ExcludedPlaylists |> List.find (fun p -> p.Id = playlistId)
@@ -316,7 +316,7 @@ module ExcludedPlaylist =
       }
 
   let remove
-    (getPreset: Preset.Get) botMessageCtx
+    presetRepo botMessageCtx
     (removeExcludedPlaylist: Domain.Core.ExcludedPlaylist.Remove)
     showNotification
     : ExcludedPlaylist.Remove =
@@ -325,12 +325,12 @@ module ExcludedPlaylist =
         do! removeExcludedPlaylist presetId playlistId
         do! showNotification "Excluded playlist successfully removed"
 
-        return! list getPreset botMessageCtx presetId (Page 0)
+        return! list presetRepo botMessageCtx presetId (Page 0)
       }
 
 [<RequireQualifiedAccess>]
 module TargetedPlaylist =
-  let list (getPreset: Preset.Get) (botMessageCtx: #IEditMessageButtons) : TargetedPlaylist.List =
+  let list (presetRepo: #ILoadPreset) (botMessageCtx: #IEditMessageButtons) : TargetedPlaylist.List =
     let createButtonFromPlaylist presetId =
       fun (playlist: TargetedPlaylist) ->
         MessageButton(
@@ -342,7 +342,7 @@ module TargetedPlaylist =
       let createButtonFromPlaylist = createButtonFromPlaylist presetId
 
       task {
-        let! preset = getPreset presetId
+        let! preset = presetRepo.LoadPreset presetId
 
         let replyMarkup =
           createPlaylistsPage page preset.TargetedPlaylists createButtonFromPlaylist preset.Id
@@ -352,12 +352,12 @@ module TargetedPlaylist =
 
   let show
     (chatCtx: #IEditMessageButtons)
-    (getPreset: Preset.Get)
+    (presetRepo: #ILoadPreset)
     (countPlaylistTracks: Playlist.CountTracks)
     : TargetedPlaylist.Show =
     fun presetId playlistId ->
       task {
-        let! preset = getPreset presetId
+        let! preset = presetRepo.LoadPreset presetId
 
         let targetPlaylist =
           preset.TargetedPlaylists |> List.find (fun p -> p.Id = playlistId)
@@ -412,7 +412,7 @@ module TargetedPlaylist =
       }
 
   let remove
-    (getPreset: Preset.Get) botMessageCtx
+    presetRepo botMessageCtx
     (removeTargetedPlaylist: Domain.Core.TargetedPlaylist.Remove)
     showNotification
     : TargetedPlaylist.Remove =
@@ -421,7 +421,7 @@ module TargetedPlaylist =
         do! removeTargetedPlaylist presetId playlistId
         do! showNotification "Target playlist successfully removed"
 
-        return! list getPreset botMessageCtx presetId (Page 0)
+        return! list presetRepo botMessageCtx presetId (Page 0)
       }
 
 [<RequireQualifiedAccess>]

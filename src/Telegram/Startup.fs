@@ -24,6 +24,12 @@ let private addClickHandlers (services: IServiceCollection) =
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(excludeLikedTracksClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(ignoreLikedTracksClickHandler)
 
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(removeIncludedPlaylistClickHandler)
+
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(removeExcludedPlaylistClickHandler)
+
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(removeTargetedPlaylistClickHandler)
+
 let private addMessageHandlers (services: IServiceCollection) =
   services
     .AddSingleton<MessageHandlerFactory>(faqMessageHandler)

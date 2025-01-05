@@ -15,7 +15,6 @@ open System.Threading.Tasks
 open Azure.Storage.Queues
 open Domain.Core
 open Domain.Workflows
-open Microsoft.Extensions.Options
 open MongoDB.Driver
 open StackExchange.Redis
 open Telegram.Bot
@@ -26,7 +25,6 @@ open Telegram.Repos
 open otsom.fs.Extensions
 open otsom.fs.Extensions.String
 open otsom.fs.Telegram.Bot.Auth.Spotify
-open otsom.fs.Telegram.Bot.Auth.Spotify.Settings
 open otsom.fs.Telegram.Bot.Core
 open MusicPlatform
 open otsom.fs.Core
@@ -41,10 +39,7 @@ type AuthState =
 
 type MessageService
   (
-    _bot: ITelegramBotClient,
     _database: IMongoDatabase,
-    _connectionMultiplexer: IConnectionMultiplexer,
-    _spotifyOptions: IOptions<SpotifySettings>,
     _queueClient: QueueClient,
     initAuth: Auth.Init,
     completeAuth: Auth.Complete,
@@ -271,13 +266,13 @@ type CallbackQueryService
     let botMessageCtx = chatCtx.BuildBotMessageContext (callbackQuery.Message.MessageId |> BotMessageId)
 
     let showIncludedPlaylist =
-      Workflows.IncludedPlaylist.show botMessageCtx getPreset countPlaylistTracks
+      Workflows.IncludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
     let showExcludedPlaylist =
-      Workflows.ExcludedPlaylist.show botMessageCtx getPreset countPlaylistTracks
+      Workflows.ExcludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
     let showTargetedPlaylist =
-      Workflows.TargetedPlaylist.show botMessageCtx getPreset countPlaylistTracks
+      Workflows.TargetedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
     let click: Click = {
       Id = clickId
@@ -318,7 +313,7 @@ type CallbackQueryService
       | Action.IncludedPlaylist(IncludedPlaylistActions.Show(presetId, playlistId)) -> showIncludedPlaylist presetId playlistId
       | Action.IncludedPlaylist(IncludedPlaylistActions.List(presetId, page)) ->
         let listIncludedPlaylists =
-          Workflows.IncludedPlaylist.list getPreset botMessageCtx
+          Workflows.IncludedPlaylist.list presetRepo botMessageCtx
         listIncludedPlaylists presetId page
       | Action.EnableIncludedPlaylist(presetId, playlistId) ->
         let enableIncludedPlaylist = IncludedPlaylist.enable presetRepo
@@ -334,16 +329,9 @@ type CallbackQueryService
           Workflows.IncludedPlaylist.disable disableIncludedPlaylist showNotification showIncludedPlaylist
 
         disableIncludedPlaylist presetId playlistId
-      | Action.IncludedPlaylist(IncludedPlaylistActions.Remove(presetId, playlistId)) ->
-        let removeIncludedPlaylist = IncludedPlaylist.remove presetRepo
-
-        let removeIncludedPlaylist =
-          Workflows.IncludedPlaylist.remove getPreset botMessageCtx removeIncludedPlaylist showNotification
-
-        removeIncludedPlaylist presetId playlistId
       | Action.ExcludedPlaylist(ExcludedPlaylistActions.List(presetId, page)) ->
         let listExcludedPlaylists =
-          Workflows.ExcludedPlaylist.list getPreset botMessageCtx
+          Workflows.ExcludedPlaylist.list presetRepo botMessageCtx
         listExcludedPlaylists presetId page
       | Action.ExcludedPlaylist(ExcludedPlaylistActions.Show(presetId, playlistId)) -> showExcludedPlaylist presetId playlistId
       | Action.EnableExcludedPlaylist(presetId, playlistId) ->
@@ -360,16 +348,9 @@ type CallbackQueryService
           Workflows.ExcludedPlaylist.disable disableExcludedPlaylist showNotification showExcludedPlaylist
 
         disableExcludedPlaylist presetId playlistId
-      | Action.ExcludedPlaylist(ExcludedPlaylistActions.Remove(presetId, playlistId)) ->
-        let removeExcludedPlaylist = ExcludedPlaylist.remove presetRepo
-
-        let removeExcludedPlaylist =
-          Workflows.ExcludedPlaylist.remove getPreset botMessageCtx removeExcludedPlaylist showNotification
-
-        removeExcludedPlaylist presetId playlistId
       | Action.TargetedPlaylist(TargetedPlaylistActions.List(presetId, page)) ->
         let listTargetedPlaylists =
-          Workflows.TargetedPlaylist.list getPreset botMessageCtx
+          Workflows.TargetedPlaylist.list presetRepo botMessageCtx
         listTargetedPlaylists presetId page
       | Action.TargetedPlaylist(TargetedPlaylistActions.Show(presetId, playlistId)) -> showTargetedPlaylist presetId playlistId
       | Action.AppendToTargetedPlaylist(presetId, playlistId) ->
@@ -387,13 +368,6 @@ type CallbackQueryService
           Workflows.TargetedPlaylist.overwritePlaylist overwriteTargetedPlaylist showNotification showTargetedPlaylist
 
         overwriteTargetedPlaylist presetId playlistId
-      | Action.TargetedPlaylist(TargetedPlaylistActions.Remove(presetId, playlistId)) ->
-        let removeTargetedPlaylist = TargetedPlaylist.remove presetRepo
-
-        let removeTargetedPlaylist =
-          Workflows.TargetedPlaylist.remove getPreset botMessageCtx removeTargetedPlaylist showNotification
-
-        removeTargetedPlaylist presetId playlistId
 
     let handlers = handlersFactories |> Seq.map (fun f -> f botMessageCtx)
 
