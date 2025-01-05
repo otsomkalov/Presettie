@@ -20,6 +20,10 @@ let private addClickHandlers (services: IServiceCollection) =
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(enableUniqueArtistsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(disableUniqueArtistsClickHandler)
 
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(includeLikedTracksClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(excludeLikedTracksClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(ignoreLikedTracksClickHandler)
+
 let private addMessageHandlers (services: IServiceCollection) =
   services
     .AddSingleton<MessageHandlerFactory>(faqMessageHandler)
