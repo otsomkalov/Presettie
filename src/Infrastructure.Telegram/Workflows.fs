@@ -32,16 +32,8 @@ let parseAction: ParseAction =
 
     | [| "p"; id; "ip"; Int page |] ->
       IncludedPlaylistActions.List(PresetId id, (Page page)) |> Action.IncludedPlaylist
-    | [| "p"; presetId; "ip"; playlistId; "e" |] ->
-      Action.EnableIncludedPlaylist(PresetId presetId, PlaylistId playlistId |> ReadablePlaylistId)
-    | [| "p"; presetId; "ip"; playlistId; "d" |] ->
-      Action.DisableIncludedPlaylist(PresetId presetId, PlaylistId playlistId |> ReadablePlaylistId)
 
     | [| "p"; id; "ep"; Int page |] ->
       ExcludedPlaylistActions.List(PresetId id, (Page page)) |> Action.ExcludedPlaylist
-    | [| "p"; presetId; "ep"; playlistId; "e" |] ->
-      Action.EnableExcludedPlaylist(PresetId presetId, PlaylistId playlistId |> ReadablePlaylistId)
-    | [| "p"; presetId; "ep"; playlistId; "d" |] ->
-      Action.DisableExcludedPlaylist(PresetId presetId, PlaylistId playlistId |> ReadablePlaylistId)
 
     | [| "p"; id; "tp"; Int page |] -> TargetedPlaylistActions.List(PresetId id, (Page page)) |> Action.TargetedPlaylist

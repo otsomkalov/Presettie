@@ -8,8 +8,6 @@ public abstract class Playlist
     public string Id { get; init; }
 
     public string Name { get; set; }
-
-    public bool Disabled { get; set; }
 }
 
 [BsonIgnoreExtraElements]

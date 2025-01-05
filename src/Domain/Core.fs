@@ -11,20 +11,16 @@ type WritablePlaylistId = WritablePlaylistId of PlaylistId
 type IncludedPlaylist =
   { Id: ReadablePlaylistId
     Name: string
-    Enabled: bool
     LikedOnly: bool }
 
 type ExcludedPlaylist =
-  { Id: ReadablePlaylistId
-    Name: string
-    Enabled: bool }
+  { Id: ReadablePlaylistId; Name: string }
 
 type TargetedPlaylistId = WritablePlaylistId
 
 type TargetedPlaylist =
   { Id: TargetedPlaylistId
     Name: string
-    Enabled: bool
     Overwrite: bool }
 
 type PresetId = PresetId of string
@@ -86,11 +82,10 @@ type Preset =
     ExcludedPlaylists: ExcludedPlaylist list
     TargetedPlaylists: TargetedPlaylist list }
 
-type User = {
-  Id: UserId
-  CurrentPresetId: PresetId option
-  Presets: SimplePreset list
-}
+type User =
+  { Id: UserId
+    CurrentPresetId: PresetId option
+    Presets: SimplePreset list }
 
 [<RequireQualifiedAccess>]
 module Playlist =
@@ -154,8 +149,6 @@ module User =
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
-  type Enable = PresetId -> ReadablePlaylistId -> Task<unit>
-  type Disable = PresetId -> ReadablePlaylistId -> Task<unit>
   type Remove = PresetId -> ReadablePlaylistId -> Task<unit>
 
   let fromSpotifyPlaylist =
@@ -163,35 +156,29 @@ module IncludedPlaylist =
     | Readable({ Id = id; Name = name }) ->
       { Id = (id |> ReadablePlaylistId)
         Name = name
-        Enabled = true
-        LikedOnly = false } : IncludedPlaylist
+        LikedOnly = false }
+      : IncludedPlaylist
     | Writable({ Id = id; Name = name }) ->
       { Id = (id |> ReadablePlaylistId)
         Name = name
-        Enabled = true
         LikedOnly = false }
 
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
-  type Enable = PresetId -> ReadablePlaylistId -> Task<unit>
-  type Disable = PresetId -> ReadablePlaylistId -> Task<unit>
   type Remove = PresetId -> ReadablePlaylistId -> Task<unit>
 
   let fromSpotifyPlaylist =
     function
     | Readable({ Id = id; Name = name }) ->
       { Id = (id |> ReadablePlaylistId)
-        Name = name
-        Enabled = true }
+        Name = name }
+      : ExcludedPlaylist
     | Writable({ Id = id; Name = name }) ->
       { Id = (id |> ReadablePlaylistId)
-        Name = name
-        Enabled = true }
+        Name = name }
 
 [<RequireQualifiedAccess>]
 module TargetedPlaylist =
-  type Enable = PresetId -> TargetedPlaylistId -> Task<unit>
-  type Disable = PresetId -> TargetedPlaylistId -> Task<unit>
   type Remove = PresetId -> TargetedPlaylistId -> Task<unit>
   type AppendTracks = PresetId -> TargetedPlaylistId -> Task<unit>
   type OverwriteTracks = PresetId -> TargetedPlaylistId -> Task<unit>
@@ -202,6 +189,5 @@ module TargetedPlaylist =
     | Writable({ Id = id; Name = name }) ->
       { Id = (id |> WritablePlaylistId)
         Name = name
-        Enabled = true
         Overwrite = false }
       |> Some

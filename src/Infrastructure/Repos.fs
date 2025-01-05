@@ -59,7 +59,7 @@ module PresetRepo =
 
     fun playlists ->
       task {
-        let! playlistsTracks = playlists |> List.filter _.Enabled |> List.map (_.Id >> ReadablePlaylistId.value) |> listTracks
+        let! playlistsTracks = playlists |> List.map (_.Id >> ReadablePlaylistId.value) |> listTracks
 
         Logf.logfi logger "Preset has %i{ExcludedTracksCount} excluded tracks" playlistsTracks.Length
 

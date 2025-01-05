@@ -24,19 +24,16 @@ let includedPlaylistId = PlaylistId("included-playlist-id")
 let includedPlaylist: IncludedPlaylist =
   { Id = ReadablePlaylistId(includedPlaylistId)
     Name = "included-playlist-name"
-    Enabled = true
     LikedOnly = false }
 
 let excludedPlaylist: ExcludedPlaylist =
   { Id = ReadablePlaylistId(PlaylistId("excluded-playlist-id"))
-    Name = "excluded-playlist-name"
-    Enabled = true }
+    Name = "excluded-playlist-name" }
 
 let targetedPlaylistId = PlaylistId("targeted-playlist-id")
 
 let targetedPlaylist: TargetedPlaylist =
   { Id = WritablePlaylistId(targetedPlaylistId)
-    Enabled = true
     Name = "targeted-playlist-name"
     Overwrite = true }
 
