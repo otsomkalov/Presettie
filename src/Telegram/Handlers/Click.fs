@@ -1,6 +1,7 @@
 ﻿module Telegram.Handlers.Click
 
 open Domain.Core
+open MusicPlatform
 open Telegram.Constants
 open Telegram.Core
 open Telegram.Repos
@@ -138,6 +139,51 @@ let ignoreLikedTracksClickHandler presetRepo showNotification botMessageCtx : Cl
         PresetSettings.ignoreLikedTracks presetRepo botMessageCtx (showNotification click.Id) ignoreLikedTracks
 
       do! ignoreLikedTracks (PresetId presetId)
+
+      return Some()
+    | _ -> return None
+  }
+
+let removeIncludedPlaylistClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; "ip"; playlistId; "rm" |] ->
+      let removeIncludedPlaylist = Domain.Workflows.IncludedPlaylist.remove presetRepo
+
+      let removeIncludedPlaylist =
+        IncludedPlaylist.remove presetRepo botMessageCtx removeIncludedPlaylist (showNotification click.Id)
+
+      do! removeIncludedPlaylist (PresetId presetId) (PlaylistId playlistId |> ReadablePlaylistId)
+
+      return Some()
+    | _ -> return None
+  }
+
+let removeExcludedPlaylistClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; "ep"; playlistId; "rm" |] ->
+      let removeExcludedPlaylist = Domain.Workflows.ExcludedPlaylist.remove presetRepo
+
+      let removeExcludedPlaylist =
+        ExcludedPlaylist.remove presetRepo botMessageCtx removeExcludedPlaylist (showNotification click.Id)
+
+      do! removeExcludedPlaylist (PresetId presetId) (PlaylistId playlistId |> ReadablePlaylistId)
+
+      return Some()
+    | _ -> return None
+  }
+
+let removeTargetedPlaylistClickHandler presetRepo showNotification botMessageCtx : ClickHandler =
+  fun click -> task {
+    match click.Data.Split("|") with
+    | [| "p"; presetId; "tp"; playlistId; "rm" |] ->
+      let removeTargetedPlaylist = Domain.Workflows.TargetedPlaylist.remove presetRepo
+
+      let removeTargetedPlaylist =
+        TargetedPlaylist.remove presetRepo botMessageCtx removeTargetedPlaylist (showNotification click.Id)
+
+      do! removeTargetedPlaylist (PresetId presetId) (PlaylistId playlistId |> WritablePlaylistId)
 
       return Some()
     | _ -> return None

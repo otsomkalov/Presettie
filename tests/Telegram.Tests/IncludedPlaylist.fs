@@ -2,9 +2,8 @@
 
 open System.Threading.Tasks
 open Domain.Core
+open Domain.Repos
 open Domain.Tests
-open Moq
-open Telegram.Bot.Types.ReplyMarkups
 open Telegram.Core
 open FsUnit.Xunit
 open Xunit
@@ -12,11 +11,12 @@ open Domain.Workflows
 open Telegram.Workflows
 open otsom.fs.Bot
 
-let getPreset =
-  fun presetId ->
-    presetId |> should equal Mocks.preset.Id
+let presetRepo =
+  { new ILoadPreset with
+      member this.LoadPreset(presetId) =
+        presetId |> should equal Mocks.preset.Id
 
-    Mocks.preset |> Task.FromResult
+        Mocks.preset |> Task.FromResult }
 
 [<Fact>]
 let ``list should send included playlists`` () =
@@ -28,7 +28,7 @@ let ``list should send included playlists`` () =
 
             Task.FromResult() }
 
-  let sut = IncludedPlaylist.list getPreset botMessageCtx
+  let sut = IncludedPlaylist.list presetRepo botMessageCtx
 
   sut Mocks.preset.Id (Page 0)
 
@@ -50,7 +50,7 @@ let ``show should send included playlist details`` () =
 
       0L |> Task.FromResult
 
-  let sut = IncludedPlaylist.show botMessageCtx getPreset countPlaylistTracks
+  let sut = IncludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
   sut Mocks.presetId Mocks.includedPlaylist.Id
 
@@ -73,6 +73,6 @@ let ``remove should delete playlist and show included playlists`` () =
   let showNotification = fun _ -> Task.FromResult()
 
   let sut =
-    IncludedPlaylist.remove getPreset botMessageCtx removePlaylist showNotification
+    IncludedPlaylist.remove presetRepo botMessageCtx removePlaylist showNotification
 
   sut Mocks.presetId Mocks.includedPlaylist.Id
