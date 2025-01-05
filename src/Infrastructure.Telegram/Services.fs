@@ -155,7 +155,6 @@ type MessageService
                     targetPlaylist userId (rawPlaylistId |> Playlist.RawPlaylistId)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
                 | Equals Buttons.RunPreset -> queueCurrentPresetRun userId (ChatMessageId message.MessageId)
-                | Equals Buttons.IncludePlaylist -> chatCtx.AskForReply Messages.SendIncludedPlaylist
 
                 | _ -> replyToMessage "Unknown command" |> Task.ignore
             | None ->
@@ -310,7 +309,6 @@ type CallbackQueryService
           Telegram.Workflows.User.removePreset botMessageCtx getUser removeUserPreset
 
         removeUserPreset userId presetId
-      | Action.IncludedPlaylist(IncludedPlaylistActions.Show(presetId, playlistId)) -> showIncludedPlaylist presetId playlistId
       | Action.IncludedPlaylist(IncludedPlaylistActions.List(presetId, page)) ->
         let listIncludedPlaylists =
           Workflows.IncludedPlaylist.list presetRepo botMessageCtx
@@ -333,7 +331,6 @@ type CallbackQueryService
         let listExcludedPlaylists =
           Workflows.ExcludedPlaylist.list presetRepo botMessageCtx
         listExcludedPlaylists presetId page
-      | Action.ExcludedPlaylist(ExcludedPlaylistActions.Show(presetId, playlistId)) -> showExcludedPlaylist presetId playlistId
       | Action.EnableExcludedPlaylist(presetId, playlistId) ->
         let enableExcludedPlaylist = ExcludedPlaylist.enable presetRepo
 
@@ -352,7 +349,6 @@ type CallbackQueryService
         let listTargetedPlaylists =
           Workflows.TargetedPlaylist.list presetRepo botMessageCtx
         listTargetedPlaylists presetId page
-      | Action.TargetedPlaylist(TargetedPlaylistActions.Show(presetId, playlistId)) -> showTargetedPlaylist presetId playlistId
 
     let handlers = handlersFactories |> Seq.map (fun f -> f botMessageCtx)
 

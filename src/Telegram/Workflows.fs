@@ -351,7 +351,7 @@ module TargetedPlaylist =
       }
 
   let show
-    (chatCtx: #IEditMessageButtons)
+    (botMessageCtx: #IEditMessageButtons)
     (presetRepo: #ILoadPreset)
     (countPlaylistTracks: Playlist.CountTracks)
     : TargetedPlaylist.Show =
@@ -382,7 +382,7 @@ module TargetedPlaylist =
         let messageText =
           sprintf "*Name:* %s\n*Tracks count:* %i\n*Overwrite?:* %b" targetPlaylist.Name playlistTracksCount targetPlaylist.Overwrite
 
-        return! chatCtx.EditMessageButtons messageText buttons
+        return! botMessageCtx.EditMessageButtons messageText buttons
       }
 
   let appendTracks

@@ -25,10 +25,13 @@ let private addClickHandlers (services: IServiceCollection) =
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(excludeLikedTracksClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(ignoreLikedTracksClickHandler)
 
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks>(showIncludedPlaylistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(removeIncludedPlaylistClickHandler)
 
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks>(showExcludedPlaylistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(removeExcludedPlaylistClickHandler)
 
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks>(showTargetedPlaylistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks, ShowNotification>(appendToTargetedPlaylistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks, ShowNotification>(overwriteTargetedPlaylistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(removeTargetedPlaylistClickHandler)
