@@ -18,6 +18,10 @@ variable "spotify-callback-url" {
   type = string
 }
 
+variable "spotify-scopes" {
+  type = list(string)
+}
+
 variable "database-connection-string" {
   type = string
 }

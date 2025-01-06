@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">=3.78.0"
+      version = ">=4.14.0"
     }
   }
 }
@@ -81,27 +81,31 @@ resource "azurerm_linux_function_app" "func-spotify-playlist-generator" {
 
   site_config {
     application_insights_key = azurerm_application_insights.appi-spotify-playlist-generator.instrumentation_key
-    app_scale_limit = 10
+    app_scale_limit          = 10
 
     application_stack {
-      dotnet_version = "8.0"
+      dotnet_version              = "8.0"
       use_dotnet_isolated_runtime = true
     }
   }
 
-  app_settings = {
-    Telegram__Token            = var.telegram-token
-    Telegram__BotUrl           = var.telegram-bot-url
-    Spotify__ClientId          = var.spotify-client-id
-    Spotify__ClientSecret      = var.spotify-client-secret
-    Spotify__CallbackUrl       = var.spotify-callback-url
-    Database__ConnectionString = var.database-connection-string
-    Database__Name             = var.database-name
-    GeneratorSchedule          = var.generator-schedule
-    Redis__ConnectionString    = var.redis-connection-string
-    Storage__ConnectionString  = azurerm_storage_account.st-spotify-playlist-generator.primary_connection_string
-    Storage__QueueName         = azurerm_storage_queue.stq-requests-spotify-playlist-generator.name
-  }
+  app_settings = merge(
+    {
+      Telegram__Token            = var.telegram-token
+      Telegram__BotUrl           = var.telegram-bot-url
+      Spotify__ClientId          = var.spotify-client-id
+      Spotify__ClientSecret      = var.spotify-client-secret
+      Spotify__CallbackUrl       = var.spotify-callback-url
+      Database__ConnectionString = var.database-connection-string
+      Database__Name             = var.database-name
+      GeneratorSchedule          = var.generator-schedule
+      Redis__ConnectionString    = var.redis-connection-string
+      Storage__ConnectionString  = azurerm_storage_account.st-spotify-playlist-generator.primary_connection_string
+      Storage__QueueName         = azurerm_storage_queue.stq-requests-spotify-playlist-generator.name
+    },
+    {
+      for idx, scope in var.spotify-scopes : "Spotify__Scopes__${idx}" => scope
+    })
 
   tags = local.tags
 }

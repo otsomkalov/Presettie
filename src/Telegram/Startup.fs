@@ -9,6 +9,7 @@ open Telegram.Handlers.Click
 open Telegram.Repos
 open Telegram.Workflows
 open otsom.fs.Extensions.DependencyInjection
+open otsom.fs.Telegram.Bot.Auth.Spotify
 
 let private addClickHandlers (services: IServiceCollection) =
   services
@@ -55,4 +56,7 @@ let private addMessageHandlers (services: IServiceCollection) =
     .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(targetPlaylistButtonMessageHandler)
 
 let addBot (cfg: IConfiguration) (services: IServiceCollection) =
-  services |> addClickHandlers |> addMessageHandlers
+  services
+  |> Startup.addTelegramBotSpotifyAuthCore cfg
+  |> addClickHandlers
+  |> addMessageHandlers

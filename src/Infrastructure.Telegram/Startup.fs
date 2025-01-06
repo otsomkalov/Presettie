@@ -13,7 +13,8 @@ open Telegram.Bot
 open Telegram.Core
 open Telegram.Repos
 open otsom.fs.Extensions.DependencyInjection
-open otsom.fs.Telegram.Bot
+open otsom.fs.Telegram.Bot.Auth.Spotify.Mongo
+open otsom.fs.Bot.Telegram
 
 let private configureTelegramBotClient (options: IOptions<TelegramSettings>) =
   let settings = options.Value
@@ -21,8 +22,7 @@ let private configureTelegramBotClient (options: IOptions<TelegramSettings>) =
   settings.Token |> TelegramBotClient :> ITelegramBotClient
 
 let addTelegram (configuration: IConfiguration) (services: IServiceCollection) =
-  services
-  |> otsom.fs.Bot.Telegram.Startup.addTelegramBot configuration
+  services |> Startup.addMongoSpotifyAuth |> Startup.addTelegramBot configuration
 
   services.Configure<TelegramSettings>(configuration.GetSection(TelegramSettings.SectionName))
 

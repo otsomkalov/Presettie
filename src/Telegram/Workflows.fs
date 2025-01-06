@@ -6,7 +6,6 @@ open Domain.Core
 open Domain.Workflows
 open Microsoft.FSharp.Core
 open Resources
-open SpotifyAPI.Web
 open Telegram.Constants
 open Telegram.Core
 open Telegram.Repos
@@ -144,11 +143,7 @@ let private getPlaylistButtons presetId playlistId playlistType specificButtons 
 
 let sendLoginMessage (initAuth: Auth.Init) (sendLink: SendLink) : SendLoginMessage =
   fun userId ->
-    initAuth
-     (userId |> UserId.value |> string |> AccountId)
-      [ Scopes.PlaylistModifyPrivate
-        Scopes.PlaylistModifyPublic
-        Scopes.UserLibraryRead ]
+    initAuth (userId |> UserId.value |> string |> AccountId)
     |> Task.bind (sendLink userId Messages.LoginToSpotify Buttons.Login)
 
 [<RequireQualifiedAccess>]
