@@ -5,7 +5,6 @@ open Domain.Core
 open Telegram.Core
 open otsom.fs.Bot
 open otsom.fs.Core
-open otsom.fs.Telegram.Bot.Core
 
 [<RequireQualifiedAccess>]
 module PresetRepo =

@@ -2,7 +2,6 @@
 
 open System.Reflection
 open FSharp
-open Microsoft.ApplicationInsights
 open Microsoft.Extensions.Logging
 open Microsoft.FSharp.Core
 open MusicPlatform.Spotify
@@ -25,7 +24,6 @@ open Telegram.Repos
 open otsom.fs.Extensions
 open otsom.fs.Extensions.String
 open otsom.fs.Telegram.Bot.Auth.Spotify
-open otsom.fs.Telegram.Bot.Core
 open MusicPlatform
 open otsom.fs.Core
 open Infrastructure.Repos
@@ -43,8 +41,6 @@ type MessageService
     _queueClient: QueueClient,
     initAuth: Auth.Init,
     completeAuth: Auth.Complete,
-    sendUserMessage: SendUserMessage,
-    replyToUserMessage: ReplyToUserMessage,
     getSpotifyClient: GetClient,
     getPreset: Preset.Get,
     validatePreset: Preset.Validate,
@@ -62,11 +58,11 @@ type MessageService
     let userId = message.From.Id |> UserId
     let musicPlatformUserId = message.From.Id |> string |> MusicPlatform.UserId
 
-    let replyToMessage = replyToUserMessage userId message.MessageId
     let sendLoginMessage = Telegram.Workflows.sendLoginMessage initAuth sendLink
 
     fun m ->
       let chatCtx = buildChatContext m.ChatId
+      let chatMessageCtx = chatCtx.BuildChatMessageContext m.Id
 
       task {
         let! musicPlatform = buildMusicPlatform musicPlatformUserId
@@ -79,19 +75,19 @@ type MessageService
                 Playlist.includePlaylist musicPlatform parsePlaylistId presetRepo
 
               let includePlaylist =
-                Workflows.CurrentPreset.includePlaylist replyToMessage getUser includePlaylist initAuth sendLink
+                Workflows.CurrentPreset.includePlaylist chatMessageCtx getUser includePlaylist initAuth sendLink
 
               let excludePlaylist =
                 Playlist.excludePlaylist musicPlatform parsePlaylistId presetRepo
 
               let excludePlaylist =
-                Workflows.CurrentPreset.excludePlaylist replyToMessage getUser excludePlaylist initAuth sendLink
+                Workflows.CurrentPreset.excludePlaylist chatMessageCtx getUser excludePlaylist initAuth sendLink
 
               let targetPlaylist =
                 Playlist.targetPlaylist musicPlatform parsePlaylistId presetRepo
 
               let targetPlaylist =
-                Workflows.CurrentPreset.targetPlaylist replyToMessage getUser targetPlaylist initAuth sendLink
+                Workflows.CurrentPreset.targetPlaylist chatMessageCtx getUser targetPlaylist initAuth sendLink
 
               let queuePresetRun = PresetRepo.queueRun _queueClient userId
 
@@ -123,16 +119,15 @@ type MessageService
 
                   let sendErrorMessage =
                     function
-                    | Auth.CompleteError.StateNotFound -> replyToMessage "State not found. Try to login via fresh link."
+                    | Auth.CompleteError.StateNotFound -> chatMessageCtx.ReplyToMessage "State not found. Try to login via fresh link."
                     | Auth.CompleteError.StateDoesntBelongToUser ->
-                      replyToMessage "State provided does not belong to your login request. Try to login via fresh link."
+                      chatMessageCtx.ReplyToMessage "State provided does not belong to your login request. Try to login via fresh link."
 
                   completeAuth (userId |> UserId.value |> string |> AccountId) state
                   |> TaskResult.taskEither processSuccessfulLogin (sendErrorMessage >> Task.ignore)
-                | Equals "/generate" -> queueCurrentPresetRun userId (ChatMessageId message.MessageId)
+                | Equals "/generate" -> queueCurrentPresetRun userId
                 | Equals "/version" ->
-                  sendUserMessage
-                    userId
+                  chatMessageCtx.ReplyToMessage
                     (Assembly
                       .GetExecutingAssembly()
                       .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
@@ -140,23 +135,23 @@ type MessageService
                   |> Task.ignore
                 | CommandWithData "/include" rawPlaylistId ->
                   if String.IsNullOrEmpty rawPlaylistId then
-                    replyToMessage "You have entered empty playlist url" |> Task.ignore
+                    chatMessageCtx.ReplyToMessage "You have entered empty playlist url" |> Task.ignore
                   else
                     includePlaylist userId (rawPlaylistId |> Playlist.RawPlaylistId) |> Task.ignore
                 | CommandWithData "/exclude" rawPlaylistId ->
                   if String.IsNullOrEmpty rawPlaylistId then
-                    replyToMessage "You have entered empty playlist url" |> Task.ignore
+                    chatMessageCtx.ReplyToMessage "You have entered empty playlist url" |> Task.ignore
                   else
                     excludePlaylist userId (rawPlaylistId |> Playlist.RawPlaylistId)
                 | CommandWithData "/target" rawPlaylistId ->
                   if String.IsNullOrEmpty rawPlaylistId then
-                    replyToMessage "You have entered empty playlist url" |> Task.ignore
+                    chatMessageCtx.ReplyToMessage "You have entered empty playlist url" |> Task.ignore
                   else
                     targetPlaylist userId (rawPlaylistId |> Playlist.RawPlaylistId)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
-                | Equals Buttons.RunPreset -> queueCurrentPresetRun userId (ChatMessageId message.MessageId)
+                | Equals Buttons.RunPreset -> queueCurrentPresetRun userId
 
-                | _ -> replyToMessage "Unknown command" |> Task.ignore
+                | _ -> chatMessageCtx.ReplyToMessage "Unknown command" |> Task.ignore
             | None ->
               match isNull message.ReplyToMessage with
               | false ->
@@ -164,7 +159,7 @@ type MessageService
                 | Equals Messages.SendIncludedPlaylist
                 | Equals Messages.SendExcludedPlaylist
                 | Equals Messages.SendTargetedPlaylist -> sendLoginMessage userId &|> ignore
-                | _ -> replyToMessage "Unknown command" |> Task.ignore
+                | _ -> chatMessageCtx.ReplyToMessage "Unknown command" |> Task.ignore
               | _ ->
                 match message.Text with
                 | StartsWith "/include"
@@ -187,15 +182,15 @@ type MessageService
 
                   let sendErrorMessage =
                     function
-                    | Auth.CompleteError.StateNotFound -> replyToMessage "State not found. Try to login via fresh link."
+                    | Auth.CompleteError.StateNotFound -> chatMessageCtx.ReplyToMessage "State not found. Try to login via fresh link."
                     | Auth.CompleteError.StateDoesntBelongToUser ->
-                      replyToMessage "State provided does not belong to your login request. Try to login via fresh link."
+                      chatMessageCtx.ReplyToMessage "State provided does not belong to your login request. Try to login via fresh link."
 
                   completeAuth (userId |> UserId.value |> string |> AccountId) state
                   |> TaskResult.taskEither processSuccessfulLogin (sendErrorMessage >> Task.ignore)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
 
-                | _ -> replyToMessage "Unknown command" |> Task.ignore)
+                | _ -> chatMessageCtx.ReplyToMessage "Unknown command" |> Task.ignore)
       }
 
 
@@ -203,7 +198,8 @@ type MessageService
     let chatId = message.Chat.Id |> ChatId
 
     let message' =
-      { ChatId = chatId
+      { Id = ChatMessageId message.MessageId
+        ChatId = chatId
         Text = message.Text
         ReplyMessage =
           message.ReplyToMessage
@@ -240,7 +236,6 @@ type CallbackQueryService
     _queueClient: QueueClient,
     _connectionMultiplexer: IConnectionMultiplexer,
     _database: IMongoDatabase,
-    telemetryClient: TelemetryClient,
     getPreset: Preset.Get,
     buildChatContext: BuildChatContext,
     presetRepo: IPresetRepo,

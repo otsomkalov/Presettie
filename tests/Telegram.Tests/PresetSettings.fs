@@ -4,7 +4,6 @@ open System.Threading.Tasks
 open Domain.Repos
 open Domain.Tests
 open FsUnit.Xunit
-open Telegram.Bot.Types.ReplyMarkups
 open Xunit
 open Telegram.Workflows
 open otsom.fs.Bot

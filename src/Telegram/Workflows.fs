@@ -14,7 +14,6 @@ open otsom.fs.Bot
 open otsom.fs.Core
 open otsom.fs.Extensions
 open otsom.fs.Telegram.Bot.Auth.Spotify
-open otsom.fs.Telegram.Bot.Core
 open System
 open otsom.fs.Extensions.String
 open Telegram.Helpers
@@ -441,7 +440,7 @@ module Preset =
 [<RequireQualifiedAccess>]
 module CurrentPreset =
   let includePlaylist
-    (replyToMessage: ReplyToMessage)
+    (chatMessageCtx: #IReplyToMessage)
     (loadUser: User.Get)
     (includePlaylist: Playlist.IncludePlaylist)
     (initAuth: Auth.Init)
@@ -453,16 +452,16 @@ module CurrentPreset =
         let includePlaylistResult = rawPlaylistId |> includePlaylist currentPresetId
 
         let onSuccess (playlist: IncludedPlaylist) =
-          replyToMessage $"*{playlist.Name}* successfully included into current preset!"
+          chatMessageCtx.ReplyToMessage $"*{playlist.Name}* successfully included into current preset!"
 
         let onError =
           function
           | Playlist.IncludePlaylistError.IdParsing(Playlist.IdParsingError id) ->
-            replyToMessage (String.Format(Messages.PlaylistIdCannotBeParsed, id))
+            chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistIdCannotBeParsed, id))
           | Playlist.IncludePlaylistError.Load(Playlist.LoadError.NotFound) ->
             let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
 
-            replyToMessage (String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
+            chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
           | Playlist.IncludePlaylistError.Unauthorized ->
             sendLoginMessage initAuth sendLink userId
 
@@ -470,7 +469,7 @@ module CurrentPreset =
       }
 
   let excludePlaylist
-    (replyToMessage: ReplyToMessage)
+    (chatMessageCtx: #IReplyToMessage)
     (loadUser: User.Get)
     (excludePlaylist: Playlist.ExcludePlaylist)
     (initAuth: Auth.Init)
@@ -483,15 +482,15 @@ module CurrentPreset =
         let excludePlaylistResult = rawPlaylistId |> excludePlaylist currentPresetId
 
         let onSuccess (playlist: ExcludedPlaylist) =
-          replyToMessage $"*{playlist.Name}* successfully excluded from current preset!"
+          chatMessageCtx.ReplyToMessage $"*{playlist.Name}* successfully excluded from current preset!"
 
         let onError =
           function
           | Playlist.ExcludePlaylistError.IdParsing(Playlist.IdParsingError id) ->
-            replyToMessage (String.Format(Messages.PlaylistIdCannotBeParsed, id))
+            chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistIdCannotBeParsed, id))
           | Playlist.ExcludePlaylistError.Load(Playlist.LoadError.NotFound) ->
             let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
-            replyToMessage (String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
+            chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
           | Playlist.ExcludePlaylistError.Unauthorized ->
             sendLoginMessage initAuth sendLink userId
 
@@ -499,7 +498,7 @@ module CurrentPreset =
       }
 
   let targetPlaylist
-    (replyToMessage: ReplyToMessage)
+    (chatMessageCtx: #IReplyToMessage)
     (loadUser: User.Get)
     (targetPlaylist: Playlist.TargetPlaylist)
     (initAuth: Auth.Init)
@@ -512,16 +511,16 @@ module CurrentPreset =
         let targetPlaylistResult = rawPlaylistId |> targetPlaylist currentPresetId
 
         let onSuccess (playlist: TargetedPlaylist) =
-          replyToMessage $"*{playlist.Name}* successfully targeted for current preset!"
+          chatMessageCtx.ReplyToMessage $"*{playlist.Name}* successfully targeted for current preset!"
 
         let onError =
           function
           | Playlist.TargetPlaylistError.IdParsing(Playlist.IdParsingError id) ->
-            replyToMessage (String.Format(Messages.PlaylistIdCannotBeParsed, id))
+            chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistIdCannotBeParsed, id))
           | Playlist.TargetPlaylistError.Load(Playlist.LoadError.NotFound) ->
             let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
-            replyToMessage (String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
-          | Playlist.TargetPlaylistError.AccessError _ -> replyToMessage Messages.PlaylistIsReadonly
+            chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
+          | Playlist.TargetPlaylistError.AccessError _ -> chatMessageCtx.ReplyToMessage Messages.PlaylistIsReadonly
           | Playlist.TargetPlaylistError.Unauthorized ->
             sendLoginMessage initAuth sendLink userId
 
@@ -643,7 +642,7 @@ module User =
     (answerCallbackQuery: AnswerCallbackQuery)
     : User.QueueCurrentPresetRun =
 
-    fun userId chatMessageId ->
+    fun userId ->
       userId
       |> loadUser
       &|> (fun u -> u.CurrentPresetId |> Option.get)

@@ -6,7 +6,6 @@ open Microsoft.FSharp.Core
 open MusicPlatform
 open otsom.fs.Bot
 open otsom.fs.Core
-open otsom.fs.Telegram.Bot.Core
 
 type AnswerCallbackQuery = unit -> Task<unit>
 type Page = Page of int
@@ -36,7 +35,7 @@ module User =
   type RemovePreset = UserId -> PresetId -> Task<unit>
   type SetCurrentPreset = UserId -> PresetId -> Task<unit>
   type SetCurrentPresetSize = UserId -> PresetSettings.RawPresetSize -> Task<unit>
-  type QueueCurrentPresetRun = UserId -> ChatMessageId -> Task<unit>
+  type QueueCurrentPresetRun = UserId -> Task<unit>
   type RunCurrentPreset = UserId -> Task<unit>
   type CreatePreset = UserId -> string -> Task<unit>
 
@@ -107,6 +106,7 @@ type ReplyMessage = {
 }
 
 type Message = {
+  Id: otsom.fs.Bot.ChatMessageId
   ChatId: ChatId
   Text: string
   ReplyMessage: ReplyMessage option
