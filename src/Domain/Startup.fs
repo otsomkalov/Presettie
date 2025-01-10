@@ -5,12 +5,15 @@ open Domain.Repos
 open Domain.Workflows
 open Microsoft.Extensions.DependencyInjection
 open otsom.fs.Extensions.DependencyInjection
+open MusicPlatform
 
 let addDomain (services: IServiceCollection) =
   services
     .BuildSingleton<PresetSettings.SetPresetSize, IPresetRepo>(PresetSettings.setPresetSize)
 
     .BuildSingleton<Preset.Get, IPresetRepo>(Preset.get)
+
+    .BuildSingleton<Preset.IncludePlaylist, Playlist.ParseId, IPresetRepo, BuildMusicPlatform>(Preset.includePlaylist)
 
     .BuildSingleton<User.Get, IUserRepo>(User.get)
     .BuildSingleton<User.CreatePreset, IPresetRepo, IUserRepo>(User.createPreset)

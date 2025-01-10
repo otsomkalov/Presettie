@@ -6,6 +6,7 @@ open Domain.Repos
 open Microsoft.FSharp.Control
 open Microsoft.FSharp.Core
 open MusicPlatform
+open otsom.fs.Core
 open otsom.fs.Extensions
 open shortid
 open shortid.Configuration
@@ -278,6 +279,48 @@ module Preset =
     >> Task.map validatePreset
     >> TaskResult.taskTap (fun p -> queueRun' p.Id)
 
+  let includePlaylist
+    (parseId: Playlist.ParseId)
+    (presetRepo: #ILoadPreset & #ISavePreset)
+    (buildMusicPlatform: BuildMusicPlatform)
+    : Preset.IncludePlaylist =
+    let parseId = parseId >> Result.mapError Preset.IncludePlaylistError.IdParsing
+
+    let loadPlaylist (mp: #ILoadPlaylist) =
+      mp.LoadPlaylist
+      >> TaskResult.mapError Preset.IncludePlaylistError.Load
+
+    let includePlaylist' mp =
+      fun presetId rawPlaylistId ->
+        let updatePreset playlist =
+          task {
+            let! preset = presetRepo.LoadPreset presetId
+
+            let updatedIncludedPlaylists = preset.IncludedPlaylists |> List.append [ playlist ]
+
+            let updatedPreset =
+              { preset with
+                  IncludedPlaylists = updatedIncludedPlaylists }
+
+            do! presetRepo.SavePreset updatedPreset
+
+            return playlist
+          }
+
+        rawPlaylistId
+        |> parseId
+        |> Result.taskBind (loadPlaylist mp)
+        |> TaskResult.map IncludedPlaylist.fromSpotifyPlaylist
+        |> TaskResult.taskMap updatePreset
+
+    fun userId presetId rawPlaylistId ->
+      buildMusicPlatform (userId |> UserId.value |> string |> MusicPlatform.UserId)
+      |> Task.bind (
+        function
+        | Some mp -> includePlaylist' mp presetId rawPlaylistId
+        | None -> Preset.IncludePlaylistError.Unauthorized |> Error |> Task.FromResult)
+
+
 [<RequireQualifiedAccess>]
 module User =
   let get (userRepo: #ILoadUser) : User.Get = userRepo.LoadUser
@@ -350,49 +393,6 @@ module ExcludedPlaylist =
 
 [<RequireQualifiedAccess>]
 module Playlist =
-  type IncludeInStorage = IncludedPlaylist -> Async<IncludedPlaylist>
-  type ExcludeInStorage = ExcludedPlaylist -> Async<ExcludedPlaylist>
-  type TargetInStorage = TargetedPlaylist -> Async<TargetedPlaylist>
-
-  let includePlaylist
-    (musicPlatform: #ILoadPlaylist option)
-    (parseId: Playlist.ParseId)
-    (presetRepo: #ILoadPreset & #ISavePreset)
-    : Playlist.IncludePlaylist =
-    let parseId = parseId >> Result.mapError Playlist.IncludePlaylistError.IdParsing
-
-    let loadPlaylist (mp: #ILoadPlaylist) =
-      mp.LoadPlaylist
-      >> TaskResult.mapError Playlist.IncludePlaylistError.Load
-
-    let includePlaylist' mp =
-      fun presetId rawPlaylistId ->
-        let updatePreset playlist =
-          task {
-            let! preset = presetRepo.LoadPreset presetId
-
-            let updatedIncludedPlaylists = preset.IncludedPlaylists |> List.append [ playlist ]
-
-            let updatedPreset =
-              { preset with
-                  IncludedPlaylists = updatedIncludedPlaylists }
-
-            do! presetRepo.SavePreset updatedPreset
-
-            return playlist
-          }
-
-        rawPlaylistId
-        |> parseId
-        |> Result.taskBind (loadPlaylist mp)
-        |> TaskResult.map IncludedPlaylist.fromSpotifyPlaylist
-        |> TaskResult.taskMap updatePreset
-
-    fun presetId rawPlaylistId ->
-      match musicPlatform with
-      | Some mp -> includePlaylist' mp presetId rawPlaylistId
-      | None -> Playlist.IncludePlaylistError.Unauthorized |> Error |> Task.FromResult
-
   let excludePlaylist
     (musicPlatform: #ILoadPlaylist option)
     (parseId: Playlist.ParseId)
