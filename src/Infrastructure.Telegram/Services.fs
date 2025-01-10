@@ -71,12 +71,6 @@ type MessageService
           getSpotifyClient musicPlatformUserId
           |> Task.bind (function
             | Some client ->
-              let includePlaylist =
-                Playlist.includePlaylist musicPlatform parsePlaylistId presetRepo
-
-              let includePlaylist =
-                Workflows.CurrentPreset.includePlaylist chatMessageCtx getUser includePlaylist initAuth sendLink
-
               let excludePlaylist =
                 Playlist.excludePlaylist musicPlatform parsePlaylistId presetRepo
 
@@ -100,7 +94,6 @@ type MessageService
               match isNull message.ReplyToMessage with
               | false ->
                 match message.ReplyToMessage.Text with
-                | Equals Messages.SendIncludedPlaylist -> includePlaylist userId (Playlist.RawPlaylistId message.Text)
                 | Equals Messages.SendExcludedPlaylist -> excludePlaylist userId (Playlist.RawPlaylistId message.Text)
                 | Equals Messages.SendTargetedPlaylist -> targetPlaylist userId (Playlist.RawPlaylistId message.Text)
               | _ ->
@@ -133,11 +126,6 @@ type MessageService
                       .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                       .InformationalVersion)
                   |> Task.ignore
-                | CommandWithData "/include" rawPlaylistId ->
-                  if String.IsNullOrEmpty rawPlaylistId then
-                    chatMessageCtx.ReplyToMessage "You have entered empty playlist url" |> Task.ignore
-                  else
-                    includePlaylist userId (rawPlaylistId |> Playlist.RawPlaylistId) |> Task.ignore
                 | CommandWithData "/exclude" rawPlaylistId ->
                   if String.IsNullOrEmpty rawPlaylistId then
                     chatMessageCtx.ReplyToMessage "You have entered empty playlist url" |> Task.ignore
