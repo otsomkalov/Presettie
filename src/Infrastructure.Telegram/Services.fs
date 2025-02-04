@@ -71,12 +71,6 @@ type MessageService
           getSpotifyClient musicPlatformUserId
           |> Task.bind (function
             | Some client ->
-              let excludePlaylist =
-                Playlist.excludePlaylist musicPlatform parsePlaylistId presetRepo
-
-              let excludePlaylist =
-                Workflows.CurrentPreset.excludePlaylist chatMessageCtx getUser excludePlaylist initAuth sendLink
-
               let targetPlaylist =
                 Playlist.targetPlaylist musicPlatform parsePlaylistId presetRepo
 
@@ -94,7 +88,6 @@ type MessageService
               match isNull message.ReplyToMessage with
               | false ->
                 match message.ReplyToMessage.Text with
-                | Equals Messages.SendExcludedPlaylist -> excludePlaylist userId (Playlist.RawPlaylistId message.Text)
                 | Equals Messages.SendTargetedPlaylist -> targetPlaylist userId (Playlist.RawPlaylistId message.Text)
               | _ ->
                 match message.Text with
@@ -126,11 +119,6 @@ type MessageService
                       .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                       .InformationalVersion)
                   |> Task.ignore
-                | CommandWithData "/exclude" rawPlaylistId ->
-                  if String.IsNullOrEmpty rawPlaylistId then
-                    chatMessageCtx.ReplyToMessage "You have entered empty playlist url" |> Task.ignore
-                  else
-                    excludePlaylist userId (rawPlaylistId |> Playlist.RawPlaylistId)
                 | CommandWithData "/target" rawPlaylistId ->
                   if String.IsNullOrEmpty rawPlaylistId then
                     chatMessageCtx.ReplyToMessage "You have entered empty playlist url" |> Task.ignore
@@ -144,14 +132,10 @@ type MessageService
               match isNull message.ReplyToMessage with
               | false ->
                 match message.ReplyToMessage.Text with
-                | Equals Messages.SendIncludedPlaylist
-                | Equals Messages.SendExcludedPlaylist
                 | Equals Messages.SendTargetedPlaylist -> sendLoginMessage userId &|> ignore
                 | _ -> chatMessageCtx.ReplyToMessage "Unknown command" |> Task.ignore
               | _ ->
                 match message.Text with
-                | StartsWith "/include"
-                | StartsWith "/exclude"
                 | StartsWith "/target"
                 | Equals Buttons.RunPreset
                 | StartsWith "/generate"
@@ -222,7 +206,6 @@ type CallbackQueryService
   (
     _bot: ITelegramBotClient,
     _queueClient: QueueClient,
-    _connectionMultiplexer: IConnectionMultiplexer,
     _database: IMongoDatabase,
     getPreset: Preset.Get,
     buildChatContext: BuildChatContext,
