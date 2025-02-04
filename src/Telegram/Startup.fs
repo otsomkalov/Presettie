@@ -55,6 +55,9 @@ let private addMessageHandlers (services: IServiceCollection) =
     .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(excludePlaylistButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(targetPlaylistButtonMessageHandler)
 
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IChatRepo, _, _, _>(includePlaylistMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IChatRepo, _, _, _>(excludePlaylistMessageHandler)
+
 let addBot (cfg: IConfiguration) (services: IServiceCollection) =
   services
   |> Startup.addTelegramBotSpotifyAuthCore cfg

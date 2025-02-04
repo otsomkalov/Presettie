@@ -465,28 +465,28 @@ module CurrentPreset =
 
   let excludePlaylist
     (chatMessageCtx: #IReplyToMessage)
-    (loadUser: User.Get)
-    (excludePlaylist: Playlist.ExcludePlaylist)
+    (userRepo: #ILoadUser)
+    (excludePlaylist: Preset.ExcludePlaylist)
     (initAuth: Auth.Init)
     (sendLink: SendLink)
     : Playlist.Exclude =
     fun userId rawPlaylistId ->
       task {
-        let! currentPresetId = loadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+        let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
-        let excludePlaylistResult = rawPlaylistId |> excludePlaylist currentPresetId
+        let excludePlaylistResult = excludePlaylist userId currentPresetId rawPlaylistId
 
         let onSuccess (playlist: ExcludedPlaylist) =
           chatMessageCtx.ReplyToMessage $"*{playlist.Name}* successfully excluded from current preset!"
 
         let onError =
           function
-          | Playlist.ExcludePlaylistError.IdParsing(Playlist.IdParsingError id) ->
+          | Preset.ExcludePlaylistError.IdParsing(Playlist.IdParsingError id) ->
             chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistIdCannotBeParsed, id))
-          | Playlist.ExcludePlaylistError.Load(Playlist.LoadError.NotFound) ->
+          | Preset.ExcludePlaylistError.Load(Playlist.LoadError.NotFound) ->
             let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
             chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
-          | Playlist.ExcludePlaylistError.Unauthorized ->
+          | Preset.ExcludePlaylistError.Unauthorized ->
             sendLoginMessage initAuth sendLink userId
 
         return! excludePlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
@@ -963,12 +963,40 @@ let includePlaylistMessageHandler
 
     match message with
     | { Text = text
-        ReplyMessage = Some { Text = replyText } } when replyText = Buttons.CreatePreset ->
+        ReplyMessage = Some { Text = replyText } } when replyText = Messages.SendIncludedPlaylist ->
       do! includePlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
     | { Text = CommandWithData "/include" text } ->
       do! includePlaylist chat.UserId (Playlist.RawPlaylistId text)
+
+      return Some()
+    | _ -> return None
+  }
+
+let excludePlaylistMessageHandler
+  (userRepo: #ILoadUser)
+  (chatRepo: #ILoadChat)
+  (excludePlaylist: Preset.ExcludePlaylist)
+  initAuth
+  sendLink
+  (chatCtx: #IChatContext)
+  : MessageHandler =
+  fun message -> task {
+    let! chat = chatRepo.LoadChat message.ChatId
+    let chatMessageCtx = chatCtx.BuildChatMessageContext message.Id
+
+    let excludePlaylist =
+      CurrentPreset.excludePlaylist chatMessageCtx userRepo excludePlaylist initAuth sendLink
+
+    match message with
+    | { Text = text
+        ReplyMessage = Some { Text = replyText } } when replyText = Messages.SendExcludedPlaylist ->
+      do! excludePlaylist chat.UserId (Playlist.RawPlaylistId text)
+
+      return Some()
+    | { Text = CommandWithData "/exclude" text } ->
+      do! excludePlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
     | _ -> return None
