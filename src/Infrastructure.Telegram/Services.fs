@@ -71,12 +71,6 @@ type MessageService
           getSpotifyClient musicPlatformUserId
           |> Task.bind (function
             | Some client ->
-              let targetPlaylist =
-                Playlist.targetPlaylist musicPlatform parsePlaylistId presetRepo
-
-              let targetPlaylist =
-                Workflows.CurrentPreset.targetPlaylist chatMessageCtx getUser targetPlaylist initAuth sendLink
-
               let queuePresetRun = PresetRepo.queueRun _queueClient userId
 
               let queuePresetRun =
@@ -86,10 +80,8 @@ type MessageService
                 Workflows.User.queueCurrentPresetRun chatCtx queuePresetRun getUser (fun _ -> Task.FromResult())
 
               match isNull message.ReplyToMessage with
-              | false ->
-                match message.ReplyToMessage.Text with
-                | Equals Messages.SendTargetedPlaylist -> targetPlaylist userId (Playlist.RawPlaylistId message.Text)
-              | _ ->
+              | false -> chatMessageCtx.ReplyToMessage "Unknown command" |> Task.ignore
+              | true ->
                 match message.Text with
                 | Equals "/start" -> Telegram.Workflows.User.sendCurrentPreset getUser getPreset chatCtx userId
                 | CommandWithData "/start" state ->
@@ -119,11 +111,6 @@ type MessageService
                       .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                       .InformationalVersion)
                   |> Task.ignore
-                | CommandWithData "/target" rawPlaylistId ->
-                  if String.IsNullOrEmpty rawPlaylistId then
-                    chatMessageCtx.ReplyToMessage "You have entered empty playlist url" |> Task.ignore
-                  else
-                    targetPlaylist userId (rawPlaylistId |> Playlist.RawPlaylistId)
                 | Equals Buttons.SetPresetSize -> chatCtx.AskForReply Messages.SendPresetSize
                 | Equals Buttons.RunPreset -> queueCurrentPresetRun userId
 
@@ -132,11 +119,9 @@ type MessageService
               match isNull message.ReplyToMessage with
               | false ->
                 match message.ReplyToMessage.Text with
-                | Equals Messages.SendTargetedPlaylist -> sendLoginMessage userId &|> ignore
                 | _ -> chatMessageCtx.ReplyToMessage "Unknown command" |> Task.ignore
               | _ ->
                 match message.Text with
-                | StartsWith "/target"
                 | Equals Buttons.RunPreset
                 | StartsWith "/generate"
                 | Equals "/start" -> sendLoginMessage userId &|> ignore

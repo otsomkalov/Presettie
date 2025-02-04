@@ -88,18 +88,6 @@ type User =
     Presets: SimplePreset list }
 
 [<RequireQualifiedAccess>]
-module Playlist =
-  type AccessError = AccessError of unit
-
-  type TargetPlaylistError =
-    | IdParsing of Playlist.IdParsingError
-    | Load of Playlist.LoadError
-    | AccessError of AccessError
-    | Unauthorized
-
-  type TargetPlaylist = PresetId -> Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, TargetPlaylistError>>
-
-[<RequireQualifiedAccess>]
 module Preset =
   type Get = PresetId -> Task<Preset>
 
@@ -133,6 +121,16 @@ module Preset =
     | Unauthorized
 
   type ExcludePlaylist = UserId -> PresetId -> Playlist.RawPlaylistId -> Task<Result<ExcludedPlaylist, ExcludePlaylistError>>
+
+  type AccessError = AccessError of unit
+
+  type TargetPlaylistError =
+    | IdParsing of Playlist.IdParsingError
+    | Load of Playlist.LoadError
+    | AccessError of AccessError
+    | Unauthorized
+
+  type TargetPlaylist = UserId -> PresetId -> Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, TargetPlaylistError>>
 
 [<RequireQualifiedAccess>]
 module User =

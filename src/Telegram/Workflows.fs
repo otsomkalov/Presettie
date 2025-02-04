@@ -494,29 +494,29 @@ module CurrentPreset =
 
   let targetPlaylist
     (chatMessageCtx: #IReplyToMessage)
-    (loadUser: User.Get)
-    (targetPlaylist: Playlist.TargetPlaylist)
+    (userRepo: #ILoadUser)
+    (targetPlaylist: Preset.TargetPlaylist)
     (initAuth: Auth.Init)
     (sendLink: SendLink)
     : Playlist.Target =
     fun userId rawPlaylistId ->
       task {
-        let! currentPresetId = loadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+        let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
-        let targetPlaylistResult = rawPlaylistId |> targetPlaylist currentPresetId
+        let targetPlaylistResult = targetPlaylist userId currentPresetId rawPlaylistId
 
         let onSuccess (playlist: TargetedPlaylist) =
           chatMessageCtx.ReplyToMessage $"*{playlist.Name}* successfully targeted for current preset!"
 
         let onError =
           function
-          | Playlist.TargetPlaylistError.IdParsing(Playlist.IdParsingError id) ->
+          | Preset.TargetPlaylistError.IdParsing(Playlist.IdParsingError id) ->
             chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistIdCannotBeParsed, id))
-          | Playlist.TargetPlaylistError.Load(Playlist.LoadError.NotFound) ->
+          | Preset.TargetPlaylistError.Load(Playlist.LoadError.NotFound) ->
             let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
             chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
-          | Playlist.TargetPlaylistError.AccessError _ -> chatMessageCtx.ReplyToMessage Messages.PlaylistIsReadonly
-          | Playlist.TargetPlaylistError.Unauthorized ->
+          | Preset.TargetPlaylistError.AccessError _ -> chatMessageCtx.ReplyToMessage Messages.PlaylistIsReadonly
+          | Preset.TargetPlaylistError.Unauthorized ->
             sendLoginMessage initAuth sendLink userId
 
         return! targetPlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
@@ -997,6 +997,34 @@ let excludePlaylistMessageHandler
       return Some()
     | { Text = CommandWithData "/exclude" text } ->
       do! excludePlaylist chat.UserId (Playlist.RawPlaylistId text)
+
+      return Some()
+    | _ -> return None
+  }
+
+let targetPlaylistMessageHandler
+  (userRepo: #ILoadUser)
+  (chatRepo: #ILoadChat)
+  (targetPlaylist: Preset.TargetPlaylist)
+  initAuth
+  sendLink
+  (chatCtx: #IChatContext)
+  : MessageHandler =
+  fun message -> task {
+    let! chat = chatRepo.LoadChat message.ChatId
+    let chatMessageCtx = chatCtx.BuildChatMessageContext message.Id
+
+    let targetPlaylist =
+      CurrentPreset.targetPlaylist chatMessageCtx userRepo targetPlaylist initAuth sendLink
+
+    match message with
+    | { Text = text
+        ReplyMessage = Some { Text = replyText } } when replyText = Messages.SendTargetedPlaylist ->
+      do! targetPlaylist chat.UserId (Playlist.RawPlaylistId text)
+
+      return Some()
+    | { Text = CommandWithData "/target" text } ->
+      do! targetPlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
     | _ -> return None

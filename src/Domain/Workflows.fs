@@ -361,6 +361,51 @@ module Preset =
         | Some mp -> excludePlaylist' mp presetId rawPlaylistId
         | None -> Preset.ExcludePlaylistError.Unauthorized |> Error |> Task.FromResult)
 
+  let targetPlaylist
+    (parseId: Playlist.ParseId)
+    (presetRepo: #ILoadPreset & #ISavePreset)
+    (buildMusicPlatform: BuildMusicPlatform)
+    : Preset.TargetPlaylist =
+    let parseId = parseId >> Result.mapError Preset.TargetPlaylistError.IdParsing
+
+    let loadPlaylist (mp: #ILoadPlaylist) =
+      mp.LoadPlaylist
+      >> TaskResult.mapError Preset.TargetPlaylistError.Load
+
+    let checkAccess playlist =
+      playlist
+      |> TargetedPlaylist.fromSpotifyPlaylist
+      |> Result.ofOption (Preset.AccessError() |> Preset.TargetPlaylistError.AccessError)
+
+    let targetPlaylist' mp =
+      fun presetId rawPlaylistId ->
+        let updatePreset playlist =
+          task {
+            let! preset = presetRepo.LoadPreset presetId
+
+            let updatedTargetedPlaylists = preset.TargetedPlaylists |> List.append [ playlist ]
+
+            let updatedPreset =
+              { preset with
+                  TargetedPlaylists = updatedTargetedPlaylists }
+
+            do! presetRepo.SavePreset updatedPreset
+
+            return playlist
+          }
+
+        rawPlaylistId
+        |> parseId
+        |> Result.taskBind (loadPlaylist mp)
+        |> Task.map (Result.bind checkAccess)
+        |> TaskResult.taskMap updatePreset
+
+    fun userId presetId rawPlaylistId ->
+      buildMusicPlatform (userId |> UserId.value |> string |> MusicPlatform.UserId)
+      |> Task.bind(
+        function
+        | Some mp -> targetPlaylist' mp presetId rawPlaylistId
+        | None -> Preset.TargetPlaylistError.Unauthorized |> Error |> Task.FromResult)
 
 [<RequireQualifiedAccess>]
 module User =
@@ -431,52 +476,6 @@ module ExcludedPlaylist =
 
         return! presetRepo.SavePreset updatedPreset
       }
-
-[<RequireQualifiedAccess>]
-module Playlist =
-  let targetPlaylist
-    (musicPlatform: #ILoadPlaylist option)
-    (parseId: Playlist.ParseId)
-    (presetRepo: #ILoadPreset & #ISavePreset)
-    : Playlist.TargetPlaylist =
-    let parseId = parseId >> Result.mapError Playlist.TargetPlaylistError.IdParsing
-
-    let loadPlaylist (mp: #ILoadPlaylist) =
-      mp.LoadPlaylist
-      >> TaskResult.mapError Playlist.TargetPlaylistError.Load
-
-    let checkAccess playlist =
-      playlist
-      |> TargetedPlaylist.fromSpotifyPlaylist
-      |> Result.ofOption (Playlist.AccessError() |> Playlist.TargetPlaylistError.AccessError)
-
-    let targetPlaylist' mp =
-      fun presetId rawPlaylistId ->
-        let updatePreset playlist =
-          task {
-            let! preset = presetRepo.LoadPreset presetId
-
-            let updatedTargetedPlaylists = preset.TargetedPlaylists |> List.append [ playlist ]
-
-            let updatedPreset =
-              { preset with
-                  TargetedPlaylists = updatedTargetedPlaylists }
-
-            do! presetRepo.SavePreset updatedPreset
-
-            return playlist
-          }
-
-        rawPlaylistId
-        |> parseId
-        |> Result.taskBind (loadPlaylist mp)
-        |> Task.map (Result.bind checkAccess)
-        |> TaskResult.taskMap updatePreset
-
-    fun presetId rawPlaylistId ->
-        match musicPlatform with
-        | Some mp -> targetPlaylist' mp presetId rawPlaylistId
-        | None -> Playlist.TargetPlaylistError.Unauthorized |> Error |> Task.FromResult
 
 [<RequireQualifiedAccess>]
 module TargetedPlaylist =
