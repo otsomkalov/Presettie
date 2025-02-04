@@ -436,28 +436,28 @@ module Preset =
 module CurrentPreset =
   let includePlaylist
     (chatMessageCtx: #IReplyToMessage)
-    (loadUser: User.Get)
-    (includePlaylist: Playlist.IncludePlaylist)
+    (userRepo: #ILoadUser)
+    (includePlaylist: Preset.IncludePlaylist)
     (initAuth: Auth.Init)
     (sendLink: SendLink)
     : Playlist.Include =
     fun userId rawPlaylistId ->
       task {
-        let! currentPresetId = loadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
-        let includePlaylistResult = rawPlaylistId |> includePlaylist currentPresetId
+        let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+        let includePlaylistResult = includePlaylist userId currentPresetId rawPlaylistId
 
         let onSuccess (playlist: IncludedPlaylist) =
           chatMessageCtx.ReplyToMessage $"*{playlist.Name}* successfully included into current preset!"
 
         let onError =
           function
-          | Playlist.IncludePlaylistError.IdParsing(Playlist.IdParsingError id) ->
+          | Preset.IncludePlaylistError.IdParsing(Playlist.IdParsingError id) ->
             chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistIdCannotBeParsed, id))
-          | Playlist.IncludePlaylistError.Load(Playlist.LoadError.NotFound) ->
+          | Preset.IncludePlaylistError.Load(Playlist.LoadError.NotFound) ->
             let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
 
             chatMessageCtx.ReplyToMessage (String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
-          | Playlist.IncludePlaylistError.Unauthorized ->
+          | Preset.IncludePlaylistError.Unauthorized ->
             sendLoginMessage initAuth sendLink userId
 
         return! includePlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
@@ -943,5 +943,33 @@ let targetPlaylistButtonMessageHandler
         do! sendLoginMessage initAuth sendLink chat.UserId &|> ignore
 
         return None
+    | _ -> return None
+  }
+
+let includePlaylistMessageHandler
+  (userRepo: #ILoadUser)
+  (chatRepo: #ILoadChat)
+  (includePlaylist: Preset.IncludePlaylist)
+  initAuth
+  sendLink
+  (chatCtx: #IChatContext)
+  : MessageHandler =
+  fun message -> task {
+    let! chat = chatRepo.LoadChat message.ChatId
+    let chatMessageCtx = chatCtx.BuildChatMessageContext message.Id
+
+    let includePlaylist =
+      CurrentPreset.includePlaylist chatMessageCtx userRepo includePlaylist initAuth sendLink
+
+    match message with
+    | { Text = text
+        ReplyMessage = Some { Text = replyText } } when replyText = Buttons.CreatePreset ->
+      do! includePlaylist chat.UserId (Playlist.RawPlaylistId text)
+
+      return Some()
+    | { Text = CommandWithData "/include" text } ->
+      do! includePlaylist chat.UserId (Playlist.RawPlaylistId text)
+
+      return Some()
     | _ -> return None
   }

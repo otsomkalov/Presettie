@@ -89,11 +89,6 @@ type User =
 
 [<RequireQualifiedAccess>]
 module Playlist =
-  type IncludePlaylistError =
-    | IdParsing of Playlist.IdParsingError
-    | Load of Playlist.LoadError
-    | Unauthorized
-
   type ExcludePlaylistError =
     | IdParsing of Playlist.IdParsingError
     | Load of Playlist.LoadError
@@ -107,7 +102,6 @@ module Playlist =
     | AccessError of AccessError
     | Unauthorized
 
-  type IncludePlaylist = PresetId -> Playlist.RawPlaylistId -> Task<Result<IncludedPlaylist, IncludePlaylistError>>
   type ExcludePlaylist = PresetId -> Playlist.RawPlaylistId -> Task<Result<ExcludedPlaylist, ExcludePlaylistError>>
   type TargetPlaylist = PresetId -> Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, TargetPlaylistError>>
 
@@ -131,6 +125,13 @@ module Preset =
   type Run = PresetId -> Task<Result<Preset, RunError>>
 
   type QueueRun = PresetId -> Task<Result<Preset, ValidationError list>>
+
+  type IncludePlaylistError =
+    | IdParsing of Playlist.IdParsingError
+    | Load of Playlist.LoadError
+    | Unauthorized
+
+  type IncludePlaylist = UserId -> PresetId -> Playlist.RawPlaylistId -> Task<Result<IncludedPlaylist, IncludePlaylistError>>
 
 [<RequireQualifiedAccess>]
 module User =
