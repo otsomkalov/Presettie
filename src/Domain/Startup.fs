@@ -14,6 +14,7 @@ let addDomain (services: IServiceCollection) =
     .BuildSingleton<Preset.Get, IPresetRepo>(Preset.get)
 
     .BuildSingleton<Preset.IncludePlaylist, Playlist.ParseId, IPresetRepo, BuildMusicPlatform>(Preset.includePlaylist)
+    .BuildSingleton<Preset.ExcludePlaylist, Playlist.ParseId, IPresetRepo, BuildMusicPlatform>(Preset.excludePlaylist)
 
     .BuildSingleton<User.Get, IUserRepo>(User.get)
     .BuildSingleton<User.CreatePreset, IPresetRepo, IUserRepo>(User.createPreset)
