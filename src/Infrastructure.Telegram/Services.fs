@@ -215,7 +215,7 @@ type CallbackQueryService
     let click: Click = {
       Id = clickId
       ChatId = chatId
-      Data = callbackQuery.Data
+      Data = callbackQuery.Data.Split("|") |> List.ofArray
     }
 
     let defaultMessageHandler () =

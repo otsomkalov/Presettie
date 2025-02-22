@@ -9,8 +9,8 @@ open Telegram.Workflows
 
 let presetInfoClickHandler presetRepo botMessageCtx : ClickHandler =
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; id; "i" |] ->
+    match click.Data with
+    | [ "p"; id; "i" ] ->
       let sendPresetInfo = Preset.show presetRepo botMessageCtx
 
       do! sendPresetInfo (PresetId id)
@@ -23,8 +23,8 @@ let showPresetsClickHandler getUser (chatRepo: #ILoadChat) botMessageCtx : Click
   let listUserPresets = User.showPresets botMessageCtx getUser
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p" |] ->
+    match click.Data with
+    | [ "p" ] ->
       let! chat = chatRepo.LoadChat click.ChatId
 
       do! listUserPresets chat.UserId
@@ -38,8 +38,8 @@ let enableRecommendationsClickHandler presetRepo showNotification botMessageCtx 
     Domain.Workflows.PresetSettings.enableRecommendations presetRepo
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; CallbackQueryConstants.enableRecommendations |] ->
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.enableRecommendations ] ->
       let enableRecommendations =
         PresetSettings.enableRecommendations presetRepo botMessageCtx enableRecommendations (showNotification click.Id)
 
@@ -54,8 +54,8 @@ let disableRecommendationsClickHandler presetRepo showNotification botMessageCtx
     Domain.Workflows.PresetSettings.disableRecommendations presetRepo
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; CallbackQueryConstants.disableRecommendations |] ->
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.disableRecommendations ] ->
       let disableRecommendations =
         PresetSettings.disableRecommendations presetRepo botMessageCtx disableRecommendations (showNotification click.Id)
 
@@ -70,8 +70,8 @@ let enableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx : 
     Domain.Workflows.PresetSettings.enableUniqueArtists presetRepo
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; CallbackQueryConstants.enableUniqueArtists |] ->
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.enableUniqueArtists ] ->
       let enableUniqueArtists =
         PresetSettings.enableUniqueArtists presetRepo botMessageCtx enableUniqueArtists (showNotification click.Id)
 
@@ -86,8 +86,8 @@ let disableUniqueArtistsClickHandler presetRepo showNotification botMessageCtx :
     Domain.Workflows.PresetSettings.disableUniqueArtists presetRepo
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; CallbackQueryConstants.disableUniqueArtists |] ->
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.disableUniqueArtists ] ->
 
       let disableUniqueArtists =
         PresetSettings.disableUniqueArtists presetRepo botMessageCtx disableUniqueArtists (showNotification click.Id)
@@ -103,8 +103,8 @@ let includeLikedTracksClickHandler presetRepo showNotification botMessageCtx : C
     Domain.Workflows.PresetSettings.includeLikedTracks presetRepo
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; CallbackQueryConstants.includeLikedTracks |] ->
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.includeLikedTracks ] ->
       let includeLikedTracks =
         PresetSettings.includeLikedTracks presetRepo botMessageCtx (showNotification click.Id) includeLikedTracks
 
@@ -119,8 +119,8 @@ let excludeLikedTracksClickHandler presetRepo showNotification botMessageCtx : C
     Domain.Workflows.PresetSettings.excludeLikedTracks presetRepo
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; CallbackQueryConstants.excludeLikedTracks |] ->
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.excludeLikedTracks ] ->
       let excludeLikedTracks =
         PresetSettings.excludeLikedTracks presetRepo botMessageCtx (showNotification click.Id) excludeLikedTracks
 
@@ -134,8 +134,8 @@ let ignoreLikedTracksClickHandler presetRepo showNotification botMessageCtx : Cl
   let ignoreLikedTracks = Domain.Workflows.PresetSettings.ignoreLikedTracks presetRepo
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; CallbackQueryConstants.ignoreLikedTracks |] ->
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.ignoreLikedTracks ] ->
       let ignoreLikedTracks =
         PresetSettings.ignoreLikedTracks presetRepo botMessageCtx (showNotification click.Id) ignoreLikedTracks
 
@@ -147,8 +147,8 @@ let ignoreLikedTracksClickHandler presetRepo showNotification botMessageCtx : Cl
 
 let showIncludedPlaylistClickHandler presetRepo countPlaylistTracks botMessageCtx : ClickHandler =
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; "ip"; playlistId; "i" |] ->
+    match click.Data with
+    | [ "p"; presetId; "ip"; playlistId; "i" ] ->
       let showIncludedPlaylist =
         IncludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
@@ -162,8 +162,8 @@ let removeIncludedPlaylistClickHandler presetRepo showNotification botMessageCtx
   let removeIncludedPlaylist = Domain.Workflows.IncludedPlaylist.remove presetRepo
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; "ip"; playlistId; "rm" |] ->
+    match click.Data with
+    | [ "p"; presetId; "ip"; playlistId; "rm" ] ->
       let removeIncludedPlaylist =
         IncludedPlaylist.remove presetRepo botMessageCtx removeIncludedPlaylist (showNotification click.Id)
 
@@ -175,8 +175,8 @@ let removeIncludedPlaylistClickHandler presetRepo showNotification botMessageCtx
 
 let showExcludedPlaylistClickHandler presetRepo countPlaylistTracks botMessageCtx : ClickHandler =
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; "ep"; playlistId; "i" |] ->
+    match click.Data with
+    | [ "p"; presetId; "ep"; playlistId; "i" ] ->
       let showExcludedPlaylist =
         ExcludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
@@ -190,8 +190,8 @@ let removeExcludedPlaylistClickHandler presetRepo showNotification botMessageCtx
   let removeExcludedPlaylist = Domain.Workflows.ExcludedPlaylist.remove presetRepo
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; "ep"; playlistId; "rm" |] ->
+    match click.Data with
+    | [ "p"; presetId; "ep"; playlistId; "rm" ] ->
       let removeExcludedPlaylist =
         ExcludedPlaylist.remove presetRepo botMessageCtx removeExcludedPlaylist (showNotification click.Id)
 
@@ -203,8 +203,8 @@ let removeExcludedPlaylistClickHandler presetRepo showNotification botMessageCtx
 
 let showTargetedPlaylistClickHandler presetRepo countPlaylistTracks botMessageCtx : ClickHandler =
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; "tp"; playlistId; "i" |] ->
+    match click.Data with
+    | [ "p"; presetId; "tp"; playlistId; "i" ] ->
       let showTargetedPlaylist =
         TargetedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
@@ -218,8 +218,8 @@ let removeTargetedPlaylistClickHandler presetRepo showNotification botMessageCtx
   let removeTargetedPlaylist = Domain.Workflows.TargetedPlaylist.remove presetRepo
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; "tp"; playlistId; "rm" |] ->
+    match click.Data with
+    | [ "p"; presetId; "tp"; playlistId; "rm" ] ->
       let removeTargetedPlaylist =
         TargetedPlaylist.remove presetRepo botMessageCtx removeTargetedPlaylist (showNotification click.Id)
 
@@ -237,8 +237,8 @@ let appendToTargetedPlaylistClickHandler presetRepo countPlaylistTracks showNoti
     TargetedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; "tp"; playlistId; "a" |] ->
+    match click.Data with
+    | [ "p"; presetId; "tp"; playlistId; "a" ] ->
       let appendToTargetedPlaylist =
         TargetedPlaylist.appendTracks appendToTargetedPlaylist (showNotification click.Id) showTargetedPlaylist
 
@@ -256,8 +256,8 @@ let overwriteTargetedPlaylistClickHandler presetRepo countPlaylistTracks showNot
     TargetedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
 
   fun click -> task {
-    match click.Data.Split("|") with
-    | [| "p"; presetId; "tp"; playlistId; "o" |] ->
+    match click.Data with
+    | [ "p"; presetId; "tp"; playlistId; "o" ] ->
       let overwriteTargetedPlaylist =
         TargetedPlaylist.overwriteTracks overwriteTargetedPlaylist (showNotification click.Id) showTargetedPlaylist
 

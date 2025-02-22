@@ -17,7 +17,7 @@ type SendLoginMessage = UserId -> Task<BotMessageId>
 type Chat = { Id: otsom.fs.Bot.ChatId; UserId: UserId }
 
 type ClickId = ClickId of string
-type Click = { Id: ClickId; ChatId: otsom.fs.Bot.ChatId; Data: string }
+type Click = { Id: ClickId; ChatId: otsom.fs.Bot.ChatId; Data: string list }
 
 type ShowNotification = ClickId -> string -> Task<unit>
 
