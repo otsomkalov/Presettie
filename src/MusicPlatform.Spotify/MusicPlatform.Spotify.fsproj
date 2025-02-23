@@ -6,26 +6,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Cache\Memory.fs" />
-    <Compile Include="Cache\Redis.fs" />
-    <Compile Include="Helpers.fs" />
-    <Compile Include="Library.fs" />
-    <Compile Include="Startup.fs" />
+    <Compile Include="Cache\Memory.fs"/>
+    <Compile Include="Cache\Redis.fs"/>
+    <Compile Include="Helpers.fs"/>
+    <Compile Include="Library.fs"/>
+    <Compile Include="Startup.fs"/>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FSharp.Logf" Version="1.2.2"/>
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.22.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.22.0"/>
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0"/>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1"/>
     <PackageReference Include="SpotifyAPI.Web" Version="7.1.1"/>
     <PackageReference Include="otsom.fs.Extensions" Version="0.0.43"/>
     <PackageReference Include="otsom.fs.Extensions.DependencyInjection" Version="0.0.2"/>
     <PackageReference Include="StackExchange.Redis" Version="2.7.33"/>
+    <PackageReference Include="otsom.fs.Auth" Version="0.0.2"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\otsom.fs\src\otsom.fs.Auth\otsom.fs.Auth.fsproj" />
     <ProjectReference Include="..\MusicPlatform\MusicPlatform.fsproj"/>
   </ItemGroup>
 

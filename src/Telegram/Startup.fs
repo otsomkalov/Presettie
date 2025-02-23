@@ -78,9 +78,6 @@ let private addMessageHandlers (services: IServiceCollection) =
 
     .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetRepo>(backMessageButtonHandler)
 
-    .BuildSingleton<MessageHandlerFactory, IUserRepo, IChatRepo, _, _, _>(includePlaylistMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, IUserRepo, IChatRepo, _, _, _>(excludePlaylistMessageHandler)
-
 let addBot (cfg: IConfiguration) (services: IServiceCollection) =
   services.AddSingleton<IChatService, ChatService>()
 
