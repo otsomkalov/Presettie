@@ -10,9 +10,19 @@ open otsom.fs.Core
 module PresetRepo =
   type QueueGeneration = UserId -> PresetId -> Task<unit>
 
-type SendLink = UserId -> string -> string -> string -> Task<BotMessageId>
+type ILoadChat =
+  abstract LoadChat: ChatId -> Task<Chat option>
 
-type ILoadChat = abstract member LoadChat: chatId: ChatId -> Task<Chat>
+type ILoadUserChat =
+  abstract LoadUserChat: UserId -> Task<Chat option>
+
+type ISaveChat =
+  abstract SaveChat: Chat -> Task<unit>
+
+type ICreateChat =
+  abstract CreateChat: ChatId -> Task<Chat>
 
 type IChatRepo =
   inherit ILoadChat
+  inherit ISaveChat
+  inherit ILoadUserChat

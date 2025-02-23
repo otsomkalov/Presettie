@@ -1,58 +1,86 @@
 ﻿module Telegram.Tests.User
 
-open System.Threading.Tasks
-open Domain.Core
+#nowarn "20"
+
+open Domain.Repos
 open Domain.Tests
-open FsUnit.Xunit
+open Moq
 open Xunit
 open Telegram.Workflows
 open otsom.fs.Bot
 
 [<Fact>]
+let ``should list presets`` () =
+  let userRepo = Mock<IUserRepo>()
+
+  userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+  let botService = Mock<IBotService>()
+
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
+
+  task {
+    do! User.listPresets botService.Object userRepo.Object Mocks.botMessageId Mocks.userId
+
+    userRepo.VerifyAll()
+    botService.VerifyAll()
+  }
+
+[<Fact>]
 let ``sendCurrentPreset should show current preset details with actions keyboard if current preset is set`` () =
-  let loadUser =
-    fun userId ->
-      userId |> should equal Mocks.userId
+  let userRepo = Mock<IUserRepo>()
 
-      { Mocks.user with
-          CurrentPresetId = Some Mocks.presetId }
-      |> Task.FromResult
+  userRepo.Setup(fun m -> m.LoadUser Mocks.userId).ReturnsAsync(Mocks.user)
 
-  let getPreset =
-    fun presetId ->
-      presetId |> should equal Mocks.presetId
-      Mocks.preset |> Task.FromResult
+  let presetRepo = Mock<IPresetRepo>()
 
-  let sendKeyboard =
-    { new ISendKeyboard with
-        member this.SendKeyboard =
-          fun text keyboard ->
-            keyboard |> Seq.length |> should equal 5
-            Task.FromResult(Mocks.botMessageId) }
+  presetRepo
+    .Setup(fun m -> m.LoadPreset Mocks.presetId)
+    .ReturnsAsync(Mocks.preset)
 
-  let sut = User.sendCurrentPreset loadUser getPreset sendKeyboard
+  let botService = Mock<IBotService>()
 
-  sut Mocks.userId
+  botService
+    .Setup(_.SendKeyboard(It.IsAny(), It.IsAny()))
+    .ReturnsAsync(Mocks.botMessageId)
+
+  let sut = User.sendCurrentPreset userRepo.Object presetRepo.Object botService.Object
+
+  task {
+    do! sut Mocks.userId
+
+    userRepo.VerifyAll()
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+  }
 
 [<Fact>]
 let ``sendCurrentPreset should send "create preset" button if current preset is not set`` () =
-  let loadUser =
-    fun userId ->
-      userId |> should equal Mocks.userId
+  let userRepo = Mock<IUserRepo>()
 
+  userRepo
+    .Setup(fun m -> m.LoadUser Mocks.userId)
+    .ReturnsAsync(
       { Mocks.user with
           CurrentPresetId = None }
-      |> Task.FromResult
+    )
 
-  let getPreset = fun _ -> failwith "todo"
+  let presetRepo = Mock<IPresetRepo>()
 
-  let sendKeyboard =
-    { new ISendKeyboard with
-        member this.SendKeyboard =
-          fun text keyboard ->
-            keyboard |> Seq.length |> should equal 2
-            Task.FromResult(Mocks.botMessageId) }
+  let botService = Mock<IBotService>()
 
-  let sut = User.sendCurrentPreset loadUser getPreset sendKeyboard
+  botService
+    .Setup(_.SendKeyboard(It.IsAny(), It.IsAny()))
+    .ReturnsAsync(Mocks.botMessageId)
 
-  sut Mocks.userId
+  let sut = User.sendCurrentPreset userRepo.Object presetRepo.Object botService.Object
+
+  task {
+    do! sut Mocks.userId
+
+    userRepo.VerifyAll()
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+  }

@@ -5,11 +5,23 @@ open System.Threading.Tasks
 open MusicPlatform
 open otsom.fs.Core
 
-type ReadablePlaylistId = ReadablePlaylistId of PlaylistId
-type WritablePlaylistId = WritablePlaylistId of PlaylistId
+type UserId with
+  member this.ToMusicPlatformId() = this.Value |> MusicPlatform.UserId
+
+type ReadablePlaylistId =
+  | ReadablePlaylistId of PlaylistId
+
+  member this.Value = let (ReadablePlaylistId id) = this in id
+
+type WritablePlaylistId =
+  | WritablePlaylistId of PlaylistId
+
+  member this.Value = let (WritablePlaylistId id) = this in id
+
+type IncludedPlaylistId = ReadablePlaylistId
 
 type IncludedPlaylist =
-  { Id: ReadablePlaylistId
+  { Id: IncludedPlaylistId
     Name: string
     LikedOnly: bool }
 
@@ -23,7 +35,10 @@ type TargetedPlaylist =
     Name: string
     Overwrite: bool }
 
-type PresetId = PresetId of string
+type PresetId =
+  | PresetId of string
+
+  member this.Value = let (PresetId id) = this in id
 
 [<RequireQualifiedAccess>]
 module PresetSettings =
@@ -33,9 +48,27 @@ module PresetSettings =
     | Exclude
     | Ignore
 
-  type RawPresetSize = RawPresetSize of string
+  type RawPresetSize =
+    | RawPresetSize of string
+    member this.Value = let (RawPresetSize va) = this in va
 
-  type Size = private Size of int
+  type ParsingError =
+    | NotANumber
+    | TooSmall
+    | TooBig
+
+  [<RequireQualifiedAccess>]
+  type Size =
+    | Size of int
+
+    static member TryParse(size: RawPresetSize) =
+      match Int32.TryParse size.Value with
+      | true, s when s >= 10000 -> Error(TooBig)
+      | true, s when s <= 0 -> Error(TooSmall)
+      | true, s -> Ok(Size(s))
+      | _ -> Error(NotANumber)
+
+    member this.Value = let (Size size) = this in size
 
   type PresetSettings =
     { LikedTracksHandling: LikedTracksHandling
@@ -43,34 +76,12 @@ module PresetSettings =
       RecommendationsEnabled: bool
       UniqueArtists: bool }
 
-  [<RequireQualifiedAccess>]
-  module Size =
-    type ParsingError =
-      | NotANumber
-      | TooSmall
-      | TooBig
-
-    let tryParse (RawPresetSize size) =
-      match Int32.TryParse size with
-      | true, s when s >= 10000 -> Error(TooBig)
-      | true, s when s <= 0 -> Error(TooSmall)
-      | true, s -> Ok(Size(s))
-      | _ -> Error(NotANumber)
-
-    let create size = Size(size)
-    let value (Size size) = size
-
   type EnableUniqueArtists = PresetId -> Task<unit>
   type DisableUniqueArtists = PresetId -> Task<unit>
-
-  type EnableRecommendations = PresetId -> Task<unit>
-  type DisableRecommendations = PresetId -> Task<unit>
 
   type IncludeLikedTracks = PresetId -> Task<unit>
   type ExcludeLikedTracks = PresetId -> Task<unit>
   type IgnoreLikedTracks = PresetId -> Task<unit>
-
-  type SetPresetSize = PresetId -> RawPresetSize -> Task<Result<unit, Size.ParsingError>>
 
 type SimplePreset = { Id: PresetId; Name: string }
 
@@ -89,38 +100,27 @@ type User =
 
 [<RequireQualifiedAccess>]
 module Preset =
-  type Get = PresetId -> Task<Preset>
-
   [<RequireQualifiedAccess>]
   type ValidationError =
     | NoIncludedPlaylists
     | NoTargetedPlaylists
 
   type Validate = Preset -> Result<Preset, ValidationError list>
-  type Create = string -> Task<Preset>
-  type Remove = PresetId -> Task<unit>
 
   type RunError =
     | NoIncludedTracks
     | NoPotentialTracks
-
-  type Run = PresetId -> Task<Result<Preset, RunError>>
-
-  type QueueRun = PresetId -> Task<Result<Preset, ValidationError list>>
+    | Unauthorized
 
   type IncludePlaylistError =
     | IdParsing of Playlist.IdParsingError
     | Load of Playlist.LoadError
     | Unauthorized
 
-  type IncludePlaylist = UserId -> PresetId -> Playlist.RawPlaylistId -> Task<Result<IncludedPlaylist, IncludePlaylistError>>
-
   type ExcludePlaylistError =
     | IdParsing of Playlist.IdParsingError
     | Load of Playlist.LoadError
     | Unauthorized
-
-  type ExcludePlaylist = UserId -> PresetId -> Playlist.RawPlaylistId -> Task<Result<ExcludedPlaylist, ExcludePlaylistError>>
 
   type AccessError = AccessError of unit
 
@@ -130,27 +130,8 @@ module Preset =
     | AccessError of AccessError
     | Unauthorized
 
-  type TargetPlaylist = UserId -> PresetId -> Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, TargetPlaylistError>>
-
-[<RequireQualifiedAccess>]
-module User =
-  type Get = UserId -> Task<User>
-  type SetCurrentPreset = UserId -> PresetId -> Task<unit>
-  type RemovePreset = UserId -> PresetId -> Task<unit>
-  type CreateIfNotExists = UserId -> Task<unit>
-  type SetCurrentPresetSize = UserId -> PresetSettings.RawPresetSize -> Task<Result<unit, PresetSettings.Size.ParsingError>>
-
-  type CreatePreset = UserId -> string -> Task<Preset>
-
-  let create userId =
-    { Id = userId
-      CurrentPresetId = None
-      Presets = [] }
-
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
-  type Remove = PresetId -> ReadablePlaylistId -> Task<unit>
-
   let fromSpotifyPlaylist =
     function
     | Readable({ Id = id; Name = name }) ->
@@ -165,8 +146,6 @@ module IncludedPlaylist =
 
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
-  type Remove = PresetId -> ReadablePlaylistId -> Task<unit>
-
   let fromSpotifyPlaylist =
     function
     | Readable({ Id = id; Name = name }) ->
@@ -179,10 +158,6 @@ module ExcludedPlaylist =
 
 [<RequireQualifiedAccess>]
 module TargetedPlaylist =
-  type Remove = PresetId -> TargetedPlaylistId -> Task<unit>
-  type AppendTracks = PresetId -> TargetedPlaylistId -> Task<unit>
-  type OverwriteTracks = PresetId -> TargetedPlaylistId -> Task<unit>
-
   let fromSpotifyPlaylist =
     function
     | Readable _ -> None
@@ -191,3 +166,123 @@ module TargetedPlaylist =
         Name = name
         Overwrite = false }
       |> Some
+
+type ISetPresetSize =
+  abstract SetPresetSize: PresetId * PresetSettings.RawPresetSize -> Task<Result<unit, PresetSettings.ParsingError>>
+
+type IQueueRun =
+  abstract QueueRun: UserId * PresetId -> Task<Result<Preset, Preset.ValidationError list>>
+
+type ICreatePreset =
+  abstract CreatePreset: string -> Task<Preset>
+
+type IIncludePlaylist =
+  abstract IncludePlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<IncludedPlaylist, Preset.IncludePlaylistError>>
+
+type IExcludePlaylist =
+  abstract ExcludePlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<ExcludedPlaylist, Preset.ExcludePlaylistError>>
+
+type ITargetPlaylist =
+  abstract TargetPlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, Preset.TargetPlaylistError>>
+
+type IEnableRecommendations =
+  abstract EnableRecommendations: PresetId -> Task<unit>
+
+type IDisableRecommendations =
+  abstract DisableRecommendations: PresetId -> Task<unit>
+
+type IEnableUniqueArtists =
+  abstract EnableUniqueArtists: PresetId -> Task<unit>
+
+type IDisableUniqueArtists =
+  abstract DisableUniqueArtists: PresetId -> Task<unit>
+
+type IIncludeLikedTracks =
+  abstract IncludeLikedTracks: PresetId -> Task<unit>
+
+type IExcludeLikedTracks =
+  abstract ExcludeLikedTracks: PresetId -> Task<unit>
+
+type IIgnoreLikedTracks =
+  abstract IgnoreLikedTracks: PresetId -> Task<unit>
+
+type IAppendToTargetedPlaylist =
+  abstract AppendToTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<unit>
+
+type IOverwriteTargetedPlaylist =
+  abstract OverwriteTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<unit>
+
+type IRemoveIncludedPlaylist =
+  abstract RemoveIncludedPlaylist: PresetId * IncludedPlaylistId -> Task<unit>
+
+type IRemoveExcludedPlaylist =
+  abstract RemoveExcludedPlaylist: PresetId * ReadablePlaylistId -> Task<unit>
+
+type IRemoveTargetedPlaylist =
+  abstract RemoveTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<unit>
+
+type ISetOnlyLiked =
+  abstract SetOnlyLiked: PresetId * IncludedPlaylistId -> Task<unit>
+
+type ISetAll =
+  abstract SetAll: PresetId * IncludedPlaylistId -> Task<unit>
+
+type IRunPreset =
+  abstract RunPreset: UserId * PresetId -> Task<Result<Preset, Preset.RunError>>
+
+type IRemovePreset =
+  abstract RemovePreset: PresetId -> Task<unit>
+
+type IPresetService =
+  inherit IQueueRun
+  inherit IRunPreset
+
+  inherit ISetPresetSize
+  inherit ICreatePreset
+  inherit IRemovePreset
+
+  inherit IIncludePlaylist
+  inherit IExcludePlaylist
+  inherit ITargetPlaylist
+
+  inherit IEnableRecommendations
+  inherit IDisableRecommendations
+
+  inherit IEnableUniqueArtists
+  inherit IDisableUniqueArtists
+
+  inherit IIncludeLikedTracks
+  inherit IExcludeLikedTracks
+  inherit IIgnoreLikedTracks
+
+  inherit IAppendToTargetedPlaylist
+  inherit IOverwriteTargetedPlaylist
+
+  inherit IRemoveIncludedPlaylist
+  inherit IRemoveExcludedPlaylist
+  inherit IRemoveTargetedPlaylist
+
+  inherit ISetOnlyLiked
+  inherit ISetAll
+
+type ISetCurrentPresetSize =
+  abstract SetCurrentPresetSize: UserId * PresetSettings.RawPresetSize -> Task<Result<unit, PresetSettings.ParsingError>>
+
+type ICreateUserPreset =
+  abstract CreateUserPreset: UserId * string -> Task<Preset>
+
+type ISetCurrentPreset =
+  abstract SetCurrentPreset: UserId * PresetId -> Task<unit>
+
+type IRemoveUserPreset =
+  abstract RemoveUserPreset: UserId * PresetId -> Task<unit>
+
+type ICreateUser =
+  abstract CreateUser: unit -> Task<User>
+
+type IUserService =
+  inherit ISetCurrentPresetSize
+  inherit ICreateUserPreset
+  inherit ISetCurrentPreset
+  inherit IRemoveUserPreset
+  inherit ICreateUser

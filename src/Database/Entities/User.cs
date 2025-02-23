@@ -5,7 +5,7 @@ namespace Database.Entities;
 [BsonIgnoreExtraElements]
 public class User
 {
-    public long Id { get; set; }
+    public string Id { get; set; }
 
     public string CurrentPresetId { get; set; }
 

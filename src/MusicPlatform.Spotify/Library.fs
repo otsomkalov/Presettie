@@ -1,54 +1,23 @@
 ﻿namespace MusicPlatform.Spotify
 
 open System
-open System.Collections.Concurrent
 open System.Net
 open System.Text.RegularExpressions
 open FSharp
+open Microsoft.ApplicationInsights
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Options
 open Microsoft.FSharp.Control
 open MusicPlatform
+open MusicPlatform.Spotify.Cache
 open SpotifyAPI.Web
 open MusicPlatform.Spotify.Helpers
+open otsom.fs.Auth
+open otsom.fs.Auth.Repo
+open otsom.fs.Auth.Settings
 open otsom.fs.Extensions
 open System.Collections.Generic
-open otsom.fs.Telegram.Bot.Auth.Spotify
-open otsom.fs.Telegram.Bot.Auth.Spotify.Settings
-open otsom.fs.Telegram.Bot.Auth.Spotify.Workflows
 open System.Threading.Tasks
-
-module Core =
-  type GetClient = UserId -> Task<ISpotifyClient option>
-
-  let getClient (loadCompletedAuth: Completed.Load) (spotifyOptions: IOptions<SpotifySettings>) : GetClient =
-    let spotifySettings = spotifyOptions.Value
-    let clients = Dictionary<string, ISpotifyClient>()
-
-    fun (UserId userId) ->
-      match clients.TryGetValue(userId) with
-      | true, client -> client |> Some |> Task.FromResult
-      | false, _ ->
-        userId
-        |> AccountId
-        |> loadCompletedAuth
-        |> TaskOption.taskMap (fun auth -> task {
-          let! tokenResponse =
-            AuthorizationCodeRefreshRequest(spotifySettings.ClientId, spotifySettings.ClientSecret, auth.Token)
-            |> OAuthClient().RequestToken
-
-          let retryHandler =
-            SimpleRetryHandler(RetryAfter = TimeSpan.FromSeconds(30), RetryTimes = 3, TooManyRequestsConsumesARetry = true)
-
-          let config =
-            SpotifyClientConfig
-              .CreateDefault()
-              .WithRetryHandler(retryHandler)
-              .WithToken(tokenResponse.AccessToken)
-
-          return config |> SpotifyClient :> ISpotifyClient
-        })
-        |> TaskOption.tap (fun client -> clients.TryAdd(userId, client) |> ignore)
 
 [<RequireQualifiedAccess>]
 module Playlist =
@@ -80,7 +49,7 @@ module Playlist =
        tracks.Total)
   }
 
-  let listTracks (logger: ILogger) client : Playlist.ListTracks =
+  let listTracks (logger: ILogger) client =
     let playlistTracksLimit = 100
 
     fun (PlaylistId playlistId) ->
@@ -100,21 +69,21 @@ module Playlist =
   let private getSpotifyIds =
     fun (tracks: Track list) ->
       tracks
-      |> List.map (_.Id)
+      |> List.map _.Id
       |> List.map (fun (TrackId id) -> $"spotify:track:{id}")
       |> List<string>
 
-  let addTracks (client: ISpotifyClient) : Playlist.AddTracks =
+  let addTracks (client: ISpotifyClient) =
     fun (PlaylistId playlistId) tracks ->
       client.Playlists.AddItems(playlistId, tracks |> getSpotifyIds |> PlaylistAddItemsRequest)
       &|> ignore
 
-  let replaceTracks (client: ISpotifyClient) : Playlist.ReplaceTracks =
+  let replaceTracks (client: ISpotifyClient) =
     fun (PlaylistId playlistId) tracks ->
       client.Playlists.ReplaceItems(playlistId, tracks |> getSpotifyIds |> PlaylistReplaceItemsRequest)
       &|> ignore
 
-  let load (client: ISpotifyClient) : Playlist.Load =
+  let load (client: ISpotifyClient) =
     fun (PlaylistId playlistId) -> task {
       try
         let! playlist = playlistId |> client.Playlists.Get
@@ -125,12 +94,14 @@ module Playlist =
           if playlist.Owner.Id = currentUser.Id then
             Writable(
               { Id = playlist.Id |> PlaylistId
-                Name = playlist.Name }
+                Name = playlist.Name
+                TracksCount = playlist.Tracks.Total.Value }
             )
           else
             Readable(
               { Id = playlist.Id |> PlaylistId
-                Name = playlist.Name }
+                Name = playlist.Name
+                TracksCount = playlist.Tracks.Total.Value }
             )
 
         return playlist |> Ok
@@ -166,7 +137,7 @@ module Playlist =
 
 [<RequireQualifiedAccess>]
 module User =
-  let rec private listLikedTracks' (client: ISpotifyClient) (offset: int) = async {
+  let rec private listLikedTracks'' (client: ISpotifyClient) (offset: int) = async {
     let! tracks =
       client.Library.GetTracks(LibraryTracksRequest(Offset = offset, Limit = 50))
       |> Async.AwaitTask
@@ -174,13 +145,21 @@ module User =
     return (tracks.Items |> Seq.map _.Track |> getTracksIds, tracks.Total)
   }
 
-  let listLikedTracks (client: ISpotifyClient) : User.ListLikedTracks =
+  let listLikedTracks' (client: ISpotifyClient) : User.ListLikedTracks =
     let likedTacksLimit = 50
 
-    let listLikedTracks' = listLikedTracks' client
+    let listLikedTracks' = listLikedTracks'' client
     let loadTracks' = Playlist.loadTracks' likedTacksLimit
 
     fun () -> loadTracks' listLikedTracks' |> Async.StartAsTask
+
+  let listLikedTracks telemetryClient multiplexer client userId =
+    let listSpotifyTracks = listLikedTracks' client
+
+    let listRedisTracks =
+      Redis.UserRepo.listLikedTracks telemetryClient multiplexer listSpotifyTracks userId
+
+    Memory.UserRepo.listLikedTracks listRedisTracks
 
 [<RequireQualifiedAccess>]
 module Track =
@@ -204,10 +183,98 @@ module Track =
         >> Seq.toList
       )
 
+[<RequireQualifiedAccess>]
+module TargetedPlaylistRepo =
+  let private applyTracks spotifyAction cacheAction =
+    fun (playlistId: PlaylistId) (tracks: Track list) ->
+      let spotifyTask: Task<unit> = spotifyAction playlistId tracks
+      let cacheTask: Task<unit> = cacheAction playlistId tracks
+
+      Task.WhenAll([ spotifyTask; cacheTask ]) |> Task.ignore
+
+  let addTracks (telemetryClient: TelemetryClient) (spotifyClient: ISpotifyClient) multiplexer =
+    let addInSpotify = Playlist.addTracks spotifyClient
+    let addInCache = Redis.Playlist.appendTracks telemetryClient multiplexer
+
+    applyTracks addInSpotify addInCache
+
+  let replaceTracks (telemetryClient: TelemetryClient) (spotifyClient: ISpotifyClient) multiplexer =
+    let replaceInSpotify = Playlist.replaceTracks spotifyClient
+    let replaceInCache = Redis.Playlist.replaceTracks telemetryClient multiplexer
+
+    applyTracks replaceInSpotify replaceInCache
+
+[<RequireQualifiedAccess>]
+module PlaylistRepo =
+  let listTracks telemetryClient multiplexer logger client =
+    let listCachedPlaylistTracks = Redis.Playlist.listTracks telemetryClient multiplexer
+    let listSpotifyPlaylistTracks = Playlist.listTracks logger client
+    let cachePlaylistTracks = Redis.Playlist.replaceTracks telemetryClient multiplexer
+
+    fun playlistId ->
+      listCachedPlaylistTracks playlistId
+      |> Task.bind (function
+        | [] ->
+          listSpotifyPlaylistTracks playlistId
+          |> Task.taskTap (cachePlaylistTracks playlistId)
+        | tracks -> Task.FromResult tracks)
+
 module Library =
-  let buildMusicPlatform (getSpotifyClient: Core.GetClient) : BuildMusicPlatform =
+
+  type UserId with
+    member this.ToAccountId() = this.Value |> AccountId
+
+  let getClient (authRepo: #ILoadCompletedAuth) (authOptions: IOptions<AuthSettings>) =
+    let authSettings = authOptions.Value
+    let clients = Dictionary<UserId, ISpotifyClient>()
+
+    fun (userId: UserId) ->
+      match clients.TryGetValue(userId) with
+      | true, client -> client |> Some |> Task.FromResult
+      | false, _ ->
+        userId.ToAccountId()
+        |> authRepo.LoadCompletedAuth
+        |> TaskOption.taskMap (fun auth -> task {
+          let! tokenResponse =
+            AuthorizationCodeRefreshRequest(authSettings.ClientId, authSettings.ClientSecret, auth.Token.Value)
+            |> OAuthClient().RequestToken
+
+          let retryHandler =
+            SimpleRetryHandler(RetryAfter = TimeSpan.FromSeconds(30), RetryTimes = 3, TooManyRequestsConsumesARetry = true)
+
+          let config =
+            SpotifyClientConfig
+              .CreateDefault()
+              .WithRetryHandler(retryHandler)
+              .WithToken(tokenResponse.AccessToken)
+
+          return config |> SpotifyClient :> ISpotifyClient
+        })
+        |> TaskOption.tap (fun client -> clients.TryAdd(userId, client) |> ignore)
+
+  let buildMusicPlatform
+    (authService: IAuthRepo)
+    authOptions
+    (logger: ILogger<BuildMusicPlatform>)
+    telemetryClient
+    multiplexer
+    : BuildMusicPlatform =
+
     fun userId ->
-      userId |> getSpotifyClient
+      userId |> getClient authService authOptions
       &|> Option.map (fun client ->
         { new IMusicPlatform with
-            member this.LoadPlaylist = Playlist.load client })
+            member this.LoadPlaylist(playlistId) = Playlist.load client playlistId
+            member this.GetRecommendations(tracks) = Track.getRecommendations client tracks
+
+            member this.AddTracks(playlistId, tracks) =
+              TargetedPlaylistRepo.addTracks telemetryClient client multiplexer playlistId tracks
+
+            member this.ReplaceTracks(playlistId, tracks) =
+              TargetedPlaylistRepo.replaceTracks telemetryClient client multiplexer playlistId tracks
+
+            member this.ListLikedTracks() =
+              User.listLikedTracks telemetryClient multiplexer client userId ()
+
+            member this.ListPlaylistTracks(playlistId) =
+              Playlist.listTracks logger client playlistId })

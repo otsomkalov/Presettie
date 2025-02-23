@@ -12,21 +12,20 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.ApplicationInsights
 open Microsoft.Azure.Functions.Worker
-open otsom.fs.Telegram.Bot
 
 let private configureServices (builderContext: HostBuilderContext) (services: IServiceCollection) : unit =
 
   services.AddApplicationInsightsTelemetryWorkerService()
   services.ConfigureFunctionsApplicationInsights()
 
-  let configuration = builderContext.Configuration
+  let cfg = builderContext.Configuration
 
   services
-  |> Domain.Startup.addDomain
-  |> MusicPlatform.Spotify.Startup.addSpotifyMusicPlatform configuration
-  |> Telegram.Startup.addBot configuration
-  |> Infrastructure.Startup.addInfrastructure configuration
-  |> Infrastructure.Telegram.Startup.addTelegram configuration
+  |> Domain.Startup.addDomain cfg
+  |> MusicPlatform.Spotify.Startup.addSpotifyMusicPlatform cfg
+  |> Telegram.Startup.addBot cfg
+  |> Infrastructure.Startup.addInfrastructure cfg
+  |> Infrastructure.Telegram.Startup.addTelegram cfg
 
   services.AddLocalization()
 

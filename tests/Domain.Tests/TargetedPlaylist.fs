@@ -11,7 +11,7 @@ let ``appendTracks should disable playlist overwriting`` () =
   let mock = Mock<IPresetRepo>()
 
   mock
-    .Setup(fun m -> m.LoadPreset(Mocks.presetId))
+    .Setup(_.LoadPreset(Mocks.presetId))
     .ReturnsAsync(
       { Mocks.preset with
           TargetedPlaylists =
@@ -25,7 +25,7 @@ let ``appendTracks should disable playlist overwriting`` () =
           [ { Mocks.targetedPlaylist with
                 Overwrite = false } ] }
 
-  mock.Setup(fun m -> m.SavePreset(expected)).ReturnsAsync(())
+  mock.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
 
   let sut = TargetedPlaylist.appendTracks mock.Object
@@ -41,7 +41,7 @@ let ``overwriteTracks should enable playlist overwriting`` () =
   let mock = Mock<IPresetRepo>()
 
   mock
-    .Setup(fun m -> m.LoadPreset(Mocks.presetId))
+    .Setup(_.LoadPreset(Mocks.presetId))
     .ReturnsAsync(
       { Mocks.preset with
           TargetedPlaylists =
@@ -55,7 +55,7 @@ let ``overwriteTracks should enable playlist overwriting`` () =
           [ { Mocks.targetedPlaylist with
                 Overwrite = true } ] }
 
-  mock.Setup(fun m -> m.SavePreset(expected)).ReturnsAsync(())
+  mock.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
 
   let sut = TargetedPlaylist.overwriteTracks mock.Object
@@ -70,13 +70,13 @@ let ``overwriteTracks should enable playlist overwriting`` () =
 let ``remove should remove playlist from preset`` () =
   let mock = Mock<IPresetRepo>()
 
-  mock.Setup(fun m -> m.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
+  mock.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
 
   let expected =
     { Mocks.preset with
         TargetedPlaylists = [] }
 
-  mock.Setup(fun m -> m.SavePreset(expected)).ReturnsAsync(())
+  mock.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
 
   let sut = TargetedPlaylist.remove mock.Object
