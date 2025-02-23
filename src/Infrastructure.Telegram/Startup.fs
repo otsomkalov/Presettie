@@ -23,10 +23,6 @@ let private configureTelegramBotClient (options: IOptions<TelegramSettings>) =
 let addTelegram (configuration: IConfiguration) (services: IServiceCollection) =
   services |> Startup.addSpotifyAuth |> Startup.addTelegramBot configuration
 
-  services.Configure<TelegramSettings>(configuration.GetSection(TelegramSettings.SectionName))
-
-  services.BuildSingleton<ITelegramBotClient, IOptions<TelegramSettings>>(configureTelegramBotClient)
-
   services.BuildSingleton<IMongoCollection<Entities.Chat>, IMongoDatabase>(fun db -> db.GetCollection "chats")
 
   services.AddSingleton<IChatRepo, ChatRepo>()

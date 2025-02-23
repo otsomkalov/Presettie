@@ -41,23 +41,19 @@ module PresetSettings =
       presetRepo.LoadPreset
       >> Task.map (fun preset ->
         { preset with
-            Settings =
-              { preset.Settings with
-                  UniqueArtists = uniqueArtists } })
+            Settings.UniqueArtists = uniqueArtists })
       >> Task.bind presetRepo.SavePreset
 
-  let enableUniqueArtists presetRepo : PresetSettings.EnableUniqueArtists = setUniqueArtists presetRepo true
+  let enableUniqueArtists presetRepo = setUniqueArtists presetRepo true
 
-  let disableUniqueArtists presetRepo : PresetSettings.DisableUniqueArtists = setUniqueArtists presetRepo false
+  let disableUniqueArtists presetRepo = setUniqueArtists presetRepo false
 
-  let internal setRecommendations (presetRepo: #ILoadPreset & #ISavePreset) =
+  let private setRecommendations (presetRepo: #ILoadPreset & #ISavePreset) =
     fun enabled ->
       presetRepo.LoadPreset
       >> Task.map (fun preset ->
         { preset with
-            Settings =
-              { preset.Settings with
-                  RecommendationsEnabled = enabled } })
+            Settings.RecommendationsEnabled = enabled })
       >> Task.bind presetRepo.SavePreset
 
   let enableRecommendations presetRepo = setRecommendations presetRepo true
@@ -70,18 +66,16 @@ module PresetSettings =
       |> presetRepo.LoadPreset
       |> Task.map (fun p ->
         { p with
-            Settings =
-              { p.Settings with
-                  LikedTracksHandling = handling } })
+            Settings.LikedTracksHandling = handling })
       |> Task.bind presetRepo.SavePreset
 
-  let includeLikedTracks presetRepo : PresetSettings.IncludeLikedTracks =
+  let includeLikedTracks presetRepo =
     setLikedTracksHandling presetRepo PresetSettings.LikedTracksHandling.Include
 
-  let excludeLikedTracks presetRepo : PresetSettings.ExcludeLikedTracks =
+  let excludeLikedTracks presetRepo =
     setLikedTracksHandling presetRepo PresetSettings.LikedTracksHandling.Exclude
 
-  let ignoreLikedTracks presetRepo : PresetSettings.IgnoreLikedTracks =
+  let ignoreLikedTracks presetRepo =
     setLikedTracksHandling presetRepo PresetSettings.LikedTracksHandling.Ignore
 
 [<RequireQualifiedAccess>]
@@ -409,7 +403,7 @@ module Preset =
         |> presetRepo.LoadPreset
         |> Task.map (fun p ->
           { p with
-              Settings = { p.Settings with Size = s } })
+              Settings.Size = s })
         |> Task.bind presetRepo.SavePreset)
 
 [<RequireQualifiedAccess>]

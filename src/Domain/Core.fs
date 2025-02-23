@@ -76,13 +76,6 @@ module PresetSettings =
       RecommendationsEnabled: bool
       UniqueArtists: bool }
 
-  type EnableUniqueArtists = PresetId -> Task<unit>
-  type DisableUniqueArtists = PresetId -> Task<unit>
-
-  type IncludeLikedTracks = PresetId -> Task<unit>
-  type ExcludeLikedTracks = PresetId -> Task<unit>
-  type IgnoreLikedTracks = PresetId -> Task<unit>
-
 type SimplePreset = { Id: PresetId; Name: string }
 
 type Preset =

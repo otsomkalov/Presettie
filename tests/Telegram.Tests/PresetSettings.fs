@@ -65,7 +65,7 @@ let ``enableUniqueArtists should not update preset if data does not match`` () =
   task {
     let! result = sut click
 
-    result |> should equal (None)
+    result |> should equal None
 
     presetRepo.VerifyAll()
     botService.VerifyAll()

@@ -14,7 +14,7 @@ module SimplePreset =
       Name = preset.Name }
 
   let toDb (preset: SimplePreset) : Entities.SimplePreset =
-    Entities.SimplePreset(Id = (preset.Id.Value), Name = preset.Name)
+    Entities.SimplePreset(Id = preset.Id.Value, Name = preset.Name)
 
 [<RequireQualifiedAccess>]
 module User =
