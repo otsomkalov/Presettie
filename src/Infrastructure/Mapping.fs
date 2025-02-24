@@ -4,6 +4,7 @@ open System
 open Database
 open Domain.Core
 open Domain.Workflows
+open MongoDB.Bson
 open MusicPlatform
 open otsom.fs.Core
 
@@ -19,7 +20,7 @@ module SimplePreset =
 [<RequireQualifiedAccess>]
 module User =
   let fromDb (user: Entities.User) : User =
-    { Id = user.Id |> UserId
+    { Id = user.Id.ToString() |> UserId
       CurrentPresetId =
         if isNull user.CurrentPresetId then
           None
@@ -29,7 +30,7 @@ module User =
 
   let toDb (user: User) : Entities.User =
     Entities.User(
-      Id = user.Id.Value,
+      Id = (user.Id.Value |> ObjectId),
       CurrentPresetId = (user.CurrentPresetId |> Option.map _.Value |> Option.toObj),
       Presets = (user.Presets |> Seq.map SimplePreset.toDb)
     )
@@ -42,11 +43,7 @@ module IncludedPlaylist =
       LikedOnly = playlist.LikedOnly }
 
   let toDb (playlist: IncludedPlaylist) : Entities.IncludedPlaylist =
-    Entities.IncludedPlaylist(
-      Id = playlist.Id.Value.Value,
-      Name = playlist.Name,
-      LikedOnly = playlist.LikedOnly
-    )
+    Entities.IncludedPlaylist(Id = playlist.Id.Value.Value, Name = playlist.Name, LikedOnly = playlist.LikedOnly)
 
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
@@ -55,10 +52,7 @@ module ExcludedPlaylist =
       Name = playlist.Name }
 
   let toDb (playlist: ExcludedPlaylist) : Entities.ExcludedPlaylist =
-    Entities.ExcludedPlaylist(
-      Id = playlist.Id.Value.Value,
-      Name = playlist.Name
-    )
+    Entities.ExcludedPlaylist(Id = playlist.Id.Value.Value, Name = playlist.Name)
 
 [<RequireQualifiedAccess>]
 module TargetedPlaylist =
@@ -68,11 +62,7 @@ module TargetedPlaylist =
       Overwrite = playlist.Overwrite }
 
   let toDb (playlist: TargetedPlaylist) : Entities.TargetedPlaylist =
-    Entities.TargetedPlaylist(
-      Id = playlist.Id.Value.Value,
-      Name = playlist.Name,
-      Overwrite = playlist.Overwrite
-    )
+    Entities.TargetedPlaylist(Id = playlist.Id.Value.Value, Name = playlist.Name, Overwrite = playlist.Overwrite)
 
   let mapPlaylists (playlists: Entities.TargetedPlaylist seq) =
     playlists |> Seq.map fromDb |> Seq.toList

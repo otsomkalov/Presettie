@@ -61,13 +61,13 @@ module PresetRepo =
 module UserRepo =
   let load (collection: IMongoCollection<Entities.User>) =
     fun (UserId userId) ->
-      let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, userId)
+      let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, ObjectId userId)
 
       collection.Find(usersFilter).SingleOrDefaultAsync() |> Task.map User.fromDb
 
   let save (collection: IMongoCollection<Entities.User>) =
     fun (user: User) ->
-      let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, user.Id.Value)
+      let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, ObjectId user.Id.Value)
 
       let dbUser = user |> User.toDb
 

@@ -13,7 +13,7 @@ type Chat() =
   member val UserId: ObjectId = ObjectId.Empty with get, set
 
   static member FromDomain(chat: Core.Chat) =
-    Chat(Id = chat.Id.Value, UserId = (chat.UserId.Value |> ObjectId.Parse))
+    Chat(Id = chat.Id.Value, UserId = (chat.UserId.Value |> ObjectId))
 
   member this.ToDomain() : Core.Chat =
     { Id = otsom.fs.Bot.ChatId this.Id
