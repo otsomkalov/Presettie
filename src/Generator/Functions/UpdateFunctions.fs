@@ -7,7 +7,6 @@ open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
 open Microsoft.Extensions.Logging
-open Newtonsoft.Json
 open Telegram.Bot.Types
 open Telegram.Bot.Types.Enums
 

@@ -29,6 +29,8 @@ let private configureServices (builderContext: HostBuilderContext) (services: IS
 
   services.AddLocalization()
 
+  services.ConfigureTelegramBotMvc()
+
   ()
 
 let private configureAppConfiguration _ (configBuilder: IConfigurationBuilder) =
