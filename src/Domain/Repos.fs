@@ -2,40 +2,24 @@
 
 open System.Threading.Tasks
 open Domain.Core
-open MusicPlatform
 open otsom.fs.Core
 
-[<RequireQualifiedAccess>]
-module PresetRepo =
-  type Remove = PresetId -> Task<unit>
-
-  type ListExcludedTracks = ExcludedPlaylist list -> Task<Track list>
-
-  type QueueRun = PresetId -> Task<unit>
-
-[<RequireQualifiedAccess>]
-module UserRepo =
-  type Exists = UserId -> Task<bool>
-  type Create = User -> Task<unit>
-
-  type ListLikedTracks = unit -> Task<Track list>
-
-type IListPlaylistTracks =
-  abstract member ListPlaylistTracks: PlaylistId -> Task<Track list>
-
-type IListLikedTracks =
-  abstract member ListLikedTracks : unit -> Task<Track list>
-
-type ILoadPreset = abstract LoadPreset: presetId: PresetId -> Task<Preset>
-type ISavePreset = abstract SavePreset: preset: Preset -> Task<unit>
+type ILoadPreset = abstract LoadPreset: PresetId -> Task<Preset>
+type ISavePreset = abstract SavePreset: Preset -> Task<unit>
+type IQueueRun = abstract QueueRun: UserId * PresetId -> Task<unit>
+type IRemovePreset = abstract RemovePreset: PresetId -> Task<unit>
 
 type IPresetRepo =
   inherit ILoadPreset
   inherit ISavePreset
+  inherit IQueueRun
+  inherit IRemovePreset
 
 type ILoadUser = abstract LoadUser: userId: UserId -> Task<User>
 type ISaveUser = abstract SaveUser: user: User -> Task<unit>
+type IUserIdGenerator = abstract GenerateUserId: unit -> UserId
 
 type IUserRepo =
   inherit ILoadUser
   inherit ISaveUser
+  inherit IUserIdGenerator

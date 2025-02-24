@@ -11,22 +11,22 @@ open otsom.fs.Extensions
 
 type PresetFunctions(userRepo: IUserRepo, jwtService: IJWTService) =
 
-  let runForUser (req: HttpRequest) (fn) =
+  let runForUser (req: HttpRequest) fn =
     req.Headers.Authorization
     |> string
     |> Option.ofObj
-    |> Option.map (_.Split(" "))
+    |> Option.map _.Split(" ")
     |> Option.bind (function
       | [| "Bearer"; token |] -> Some(token)
       | _ -> None)
-    |> Option.taskMap (jwtService.DecodeToken)
+    |> Option.taskMap jwtService.DecodeToken
     |> Task.map Option.flatten
     |> TaskOption.taskMap fn
     |> Task.bind (Option.defaultWithTask (fun () -> UnauthorizedResult() :> IActionResult |> Task.FromResult))
 
   [<Function("ListPresets")>]
   member this.ListPresets
-    ([<HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "presets")>] request: HttpRequest)
+    ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets")>] request: HttpRequest)
     : Task<IActionResult> =
     let handler (user: TokenUser) = task {
       let! user = userRepo.LoadUser user.Id

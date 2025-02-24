@@ -4,17 +4,16 @@
 
 open Generator.Settings
 open Infrastructure
-open Infrastructure.Telegram.Repos
 open Infrastructure.Telegram.Services
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Options
+open MongoDB.Driver
 open Telegram.Bot
-open Telegram.Core
 open Telegram.Repos
 open otsom.fs.Extensions.DependencyInjection
-open otsom.fs.Telegram.Bot.Auth.Spotify.Mongo
 open otsom.fs.Bot.Telegram
+open otsom.fs.Auth.Spotify
 
 let private configureTelegramBotClient (options: IOptions<TelegramSettings>) =
   let settings = options.Value
@@ -22,14 +21,14 @@ let private configureTelegramBotClient (options: IOptions<TelegramSettings>) =
   settings.Token |> TelegramBotClient :> ITelegramBotClient
 
 let addTelegram (configuration: IConfiguration) (services: IServiceCollection) =
-  services |> Startup.addMongoSpotifyAuth |> Startup.addTelegramBot configuration
-
-  services.Configure<TelegramSettings>(configuration.GetSection(TelegramSettings.SectionName))
+  services.Configure<TelegramSettings>(configuration.GetSection TelegramSettings.SectionName)
 
   services.BuildSingleton<ITelegramBotClient, IOptions<TelegramSettings>>(configureTelegramBotClient)
-  services.BuildSingleton<SendLink, ITelegramBotClient>(sendLink)
-  services.BuildSingleton<ShowNotification, ITelegramBotClient>(Workflows.showNotification)
 
-  services.AddSingleton<IChatRepo, MockChatRepo>()
+  services |> Startup.addSpotifyAuth |> Startup.addTelegramBot configuration
+
+  services.BuildSingleton<IMongoCollection<Entities.Chat>, IMongoDatabase>(fun db -> db.GetCollection "chats")
+
+  services.AddSingleton<IChatRepo, ChatRepo>()
 
   services.AddScoped<MessageService>().AddScoped<CallbackQueryService>()

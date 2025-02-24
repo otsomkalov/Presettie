@@ -9,13 +9,13 @@ open Microsoft.Azure.Functions.Worker.Http
 open otsom.fs.Core
 
 [<CLIMutable>]
-type TokenRequest = { UserId: int64 }
+type TokenRequest = { UserId: string }
 
 type AuthFunctions(jwtService: IJWTService) =
 
   [<Function("GetToken")>]
   member this.GetToken
-    ([<HttpTrigger(AuthorizationLevel.Anonymous, "POST", Route = "auth/token")>] request: HttpRequest, [<FromBody>] body: TokenRequest)
+    ([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "auth/token")>] request: HttpRequest, [<FromBody>] body: TokenRequest)
     =
 
     let token = jwtService.GenerateToken(UserId body.UserId)

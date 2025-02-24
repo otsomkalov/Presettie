@@ -19,6 +19,22 @@ let recommendedTrack =
   { Id = TrackId "recommended-track-id"
     Artists = Set.ofList [ { Id = ArtistId "3" }; { Id = ArtistId "4" } ] }
 
+let readablePlaylistId = PlaylistId("readable-playlist-id")
+
+let readablePlatformPlaylist: Playlist =
+  Readable
+    { Id = readablePlaylistId
+      Name = "playlist-name"
+      TracksCount = 1 }
+
+let writablePlaylistId = PlaylistId("writable-playlist-id")
+
+let writablePlatformPlaylist: Playlist =
+  Writable
+    { Id = writablePlaylistId
+      Name = "playlist-name"
+      TracksCount = 1 }
+
 let includedPlaylistId = PlaylistId("included-playlist-id")
 
 let includedPlaylist: IncludedPlaylist =
@@ -26,8 +42,10 @@ let includedPlaylist: IncludedPlaylist =
     Name = "included-playlist-name"
     LikedOnly = false }
 
+let excludedPlaylistId = PlaylistId("excluded-playlist-id")
+
 let excludedPlaylist: ExcludedPlaylist =
-  { Id = ReadablePlaylistId(PlaylistId("excluded-playlist-id"))
+  { Id = ReadablePlaylistId(excludedPlaylistId)
     Name = "excluded-playlist-name" }
 
 let targetedPlaylistId = PlaylistId("targeted-playlist-id")
@@ -38,7 +56,7 @@ let targetedPlaylist: TargetedPlaylist =
     Overwrite = true }
 
 let presetSettingsMock: PresetSettings.PresetSettings =
-  { Size = PresetSettings.Size.create 10
+  { Size = PresetSettings.Size.Size 10
     RecommendationsEnabled = false
     LikedTracksHandling = PresetSettings.LikedTracksHandling.Ignore
     UniqueArtists = false }
@@ -53,13 +71,13 @@ let preset =
     TargetedPlaylists = [ targetedPlaylist ]
     Settings = presetSettingsMock }
 
-let userPreset : SimplePreset =
+let userPreset: SimplePreset =
   { Id = presetId
     Name = "user-preset-name" }
 
-let userId = otsom.fs.Core.UserId(1)
+let userId = otsom.fs.Core.UserId("user-id")
 
-let user : User =
+let user: User =
   { Id = userId
     CurrentPresetId = Some presetId
     Presets = [ userPreset ] }

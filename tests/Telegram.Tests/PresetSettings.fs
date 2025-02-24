@@ -1,60 +1,126 @@
 ﻿module Telegram.Tests.PresetSettings
 
-open System.Threading.Tasks
+#nowarn "20"
+
+open Domain.Core
 open Domain.Repos
 open Domain.Tests
 open FsUnit.Xunit
+open Moq
+open Telegram.Constants
+open Telegram.Core
+open Telegram.Handlers.Click
 open Xunit
-open Telegram.Workflows
 open otsom.fs.Bot
 
-let loadPreset =
-  { new ILoadPreset with
-      member this.LoadPreset presetId =
-        presetId |> should equal Mocks.presetId
-
-        Mocks.preset |> Task.FromResult }
-
-let botMessageCtx =
-  { new IEditMessageButtons with
-      member this.EditMessageButtons =
-        fun text buttons ->
-          buttons |> Seq.length |> should equal 6
-
-          Task.FromResult() }
+let private createClick data : Click =
+  { Id = Mocks.clickId
+    Chat = Mocks.chat
+    MessageId = Mocks.botMessageId
+    Data = data }
 
 [<Fact>]
-let ``enableUniqueArtists should update preset and show updated`` () =
-  let disableUniqueArtists =
-    fun presetId ->
-      presetId |> should equal Mocks.presetId
+let ``enableUniqueArtists should update preset and show updated if data matched`` () =
+  let presetRepo = Mock<IPresetRepo>()
 
-      Task.FromResult()
+  presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
 
-  let showNotification = fun _ -> Task.FromResult()
+  let presetService = Mock<IPresetService>()
+
+  presetService.Setup(_.EnableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
+
+  let botService = Mock<IBotService>()
+
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
 
   let sut =
-    PresetSettings.enableUniqueArtists loadPreset botMessageCtx disableUniqueArtists showNotification
+    enableUniqueArtistsClickHandler presetRepo.Object presetService.Object botService.Object
 
-  sut Mocks.presetId
+  let click =
+    createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.enableUniqueArtists ]
+
+  task {
+    let! result = sut click
+
+    result |> should equal (Some())
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    presetService.VerifyAll()
+  }
 
 [<Fact>]
-let ``disableUniqueArtists should update preset and show updated`` () =
-  let disableUniqueArtists =
-    fun presetId ->
-      presetId |> should equal Mocks.presetId
-
-      Task.FromResult()
-
-  let showNotification = fun _ -> Task.FromResult()
-
-  let showPresetInfo =
-    fun presetId ->
-      presetId |> should equal Mocks.presetId
-
-      Task.FromResult()
+let ``enableUniqueArtists should not update preset if data does not match`` () =
+  let presetRepo = Mock<IPresetRepo>()
+  let presetService = Mock<IPresetService>()
+  let botService = Mock<IBotService>()
 
   let sut =
-    PresetSettings.disableUniqueArtists loadPreset botMessageCtx disableUniqueArtists showNotification
+    enableUniqueArtistsClickHandler presetRepo.Object presetService.Object botService.Object
 
-  sut Mocks.presetId
+  let click = createClick []
+
+  task {
+    let! result = sut click
+
+    result |> should equal None
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    presetService.VerifyAll()
+  }
+
+[<Fact>]
+let ``disableUniqueArtists should update preset and show updated if data matched`` () =
+  let presetRepo = Mock<IPresetRepo>()
+
+  presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
+
+  let presetService = Mock<IPresetService>()
+
+  presetService.Setup(_.DisableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
+
+  let botService = Mock<IBotService>()
+
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
+
+  let sut =
+    disableUniqueArtistsClickHandler presetRepo.Object presetService.Object botService.Object
+
+  let click =
+    createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.disableUniqueArtists ]
+
+  task {
+    let! result = sut click
+
+    result |> should equal (Some())
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    presetService.VerifyAll()
+  }
+
+[<Fact>]
+let ``disableUniqueArtists should not update preset if data does not match`` () =
+  let presetRepo = Mock<IPresetRepo>()
+  let presetService = Mock<IPresetService>()
+  let botService = Mock<IBotService>()
+
+  let sut =
+    disableUniqueArtistsClickHandler presetRepo.Object presetService.Object botService.Object
+
+  let click = createClick []
+
+  task {
+    let! result = sut click
+
+    result |> should equal None
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    presetService.VerifyAll()
+  }

@@ -4,75 +4,163 @@ open System.Threading.Tasks
 open Domain.Core
 open Domain.Repos
 open Domain.Tests
+open Moq
+open MusicPlatform
 open Telegram.Core
 open FsUnit.Xunit
+open Telegram.Handlers.Click
 open Xunit
-open Domain.Workflows
-open Telegram.Workflows
 open otsom.fs.Bot
 
-let presetRepo =
-  { new ILoadPreset with
-      member this.LoadPreset(presetId) =
-        presetId |> should equal Mocks.preset.Id
+#nowarn "20"
 
-        Mocks.preset |> Task.FromResult }
-
-[<Fact>]
-let ``list should send included playlists`` () =
-  let botMessageCtx =
-    { new IEditMessageButtons with
-        member this.EditMessageButtons =
-          fun text buttons ->
-            buttons |> Seq.length |> should equal 2
-
-            Task.FromResult() }
-
-  let sut = IncludedPlaylist.list presetRepo botMessageCtx
-
-  sut Mocks.preset.Id (Page 0)
+let private createClick data : Click =
+  { Id = Mocks.clickId
+    Chat = Mocks.chat
+    MessageId = Mocks.botMessageId
+    Data = data }
 
 [<Fact>]
-let ``show should send included playlist details`` () =
+let ``list click should list included playlists if data match`` () =
+  let presetRepo = Mock<IPresetRepo>()
 
-  let botMessageCtx =
-    { new IEditMessageButtons with
-        member this.EditMessageButtons =
-          fun text buttons ->
-            buttons |> Seq.length |> should equal 3
+  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
 
-            Task.FromResult() }
+  let botService = Mock<IBotService>()
 
-  let countPlaylistTracks =
-    fun playlistId ->
-      playlistId
-      |> should equal (Mocks.includedPlaylist.Id |> ReadablePlaylistId.value)
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
 
-      0 |> Task.FromResult
+  let click = createClick [ "p"; Mocks.preset.Id.Value; "ip"; "0" ]
 
-  let sut = IncludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
+  task {
+    let! result = listIncludedPlaylistsClickHandler presetRepo.Object botService.Object click
 
-  sut Mocks.presetId Mocks.includedPlaylist.Id
+    result |> should equal (Some())
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+  }
 
 [<Fact>]
-let ``remove should delete playlist and show included playlists`` () =
-  let removePlaylist =
-    fun presetId playlistId ->
-      presetId |> should equal Mocks.presetId
-      playlistId |> should equal Mocks.includedPlaylist.Id
-      Task.FromResult()
+let ``list click should not list included playlists if data does not match`` () =
+  let presetRepo = Mock<IPresetRepo>()
 
-  let botMessageCtx =
-    { new IEditMessageButtons with
-        member this.EditMessageButtons =
-          fun text buttons ->
-            buttons |> Seq.length |> should equal 2
+  let botService = Mock<IBotService>()
 
-            Task.FromResult() }
+  let click = createClick []
 
-  let showNotification = fun _ -> Task.FromResult()
+  task {
+    let! result = listIncludedPlaylistsClickHandler presetRepo.Object botService.Object click
 
-  let sut =
-    IncludedPlaylist.remove presetRepo botMessageCtx removePlaylist showNotification
+    result |> should equal None
 
-  sut Mocks.presetId Mocks.includedPlaylist.Id
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+  }
+
+[<Fact>]
+let ``show click should send included playlist details`` () =
+  let presetRepo = Mock<IPresetRepo>()
+
+  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
+
+  let musicPlatform = Mock<IMusicPlatform>()
+
+  musicPlatform
+    .Setup(_.LoadPlaylist(Mocks.includedPlaylistId))
+    .ReturnsAsync(Ok Mocks.readablePlatformPlaylist)
+
+  let botService = Mock<IBotService>()
+
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
+
+  let buildMusicPlatform _ =
+    Task.FromResult(Some musicPlatform.Object)
+
+  let click =
+    createClick [ "p"; Mocks.preset.Id.Value; "ip"; Mocks.includedPlaylistId.Value; "i" ]
+
+  task {
+    let! result = showIncludedPlaylistClickHandler presetRepo.Object buildMusicPlatform botService.Object click
+
+    result |> should equal (Some())
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    musicPlatform.VerifyAll()
+  }
+
+[<Fact>]
+let ``show click should not send included playlist details if data does not match`` () =
+  let presetRepo = Mock<IPresetRepo>()
+
+  let botService = Mock<IBotService>()
+  let musicPlatform = Mock<IMusicPlatform>()
+
+  let click = createClick []
+
+  let buildMusicPlatform _ =
+    Task.FromResult(Some musicPlatform.Object)
+
+  task {
+    let! result = showIncludedPlaylistClickHandler presetRepo.Object buildMusicPlatform botService.Object click
+
+    result |> should equal None
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    musicPlatform.VerifyAll()
+  }
+
+[<Fact>]
+let ``remove click should delete playlist and show included playlists`` () =
+  let presetRepo = Mock<IPresetRepo>()
+
+  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
+
+  let presetService = Mock<IPresetService>()
+
+  presetService
+    .Setup(_.RemoveIncludedPlaylist(Mocks.presetId, Mocks.includedPlaylist.Id))
+    .ReturnsAsync(())
+
+  let botService = Mock<IBotService>()
+
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
+
+  let click =
+    createClick [ "p"; Mocks.preset.Id.Value; "ip"; Mocks.includedPlaylistId.Value; "rm" ]
+
+  task {
+    let! result = removeIncludedPlaylistClickHandler presetRepo.Object presetService.Object botService.Object click
+
+    result |> should equal (Some())
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    presetService.VerifyAll()
+  }
+
+[<Fact>]
+let ``remove click should not delete playlist`` () =
+  let presetRepo = Mock<IPresetRepo>()
+  let presetService = Mock<IPresetService>()
+  let botService = Mock<IBotService>()
+
+  let click = createClick []
+
+  task {
+    let! result = removeIncludedPlaylistClickHandler presetRepo.Object presetService.Object botService.Object click
+
+    result |> should equal None
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    presetService.VerifyAll()
+  }

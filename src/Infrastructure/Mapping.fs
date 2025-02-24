@@ -4,6 +4,7 @@ open System
 open Database
 open Domain.Core
 open Domain.Workflows
+open MongoDB.Bson
 open MusicPlatform
 open otsom.fs.Core
 
@@ -14,12 +15,12 @@ module SimplePreset =
       Name = preset.Name }
 
   let toDb (preset: SimplePreset) : Entities.SimplePreset =
-    Entities.SimplePreset(Id = (preset.Id |> PresetId.value), Name = preset.Name)
+    Entities.SimplePreset(Id = preset.Id.Value, Name = preset.Name)
 
 [<RequireQualifiedAccess>]
 module User =
   let fromDb (user: Entities.User) : User =
-    { Id = user.Id |> UserId
+    { Id = user.Id.ToString() |> UserId
       CurrentPresetId =
         if isNull user.CurrentPresetId then
           None
@@ -29,8 +30,8 @@ module User =
 
   let toDb (user: User) : Entities.User =
     Entities.User(
-      Id = (user.Id |> UserId.value),
-      CurrentPresetId = (user.CurrentPresetId |> Option.map PresetId.value |> Option.toObj),
+      Id = (user.Id.Value |> ObjectId),
+      CurrentPresetId = (user.CurrentPresetId |> Option.map _.Value |> Option.toObj),
       Presets = (user.Presets |> Seq.map SimplePreset.toDb)
     )
 
@@ -42,10 +43,7 @@ module IncludedPlaylist =
       LikedOnly = playlist.LikedOnly }
 
   let toDb (playlist: IncludedPlaylist) : Entities.IncludedPlaylist =
-    Entities.IncludedPlaylist(
-      Id = (playlist.Id |> ReadablePlaylistId.value |> PlaylistId.value),
-      Name = playlist.Name
-    )
+    Entities.IncludedPlaylist(Id = playlist.Id.Value.Value, Name = playlist.Name, LikedOnly = playlist.LikedOnly)
 
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
@@ -54,10 +52,7 @@ module ExcludedPlaylist =
       Name = playlist.Name }
 
   let toDb (playlist: ExcludedPlaylist) : Entities.ExcludedPlaylist =
-    Entities.ExcludedPlaylist(
-      Id = (playlist.Id |> ReadablePlaylistId.value |> PlaylistId.value),
-      Name = playlist.Name
-    )
+    Entities.ExcludedPlaylist(Id = playlist.Id.Value.Value, Name = playlist.Name)
 
 [<RequireQualifiedAccess>]
 module TargetedPlaylist =
@@ -67,11 +62,7 @@ module TargetedPlaylist =
       Overwrite = playlist.Overwrite }
 
   let toDb (playlist: TargetedPlaylist) : Entities.TargetedPlaylist =
-    Entities.TargetedPlaylist(
-      Id = (playlist.Id |> WritablePlaylistId.value |> PlaylistId.value),
-      Name = playlist.Name,
-      Overwrite = playlist.Overwrite
-    )
+    Entities.TargetedPlaylist(Id = playlist.Id.Value.Value, Name = playlist.Name, Overwrite = playlist.Overwrite)
 
   let mapPlaylists (playlists: Entities.TargetedPlaylist seq) =
     playlists |> Seq.map fromDb |> Seq.toList
@@ -83,7 +74,7 @@ module PresetSettings =
          | Some true -> PresetSettings.LikedTracksHandling.Include
          | Some false -> PresetSettings.LikedTracksHandling.Exclude
          | None -> PresetSettings.LikedTracksHandling.Ignore)
-      Size = settings.Size |> PresetSettings.Size.create
+      Size = settings.Size |> PresetSettings.Size.Size
       RecommendationsEnabled = settings.RecommendationsEnabled
       UniqueArtists = settings.UniqueArtists }
 
@@ -94,7 +85,7 @@ module PresetSettings =
          | PresetSettings.LikedTracksHandling.Include -> Nullable true
          | PresetSettings.LikedTracksHandling.Exclude -> Nullable false
          | PresetSettings.LikedTracksHandling.Ignore -> Nullable<bool>()),
-      Size = (settings.Size |> PresetSettings.Size.value),
+      Size = settings.Size.Value,
       RecommendationsEnabled = settings.RecommendationsEnabled,
       UniqueArtists = settings.UniqueArtists
     )
@@ -117,7 +108,7 @@ module Preset =
 
   let toDb (preset: Domain.Core.Preset) : Entities.Preset =
     Entities.Preset(
-      Id = (preset.Id |> PresetId.value),
+      Id = preset.Id.Value,
       Name = preset.Name,
       Settings = (preset.Settings |> PresetSettings.toDb),
       IncludedPlaylists = (preset.IncludedPlaylists |> Seq.map IncludedPlaylist.toDb),

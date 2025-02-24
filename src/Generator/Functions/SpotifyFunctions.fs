@@ -8,15 +8,11 @@ open Microsoft.Azure.Functions.Worker
 open Microsoft.Extensions.Options
 open Generator.Extensions.IQueryCollection
 open StackExchange.Redis
+open otsom.fs.Auth
 open otsom.fs.Extensions
-open otsom.fs.Telegram.Bot.Auth.Spotify
 
 type SpotifyFunctions
-  (
-    _telegramOptions: IOptions<TelegramSettings>,
-    _connectionMultiplexer: IConnectionMultiplexer,
-    fulfillAuth: Auth.Fulfill
-  ) =
+  (_telegramOptions: IOptions<TelegramSettings>, _connectionMultiplexer: IConnectionMultiplexer, authService: IAuthService) =
 
   let _telegramSettings = _telegramOptions.Value
 
@@ -27,10 +23,12 @@ type SpotifyFunctions
 
     let onError error =
       match error with
-      | Auth.StateNotFound -> BadRequestObjectResult("State not found in the cache") :> IActionResult
+      | FulfillmentError.StateNotFound -> BadRequestObjectResult("State not found in the cache") :> IActionResult
 
     match request.Query["state"], request.Query["code"] with
-    | QueryParam state, QueryParam code -> fulfillAuth state code |> TaskResult.either onSuccess onError
+    | QueryParam state, QueryParam code ->
+      authService.FulfillAuth(State.Parse state, Code code)
+      |> TaskResult.either onSuccess onError
     | QueryParam _, _ -> BadRequestObjectResult("Code is empty") :> IActionResult |> Task.FromResult
     | _, QueryParam _ -> BadRequestObjectResult("State is empty") :> IActionResult |> Task.FromResult
     | _, _ ->

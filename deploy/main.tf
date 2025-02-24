@@ -93,9 +93,9 @@ resource "azurerm_linux_function_app" "func-spotify-playlist-generator" {
     {
       Telegram__Token            = var.telegram-token
       Telegram__BotUrl           = var.telegram-bot-url
-      Spotify__ClientId          = var.spotify-client-id
-      Spotify__ClientSecret      = var.spotify-client-secret
-      Spotify__CallbackUrl       = var.spotify-callback-url
+      Auth__ClientId             = var.auth-client-id
+      Auth__ClientSecret         = var.auth-client-secret
+      Auth__CallbackUrl          = var.auth-callback-url
       Database__ConnectionString = var.database-connection-string
       Database__Name             = var.database-name
       GeneratorSchedule          = var.generator-schedule
@@ -104,7 +104,7 @@ resource "azurerm_linux_function_app" "func-spotify-playlist-generator" {
       Storage__QueueName         = azurerm_storage_queue.stq-requests-spotify-playlist-generator.name
     },
     {
-      for idx, scope in var.spotify-scopes : "Spotify__Scopes__${idx}" => scope
+      for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
     })
 
   tags = local.tags

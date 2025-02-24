@@ -42,7 +42,7 @@ type JWTService(options: IOptions<JWTSettings>) =
   interface IJWTService with
     member this.GenerateToken(userId: UserId) =
       let claims =
-        [ Claim(JwtRegisteredClaimNames.Sub, userId |> UserId.value |> string) ]
+        [ Claim(JwtRegisteredClaimNames.Sub, userId.Value) ]
 
       let token =
         JwtSecurityToken(
@@ -80,6 +80,6 @@ type JWTService(options: IOptions<JWTSettings>) =
         match result.IsValid with
         | true ->
           match result.Claims.TryGetValue(ClaimTypes.NameIdentifier) with
-          | true, userId -> Some({ Id = userId |> string |> int64 |> UserId })
+          | true, userId -> Some({ Id = userId |> string |> UserId })
           | _ -> None
         | _ -> None)

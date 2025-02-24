@@ -1,77 +1,167 @@
 ﻿module Telegram.Tests.ExcludedPlaylist
 
+#nowarn "20"
+
 open System.Threading.Tasks
 open Domain.Core
 open Domain.Repos
-open Domain.Tests
+open Moq
+open MusicPlatform
 open Telegram.Core
-open FsUnit.Xunit
+open Telegram.Handlers.Click
 open Xunit
-open Domain.Workflows
-open Telegram.Workflows
 open otsom.fs.Bot
+open FsUnit
+open Telegram.Tests
+open Domain.Tests
 
-let presetRepo =
-  { new ILoadPreset with
-      member this.LoadPreset(presetId) =
-        presetId |> should equal Mocks.preset.Id
-
-        Mocks.preset |> Task.FromResult }
-
-[<Fact>]
-let ``list should send excluded playlists`` () =
-  let botMessageCtx =
-    { new IEditMessageButtons with
-        member this.EditMessageButtons =
-          fun text buttons ->
-            buttons |> Seq.length |> should equal 2
-
-            Task.FromResult() }
-
-  let sut = ExcludedPlaylist.list presetRepo botMessageCtx
-
-  sut Mocks.preset.Id (Page 0)
+let private createClick data : Click =
+  { Id = Mocks.clickId
+    Chat = Mocks.chat
+    MessageId = Mocks.botMessageId
+    Data = data }
 
 [<Fact>]
-let ``show should send excluded playlist details`` () =
-  let botMessageCtx =
-    { new IEditMessageButtons with
-        member this.EditMessageButtons =
-          fun text buttons ->
-            buttons |> Seq.length |> should equal 3
+let ``list click should list excluded playlists if data match`` () =
+  let presetRepo = Mock<IPresetRepo>()
 
-            Task.FromResult() }
+  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
 
-  let countPlaylistTracks =
-    fun playlistId ->
-      playlistId
-      |> should equal (Mocks.excludedPlaylist.Id |> ReadablePlaylistId.value)
+  let botService = Mock<IBotService>()
 
-      0 |> Task.FromResult
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
 
-  let sut = ExcludedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
+  let click = createClick [ "p"; Mocks.preset.Id.Value; "ep"; "0" ]
 
-  sut Mocks.presetId Mocks.excludedPlaylist.Id
+  task {
+    let! result = listExcludedPlaylistsClickHandler presetRepo.Object botService.Object click
+
+    result |> should equal (Some())
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+  }
 
 [<Fact>]
-let ``remove should delete playlist and show excluded playlists`` () =
-  let removePlaylist =
-    fun presetId playlistId ->
-      presetId |> should equal Mocks.presetId
-      playlistId |> should equal Mocks.excludedPlaylist.Id
-      Task.FromResult()
+let ``list click should not list excluded playlists if data does not match`` () =
+  let presetRepo = Mock<IPresetRepo>()
 
-  let botMessageCtx =
-    { new IEditMessageButtons with
-        member this.EditMessageButtons =
-          fun text buttons ->
-            buttons |> Seq.length |> should equal 2
+  let botService = Mock<IBotService>()
 
-            Task.FromResult() }
+  let click = createClick []
 
-  let showNotification = fun _ -> Task.FromResult()
+  task {
+    let! result = listExcludedPlaylistsClickHandler presetRepo.Object botService.Object click
 
-  let sut =
-    ExcludedPlaylist.remove presetRepo botMessageCtx removePlaylist showNotification
+    result |> should equal None
 
-  sut Mocks.presetId Mocks.excludedPlaylist.Id
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+  }
+
+[<Fact>]
+let ``show click should send excluded playlist details`` () =
+  let presetRepo = Mock<IPresetRepo>()
+
+  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
+
+  let musicPlatform = Mock<IMusicPlatform>()
+
+  musicPlatform
+    .Setup(_.LoadPlaylist(Mocks.excludedPlaylistId))
+    .ReturnsAsync(Ok Mocks.readablePlatformPlaylist)
+
+  let botService = Mock<IBotService>()
+
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
+
+  let buildMusicPlatform _ =
+    Task.FromResult(Some musicPlatform.Object)
+
+  let click =
+    createClick [ "p"; Mocks.preset.Id.Value; "ep"; Mocks.excludedPlaylistId.Value; "i" ]
+
+  task {
+    let! result = showExcludedPlaylistClickHandler presetRepo.Object buildMusicPlatform botService.Object click
+
+    result |> should equal (Some())
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    musicPlatform.VerifyAll()
+  }
+
+[<Fact>]
+let ``show click should not send playlist details if data does not match`` () =
+  let presetRepo = Mock<IPresetRepo>()
+
+  let botService = Mock<IBotService>()
+  let musicPlatform = Mock<IMusicPlatform>()
+
+  let click = createClick []
+
+  let buildMusicPlatform _ =
+    Task.FromResult(Some musicPlatform.Object)
+
+  task {
+    let! result = showExcludedPlaylistClickHandler presetRepo.Object buildMusicPlatform botService.Object click
+
+    result |> should equal None
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    musicPlatform.VerifyAll()
+  }
+
+[<Fact>]
+let ``remove click should delete excluded playlist and show excluded playlists`` () =
+  let presetRepo = Mock<IPresetRepo>()
+
+  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
+
+  let presetService = Mock<IPresetService>()
+
+  presetService
+    .Setup(_.RemoveExcludedPlaylist(Mocks.presetId, Mocks.excludedPlaylist.Id))
+    .ReturnsAsync(())
+
+  let botService = Mock<IBotService>()
+
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
+
+  let click =
+    createClick [ "p"; Mocks.preset.Id.Value; "ep"; Mocks.excludedPlaylistId.Value; "rm" ]
+
+  task {
+    let! result = removeExcludedPlaylistClickHandler presetRepo.Object presetService.Object botService.Object click
+
+    result |> should equal (Some())
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    presetService.VerifyAll()
+  }
+
+[<Fact>]
+let ``remove click should not delete playlist`` () =
+  let presetRepo = Mock<IPresetRepo>()
+  let presetService = Mock<IPresetService>()
+  let botService = Mock<IBotService>()
+
+  let click = createClick []
+
+  task {
+    let! result = removeExcludedPlaylistClickHandler presetRepo.Object presetService.Object botService.Object click
+
+    result |> should equal None
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    presetService.VerifyAll()
+  }
