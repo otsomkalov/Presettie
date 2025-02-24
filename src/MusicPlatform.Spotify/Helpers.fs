@@ -1,6 +1,8 @@
 ﻿namespace MusicPlatform.Spotify
 
 open System
+open System.Text.Json
+open System.Text.Json.Serialization
 open MusicPlatform
 open SpotifyAPI.Web
 
@@ -21,3 +23,13 @@ module Helpers =
       |> Seq.tryPick (fun e -> e :?> APIException |> Option.ofObj)
     | :? APIException as e -> Some e
     | _ -> None
+
+module JSON =
+  let options =
+    JsonFSharpOptions.Default().WithUnionExternalTag().WithUnionUnwrapRecordCases().ToJsonSerializerOptions()
+
+  let serialize value =
+    JsonSerializer.Serialize(value, options)
+
+  let deserialize<'a> (json: string) =
+    JsonSerializer.Deserialize<'a>(json, options)

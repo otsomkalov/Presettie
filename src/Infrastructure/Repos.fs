@@ -4,11 +4,11 @@ open Azure.Storage.Queues
 open Domain.Core
 open Domain.Repos
 open FSharp
-open Infrastructure.Helpers
 open MongoDB.Bson
 open MongoDB.Driver
 open Database
 open MusicPlatform
+open MusicPlatform.Spotify
 open otsom.fs.Core
 open otsom.fs.Extensions
 open Infrastructure.Mapping

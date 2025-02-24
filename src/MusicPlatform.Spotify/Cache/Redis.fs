@@ -5,6 +5,7 @@ open System.Text.Json
 open Microsoft.ApplicationInsights
 open Microsoft.ApplicationInsights.DataContracts
 open MusicPlatform
+open MusicPlatform.Spotify
 open StackExchange.Redis
 open otsom.fs.Extensions
 open System.Threading.Tasks
@@ -74,10 +75,10 @@ let private listLength (telemetryClient: TelemetryClient) (cache: IDatabase) =
 let private listCachedTracks telemetryClient cache =
   fun key ->
     loadList telemetryClient cache key
-    |> Task.map (List.ofArray >> List.map (string >> JsonSerializer.Deserialize<Track>))
+    |> Task.map (List.ofArray >> List.map (string >> JSON.deserialize<Track>))
 
 let private serializeTracks tracks =
-  tracks |> List.map (JsonSerializer.Serialize >> RedisValue)
+  tracks |> List.map (JSON.serialize >> RedisValue)
 
 [<RequireQualifiedAccess>]
 module UserRepo =
