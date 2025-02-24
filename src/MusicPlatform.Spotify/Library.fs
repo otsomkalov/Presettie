@@ -277,4 +277,4 @@ module Library =
               User.listLikedTracks telemetryClient multiplexer client userId ()
 
             member this.ListPlaylistTracks(playlistId) =
-              Playlist.listTracks logger client playlistId })
+              PlaylistRepo.listTracks telemetryClient multiplexer logger client playlistId })
