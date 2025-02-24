@@ -29,8 +29,6 @@ let private configureServices (builderContext: HostBuilderContext) (services: IS
 
   services.AddLocalization()
 
-  services.AddMvcCore().AddNewtonsoftJson()
-
   ()
 
 let private configureAppConfiguration _ (configBuilder: IConfigurationBuilder) =
