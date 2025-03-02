@@ -169,8 +169,8 @@ module Track =
     fun tracks ->
       let request = RecommendationsRequest()
 
-      for track in tracks |> List.takeSafe 5 do
-        request.SeedTracks.Add(track |> TrackId.value)
+      for trackId in tracks |> List.takeSafe 5 do
+        request.SeedTracks.Add(trackId.Value)
 
       request.Limit <- recommendationsLimit
 
