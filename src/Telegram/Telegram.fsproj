@@ -19,7 +19,6 @@
   <ItemGroup>
     <PackageReference Include="otsom.fs.Bot" Version="0.0.34"/>
     <PackageReference Include="otsom.fs.Auth" Version="0.0.2"/>
-    <PackageReference Include="otsom.fs.Extensions.DependencyInjection" Version="0.0.2"/>
   </ItemGroup>
 
   <ItemGroup>

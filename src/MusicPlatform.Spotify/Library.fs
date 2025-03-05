@@ -258,6 +258,7 @@ module Library =
     (logger: ILogger<BuildMusicPlatform>)
     telemetryClient
     multiplexer
+    (getRecommendations: IGetRecommendations)
     : BuildMusicPlatform =
 
     fun userId ->
@@ -265,7 +266,9 @@ module Library =
       &|> Option.map (fun client ->
         { new IMusicPlatform with
             member this.LoadPlaylist(playlistId) = Playlist.load client playlistId
-            member this.GetRecommendations(tracks) = Track.getRecommendations client tracks
+
+            member this.GetRecommendations(tracks) =
+              getRecommendations.GetRecommendations(tracks)
 
             member this.AddTracks(playlistId, tracks) =
               TargetedPlaylistRepo.addTracks telemetryClient client multiplexer playlistId tracks
