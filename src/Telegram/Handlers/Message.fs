@@ -33,13 +33,12 @@ let startMessageHandler
       let! user = userRepo.LoadUser message.Chat.UserId
 
       let processSuccessfulLogin =
-        fun () -> chatCtx.SendMessage "Successful login!" &|> ignore
+        fun () -> chatCtx.SendMessage(resp[Messages.successfulLogin]) &|> ignore
 
       let sendErrorMessage =
         function
-        | CompleteError.StateNotFound -> chatCtx.SendMessage "State not found. Try to login via fresh link."
-        | CompleteError.StateDoesntBelongToUser ->
-          chatCtx.SendMessage("State provided does not belong to your login request. Try to login via fresh link.")
+        | CompleteError.StateNotFound -> chatCtx.SendMessage(resp[Messages.stateNotFound])
+        | CompleteError.StateDoesntBelongToUser -> chatCtx.SendMessage(resp[Messages.notUserState])
 
       do!
         authService.CompleteAuth(user.Id.ToAccountId(), State.Parse state)

@@ -34,3 +34,9 @@ module MessageCommands =
   let excludePlaylist = "/exclude"
   let targetPlaylist = "/target"
   let runPreset = "/run"
+
+[<RequireQualifiedAccess>]
+module Messages =
+  let successfulLogin = "successful-login"
+  let stateNotFound = "state-not-found"
+  let notUserState = "not-user-state"
