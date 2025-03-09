@@ -76,7 +76,8 @@ type CallbackQueryService
     handlersFactories: ClickHandlerFactory seq,
     logger: ILogger<CallbackQueryService>,
     chatRepo: IChatRepo,
-    chatService: IChatService
+    chatService: IChatService,
+    getResp: Resources.GetResourceProvider
   ) =
 
   member this.ProcessAsync(callbackQuery: CallbackQuery) =
@@ -84,6 +85,14 @@ type CallbackQueryService
     let clickId = callbackQuery.Id |> ButtonClickId
 
     let botService = buildBotService chatId
+
+    let lang =
+      callbackQuery.Message.From
+      |> Option.ofObj
+      |> Option.bind (fun u ->
+        u.LanguageCode
+        |> Option.ofObj
+        |> Option.bind (Option.someIf (String.IsNullOrEmpty >> not)))
 
     task {
       let! chat =
@@ -96,7 +105,9 @@ type CallbackQueryService
           MessageId = BotMessageId callbackQuery.Message.MessageId
           Data = callbackQuery.Data.Split("|") |> List.ofArray }
 
-      let handlers = handlersFactories |> Seq.map (fun f -> f botService)
+      let! resp = getResp lang
+
+      let handlers = handlersFactories |> Seq.map (fun f -> f resp botService)
 
       use e = handlers.GetEnumerator()
 

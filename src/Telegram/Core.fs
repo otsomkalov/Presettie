@@ -29,7 +29,7 @@ type MessageHandlerFactory = IResourceProvider -> IBotService -> MessageHandler
 
 type ClickHandler = Click -> Task<unit option>
 
-type ClickHandlerFactory = IBotService -> ClickHandler
+type ClickHandlerFactory = IResourceProvider -> IBotService -> ClickHandler
 
 type UserId with
   member this.ToAccountId() = this.Value |> AccountId
