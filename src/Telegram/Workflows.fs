@@ -424,6 +424,13 @@ module Chat =
       return newChat
     }
 
+[<RequireQualifiedAccess>]
+module Resources =
+  let getResourceProvider createResp createDefaultResp : Resources.GetResourceProvider =
+    function
+    | Some l -> createResp l
+    | None -> createDefaultResp()
+
 type ChatService(chatRepo: IChatRepo, userService: IUserService) =
   interface IChatService with
     member this.CreateChat(chatId) = Chat.create chatRepo userService chatId
