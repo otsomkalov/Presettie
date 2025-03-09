@@ -1,11 +1,9 @@
 ﻿module Domain.Tests.Tracks
 
-open Domain.Core
 open Domain.Workflows
 open MusicPlatform
 open Xunit
 open FsUnit.Xunit
-open Domain.Tests.Extensions
 
 [<Fact>]
 let ``uniqueByArtists returns tracks which have only unique artists`` () =

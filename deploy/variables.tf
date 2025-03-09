@@ -6,19 +6,19 @@ variable "telegram-bot-url" {
   type = string
 }
 
-variable "spotify-client-id" {
+variable "auth-client-id" {
   type = string
 }
 
-variable "spotify-client-secret" {
+variable "auth-client-secret" {
   type = string
 }
 
-variable "spotify-callback-url" {
+variable "auth-callback-url" {
   type = string
 }
 
-variable "spotify-scopes" {
+variable "auth-scopes" {
   type = list(string)
 }
 
@@ -39,6 +39,10 @@ variable "redis-connection-string" {
 }
 
 variable "storage-queue-name" {
+  type = string
+}
+
+variable "reccobeats-url" {
   type = string
 }
 

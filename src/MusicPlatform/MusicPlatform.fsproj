@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="otsom.fs.Extensions.DependencyInjection" Version="0.0.3"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="Library.fs"/>
   </ItemGroup>
 

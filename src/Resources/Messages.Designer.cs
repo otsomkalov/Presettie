@@ -61,6 +61,18 @@ namespace Resources {
         
         /// <summary>
         ///   Looks up a localized string similar to 
+        ///*Name*: {0}
+        ///*Tracks*: {1}
+        ///        .
+        /// </summary>
+        public static string ExcludedPlaylistDetails {
+            get {
+                return ResourceManager.GetString("ExcludedPlaylistDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
         ///*Q:* Why tracks, that I&apos;ve added to playlist using Spotify, are not respected by the bot?
         ///*A:* Bot uses caching in order not to bomb Spotify API with requests. Your playlist tracks is cached once a week. For the moment there is no possibility to force cache clean.
         ///*Q:* Why sometimes it takes minutes to generate my playlist?
@@ -212,6 +224,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Preset successfully removed!.
+        /// </summary>
+        public static string PresetRemoved {
+            get {
+                return ResourceManager.GetString("PresetRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Playlist size should be a number!.
         /// </summary>
         public static string PresetSizeNotANumber {
@@ -244,6 +265,15 @@ namespace Resources {
         public static string PresetSizeTooSmall {
             get {
                 return ResourceManager.GetString("PresetSizeTooSmall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error during preset validation!.
+        /// </summary>
+        public static string PresetValidationError {
+            get {
+                return ResourceManager.GetString("PresetValidationError", resourceCulture);
             }
         }
         
@@ -319,6 +349,19 @@ namespace Resources {
         public static string SendTargetedPlaylist {
             get {
                 return ResourceManager.GetString("SendTargetedPlaylist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ///*Name*: {0}
+        ///*Tracks*: {1}
+        ///*Overwrite*: {2}
+        ///        .
+        /// </summary>
+        public static string TargetedPlaylistDetails {
+            get {
+                return ResourceManager.GetString("TargetedPlaylistDetails", resourceCulture);
             }
         }
         

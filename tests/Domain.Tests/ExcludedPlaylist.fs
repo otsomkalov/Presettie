@@ -10,13 +10,13 @@ open Xunit
 let ``remove should remove playlist from preset`` () =
   let mock = Mock<IPresetRepo>()
 
-  mock.Setup(fun m -> m.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
+  mock.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
 
   let expected =
     { Mocks.preset with
         ExcludedPlaylists = [] }
 
-  mock.Setup(fun m -> m.SavePreset(expected)).ReturnsAsync(())
+  mock.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
   let sut = ExcludedPlaylist.remove mock.Object
 

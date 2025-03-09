@@ -176,10 +176,30 @@ Click "Generate" keyboard button or send "/generate" command. After a few second
 *Only liked*: {2}
         </value>
     </data>
+    <data name="ExcludedPlaylistDetails" xml:space="preserve">
+        <value>
+*Name*: {0}
+*Tracks*: {1}
+        </value>
+    </data>
+    <data name="TargetedPlaylistDetails" xml:space="preserve">
+        <value>
+*Name*: {0}
+*Tracks*: {1}
+*Overwrite*: {2}
+        </value>
+    </data>
+
     <data name="UnknownCommand" xml:space="preserve">
         <value>Unknown command!</value>
     </data>
     <data name="NoCurrentPreset" xml:space="preserve">
         <value>No current preset selected!</value>
+    </data>
+    <data name="PresetValidationError" xml:space="preserve">
+        <value>Error during preset validation!</value>
+    </data>
+    <data name="PresetRemoved" xml:space="preserve">
+        <value>Preset successfully removed!</value>
     </data>
 </root>

@@ -1,0 +1,26 @@
+﻿<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Bot/">
+    <Project Path="Infrastructure.Telegram\Infrastructure.Telegram.fsproj" Type="Classic F#" />
+    <Project Path="Resources\Resources.csproj" Type="Classic C#" />
+    <Project Path="Telegram\Telegram.fsproj" Type="Classic F#" />
+  </Folder>
+  <Folder Name="/src/Domain/">
+    <Project Path="Database\Database.csproj" Type="Classic C#" />
+    <Project Path="Domain\Domain.fsproj" Type="Classic F#" />
+    <Project Path="Infrastructure\Infrastructure.fsproj" Type="Classic F#" />
+    <Project Path="MusicPlatform\MusicPlatform.fsproj" Type="Classic F#" />
+  </Folder>
+  <Folder Name="/src/Integrations/">
+    <Project Path="MusicPlatform.ReccoBeats\MusicPlatform.ReccoBeats.fsproj" Type="Classic F#" />
+    <Project Path="MusicPlatform.Spotify\MusicPlatform.Spotify.fsproj" Type="Classic F#" />
+  </Folder>
+  <Folder Name="/src/Runners/">
+    <Project Path="API\API.fsproj" Type="Classic F#" />
+    <Project Path="Generator\Generator.fsproj" Type="Classic F#" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="..\tests\Domain.Tests\Domain.Tests.fsproj" Type="Classic F#" />
+    <Project Path="..\tests\Telegram.Tests\Telegram.Tests.fsproj" Type="Classic F#" />
+  </Folder>
+</Solution>

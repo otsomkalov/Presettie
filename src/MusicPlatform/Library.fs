@@ -2,9 +2,20 @@
 
 open System.Threading.Tasks
 
-type UserId = UserId of string
-type PlaylistId = PlaylistId of string
-type TrackId = TrackId of string
+type UserId =
+  | UserId of string
+
+  member this.Value = let (UserId id) = this in id
+
+type PlaylistId =
+  | PlaylistId of string
+
+  member this.Value = let (PlaylistId id) = this in id
+
+type TrackId =
+  | TrackId of string
+
+  member this.Value = let (TrackId id) = this in id
 
 type ArtistId = ArtistId of string
 
@@ -12,11 +23,7 @@ type Artist = { Id: ArtistId }
 
 type Track = { Id: TrackId; Artists: Set<Artist> }
 
-[<RequireQualifiedAccess>]
-module TrackId =
-  let value (TrackId id) = id
-
-type PlaylistData = { Id: PlaylistId; Name: string }
+type PlaylistData = { Id: PlaylistId; Name: string; TracksCount: int }
 
 type Playlist =
   | Readable of PlaylistData
@@ -24,16 +31,12 @@ type Playlist =
 
 [<RequireQualifiedAccess>]
 module Playlist =
-  type ListTracks = PlaylistId -> Task<Track list>
-  type AddTracks = PlaylistId -> Track list -> Task<unit>
-  type ReplaceTracks = PlaylistId -> Track list -> Task<unit>
-  type CountTracks = PlaylistId -> Task<int>
-
   type LoadError = | NotFound
 
-  type Load = PlaylistId -> Task<Result<Playlist, LoadError>>
+  type RawPlaylistId =
+    | RawPlaylistId of string
+    member this.Value = let (RawPlaylistId id) = this in id
 
-  type RawPlaylistId = RawPlaylistId of string
   type IdParsingError = IdParsingError of string
 
   type ParseId = RawPlaylistId -> Result<PlaylistId, IdParsingError>
@@ -46,9 +49,27 @@ module User =
 module Track =
   type GetRecommendations = TrackId list -> Task<Track list>
 
-type ILoadPlaylist = abstract LoadPlaylist: Playlist.Load
+type ILoadPlaylist = abstract LoadPlaylist: PlaylistId -> Task<Result<Playlist, Playlist.LoadError>>
+
+type IReplaceTracks = abstract ReplaceTracks: PlaylistId * Track list -> Task<unit>
+
+type IAddTracks = abstract AddTracks: PlaylistId * Track list -> Task<unit>
+
+type IListPlaylistTracks =
+  abstract ListPlaylistTracks: PlaylistId -> Task<Track list>
+
+type IListLikedTracks =
+  abstract ListLikedTracks : unit -> Task<Track list>
+
+type IGetRecommendations =
+  abstract GetRecommendations: TrackId list -> Task<Track list>
 
 type IMusicPlatform =
   inherit ILoadPlaylist
+  inherit IReplaceTracks
+  inherit IAddTracks
+  inherit IListPlaylistTracks
+  inherit IListLikedTracks
+  inherit IGetRecommendations
 
 type BuildMusicPlatform = UserId -> Task<IMusicPlatform option>

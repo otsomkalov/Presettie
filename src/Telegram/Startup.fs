@@ -1,65 +1,86 @@
 ﻿module Telegram.Startup
 
+open Domain.Core
 open Domain.Repos
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open MusicPlatform
 open Telegram.Core
 open Telegram.Handlers.Click
-open Telegram.Repos
+open Telegram.Handlers.Message
 open Telegram.Workflows
+open otsom.fs.Auth
 open otsom.fs.Extensions.DependencyInjection
-open otsom.fs.Telegram.Bot.Auth.Spotify
+
+#nowarn "20"
 
 let private addClickHandlers (services: IServiceCollection) =
   services
+    .BuildSingleton<ClickHandlerFactory, IUserRepo>(listPresetsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(presetInfoClickHandler)
-    .BuildSingleton<ClickHandlerFactory, _, IChatRepo>(showPresetsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetService>(runPresetClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IUserRepo, IUserService>(removePresetClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IUserService>(setCurrentPresetClickHandler)
 
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(enableRecommendationsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(disableRecommendationsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(enableRecommendationsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(disableRecommendationsClickHandler)
 
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(enableUniqueArtistsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(disableUniqueArtistsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(enableUniqueArtistsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(disableUniqueArtistsClickHandler)
 
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(includeLikedTracksClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(excludeLikedTracksClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(ignoreLikedTracksClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(includeLikedTracksClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(excludeLikedTracksClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(ignoreLikedTracksClickHandler)
 
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks>(showIncludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(removeIncludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listIncludedPlaylistsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listExcludedPlaylistsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listTargetedPlaylistsClickHandler)
 
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks>(showExcludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(removeExcludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, BuildMusicPlatform>(showIncludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, BuildMusicPlatform>(showExcludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, BuildMusicPlatform>(showTargetedPlaylistClickHandler)
 
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks>(showTargetedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks, ShowNotification>(appendToTargetedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, Playlist.CountTracks, ShowNotification>(overwriteTargetedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, ShowNotification>(removeTargetedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, BuildMusicPlatform>(appendToTargetedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, BuildMusicPlatform>(overwriteTargetedPlaylistClickHandler)
+
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(removeIncludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(removeExcludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(removeTargetedPlaylistClickHandler)
+
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, BuildMusicPlatform>(setAllTracksIncludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, BuildMusicPlatform>(setOnlyLikedIncludedPlaylistClickHandler)
 
 let private addMessageHandlers (services: IServiceCollection) =
   services
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetRepo, IAuthService>(startMessageHandler)
     .AddSingleton<MessageHandlerFactory>(faqMessageHandler)
     .AddSingleton<MessageHandlerFactory>(privacyMessageHandler)
     .AddSingleton<MessageHandlerFactory>(guideMessageHandler)
     .AddSingleton<MessageHandlerFactory>(helpMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, _, IChatRepo>(myPresetsMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, _, _, IChatRepo>(backMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, _, _, IChatRepo>(presetSettingsMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, _, _, _, IChatRepo>(setPresetSizeMessageHandler)
 
+    .BuildSingleton<MessageHandlerFactory, IUserRepo>(myPresetsMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetRepo>(presetSettingsMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService>(queuePresetRunMessageHandler)
+
+    .BuildSingleton<MessageHandlerFactory, IUserService>(createPresetMessageHandler)
     .AddSingleton<MessageHandlerFactory>(createPresetButtonMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, _, IChatRepo>(createPresetMessageHandler)
 
-    .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(includePlaylistButtonMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(excludePlaylistButtonMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, IChatRepo, IUserRepo, _, _, _>(targetPlaylistButtonMessageHandler)
+    .AddSingleton<MessageHandlerFactory>(setPresetSizeMessageButtonHandler)
+    .BuildSingleton<MessageHandlerFactory, IUserService, IUserRepo, IPresetRepo>(setPresetSizeMessageHandler)
 
-    .BuildSingleton<MessageHandlerFactory, IUserRepo, IChatRepo, _, _, _>(includePlaylistMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, IUserRepo, IChatRepo, _, _, _>(excludePlaylistMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, _, IAuthService>(includePlaylistButtonMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, _, IAuthService>(excludePlaylistButtonMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, _, IAuthService>(targetPlaylistButtonMessageHandler)
+
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService, IAuthService>(includePlaylistMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService, IAuthService>(excludePlaylistMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService, IAuthService>(targetPlaylistMessageHandler)
+
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetRepo>(backMessageButtonHandler)
 
 let addBot (cfg: IConfiguration) (services: IServiceCollection) =
-  services
-  |> Startup.addTelegramBotSpotifyAuthCore cfg
-  |> addClickHandlers
-  |> addMessageHandlers
+  services.AddSingleton<IChatService, ChatService>()
+
+  services |> Startup.addAuthCore cfg
+
+  services |> addClickHandlers |> addMessageHandlers

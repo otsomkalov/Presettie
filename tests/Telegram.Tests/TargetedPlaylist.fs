@@ -1,77 +1,167 @@
 ﻿module Telegram.Tests.TargetedPlaylist
 
+#nowarn "20"
+
 open System.Threading.Tasks
 open Domain.Core
 open Domain.Repos
-open Domain.Tests
+open Moq
+open MusicPlatform
 open Telegram.Core
-open FsUnit.Xunit
+open Telegram.Handlers.Click
 open Xunit
-open Domain.Workflows
-open Telegram.Workflows
 open otsom.fs.Bot
+open FsUnit
+open Telegram.Tests
+open Domain.Tests
 
-let presetRepo =
-  { new ILoadPreset with
-      member this.LoadPreset(presetId) =
-        presetId |> should equal Mocks.preset.Id
-
-        Mocks.preset |> Task.FromResult }
-
-[<Fact>]
-let ``list should send targeted playlists`` () =
-  let botMessageCtx =
-    { new IEditMessageButtons with
-        member this.EditMessageButtons =
-          fun text buttons ->
-            buttons |> Seq.length |> should equal 2
-
-            Task.FromResult() }
-
-  let sut = TargetedPlaylist.list presetRepo botMessageCtx
-
-  sut Mocks.presetId (Page 0)
+let private createClick data : Click =
+  { Id = Mocks.clickId
+    Chat = Mocks.chat
+    MessageId = Mocks.botMessageId
+    Data = data }
 
 [<Fact>]
-let ``show should send targeted playlist details`` () =
-  let botMessageCtx =
-    { new IEditMessageButtons with
-        member this.EditMessageButtons =
-          fun text buttons ->
-            buttons |> Seq.length |> should equal 3
+let ``list click should list targeted playlists if data match`` () =
+  let presetRepo = Mock<IPresetRepo>()
 
-            Task.FromResult() }
+  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
 
-  let countPlaylistTracks =
-    fun playlistId ->
-      playlistId
-      |> should equal (Mocks.targetedPlaylist.Id |> WritablePlaylistId.value)
+  let botService = Mock<IBotService>()
 
-      0 |> Task.FromResult
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
 
-  let sut = TargetedPlaylist.show botMessageCtx presetRepo countPlaylistTracks
+  let click = createClick [ "p"; Mocks.preset.Id.Value; "tp"; "0" ]
 
-  sut Mocks.presetId Mocks.targetedPlaylist.Id
+  task {
+    let! result = listTargetedPlaylistsClickHandler presetRepo.Object botService.Object click
+
+    result |> should equal (Some())
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+  }
 
 [<Fact>]
-let ``remove should delete playlist and show targeted playlists`` () =
-  let removePlaylist =
-    fun presetId playlistId ->
-      presetId |> should equal Mocks.presetId
-      playlistId |> should equal Mocks.targetedPlaylist.Id
-      Task.FromResult()
+let ``list click should not list targeted playlists if data does not match`` () =
+  let presetRepo = Mock<IPresetRepo>()
 
-  let showNotification = fun _ -> Task.FromResult()
+  let botService = Mock<IBotService>()
 
-  let botMessageCtx =
-    { new IEditMessageButtons with
-        member this.EditMessageButtons =
-          fun text buttons ->
-            buttons |> Seq.length |> should equal 2
+  let click = createClick []
 
-            Task.FromResult() }
+  task {
+    let! result = listTargetedPlaylistsClickHandler presetRepo.Object botService.Object click
 
-  let sut =
-    TargetedPlaylist.remove presetRepo botMessageCtx removePlaylist showNotification
+    result |> should equal None
 
-  sut Mocks.presetId Mocks.targetedPlaylist.Id
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+  }
+
+[<Fact>]
+let ``show click should send targeted playlist details`` () =
+  let presetRepo = Mock<IPresetRepo>()
+
+  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
+
+  let musicPlatform = Mock<IMusicPlatform>()
+
+  musicPlatform
+    .Setup(_.LoadPlaylist(Mocks.targetedPlaylistId))
+    .ReturnsAsync(Ok Mocks.writablePlatformPlaylist)
+
+  let botService = Mock<IBotService>()
+
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
+
+  let buildMusicPlatform _ =
+    Task.FromResult(Some musicPlatform.Object)
+
+  let click =
+    createClick [ "p"; Mocks.preset.Id.Value; "tp"; Mocks.targetedPlaylistId.Value; "i" ]
+
+  task {
+    let! result = showTargetedPlaylistClickHandler presetRepo.Object buildMusicPlatform botService.Object click
+
+    result |> should equal (Some())
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    musicPlatform.VerifyAll()
+  }
+
+[<Fact>]
+let ``show click should not send playlist details if data does not match`` () =
+  let presetRepo = Mock<IPresetRepo>()
+
+  let botService = Mock<IBotService>()
+  let musicPlatform = Mock<IMusicPlatform>()
+
+  let click = createClick []
+
+  let buildMusicPlatform _ =
+    Task.FromResult(Some musicPlatform.Object)
+
+  task {
+    let! result = showTargetedPlaylistClickHandler presetRepo.Object buildMusicPlatform botService.Object click
+
+    result |> should equal None
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    musicPlatform.VerifyAll()
+  }
+
+[<Fact>]
+let ``remove click should delete targeted playlist and show excluded playlists`` () =
+  let presetRepo = Mock<IPresetRepo>()
+
+  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
+
+  let presetService = Mock<IPresetService>()
+
+  presetService
+    .Setup(_.RemoveTargetedPlaylist(Mocks.presetId, Mocks.targetedPlaylist.Id))
+    .ReturnsAsync(())
+
+  let botService = Mock<IBotService>()
+
+  botService
+    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
+    .ReturnsAsync(())
+
+  let click =
+    createClick [ "p"; Mocks.preset.Id.Value; "tp"; Mocks.targetedPlaylistId.Value; "rm" ]
+
+  task {
+    let! result = removeTargetedPlaylistClickHandler presetRepo.Object presetService.Object botService.Object click
+
+    result |> should equal (Some())
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    presetService.VerifyAll()
+  }
+
+[<Fact>]
+let ``remove click should not delete playlist`` () =
+  let presetRepo = Mock<IPresetRepo>()
+  let presetService = Mock<IPresetService>()
+  let botService = Mock<IBotService>()
+
+  let click = createClick []
+
+  task {
+    let! result = removeTargetedPlaylistClickHandler presetRepo.Object presetService.Object botService.Object click
+
+    result |> should equal None
+
+    presetRepo.VerifyAll()
+    botService.VerifyAll()
+    presetService.VerifyAll()
+  }
