@@ -19,3 +19,18 @@ module CallbackQueryConstants =
   let enableUniqueArtists = "eua"
   [<Literal>]
   let disableUniqueArtists = "dua"
+
+[<RequireQualifiedAccess>]
+module MessageCommands =
+  let start = "/start"
+  let faq = "/faq"
+  let privacy = "/privacy"
+  let guide = "/guide"
+  let help = "/help"
+  let presets = "/presets"
+  let size = "/size"
+  let newPreset = "/new"
+  let includePlaylist = "/include"
+  let excludePlaylist = "/exclude"
+  let targetPlaylist = "/target"
+  let runPreset = "/run"

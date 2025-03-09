@@ -3,6 +3,7 @@
 open Domain.Repos
 open MusicPlatform
 open Resources
+open Telegram.Constants
 open Telegram.Core
 open otsom.fs.Auth
 open otsom.fs.Bot
@@ -24,11 +25,11 @@ let startMessageHandler
   : MessageHandler =
   fun message -> task {
     match message with
-    | { Text = Equals "/start" } ->
+    | { Text = Equals MessageCommands.start } ->
       do! User.sendCurrentPreset userRepo presetRepo chatCtx message.Chat.UserId
 
       return Some()
-    | { Text = CommandWithData "/start" state } ->
+    | { Text = CommandWithData MessageCommands.start state } ->
       let! user = userRepo.LoadUser message.Chat.UserId
 
       let processSuccessfulLogin =
@@ -51,7 +52,7 @@ let startMessageHandler
 let faqMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals "/faq" ->
+    | Equals MessageCommands.faq ->
       do! chatCtx.SendMessage(Messages.FAQ) &|> ignore
 
       return Some()
@@ -61,7 +62,7 @@ let faqMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Messa
 let privacyMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals "/privacy" ->
+    | Equals MessageCommands.privacy ->
       do! chatCtx.SendMessage(Messages.Privacy) &|> ignore
 
       return Some()
@@ -71,7 +72,7 @@ let privacyMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : M
 let guideMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals "/guide" ->
+    | Equals MessageCommands.guide ->
       do! chatCtx.SendMessage(Messages.Guide) &|> ignore
 
       return Some()
@@ -81,7 +82,7 @@ let guideMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Mes
 let helpMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals "/help" ->
+    | Equals MessageCommands.help ->
       do! chatCtx.SendMessage(Messages.Help) &|> ignore
 
       return Some()
@@ -94,7 +95,7 @@ let myPresetsMessageHandler (userRepo: #ILoadUser) (resp: IResourceProvider) (ch
   fun message -> task {
     match message.Text with
     | Equals Buttons.MyPresets
-    | Equals "/presets" ->
+    | Equals MessageCommands.presets ->
       do! sendUserPresets message.Chat.UserId
 
       return Some()
@@ -158,7 +159,7 @@ let setPresetSizeMessageHandler
         |> TaskResult.taskEither (onSuccess message.Chat.UserId) (onError >> Task.ignore)
 
       return Some()
-    | { Text = CommandWithData "/size" text } ->
+    | { Text = CommandWithData MessageCommands.size text } ->
       do!
         (userService.SetCurrentPresetSize(message.Chat.UserId, (PresetSettings.RawPresetSize text))
          |> TaskResult.taskEither (onSuccess message.Chat.UserId) (onError >> Task.ignore))
@@ -187,7 +188,7 @@ let createPresetMessageHandler (userService: #ICreateUserPreset) (resp: IResourc
       do! Preset.send chatCtx preset
 
       return Some()
-    | { Text = CommandWithData "/new" text } ->
+    | { Text = CommandWithData MessageCommands.newPreset text } ->
       let! preset = userService.CreateUserPreset(message.Chat.UserId, text)
 
       do! Preset.send chatCtx preset
@@ -303,7 +304,7 @@ let includePlaylistMessageHandler
       do! includePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
-    | { Text = CommandWithData "/include" text } ->
+    | { Text = CommandWithData MessageCommands.includePlaylist text } ->
       do! includePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
@@ -346,7 +347,7 @@ let excludePlaylistMessageHandler
       do! excludePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
-    | { Text = CommandWithData "/exclude" text } ->
+    | { Text = CommandWithData MessageCommands.excludePlaylist text } ->
       do! excludePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
@@ -390,7 +391,7 @@ let targetPlaylistMessageHandler
       do! targetPlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
-    | { Text = CommandWithData "/target" text } ->
+    | { Text = CommandWithData MessageCommands.targetPlaylist text } ->
       do! targetPlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
@@ -401,7 +402,7 @@ let queuePresetRunMessageHandler userRepo presetService (resp: IResourceProvider
   fun message -> task {
 
     match message.Text with
-    | Equals "/run"
+    | Equals MessageCommands.runPreset
     | Equals Buttons.RunPreset ->
       do! User.queueCurrentPresetRun userRepo chatCtx presetService message.Chat.UserId
 
