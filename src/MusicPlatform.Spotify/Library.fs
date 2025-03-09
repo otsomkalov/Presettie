@@ -240,7 +240,7 @@ module Library =
             |> OAuthClient().RequestToken
 
           let retryHandler =
-            SimpleRetryHandler(RetryAfter = TimeSpan.FromSeconds(30), RetryTimes = 3, TooManyRequestsConsumesARetry = true)
+            SimpleRetryHandler(RetryAfter = TimeSpan.FromSeconds(30L), RetryTimes = 3, TooManyRequestsConsumesARetry = true)
 
           let config =
             SpotifyClientConfig
