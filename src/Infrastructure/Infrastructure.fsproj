@@ -6,25 +6,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Queues" Version="12.21.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.2" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.21.0"/>
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.2"/>
     <PackageReference Include="shortid" Version="4.0.0"/>
-    <PackageReference Include="MongoDB.ApplicationInsights.DependencyInjection" Version="1.0.34"/>
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="Core.fs"/>
     <Compile Include="Mapping.fs"/>
     <Compile Include="Settings.fs"/>
-    <Compile Include="Repos.fs" />
+    <Compile Include="Repos.fs"/>
     <Compile Include="Startup.fs"/>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Database\Database.csproj"/>
     <ProjectReference Include="..\Domain\Domain.fsproj"/>
-    <ProjectReference Include="..\MusicPlatform.ReccoBeats\MusicPlatform.ReccoBeats.fsproj" />
-    <ProjectReference Include="..\MusicPlatform.Spotify\MusicPlatform.Spotify.fsproj" />
+    <ProjectReference Include="..\MusicPlatform.ReccoBeats\MusicPlatform.ReccoBeats.fsproj"/>
+    <ProjectReference Include="..\MusicPlatform.Spotify\MusicPlatform.Spotify.fsproj"/>
     <ProjectReference Include="..\Resources\Resources.csproj"/>
   </ItemGroup>
 

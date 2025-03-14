@@ -9,10 +9,8 @@ open Infrastructure.Settings
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Options
-open MongoDB.ApplicationInsights
 open MongoDB.Driver
 open StackExchange.Redis
-open MongoDB.ApplicationInsights.DependencyInjection
 open otsom.fs.Extensions.DependencyInjection
 
 let private configureRedisCache (options: IOptions<RedisSettings>) =
@@ -25,10 +23,10 @@ let private configureQueueClient (options: IOptions<StorageSettings>) =
 
   QueueClient(settings.ConnectionString, settings.QueueName)
 
-let private configureMongoClient (factory: IMongoClientFactory) (options: IOptions<DatabaseSettings>) =
+let private configureMongoClient (options: IOptions<DatabaseSettings>) =
   let settings = options.Value
 
-  factory.GetClient(settings.ConnectionString)
+  new MongoClient(settings.ConnectionString) :> IMongoClient
 
 let private configureMongoDatabase (options: IOptions<DatabaseSettings>) (mongoClient: IMongoClient) =
   let settings = options.Value
@@ -44,8 +42,7 @@ let addInfrastructure (configuration: IConfiguration) (services: IServiceCollect
 
   services.BuildSingleton<QueueClient, IOptions<StorageSettings>>(configureQueueClient)
 
-  services.AddMongoClientFactory()
-  services.BuildSingleton<IMongoClient, IMongoClientFactory, IOptions<DatabaseSettings>>(configureMongoClient)
+  services.BuildSingleton<IMongoClient, IOptions<DatabaseSettings>>(configureMongoClient)
   services.BuildSingleton<IMongoDatabase, IOptions<DatabaseSettings>, IMongoClient>(configureMongoDatabase)
 
   services.AddSingleton<IPresetRepo, PresetRepo>()
