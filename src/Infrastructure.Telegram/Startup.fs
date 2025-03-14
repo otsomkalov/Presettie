@@ -14,18 +14,22 @@ open Telegram.Repos
 open otsom.fs.Extensions.DependencyInjection
 open otsom.fs.Bot.Telegram
 open otsom.fs.Auth.Spotify
+open otsom.fs.Resources.Mongo
 
 let private configureTelegramBotClient (options: IOptions<TelegramSettings>) =
   let settings = options.Value
 
   settings.Token |> TelegramBotClient :> ITelegramBotClient
 
-let addTelegram (configuration: IConfiguration) (services: IServiceCollection) =
-  services.Configure<TelegramSettings>(configuration.GetSection TelegramSettings.SectionName)
+let addTelegram (cfg: IConfiguration) (services: IServiceCollection) =
+  services.Configure<TelegramSettings>(cfg.GetSection TelegramSettings.SectionName)
 
   services.BuildSingleton<ITelegramBotClient, IOptions<TelegramSettings>>(configureTelegramBotClient)
 
-  services |> Startup.addSpotifyAuth |> Startup.addTelegramBot configuration
+  services
+  |> Startup.addSpotifyAuth
+  |> Startup.addTelegramBot cfg
+  |> Startup.addMongoResources cfg
 
   services.BuildSingleton<IMongoCollection<Entities.Chat>, IMongoDatabase>(fun db -> db.GetCollection "chats")
 
