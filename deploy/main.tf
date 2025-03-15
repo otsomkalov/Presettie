@@ -103,6 +103,7 @@ resource "azurerm_linux_function_app" "func-presettie" {
       Storage__ConnectionString  = azurerm_storage_account.st-presettie.primary_connection_string
       Storage__QueueName         = azurerm_storage_queue.stq-requests-presettie.name
       Reccobeats__Url            = var.reccobeats-url
+      Resources__DefaultLang     = var.resources-default-lang
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope

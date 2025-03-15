@@ -46,6 +46,10 @@ variable "reccobeats-url" {
   type = string
 }
 
+variable "resources-default-lang" {
+  type = string
+}
+
 variable "env" {
   type    = string
   default = "prd"
