@@ -80,10 +80,12 @@ let private addMessageHandlers (services: IServiceCollection) =
     .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetRepo>(backMessageButtonHandler)
 
 let addBot (cfg: IConfiguration) (services: IServiceCollection) =
-  services.BuildSingleton<Resources.GetResourceProvider, CreateResourceProvider, CreateDefaultResourceProvider>(Resources.getResourceProvider)
+  services.BuildSingleton<Resources.GetResourceProvider, CreateResourceProvider, CreateDefaultResourceProvider>(
+    Resources.getResourceProvider
+  )
 
   services.AddSingleton<IChatService, ChatService>()
 
-  services |> Startup.addAuthCore cfg
+  services |> Startup.addAuthCore cfg |> Startup.addResources cfg
 
   services |> addClickHandlers |> addMessageHandlers

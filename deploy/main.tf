@@ -77,7 +77,6 @@ resource "azurerm_linux_function_app" "func-presettie" {
   name = "func-presettie-${var.env}"
 
   functions_extension_version = "~4"
-  builtin_logging_enabled     = false
 
   site_config {
     application_insights_key = azurerm_application_insights.appi-presettie.instrumentation_key
