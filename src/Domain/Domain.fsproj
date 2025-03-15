@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="shortid" Version="4.0.0"/>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1"/>
-    <PackageReference Include="otsom.fs.Extensions" Version="0.0.43"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.2"/>
+    <PackageReference Include="otsom.fs.Extensions" Version="0.0.44"/>
     <PackageReference Include="otsom.fs.Core" Version="0.0.4"/>
     <PackageReference Include="otsom.fs.Extensions.DependencyInjection" Version="0.0.3"/>
   </ItemGroup>
@@ -18,11 +18,11 @@
     <Compile Include="Core.fs"/>
     <Compile Include="Repos.fs"/>
     <Compile Include="Workflows.fs"/>
-    <Compile Include="Startup.fs" />
+    <Compile Include="Startup.fs"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MusicPlatform\MusicPlatform.fsproj" />
+    <ProjectReference Include="..\MusicPlatform\MusicPlatform.fsproj"/>
   </ItemGroup>
 
 </Project>
