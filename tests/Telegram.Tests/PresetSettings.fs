@@ -12,6 +12,7 @@ open Telegram.Core
 open Telegram.Handlers.Click
 open Xunit
 open otsom.fs.Bot
+open otsom.fs.Resources
 
 let private createClick data : Click =
   { Id = Mocks.clickId
@@ -35,8 +36,10 @@ let ``enableUniqueArtists should update preset and show updated if data matched`
     .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
     .ReturnsAsync(())
 
+  let resourceProvider = Mock<IResourceProvider>()
+
   let sut =
-    enableUniqueArtistsClickHandler presetRepo.Object presetService.Object botService.Object
+    enableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
 
   let click =
     createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.enableUniqueArtists ]
@@ -56,9 +59,10 @@ let ``enableUniqueArtists should not update preset if data does not match`` () =
   let presetRepo = Mock<IPresetRepo>()
   let presetService = Mock<IPresetService>()
   let botService = Mock<IBotService>()
+  let resourceProvider = Mock<IResourceProvider>()
 
   let sut =
-    enableUniqueArtistsClickHandler presetRepo.Object presetService.Object botService.Object
+    enableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
 
   let click = createClick []
 
@@ -88,8 +92,10 @@ let ``disableUniqueArtists should update preset and show updated if data matched
     .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
     .ReturnsAsync(())
 
+  let resourceProvider = Mock<IResourceProvider>()
+
   let sut =
-    disableUniqueArtistsClickHandler presetRepo.Object presetService.Object botService.Object
+    disableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
 
   let click =
     createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.disableUniqueArtists ]
@@ -109,9 +115,10 @@ let ``disableUniqueArtists should not update preset if data does not match`` () 
   let presetRepo = Mock<IPresetRepo>()
   let presetService = Mock<IPresetService>()
   let botService = Mock<IBotService>()
+  let resourceProvider = Mock<IResourceProvider>()
 
   let sut =
-    disableUniqueArtistsClickHandler presetRepo.Object presetService.Object botService.Object
+    disableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
 
   let click = createClick []
 

@@ -1,9 +1,10 @@
 ﻿module Infrastructure.Telegram.Services
 
+open Resources
+open System
 open FSharp
 open Microsoft.Extensions.Logging
 open Microsoft.FSharp.Core
-open Resources
 open Infrastructure
 open Telegram.Bot.Types
 open Telegram.Core
@@ -17,12 +18,21 @@ type MessageService
     logger: ILogger<MessageService>,
     handlersFactories: MessageHandlerFactory seq,
     chatRepo: IChatRepo,
-    chatService: IChatService
+    chatService: IChatService,
+    getResp: Resources.GetResourceProvider
   ) =
 
   member this.ProcessAsync(message: Telegram.Bot.Types.Message) =
     let chatId = message.Chat.Id |> ChatId
     let chatCtx = buildChatContext chatId
+
+    let lang =
+      message.From
+      |> Option.ofObj
+      |> Option.bind (fun u ->
+        u.LanguageCode
+        |> Option.ofObj
+        |> Option.bind (Option.someIf (String.IsNullOrEmpty >> not)))
 
     task {
       let! chat =
@@ -38,7 +48,9 @@ type MessageService
             |> Option.ofObj
             |> Option.map (fun m -> { Text = m.Text }) }
 
-      let handlers = handlersFactories |> Seq.map (fun f -> f chatCtx)
+      let! resp = getResp lang
+
+      let handlers = handlersFactories |> Seq.map (fun f -> f resp chatCtx)
 
       use e = handlers.GetEnumerator()
 
@@ -64,7 +76,8 @@ type CallbackQueryService
     handlersFactories: ClickHandlerFactory seq,
     logger: ILogger<CallbackQueryService>,
     chatRepo: IChatRepo,
-    chatService: IChatService
+    chatService: IChatService,
+    getResp: Resources.GetResourceProvider
   ) =
 
   member this.ProcessAsync(callbackQuery: CallbackQuery) =
@@ -72,6 +85,14 @@ type CallbackQueryService
     let clickId = callbackQuery.Id |> ButtonClickId
 
     let botService = buildBotService chatId
+
+    let lang =
+      callbackQuery.Message.From
+      |> Option.ofObj
+      |> Option.bind (fun u ->
+        u.LanguageCode
+        |> Option.ofObj
+        |> Option.bind (Option.someIf (String.IsNullOrEmpty >> not)))
 
     task {
       let! chat =
@@ -84,7 +105,9 @@ type CallbackQueryService
           MessageId = BotMessageId callbackQuery.Message.MessageId
           Data = callbackQuery.Data.Split("|") |> List.ofArray }
 
-      let handlers = handlersFactories |> Seq.map (fun f -> f botService)
+      let! resp = getResp lang
+
+      let handlers = handlersFactories |> Seq.map (fun f -> f resp botService)
 
       use e = handlers.GetEnumerator()
 

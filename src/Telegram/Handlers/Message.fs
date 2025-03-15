@@ -13,11 +13,13 @@ open Domain.Core
 open Telegram.Helpers
 open Domain.Workflows
 open System
+open otsom.fs.Resources
 
 let startMessageHandler
   (userRepo: #ILoadUser)
   (presetRepo: #ILoadPreset)
   (authService: #ICompleteAuth)
+  (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
   : MessageHandler =
   fun message -> task {
@@ -46,7 +48,7 @@ let startMessageHandler
     | _ -> return None
   }
 
-let faqMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
+let faqMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
     | Equals "/faq" ->
@@ -56,7 +58,7 @@ let faqMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
     | _ -> return None
   }
 
-let privacyMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
+let privacyMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
     | Equals "/privacy" ->
@@ -66,7 +68,7 @@ let privacyMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
     | _ -> return None
   }
 
-let guideMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
+let guideMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
     | Equals "/guide" ->
@@ -76,7 +78,7 @@ let guideMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
     | _ -> return None
   }
 
-let helpMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
+let helpMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
     | Equals "/help" ->
@@ -86,7 +88,7 @@ let helpMessageHandler (chatCtx: #ISendMessage) : MessageHandler =
     | _ -> return None
   }
 
-let myPresetsMessageHandler (userRepo: #ILoadUser) (chatCtx: #ISendMessageButtons) : MessageHandler =
+let myPresetsMessageHandler (userRepo: #ILoadUser) (resp: IResourceProvider) (chatCtx: #ISendMessageButtons) : MessageHandler =
   let sendUserPresets = User.sendPresets chatCtx userRepo
 
   fun message -> task {
@@ -99,7 +101,7 @@ let myPresetsMessageHandler (userRepo: #ILoadUser) (chatCtx: #ISendMessageButton
     | _ -> return None
   }
 
-let backMessageButtonHandler loadUser getPreset (chatCtx: #ISendKeyboard) : MessageHandler =
+let backMessageButtonHandler loadUser getPreset (resp: IResourceProvider) (chatCtx: #ISendKeyboard) : MessageHandler =
   fun message -> task {
     match message.Text with
     | Equals Buttons.Back ->
@@ -109,7 +111,7 @@ let backMessageButtonHandler loadUser getPreset (chatCtx: #ISendKeyboard) : Mess
     | _ -> return None
   }
 
-let presetSettingsMessageHandler userRepo presetRepo chatCtx : MessageHandler =
+let presetSettingsMessageHandler userRepo presetRepo (resp: IResourceProvider) chatCtx : MessageHandler =
   let sendSettingsMessage = User.sendCurrentPresetSettings userRepo presetRepo chatCtx
 
   fun message -> task {
@@ -121,7 +123,7 @@ let presetSettingsMessageHandler userRepo presetRepo chatCtx : MessageHandler =
     | _ -> return None
   }
 
-let setPresetSizeMessageButtonHandler (chatCtx: #IAskForReply) : MessageHandler =
+let setPresetSizeMessageButtonHandler (resp: IResourceProvider) (chatCtx: #IAskForReply) : MessageHandler =
   fun message -> task {
     match message.Text with
     | Equals Buttons.SetPresetSize ->
@@ -131,7 +133,13 @@ let setPresetSizeMessageButtonHandler (chatCtx: #IAskForReply) : MessageHandler 
     | _ -> return None
   }
 
-let setPresetSizeMessageHandler (userService: #ISetCurrentPresetSize) userRepo presetRepo (chatCtx: #ISendMessage) : MessageHandler =
+let setPresetSizeMessageHandler
+  (userService: #ISetCurrentPresetSize)
+  userRepo
+  presetRepo
+  (resp: IResourceProvider)
+  (chatCtx: #ISendMessage)
+  : MessageHandler =
   let onSuccess chat =
     fun () -> User.sendCurrentPresetSettings userRepo presetRepo chatCtx chat
 
@@ -151,14 +159,15 @@ let setPresetSizeMessageHandler (userService: #ISetCurrentPresetSize) userRepo p
 
       return Some()
     | { Text = CommandWithData "/size" text } ->
-      do! (userService.SetCurrentPresetSize(message.Chat.UserId, (PresetSettings.RawPresetSize text))
-           |> TaskResult.taskEither (onSuccess message.Chat.UserId) (onError >> Task.ignore))
+      do!
+        (userService.SetCurrentPresetSize(message.Chat.UserId, (PresetSettings.RawPresetSize text))
+         |> TaskResult.taskEither (onSuccess message.Chat.UserId) (onError >> Task.ignore))
 
       return Some()
     | _ -> return None
   }
 
-let createPresetButtonMessageHandler (chatCtx: #IAskForReply) : MessageHandler =
+let createPresetButtonMessageHandler (resp: IResourceProvider) (chatCtx: #IAskForReply) : MessageHandler =
   fun message -> task {
     match message.Text with
     | Equals Buttons.CreatePreset ->
@@ -168,7 +177,7 @@ let createPresetButtonMessageHandler (chatCtx: #IAskForReply) : MessageHandler =
     | _ -> return None
   }
 
-let createPresetMessageHandler (userService: #ICreateUserPreset) (chatCtx: #ISendMessage) : MessageHandler =
+let createPresetMessageHandler (userService: #ICreateUserPreset) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message with
     | { Text = text
@@ -187,7 +196,12 @@ let createPresetMessageHandler (userService: #ICreateUserPreset) (chatCtx: #ISen
     | _ -> return None
   }
 
-let includePlaylistButtonMessageHandler (buildMusicPlatform: BuildMusicPlatform) authService (chatCtx: #IAskForReply) : MessageHandler =
+let includePlaylistButtonMessageHandler
+  (buildMusicPlatform: BuildMusicPlatform)
+  authService
+  (resp: IResourceProvider)
+  (chatCtx: #IAskForReply)
+  : MessageHandler =
   fun message -> task {
     match message.Text with
     | Equals Buttons.IncludePlaylist ->
@@ -205,7 +219,12 @@ let includePlaylistButtonMessageHandler (buildMusicPlatform: BuildMusicPlatform)
     | _ -> return None
   }
 
-let excludePlaylistButtonMessageHandler (buildMusicPlatform: BuildMusicPlatform) authService (chatCtx: #IAskForReply) : MessageHandler =
+let excludePlaylistButtonMessageHandler
+  (buildMusicPlatform: BuildMusicPlatform)
+  authService
+  (resp: IResourceProvider)
+  (chatCtx: #IAskForReply)
+  : MessageHandler =
   fun message -> task {
     match message.Text with
     | Equals Buttons.ExcludePlaylist ->
@@ -223,7 +242,12 @@ let excludePlaylistButtonMessageHandler (buildMusicPlatform: BuildMusicPlatform)
     | _ -> return None
   }
 
-let targetPlaylistButtonMessageHandler (buildMusicPlatform: BuildMusicPlatform) authService (chatCtx: #IBotService) : MessageHandler =
+let targetPlaylistButtonMessageHandler
+  (buildMusicPlatform: BuildMusicPlatform)
+  authService
+  (resp: IResourceProvider)
+  (chatCtx: #IBotService)
+  : MessageHandler =
   fun message -> task {
     match message.Text with
     | Equals Buttons.TargetPlaylist ->
@@ -246,6 +270,7 @@ let includePlaylistMessageHandler
   (userRepo: #ILoadUser)
   (presetService: #IIncludePlaylist)
   authService
+  (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
   : MessageHandler =
   let includePlaylist =
@@ -289,6 +314,7 @@ let excludePlaylistMessageHandler
   (userRepo: #ILoadUser)
   (presetService: #IExcludePlaylist)
   authService
+  (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
   : MessageHandler =
   let excludePlaylist =
@@ -331,6 +357,7 @@ let targetPlaylistMessageHandler
   (userRepo: #ILoadUser)
   (presetService: #ITargetPlaylist)
   authService
+  (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
   : MessageHandler =
   let targetPlaylist =
@@ -370,7 +397,7 @@ let targetPlaylistMessageHandler
     | _ -> return None
   }
 
-let queuePresetRunMessageHandler userRepo presetService chatCtx : MessageHandler =
+let queuePresetRunMessageHandler userRepo presetService (resp: IResourceProvider) chatCtx : MessageHandler =
   fun message -> task {
 
     match message.Text with

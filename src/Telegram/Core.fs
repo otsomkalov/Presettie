@@ -5,6 +5,7 @@ open Microsoft.FSharp.Core
 open otsom.fs.Auth
 open otsom.fs.Bot
 open otsom.fs.Core
+open otsom.fs.Resources
 
 type Page = Page of int
 
@@ -24,11 +25,11 @@ type Message = {
 
 type MessageHandler = Message -> Task<unit option>
 
-type MessageHandlerFactory = IBotService -> MessageHandler
+type MessageHandlerFactory = IResourceProvider -> IBotService -> MessageHandler
 
 type ClickHandler = Click -> Task<unit option>
 
-type ClickHandlerFactory = IBotService -> ClickHandler
+type ClickHandlerFactory = IResourceProvider -> IBotService -> ClickHandler
 
 type UserId with
   member this.ToAccountId() = this.Value |> AccountId
@@ -38,3 +39,7 @@ type ICreateChat =
 
 type IChatService =
   inherit ICreateChat
+
+[<RequireQualifiedAccess>]
+module Resources =
+  type GetResourceProvider = string option -> Task<IResourceProvider>
