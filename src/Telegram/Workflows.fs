@@ -132,14 +132,12 @@ let sendLoginMessage (authService: #IInitAuth) (chatCtx: #ISendLink) =
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
-  let list (presetRepo: #ILoadPreset) (botMessageCtx: #IEditMessageButtons) =
+  let list (botMessageCtx: #IEditMessageButtons) =
     let createButtonFromPlaylist (presetId: PresetId) =
       fun (playlist: IncludedPlaylist) -> MessageButton(playlist.Name, sprintf "p|%s|ip|%s|i" presetId.Value playlist.Id.Value.Value)
 
-    fun messageId presetId page -> task {
-      let createButtonFromPlaylist = createButtonFromPlaylist presetId
-
-      let! preset = presetRepo.LoadPreset presetId
+    fun messageId (preset: Preset) page -> task {
+      let createButtonFromPlaylist = createButtonFromPlaylist preset.Id
 
       let replyMarkup =
         createPlaylistsPage page preset.IncludedPlaylists createButtonFromPlaylist preset.Id
@@ -187,14 +185,12 @@ module IncludedPlaylist =
 
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
-  let list (presetRepo: #ILoadPreset) (botMessageCtx: #IEditMessageButtons) =
+  let list (botMessageCtx: #IEditMessageButtons) =
     let createButtonFromPlaylist (presetId: PresetId) =
       fun (playlist: ExcludedPlaylist) -> MessageButton(playlist.Name, sprintf "p|%s|ep|%s|i" presetId.Value playlist.Id.Value.Value)
 
-    fun messageId presetId page -> task {
-      let createButtonFromPlaylist = createButtonFromPlaylist presetId
-
-      let! preset = presetRepo.LoadPreset presetId
+    fun messageId (preset: Preset) page -> task {
+      let createButtonFromPlaylist = createButtonFromPlaylist preset.Id
 
       let replyMarkup =
         createPlaylistsPage page preset.ExcludedPlaylists createButtonFromPlaylist preset.Id
@@ -204,14 +200,12 @@ module ExcludedPlaylist =
 
 [<RequireQualifiedAccess>]
 module TargetedPlaylist =
-  let list (presetRepo: #ILoadPreset) (botMessageCtx: #IEditMessageButtons) =
+  let list (botMessageCtx: #IEditMessageButtons) =
     let createButtonFromPlaylist (presetId: PresetId) =
       fun (playlist: TargetedPlaylist) -> MessageButton(playlist.Name, sprintf "p|%s|tp|%s|i" presetId.Value playlist.Id.Value.Value)
 
-    fun messageId presetId page -> task {
-      let createButtonFromPlaylist = createButtonFromPlaylist presetId
-
-      let! preset = presetRepo.LoadPreset presetId
+    fun messageId (preset: Preset) page -> task {
+      let createButtonFromPlaylist = createButtonFromPlaylist preset.Id
 
       let replyMarkup =
         createPlaylistsPage page preset.TargetedPlaylists createButtonFromPlaylist preset.Id

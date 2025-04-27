@@ -206,13 +206,13 @@ type IOverwriteTargetedPlaylist =
   abstract OverwriteTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<unit>
 
 type IRemoveIncludedPlaylist =
-  abstract RemoveIncludedPlaylist: PresetId * IncludedPlaylistId -> Task<unit>
+  abstract RemoveIncludedPlaylist: PresetId * IncludedPlaylistId -> Task<Preset>
 
 type IRemoveExcludedPlaylist =
-  abstract RemoveExcludedPlaylist: PresetId * ReadablePlaylistId -> Task<unit>
+  abstract RemoveExcludedPlaylist: PresetId * ReadablePlaylistId -> Task<Preset>
 
 type IRemoveTargetedPlaylist =
-  abstract RemoveTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<unit>
+  abstract RemoveTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<Preset>
 
 type ISetOnlyLiked =
   abstract SetOnlyLiked: PresetId * IncludedPlaylistId -> Task<unit>

@@ -109,7 +109,9 @@ module IncludedPlaylist =
         { preset with
             IncludedPlaylists = includedPlaylists }
 
-      return! presetRepo.SavePreset updatedPreset
+      do! presetRepo.SavePreset updatedPreset
+
+      return updatedPreset
     }
 
   let setAll (presetRepo: #ILoadPreset & #ISavePreset) =
@@ -182,7 +184,9 @@ module ExcludedPlaylist =
         { preset with
             ExcludedPlaylists = excludedPlaylists }
 
-      return! presetRepo.SavePreset updatedPreset
+      do! presetRepo.SavePreset updatedPreset
+
+      return updatedPreset
     }
 
 [<RequireQualifiedAccess>]
@@ -506,7 +510,9 @@ module TargetedPlaylist =
         { preset with
             TargetedPlaylists = targetPlaylists }
 
-      return! presetRepo.SavePreset updatedPreset
+      do! presetRepo.SavePreset updatedPreset
+
+      return updatedPreset
     }
 
 type Shuffler<'a> = 'a list -> 'a list
