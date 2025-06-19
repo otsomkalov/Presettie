@@ -8,7 +8,7 @@ open MongoDB.Bson
 open MongoDB.Driver
 open Database
 open MusicPlatform
-open MusicPlatform.Spotify
+open MusicPlatform.Cached.Helpers
 open otsom.fs.Core
 open otsom.fs.Extensions
 open Infrastructure.Mapping

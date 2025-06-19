@@ -10,13 +10,7 @@ open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Options
 open MongoDB.Driver
-open StackExchange.Redis
 open otsom.fs.Extensions.DependencyInjection
-
-let private configureRedisCache (options: IOptions<RedisSettings>) =
-  let settings = options.Value
-
-  ConnectionMultiplexer.Connect(settings.ConnectionString) :> IConnectionMultiplexer
 
 let private configureQueueClient (options: IOptions<StorageSettings>) =
   let settings = options.Value
@@ -36,9 +30,6 @@ let private configureMongoDatabase (options: IOptions<DatabaseSettings>) (mongoC
 let addInfrastructure (configuration: IConfiguration) (services: IServiceCollection) =
   services.Configure<DatabaseSettings>(configuration.GetSection(DatabaseSettings.SectionName))
   services.Configure<StorageSettings>(configuration.GetSection(StorageSettings.SectionName))
-  services.Configure<RedisSettings>(configuration.GetSection(RedisSettings.SectionName))
-
-  services.BuildSingleton<IConnectionMultiplexer, IOptions<RedisSettings>>(configureRedisCache)
 
   services.BuildSingleton<QueueClient, IOptions<StorageSettings>>(configureQueueClient)
 

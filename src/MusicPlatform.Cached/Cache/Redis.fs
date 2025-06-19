@@ -1,14 +1,13 @@
 ﻿module internal MusicPlatform.Spotify.Cache.Redis
 
 open System
-open System.Text.Json
 open Microsoft.ApplicationInsights
 open Microsoft.ApplicationInsights.DataContracts
 open MusicPlatform
-open MusicPlatform.Spotify
+open MusicPlatform.Cached.Helpers
 open StackExchange.Redis
-open otsom.fs.Extensions
 open System.Threading.Tasks
+open otsom.fs.Extensions
 
 let private prependList (telemetryClient: TelemetryClient) (cache: IDatabase) =
   fun (key: string) values ->
@@ -72,7 +71,7 @@ let private listLength (telemetryClient: TelemetryClient) (cache: IDatabase) =
       return value |> int
     }
 
-let private listCachedTracks telemetryClient cache =
+let listCachedTracks telemetryClient cache =
   fun key ->
     loadList telemetryClient cache key
     |> Task.map (List.ofArray >> List.map (string >> JSON.deserialize<Track>))

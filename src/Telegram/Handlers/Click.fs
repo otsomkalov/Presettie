@@ -32,7 +32,12 @@ let listPresetsClickHandler userRepo (resp: IResourceProvider) botService : Clic
     | _ -> return None
   }
 
-let enableRecommendationsClickHandler presetRepo (presetService: #IEnableRecommendations) (resp: IResourceProvider) (botService: #ISendNotification) : ClickHandler =
+let enableRecommendationsClickHandler
+  presetRepo
+  (presetService: #IEnableRecommendations)
+  (resp: IResourceProvider)
+  (botService: #ISendNotification)
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; CallbackQueryConstants.enableRecommendations ] ->
@@ -65,7 +70,12 @@ let disableRecommendationsClickHandler
     | _ -> return None
   }
 
-let enableUniqueArtistsClickHandler presetRepo (presetService: #IEnableUniqueArtists) (resp: IResourceProvider) (botService: #ISendNotification) : ClickHandler =
+let enableUniqueArtistsClickHandler
+  presetRepo
+  (presetService: #IEnableUniqueArtists)
+  (resp: IResourceProvider)
+  (botService: #ISendNotification)
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; CallbackQueryConstants.enableUniqueArtists ] ->
@@ -79,7 +89,12 @@ let enableUniqueArtistsClickHandler presetRepo (presetService: #IEnableUniqueArt
     | _ -> return None
   }
 
-let disableUniqueArtistsClickHandler presetRepo (presetService: #IDisableUniqueArtists) (resp: IResourceProvider) (botService: #ISendNotification) : ClickHandler =
+let disableUniqueArtistsClickHandler
+  presetRepo
+  (presetService: #IDisableUniqueArtists)
+  (resp: IResourceProvider)
+  (botService: #ISendNotification)
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; CallbackQueryConstants.disableUniqueArtists ] ->
@@ -93,7 +108,12 @@ let disableUniqueArtistsClickHandler presetRepo (presetService: #IDisableUniqueA
     | _ -> return None
   }
 
-let includeLikedTracksClickHandler presetRepo (presetService: #IIncludeLikedTracks) (resp: IResourceProvider) (botService: #ISendNotification) : ClickHandler =
+let includeLikedTracksClickHandler
+  presetRepo
+  (presetService: #IIncludeLikedTracks)
+  (resp: IResourceProvider)
+  (botService: #ISendNotification)
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; CallbackQueryConstants.includeLikedTracks ] ->
@@ -107,7 +127,12 @@ let includeLikedTracksClickHandler presetRepo (presetService: #IIncludeLikedTrac
     | _ -> return None
   }
 
-let excludeLikedTracksClickHandler presetRepo (presetService: #IExcludeLikedTracks) (resp: IResourceProvider) (botService: #ISendNotification) : ClickHandler =
+let excludeLikedTracksClickHandler
+  presetRepo
+  (presetService: #IExcludeLikedTracks)
+  (resp: IResourceProvider)
+  (botService: #ISendNotification)
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; CallbackQueryConstants.excludeLikedTracks ] ->
@@ -121,7 +146,12 @@ let excludeLikedTracksClickHandler presetRepo (presetService: #IExcludeLikedTrac
     | _ -> return None
   }
 
-let ignoreLikedTracksClickHandler presetRepo (presetService: #IIgnoreLikedTracks) (resp: IResourceProvider) (botService: #ISendNotification) : ClickHandler =
+let ignoreLikedTracksClickHandler
+  presetRepo
+  (presetService: #IIgnoreLikedTracks)
+  (resp: IResourceProvider)
+  (botService: #ISendNotification)
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; CallbackQueryConstants.ignoreLikedTracks ] ->
@@ -135,14 +165,19 @@ let ignoreLikedTracksClickHandler presetRepo (presetService: #IIgnoreLikedTracks
     | _ -> return None
   }
 
-let showIncludedPlaylistClickHandler (presetRepo: #ILoadPreset) buildMusicPlatform (resp: IResourceProvider) botService : ClickHandler =
+let showIncludedPlaylistClickHandler
+  (presetRepo: #ILoadPreset)
+  (musicPlatformFactory: IMusicPlatformFactory)
+  (resp: IResourceProvider)
+  botService
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "ip"; playlistId; "i" ] ->
       let presetId = PresetId presetId
       let playlistId = PlaylistId playlistId
 
-      let! mp = buildMusicPlatform (click.Chat.UserId.ToMusicPlatformId())
+      let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
       do! IncludedPlaylist.show botService presetRepo mp click.MessageId presetId playlistId
 
@@ -150,7 +185,12 @@ let showIncludedPlaylistClickHandler (presetRepo: #ILoadPreset) buildMusicPlatfo
     | _ -> return None
   }
 
-let removeIncludedPlaylistClickHandler presetRepo (presetService: #IRemoveIncludedPlaylist) (resp: IResourceProvider) botService : ClickHandler =
+let removeIncludedPlaylistClickHandler
+  presetRepo
+  (presetService: #IRemoveIncludedPlaylist)
+  (resp: IResourceProvider)
+  botService
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "ip"; playlistId; "rm" ] ->
@@ -164,7 +204,12 @@ let removeIncludedPlaylistClickHandler presetRepo (presetService: #IRemoveInclud
     | _ -> return None
   }
 
-let showExcludedPlaylistClickHandler (presetRepo: #ILoadPreset) (buildMusicPlatform: BuildMusicPlatform) (resp: IResourceProvider) (botService: #IEditMessageButtons) : ClickHandler =
+let showExcludedPlaylistClickHandler
+  (presetRepo: #ILoadPreset)
+  (musicPlatformFactory: IMusicPlatformFactory)
+  (resp: IResourceProvider)
+  (botService: #IEditMessageButtons)
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "ep"; playlistId; "i" ] ->
@@ -177,7 +222,7 @@ let showExcludedPlaylistClickHandler (presetRepo: #ILoadPreset) (buildMusicPlatf
         preset.ExcludedPlaylists
         |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
 
-      let! mp = buildMusicPlatform (click.Chat.UserId.ToMusicPlatformId())
+      let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
       let! playlistTracksCount =
         mp
@@ -202,7 +247,12 @@ let showExcludedPlaylistClickHandler (presetRepo: #ILoadPreset) (buildMusicPlatf
     | _ -> return None
   }
 
-let removeExcludedPlaylistClickHandler presetRepo (presetService: #IRemoveExcludedPlaylist) (resp: IResourceProvider) botService : ClickHandler =
+let removeExcludedPlaylistClickHandler
+  presetRepo
+  (presetService: #IRemoveExcludedPlaylist)
+  (resp: IResourceProvider)
+  botService
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "ep"; playlistId; "rm" ] ->
@@ -217,14 +267,19 @@ let removeExcludedPlaylistClickHandler presetRepo (presetService: #IRemoveExclud
     | _ -> return None
   }
 
-let showTargetedPlaylistClickHandler presetRepo buildMusicPlatform (resp: IResourceProvider) botService : ClickHandler =
+let showTargetedPlaylistClickHandler
+  presetRepo
+  (musicPlatformFactory: IMusicPlatformFactory)
+  (resp: IResourceProvider)
+  botService
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId'; "tp"; playlistId'; "i" ] ->
       let presetId = PresetId presetId'
       let playlistId = PlaylistId playlistId'
 
-      let! mp = buildMusicPlatform (click.Chat.UserId.ToMusicPlatformId())
+      let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
       do! TargetedPlaylist.show botService presetRepo mp click.MessageId presetId (WritablePlaylistId playlistId)
 
@@ -232,7 +287,12 @@ let showTargetedPlaylistClickHandler presetRepo buildMusicPlatform (resp: IResou
     | _ -> return None
   }
 
-let removeTargetedPlaylistClickHandler presetRepo (presetService: #IRemoveTargetedPlaylist) (resp: IResourceProvider) botService : ClickHandler =
+let removeTargetedPlaylistClickHandler
+  presetRepo
+  (presetService: #IRemoveTargetedPlaylist)
+  (resp: IResourceProvider)
+  botService
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "tp"; playlistId; "rm" ] ->
@@ -249,7 +309,7 @@ let removeTargetedPlaylistClickHandler presetRepo (presetService: #IRemoveTarget
 let appendToTargetedPlaylistClickHandler
   presetRepo
   (presetService: #IAppendToTargetedPlaylist)
-  buildMusicPlatform
+  (musicPlatformFactory: IMusicPlatformFactory)
   (resp: IResourceProvider)
   botService
   : ClickHandler =
@@ -261,14 +321,20 @@ let appendToTargetedPlaylistClickHandler
 
       do! presetService.AppendToTargetedPlaylist(presetId, playlistId)
 
-      let! mp = buildMusicPlatform (click.Chat.UserId.ToMusicPlatformId())
+      let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
       do! TargetedPlaylist.show botService presetRepo mp click.MessageId presetId playlistId
 
       return Some()
     | _ -> return None
   }
 
-let overwriteTargetedPlaylistClickHandler presetRepo (presetService: IPresetService) buildMusicPlatform (resp: IResourceProvider) botService : ClickHandler =
+let overwriteTargetedPlaylistClickHandler
+  presetRepo
+  (presetService: IPresetService)
+  (musicPlatformFactory: IMusicPlatformFactory)
+  (resp: IResourceProvider)
+  botService
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "tp"; playlistId; "o" ] ->
@@ -277,7 +343,7 @@ let overwriteTargetedPlaylistClickHandler presetRepo (presetService: IPresetServ
 
       do! presetService.OverwriteTargetedPlaylist(presetId, playlistId)
 
-      let! mp = buildMusicPlatform (click.Chat.UserId.ToMusicPlatformId())
+      let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
       do! TargetedPlaylist.show botService presetRepo mp click.MessageId presetId playlistId
 
@@ -285,7 +351,11 @@ let overwriteTargetedPlaylistClickHandler presetRepo (presetService: IPresetServ
     | _ -> return None
   }
 
-let runPresetClickHandler (presetService: #Domain.Core.IQueueRun) (resp: IResourceProvider) (botService: #ISendMessage & #ISendNotification) : ClickHandler =
+let runPresetClickHandler
+  (presetService: #Domain.Core.IQueueRun)
+  (resp: IResourceProvider)
+  (botService: #ISendMessage & #ISendNotification)
+  : ClickHandler =
   let onSuccess clickId =
     fun (preset: Preset) -> task {
       let notificationMessage = $"Preset *{preset.Name}* run is queued!"
@@ -318,7 +388,11 @@ let runPresetClickHandler (presetService: #Domain.Core.IQueueRun) (resp: IResour
     | _ -> return None
   }
 
-let setCurrentPresetClickHandler (userService: #ISetCurrentPreset) (resp: IResourceProvider) (chatService: #ISendNotification) : ClickHandler =
+let setCurrentPresetClickHandler
+  (userService: #ISetCurrentPreset)
+  (resp: IResourceProvider)
+  (chatService: #ISendNotification)
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; id; "c" ] ->
@@ -374,7 +448,7 @@ let listTargetedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
 let setOnlyLikedIncludedPlaylistClickHandler
   presetRepo
   (presetService: #ISetOnlyLiked)
-  buildMusicPlatform
+  (musicPlatformFactory: IMusicPlatformFactory)
   (resp: IResourceProvider)
   botService
   : ClickHandler =
@@ -386,7 +460,7 @@ let setOnlyLikedIncludedPlaylistClickHandler
 
       do! presetService.SetOnlyLiked(presetId, (playlistId |> ReadablePlaylistId))
 
-      let! mp = buildMusicPlatform (click.Chat.UserId.ToMusicPlatformId())
+      let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
       do! IncludedPlaylist.show botService presetRepo mp click.MessageId presetId playlistId
 
@@ -394,7 +468,13 @@ let setOnlyLikedIncludedPlaylistClickHandler
     | _ -> return None
   }
 
-let setAllTracksIncludedPlaylistClickHandler presetRepo (presetService: #ISetAll) buildMusicPlatform (resp: IResourceProvider) botService : ClickHandler =
+let setAllTracksIncludedPlaylistClickHandler
+  presetRepo
+  (presetService: #ISetAll)
+  (musicPlatformFactory: IMusicPlatformFactory)
+  (resp: IResourceProvider)
+  botService
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "ip"; playlistId; "a" ] ->
@@ -403,7 +483,7 @@ let setAllTracksIncludedPlaylistClickHandler presetRepo (presetService: #ISetAll
 
       do! presetService.SetAll(presetId, (playlistId |> ReadablePlaylistId))
 
-      let! mp = buildMusicPlatform (click.Chat.UserId.ToMusicPlatformId())
+      let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
       do! IncludedPlaylist.show botService presetRepo mp click.MessageId presetId playlistId
 
@@ -411,7 +491,12 @@ let setAllTracksIncludedPlaylistClickHandler presetRepo (presetService: #ISetAll
     | _ -> return None
   }
 
-let removePresetClickHandler userRepo (userService: #IRemoveUserPreset) (resp: IResourceProvider) (botService: #ISendNotification) : ClickHandler =
+let removePresetClickHandler
+  userRepo
+  (userService: #IRemoveUserPreset)
+  (resp: IResourceProvider)
+  (botService: #ISendNotification)
+  : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "rm" ] ->

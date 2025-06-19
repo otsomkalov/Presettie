@@ -287,7 +287,7 @@ module Preset =
       >> Task.map validate
       >> TaskResult.taskTap (fun p -> presetRepo.QueueRun(userId, p.Id))
 
-  let includePlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (buildMusicPlatform: BuildMusicPlatform) =
+  let includePlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
     let parseId = parseId >> Result.mapError Preset.IncludePlaylistError.IdParsing
 
     let loadPlaylist (mp: #ILoadPlaylist) =
@@ -316,12 +316,12 @@ module Preset =
         |> TaskResult.taskMap updatePreset
 
     fun (userId: UserId) presetId rawPlaylistId ->
-      buildMusicPlatform (userId.ToMusicPlatformId())
+      musicPlatformFactory.GetMusicPlatform (userId.ToMusicPlatformId())
       |> Task.bind (function
         | Some mp -> includePlaylist' mp presetId rawPlaylistId
         | None -> Preset.IncludePlaylistError.Unauthorized |> Error |> Task.FromResult)
 
-  let excludePlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (buildMusicPlatform: BuildMusicPlatform) =
+  let excludePlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
     let parseId = parseId >> Result.mapError Preset.ExcludePlaylistError.IdParsing
 
     let loadPlaylist (mp: #ILoadPlaylist) =
@@ -350,12 +350,12 @@ module Preset =
         |> TaskResult.taskMap updatePreset
 
     fun (UserId userId) presetId rawPlaylistId ->
-      buildMusicPlatform (userId |> MusicPlatform.UserId)
+      musicPlatformFactory.GetMusicPlatform (userId |> MusicPlatform.UserId)
       |> Task.bind (function
         | Some mp -> excludePlaylist' mp presetId rawPlaylistId
         | None -> Preset.ExcludePlaylistError.Unauthorized |> Error |> Task.FromResult)
 
-  let targetPlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (buildMusicPlatform: BuildMusicPlatform) =
+  let targetPlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
     let parseId = parseId >> Result.mapError Preset.TargetPlaylistError.IdParsing
 
     let loadPlaylist (mp: #ILoadPlaylist) =
@@ -389,7 +389,7 @@ module Preset =
         |> TaskResult.taskMap updatePreset
 
     fun (UserId userId) presetId rawPlaylistId ->
-      buildMusicPlatform (userId |> MusicPlatform.UserId)
+      musicPlatformFactory.GetMusicPlatform (userId |> MusicPlatform.UserId)
       |> Task.bind (function
         | Some mp -> targetPlaylist' mp presetId rawPlaylistId
         | None -> Preset.TargetPlaylistError.Unauthorized |> Error |> Task.FromResult)
@@ -511,7 +511,7 @@ module TargetedPlaylist =
 
 type Shuffler<'a> = 'a list -> 'a list
 
-type PresetService(parseId: Playlist.ParseId, presetRepo: IPresetRepo, buildMusicPlatform: BuildMusicPlatform, shuffler: Shuffler<Track>) =
+type PresetService(parseId: Playlist.ParseId, presetRepo: IPresetRepo, musicPlatformFactory: IMusicPlatformFactory, shuffler: Shuffler<Track>) =
   interface IPresetService with
     member this.QueueRun(userId, presetId) =
       Preset.queueRun presetRepo userId presetId
@@ -526,13 +526,13 @@ type PresetService(parseId: Playlist.ParseId, presetRepo: IPresetRepo, buildMusi
       PresetSettings.disableRecommendations presetRepo presetId
 
     member this.IncludePlaylist(userId, presetId, rawPlaylistId) =
-      Preset.includePlaylist parseId presetRepo buildMusicPlatform userId presetId rawPlaylistId
+      Preset.includePlaylist parseId presetRepo musicPlatformFactory userId presetId rawPlaylistId
 
     member this.ExcludePlaylist(userId, presetId, rawPlaylistId) =
-      Preset.excludePlaylist parseId presetRepo buildMusicPlatform userId presetId rawPlaylistId
+      Preset.excludePlaylist parseId presetRepo musicPlatformFactory userId presetId rawPlaylistId
 
     member this.TargetPlaylist(userId, presetId, rawPlaylistId) =
-      Preset.targetPlaylist parseId presetRepo buildMusicPlatform userId presetId rawPlaylistId
+      Preset.targetPlaylist parseId presetRepo musicPlatformFactory userId presetId rawPlaylistId
 
     member this.EnableUniqueArtists(presetId) =
       PresetSettings.enableUniqueArtists presetRepo presetId
@@ -571,7 +571,7 @@ type PresetService(parseId: Playlist.ParseId, presetRepo: IPresetRepo, buildMusi
       IncludedPlaylist.setLikedOnly presetRepo presetId playlistId
 
     member this.RunPreset(userId, presetId) = task {
-      let! musicPlatform = buildMusicPlatform (userId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform (userId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some platform -> return! Preset.run presetRepo shuffler platform presetId
