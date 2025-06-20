@@ -13,7 +13,6 @@
   </Folder>
   <Folder Name="/src/Integrations/">
     <Project Path="MusicPlatform.Cached\MusicPlatform.Cached.fsproj" Type="Classic F#" />
-    <Project Path="MusicPlatform.ReccoBeats\MusicPlatform.ReccoBeats.fsproj" Type="Classic F#" />
     <Project Path="MusicPlatform.Spotify\MusicPlatform.Spotify.fsproj" Type="Classic F#" />
   </Folder>
   <Folder Name="/src/Runners/">

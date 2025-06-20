@@ -251,14 +251,16 @@ module Preset =
         | PresetSettings.LikedTracksHandling.Exclude -> platform.ListLikedTracks() |> Task.map (List.append tracks)
         | _ -> Task.FromResult tracks
 
-    let getRecommendations (platform: #IGetRecommendations) =
+    let getRecommendations (platform: #IListArtistTracks) =
       fun (preset: Preset) (tracks: Track list) ->
         match preset.Settings.RecommendationsEnabled with
         | true ->
           tracks
-          |> List.map _.Id
-          |> platform.GetRecommendations
-          |> Task.map (List.prepend tracks)
+          |> List.takeSafe preset.Settings.Size.Value
+          |> List.collect (fun t -> t.Artists |> List.ofSeq)
+          |> List.map (fun a -> platform.ListArtistTracks a.Id)
+          |> Task.WhenAll
+          |> Task.map (List.concat >> List.prepend tracks)
         | false -> tracks |> Task.FromResult
 
     presetRepo.LoadPreset

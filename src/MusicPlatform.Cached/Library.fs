@@ -14,8 +14,6 @@ type RedisMusicPlatform
       do! musicPlatform.AddTracks(playlistId, tracks)
     }
 
-    member this.GetRecommendations(tracks) = musicPlatform.GetRecommendations tracks
-
     member this.ListLikedTracks() =
       Redis.UserRepo.listLikedTracks telemetryClient multiplexer musicPlatform.ListLikedTracks userId ()
 
@@ -40,13 +38,29 @@ type RedisMusicPlatform
       do! musicPlatform.ReplaceTracks(playlistId, tracks)
     }
 
+    member this.ListArtistTracks(artistId) =
+      let artistsTracksDatabase = 2
+      let database = multiplexer.GetDatabase artistsTracksDatabase
+      let loadList = Redis.listCachedTracks telemetryClient database
+      let replaceList = Redis.replaceList telemetryClient database
+
+      task {
+        let! tracks = loadList artistId.Value
+
+        match tracks with
+        | [] ->
+          let! tracks = musicPlatform.ListArtistTracks artistId
+
+          do! replaceList artistId.Value (tracks |> Redis.serializeTracks)
+
+          return tracks
+        | tracks -> return tracks
+      }
+
 type MemoryCachedMusicPlatform(musicPlatform: IMusicPlatform) =
   interface IMusicPlatform with
     member this.AddTracks(playlistId, tracks) =
       musicPlatform.AddTracks(playlistId, tracks)
-
-    member this.GetRecommendations(trackIds) =
-      musicPlatform.GetRecommendations trackIds
 
     member this.ListLikedTracks() =
       Memory.UserRepo.listLikedTracks musicPlatform.ListLikedTracks ()
@@ -58,6 +72,8 @@ type MemoryCachedMusicPlatform(musicPlatform: IMusicPlatform) =
 
     member this.ReplaceTracks(playlistId, tracks) =
       musicPlatform.ReplaceTracks(playlistId, tracks)
+
+    member this.ListArtistTracks(artistId) = musicPlatform.ListArtistTracks artistId
 
 type RedisMusicPlatformFactory
   (getMusicPlatform: IMusicPlatformFactory, telemetryClient: TelemetryClient, multiplexer: IConnectionMultiplexer) =

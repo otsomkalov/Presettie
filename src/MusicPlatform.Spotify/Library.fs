@@ -8,6 +8,7 @@ open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Options
 open Microsoft.FSharp.Control
 open MusicPlatform
+open MusicPlatform.Spotify.Mappings
 open SpotifyAPI.Web
 open MusicPlatform.Spotify.Helpers
 open otsom.fs.Auth
@@ -43,7 +44,9 @@ module Playlist =
          match x.Track with
          | :? FullTrack as t -> Some t
          | _ -> None)
-       |> mapTracks,
+       |> filterValidTracks
+       |> Seq.map Track.fromFull
+       |> List.ofSeq,
        tracks.Total)
   }
 
@@ -106,7 +109,7 @@ module User =
       client.Library.GetTracks(LibraryTracksRequest(Offset = offset, Limit = 50))
       |> Async.AwaitTask
 
-    return (tracks.Items |> Seq.map _.Track |> mapTracks, tracks.Total)
+    return (tracks.Items |> Seq.map _.Track |> filterValidTracks |> Seq.map Track.fromFull |> List.ofSeq, tracks.Total)
   }
 
   let listLikedTracks' (client: ISpotifyClient) : User.ListLikedTracks =
@@ -132,14 +135,9 @@ module Track =
 
       client.Browse.GetRecommendations(request)
       |> Task.map _.Tracks
-      |> Task.map (
-        Seq.map (fun st ->
-          { Id = TrackId st.Id
-            Artists = st.Artists |> Seq.map (fun a -> { Id = ArtistId a.Id }) |> Set.ofSeq })
-        >> Seq.toList
-      )
+      |> Task.map (Seq.map Track.fromFull >> Seq.toList)
 
-type SpotifyMusicPlatform(client: ISpotifyClient, getRecommendations: IGetRecommendations, logger: ILogger<SpotifyMusicPlatform>) =
+type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPlatform>) =
   let playlistTracksLimit = 100
 
 
@@ -147,9 +145,6 @@ type SpotifyMusicPlatform(client: ISpotifyClient, getRecommendations: IGetRecomm
     member this.AddTracks(PlaylistId playlistId, tracks) =
       client.Playlists.AddItems(playlistId, tracks |> mapToSpotifyTracksIds |> PlaylistAddItemsRequest)
       &|> ignore
-
-    member this.GetRecommendations(tracks) =
-      getRecommendations.GetRecommendations tracks
 
     member this.ListLikedTracks() = User.listLikedTracks' client ()
 
@@ -172,6 +167,29 @@ type SpotifyMusicPlatform(client: ISpotifyClient, getRecommendations: IGetRecomm
     member this.ReplaceTracks(PlaylistId playlistId, tracks) =
       client.Playlists.ReplaceItems(playlistId, tracks |> mapToSpotifyTracksIds |> PlaylistReplaceItemsRequest)
       &|> ignore
+
+    member this.ListArtistTracks(ArtistId artistId) = task {
+      let request =
+        ArtistsAlbumsRequest(IncludeGroupsParam = ArtistsAlbumsRequest.IncludeGroups.Album, Limit = 50)
+
+      let! artistAlbums = client.Artists.GetAlbums(artistId, request)
+
+      if artistAlbums.Items.Count = 0 then
+        return []
+      else
+        let request =
+          AlbumsRequest(
+            artistAlbums.Items
+            |> Seq.map (_.Id >> AlbumId)
+            |> Seq.takeSafe 20
+            |> Seq.map _.Value
+            |> List<string>
+          )
+
+        let! albums = client.Albums.GetSeveral(request)
+
+        return albums.Albums |> Seq.map Album.fromFull |> Seq.collect _.Tracks |> List.ofSeq
+    }
 
 module Library =
 
@@ -206,8 +224,8 @@ module Library =
         })
         |> TaskOption.tap (fun client -> clients.TryAdd(userId, client) |> ignore)
 
-type SpotifyMusicPlatformFactory(authService: IAuthRepo, authOptions, logger, getRecommendations) =
+type SpotifyMusicPlatformFactory(authService: IAuthRepo, authOptions, logger) =
   interface IMusicPlatformFactory with
     member this.GetMusicPlatform(userId) =
       Library.getClient authService authOptions userId
-      &|> Option.map (fun client -> SpotifyMusicPlatform(client, getRecommendations, logger))
+      &|> Option.map (fun client -> SpotifyMusicPlatform(client, logger))
