@@ -81,6 +81,9 @@ type IListLikedTracks =
 type IListArtistTracks =
   abstract ListArtistTracks: ArtistId -> Task<Track list>
 
+type IGetRecommendations =
+  abstract GetRecommendations: TrackId list -> Task<Track list>
+
 type IMusicPlatform =
   inherit ILoadPlaylist
   inherit IReplaceTracks
