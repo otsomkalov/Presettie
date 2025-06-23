@@ -17,13 +17,26 @@ type TrackId =
 
   member this.Value = let (TrackId id) = this in id
 
-type ArtistId = ArtistId of string
+type AlbumId =
+  | AlbumId of string
+
+  member this.Value = let (AlbumId id) = this in id
+
+type ArtistId =
+  | ArtistId of string
+
+  member this.Value = let (ArtistId id) = this in id
 
 type Artist = { Id: ArtistId }
 
 type Track = { Id: TrackId; Artists: Set<Artist> }
 
-type PlaylistData = { Id: PlaylistId; Name: string; TracksCount: int }
+type Album = { Id: AlbumId; Tracks: Track list }
+
+type PlaylistData =
+  { Id: PlaylistId
+    Name: string
+    TracksCount: int }
 
 type Playlist =
   | Readable of PlaylistData
@@ -35,6 +48,7 @@ module Playlist =
 
   type RawPlaylistId =
     | RawPlaylistId of string
+
     member this.Value = let (RawPlaylistId id) = this in id
 
   type IdParsingError = IdParsingError of string
@@ -49,17 +63,23 @@ module User =
 module Track =
   type GetRecommendations = TrackId list -> Task<Track list>
 
-type ILoadPlaylist = abstract LoadPlaylist: PlaylistId -> Task<Result<Playlist, Playlist.LoadError>>
+type ILoadPlaylist =
+  abstract LoadPlaylist: PlaylistId -> Task<Result<Playlist, Playlist.LoadError>>
 
-type IReplaceTracks = abstract ReplaceTracks: PlaylistId * Track list -> Task<unit>
+type IReplaceTracks =
+  abstract ReplaceTracks: PlaylistId * Track list -> Task<unit>
 
-type IAddTracks = abstract AddTracks: PlaylistId * Track list -> Task<unit>
+type IAddTracks =
+  abstract AddTracks: PlaylistId * Track list -> Task<unit>
 
 type IListPlaylistTracks =
   abstract ListPlaylistTracks: PlaylistId -> Task<Track list>
 
 type IListLikedTracks =
-  abstract ListLikedTracks : unit -> Task<Track list>
+  abstract ListLikedTracks: unit -> Task<Track list>
+
+type IListArtistTracks =
+  abstract ListArtistTracks: ArtistId -> Task<Track list>
 
 type IGetRecommendations =
   abstract GetRecommendations: TrackId list -> Task<Track list>
@@ -70,6 +90,7 @@ type IMusicPlatform =
   inherit IAddTracks
   inherit IListPlaylistTracks
   inherit IListLikedTracks
-  inherit IGetRecommendations
+  inherit IListArtistTracks
 
-type BuildMusicPlatform = UserId -> Task<IMusicPlatform option>
+type IMusicPlatformFactory =
+  abstract GetMusicPlatform: UserId -> Task<IMusicPlatform option>

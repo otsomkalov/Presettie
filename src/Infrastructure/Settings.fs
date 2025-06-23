@@ -14,9 +14,3 @@ type StorageSettings =
     QueueName: string }
 
   static member SectionName = "Storage"
-
-[<CLIMutable>]
-type RedisSettings =
-  { ConnectionString: string }
-
-  static member SectionName = "Redis"

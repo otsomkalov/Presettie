@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure.Telegram\Infrastructure.Telegram.fsproj"/>
+    <ProjectReference Include="..\MusicPlatform.Cached\MusicPlatform.Cached.fsproj" />
   </ItemGroup>
 
 </Project>

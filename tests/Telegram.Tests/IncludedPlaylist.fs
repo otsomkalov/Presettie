@@ -1,11 +1,11 @@
 ﻿module Telegram.Tests.IncludedPlaylist
 
-open System.Threading.Tasks
 open Domain.Core
 open Domain.Repos
 open Domain.Tests
 open Moq
 open MusicPlatform
+open NSubstitute
 open Telegram.Core
 open FsUnit.Xunit
 open Telegram.Handlers.Click
@@ -85,14 +85,15 @@ let ``show click should send included playlist details`` () =
 
   let resourceProvider = Mock<IResourceProvider>()
 
-  let buildMusicPlatform _ =
-    Task.FromResult(Some musicPlatform.Object)
+  let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+
+  musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some musicPlatform.Object)
 
   let click =
     createClick [ "p"; Mocks.preset.Id.Value; "ip"; Mocks.includedPlaylistId.Value; "i" ]
 
   task {
-    let! result = showIncludedPlaylistClickHandler presetRepo.Object buildMusicPlatform resourceProvider.Object botService.Object click
+    let! result = showIncludedPlaylistClickHandler presetRepo.Object musicPlatformFactory resourceProvider.Object botService.Object click
 
     result |> should equal (Some())
 
@@ -110,13 +111,14 @@ let ``show click should not send included playlist details if data does not matc
 
   let click = createClick []
 
-  let buildMusicPlatform _ =
-    Task.FromResult(Some musicPlatform.Object)
+  let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+
+  musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some musicPlatform.Object)
 
   let resourceProvider = Mock<IResourceProvider>()
 
   task {
-    let! result = showIncludedPlaylistClickHandler presetRepo.Object buildMusicPlatform resourceProvider.Object botService.Object click
+    let! result = showIncludedPlaylistClickHandler presetRepo.Object musicPlatformFactory resourceProvider.Object botService.Object click
 
     result |> should equal None
 

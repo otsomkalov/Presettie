@@ -4,12 +4,11 @@ open System
 open System.Net
 open System.Text.RegularExpressions
 open FSharp
-open Microsoft.ApplicationInsights
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Options
 open Microsoft.FSharp.Control
 open MusicPlatform
-open MusicPlatform.Spotify.Cache
+open MusicPlatform.Spotify.Mappings
 open SpotifyAPI.Web
 open MusicPlatform.Spotify.Helpers
 open otsom.fs.Auth
@@ -34,7 +33,7 @@ module Playlist =
       | None -> initialBatch |> async.Return
   }
 
-  let rec private listTracks' (client: ISpotifyClient) playlistId (offset: int) = async {
+  let rec listTracks' (client: ISpotifyClient) playlistId (offset: int) = async {
     let! tracks =
       client.Playlists.GetItems(playlistId, PlaylistGetItemsRequest(Offset = offset))
       |> Async.AwaitTask
@@ -45,43 +44,11 @@ module Playlist =
          match x.Track with
          | :? FullTrack as t -> Some t
          | _ -> None)
-       |> getTracksIds,
+       |> filterValidTracks
+       |> Seq.map Track.fromFull
+       |> List.ofSeq,
        tracks.Total)
   }
-
-  let listTracks (logger: ILogger) client =
-    let playlistTracksLimit = 100
-
-    fun (PlaylistId playlistId) ->
-      let listPlaylistTracks = listTracks' client playlistId
-      let loadTracks' = loadTracks' playlistTracksLimit
-
-      task {
-        try
-          return! loadTracks' listPlaylistTracks
-
-        with ApiException e when e.Response.StatusCode = HttpStatusCode.NotFound ->
-          Logf.logfw logger "Playlist with id %s{PlaylistId} not found in Spotify" playlistId
-
-          return []
-      }
-
-  let private getSpotifyIds =
-    fun (tracks: Track list) ->
-      tracks
-      |> List.map _.Id
-      |> List.map (fun (TrackId id) -> $"spotify:track:{id}")
-      |> List<string>
-
-  let addTracks (client: ISpotifyClient) =
-    fun (PlaylistId playlistId) tracks ->
-      client.Playlists.AddItems(playlistId, tracks |> getSpotifyIds |> PlaylistAddItemsRequest)
-      &|> ignore
-
-  let replaceTracks (client: ISpotifyClient) =
-    fun (PlaylistId playlistId) tracks ->
-      client.Playlists.ReplaceItems(playlistId, tracks |> getSpotifyIds |> PlaylistReplaceItemsRequest)
-      &|> ignore
 
   let load (client: ISpotifyClient) =
     fun (PlaylistId playlistId) -> task {
@@ -142,7 +109,7 @@ module User =
       client.Library.GetTracks(LibraryTracksRequest(Offset = offset, Limit = 50))
       |> Async.AwaitTask
 
-    return (tracks.Items |> Seq.map _.Track |> getTracksIds, tracks.Total)
+    return (tracks.Items |> Seq.map _.Track |> filterValidTracks |> Seq.map Track.fromFull |> List.ofSeq, tracks.Total)
   }
 
   let listLikedTracks' (client: ISpotifyClient) : User.ListLikedTracks =
@@ -152,14 +119,6 @@ module User =
     let loadTracks' = Playlist.loadTracks' likedTacksLimit
 
     fun () -> loadTracks' listLikedTracks' |> Async.StartAsTask
-
-  let listLikedTracks telemetryClient multiplexer client userId =
-    let listSpotifyTracks = listLikedTracks' client
-
-    let listRedisTracks =
-      Redis.UserRepo.listLikedTracks telemetryClient multiplexer listSpotifyTracks userId
-
-    Memory.UserRepo.listLikedTracks listRedisTracks
 
 [<RequireQualifiedAccess>]
 module Track =
@@ -176,48 +135,61 @@ module Track =
 
       client.Browse.GetRecommendations(request)
       |> Task.map _.Tracks
-      |> Task.map (
-        Seq.map (fun st ->
-          { Id = TrackId st.Id
-            Artists = st.Artists |> Seq.map (fun a -> { Id = ArtistId a.Id }) |> Set.ofSeq })
-        >> Seq.toList
-      )
+      |> Task.map (Seq.map Track.fromFull >> Seq.toList)
 
-[<RequireQualifiedAccess>]
-module TargetedPlaylistRepo =
-  let private applyTracks spotifyAction cacheAction =
-    fun (playlistId: PlaylistId) (tracks: Track list) ->
-      let spotifyTask: Task<unit> = spotifyAction playlistId tracks
-      let cacheTask: Task<unit> = cacheAction playlistId tracks
+type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPlatform>) =
+  let playlistTracksLimit = 100
 
-      Task.WhenAll([ spotifyTask; cacheTask ]) |> Task.ignore
 
-  let addTracks (telemetryClient: TelemetryClient) (spotifyClient: ISpotifyClient) multiplexer =
-    let addInSpotify = Playlist.addTracks spotifyClient
-    let addInCache = Redis.Playlist.appendTracks telemetryClient multiplexer
+  interface IMusicPlatform with
+    member this.AddTracks(PlaylistId playlistId, tracks) =
+      client.Playlists.AddItems(playlistId, tracks |> mapToSpotifyTracksIds |> PlaylistAddItemsRequest)
+      &|> ignore
 
-    applyTracks addInSpotify addInCache
+    member this.ListLikedTracks() = User.listLikedTracks' client ()
 
-  let replaceTracks (telemetryClient: TelemetryClient) (spotifyClient: ISpotifyClient) multiplexer =
-    let replaceInSpotify = Playlist.replaceTracks spotifyClient
-    let replaceInCache = Redis.Playlist.replaceTracks telemetryClient multiplexer
+    member this.ListPlaylistTracks(PlaylistId playlistId) =
+      let listPlaylistTracks = Playlist.listTracks' client playlistId
+      let loadTracks' = Playlist.loadTracks' playlistTracksLimit
 
-    applyTracks replaceInSpotify replaceInCache
+      task {
+        try
+          return! loadTracks' listPlaylistTracks
 
-[<RequireQualifiedAccess>]
-module PlaylistRepo =
-  let listTracks telemetryClient multiplexer logger client =
-    let listCachedPlaylistTracks = Redis.Playlist.listTracks telemetryClient multiplexer
-    let listSpotifyPlaylistTracks = Playlist.listTracks logger client
-    let cachePlaylistTracks = Redis.Playlist.replaceTracks telemetryClient multiplexer
+        with ApiException e when e.Response.StatusCode = HttpStatusCode.NotFound ->
+          Logf.logfw logger "Playlist with id %s{PlaylistId} not found in Spotify" playlistId
 
-    fun playlistId ->
-      listCachedPlaylistTracks playlistId
-      |> Task.bind (function
-        | [] ->
-          listSpotifyPlaylistTracks playlistId
-          |> Task.taskTap (cachePlaylistTracks playlistId)
-        | tracks -> Task.FromResult tracks)
+          return []
+      }
+
+    member this.LoadPlaylist(playlistId) = Playlist.load client playlistId
+
+    member this.ReplaceTracks(PlaylistId playlistId, tracks) =
+      client.Playlists.ReplaceItems(playlistId, tracks |> mapToSpotifyTracksIds |> PlaylistReplaceItemsRequest)
+      &|> ignore
+
+    member this.ListArtistTracks(ArtistId artistId) = task {
+      let request =
+        ArtistsAlbumsRequest(IncludeGroupsParam = ArtistsAlbumsRequest.IncludeGroups.Album, Limit = 50)
+
+      let! artistAlbums = client.Artists.GetAlbums(artistId, request)
+
+      if artistAlbums.Items.Count = 0 then
+        return []
+      else
+        let request =
+          AlbumsRequest(
+            artistAlbums.Items
+            |> Seq.map (_.Id >> AlbumId)
+            |> Seq.takeSafe 20
+            |> Seq.map _.Value
+            |> List<string>
+          )
+
+        let! albums = client.Albums.GetSeveral(request)
+
+        return albums.Albums |> Seq.map Album.fromFull |> Seq.collect _.Tracks |> List.ofSeq
+    }
 
 module Library =
 
@@ -252,32 +224,8 @@ module Library =
         })
         |> TaskOption.tap (fun client -> clients.TryAdd(userId, client) |> ignore)
 
-  let buildMusicPlatform
-    (authService: IAuthRepo)
-    authOptions
-    (logger: ILogger<BuildMusicPlatform>)
-    telemetryClient
-    multiplexer
-    (getRecommendations: IGetRecommendations)
-    : BuildMusicPlatform =
-
-    fun userId ->
-      userId |> getClient authService authOptions
-      &|> Option.map (fun client ->
-        { new IMusicPlatform with
-            member this.LoadPlaylist(playlistId) = Playlist.load client playlistId
-
-            member this.GetRecommendations(tracks) =
-              getRecommendations.GetRecommendations(tracks)
-
-            member this.AddTracks(playlistId, tracks) =
-              TargetedPlaylistRepo.addTracks telemetryClient client multiplexer playlistId tracks
-
-            member this.ReplaceTracks(playlistId, tracks) =
-              TargetedPlaylistRepo.replaceTracks telemetryClient client multiplexer playlistId tracks
-
-            member this.ListLikedTracks() =
-              User.listLikedTracks telemetryClient multiplexer client userId ()
-
-            member this.ListPlaylistTracks(playlistId) =
-              PlaylistRepo.listTracks telemetryClient multiplexer logger client playlistId })
+type SpotifyMusicPlatformFactory(authService: IAuthRepo, authOptions, logger) =
+  interface IMusicPlatformFactory with
+    member this.GetMusicPlatform(userId) =
+      Library.getClient authService authOptions userId
+      &|> Option.map (fun client -> SpotifyMusicPlatform(client, logger))

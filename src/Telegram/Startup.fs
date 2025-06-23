@@ -37,19 +37,19 @@ let private addClickHandlers (services: IServiceCollection) =
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listExcludedPlaylistsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listTargetedPlaylistsClickHandler)
 
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, BuildMusicPlatform>(showIncludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, BuildMusicPlatform>(showExcludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, BuildMusicPlatform>(showTargetedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IMusicPlatformFactory>(showIncludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IMusicPlatformFactory>(showExcludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IMusicPlatformFactory>(showTargetedPlaylistClickHandler)
 
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, BuildMusicPlatform>(appendToTargetedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, BuildMusicPlatform>(overwriteTargetedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(appendToTargetedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(overwriteTargetedPlaylistClickHandler)
 
     .BuildSingleton<ClickHandlerFactory, IPresetService>(removeIncludedPlaylistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetService>(removeExcludedPlaylistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetService>(removeTargetedPlaylistClickHandler)
 
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, BuildMusicPlatform>(setAllTracksIncludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, BuildMusicPlatform>(setOnlyLikedIncludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(setAllTracksIncludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(setOnlyLikedIncludedPlaylistClickHandler)
 
 let private addMessageHandlers (services: IServiceCollection) =
   services

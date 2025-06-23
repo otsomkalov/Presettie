@@ -1,14 +1,13 @@
 ﻿module internal MusicPlatform.Spotify.Cache.Redis
 
 open System
-open System.Text.Json
 open Microsoft.ApplicationInsights
 open Microsoft.ApplicationInsights.DataContracts
 open MusicPlatform
-open MusicPlatform.Spotify
+open MusicPlatform.Cached.Helpers
 open StackExchange.Redis
-open otsom.fs.Extensions
 open System.Threading.Tasks
+open otsom.fs.Extensions
 
 let private prependList (telemetryClient: TelemetryClient) (cache: IDatabase) =
   fun (key: string) values ->
@@ -24,7 +23,7 @@ let private prependList (telemetryClient: TelemetryClient) (cache: IDatabase) =
       return ()
     }
 
-let private replaceList (telemetryClient: TelemetryClient) (cache: IDatabase) =
+let internal replaceList (telemetryClient: TelemetryClient) (cache: IDatabase) =
   fun (key: string) values ->
     task {
       let dependency = DependencyTelemetry("Redis", key, "replaceList", key)
@@ -44,7 +43,7 @@ let private replaceList (telemetryClient: TelemetryClient) (cache: IDatabase) =
       return ()
     }
 
-let private loadList (telemetryClient: TelemetryClient) (cache: IDatabase) =
+let internal loadList (telemetryClient: TelemetryClient) (cache: IDatabase) =
   fun key ->
     task {
       let dependency = DependencyTelemetry("Redis", key, "loadList", key)
@@ -72,12 +71,12 @@ let private listLength (telemetryClient: TelemetryClient) (cache: IDatabase) =
       return value |> int
     }
 
-let private listCachedTracks telemetryClient cache =
+let listCachedTracks telemetryClient cache =
   fun key ->
     loadList telemetryClient cache key
     |> Task.map (List.ofArray >> List.map (string >> JSON.deserialize<Track>))
 
-let private serializeTracks tracks =
+let internal serializeTracks tracks =
   tracks |> List.map (JSON.serialize >> RedisValue)
 
 [<RequireQualifiedAccess>]

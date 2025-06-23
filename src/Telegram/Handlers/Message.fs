@@ -197,7 +197,7 @@ let createPresetMessageHandler (userService: #ICreateUserPreset) (resp: IResourc
   }
 
 let includePlaylistButtonMessageHandler
-  (buildMusicPlatform: BuildMusicPlatform)
+  (musicPlatformFactory: IMusicPlatformFactory)
   authService
   (resp: IResourceProvider)
   (chatCtx: #IAskForReply)
@@ -205,7 +205,7 @@ let includePlaylistButtonMessageHandler
   fun message -> task {
     match message.Text with
     | Equals Buttons.IncludePlaylist ->
-      let! musicPlatform = buildMusicPlatform (message.Chat.UserId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform (message.Chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -220,7 +220,7 @@ let includePlaylistButtonMessageHandler
   }
 
 let excludePlaylistButtonMessageHandler
-  (buildMusicPlatform: BuildMusicPlatform)
+  (musicPlatformFactory: IMusicPlatformFactory)
   authService
   (resp: IResourceProvider)
   (chatCtx: #IAskForReply)
@@ -228,7 +228,7 @@ let excludePlaylistButtonMessageHandler
   fun message -> task {
     match message.Text with
     | Equals Buttons.ExcludePlaylist ->
-      let! musicPlatform = buildMusicPlatform (message.Chat.UserId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform (message.Chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -243,7 +243,7 @@ let excludePlaylistButtonMessageHandler
   }
 
 let targetPlaylistButtonMessageHandler
-  (buildMusicPlatform: BuildMusicPlatform)
+  (musicPlatformFactory: IMusicPlatformFactory)
   authService
   (resp: IResourceProvider)
   (chatCtx: #IBotService)
@@ -252,7 +252,7 @@ let targetPlaylistButtonMessageHandler
     match message.Text with
     | Equals Buttons.TargetPlaylist ->
 
-      let! musicPlatform = buildMusicPlatform (message.Chat.UserId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform (message.Chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
