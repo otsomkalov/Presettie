@@ -7,7 +7,6 @@ open Moq
 open MusicPlatform
 open Xunit
 open FsUnit.Xunit
-open NSubstitute
 
 module Run =
   let shuffler: Shuffler<Track> = id
@@ -44,12 +43,14 @@ module Run =
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
-    let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-    musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some platform.Object)
+    musicPlatformFactory
+      .Setup(_.GetMusicPlatform(It.IsAny()))
+      .ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -80,12 +81,14 @@ module Run =
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
-    let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-    musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some platform.Object)
+    musicPlatformFactory
+      .Setup(_.GetMusicPlatform(It.IsAny()))
+      .ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -108,12 +111,14 @@ module Run =
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
-    let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-    musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some platform.Object)
+    musicPlatformFactory
+      .Setup(_.GetMusicPlatform(It.IsAny()))
+      .ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -142,12 +147,14 @@ module Run =
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
-    let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-    musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some platform.Object)
+    musicPlatformFactory
+      .Setup(_.GetMusicPlatform(It.IsAny()))
+      .ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -170,7 +177,10 @@ module Run =
       .Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId))
       .ReturnsAsync([ Mocks.recommendedTrack ])
 
-    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([Mocks.recommendedTrack])
+    platform
+      .Setup(_.ListArtistTracks(Mocks.artist1.Id))
+      .ReturnsAsync([ Mocks.recommendedTrack ])
+
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     platform
@@ -187,12 +197,14 @@ module Run =
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
-    let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-    musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some platform.Object)
+    musicPlatformFactory
+      .Setup(_.GetMusicPlatform(It.IsAny()))
+      .ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -230,12 +242,14 @@ module Run =
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
-    let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-    musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some platform.Object)
+    musicPlatformFactory
+      .Setup(_.GetMusicPlatform(It.IsAny()))
+      .ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -272,12 +286,14 @@ module Run =
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
-    let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-    musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some platform.Object)
+    musicPlatformFactory
+      .Setup(_.GetMusicPlatform(It.IsAny()))
+      .ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -311,12 +327,14 @@ module Run =
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
-    let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-    musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some platform.Object)
+    musicPlatformFactory
+      .Setup(_.GetMusicPlatform(It.IsAny()))
+      .ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -349,12 +367,14 @@ module Run =
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
-    let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-    musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some platform.Object)
+    musicPlatformFactory
+      .Setup(_.GetMusicPlatform(It.IsAny()))
+      .ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -379,7 +399,10 @@ module Run =
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
 
-    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([Mocks.recommendedTrack])
+    platform
+      .Setup(_.ListArtistTracks(Mocks.artist1.Id))
+      .ReturnsAsync([ Mocks.recommendedTrack ])
+
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     platform
@@ -392,12 +415,14 @@ module Run =
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
-    let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-    musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some platform.Object)
+    musicPlatformFactory
+      .Setup(_.GetMusicPlatform(It.IsAny()))
+      .ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -425,8 +450,11 @@ module Run =
 
     platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ])
 
-    platform.Setup(_.ListArtistTracks(Mocks.artist3.Id)).ReturnsAsync([ Mocks.recommendedTrack ])
-    platform.Setup(_.ListArtistTracks(Mocks.artist4.Id)).ReturnsAsync([ ])
+    platform
+      .Setup(_.ListArtistTracks(Mocks.artist3.Id))
+      .ReturnsAsync([ Mocks.recommendedTrack ])
+
+    platform.Setup(_.ListArtistTracks(Mocks.artist4.Id)).ReturnsAsync([])
 
     platform
       .Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.recommendedTrack; Mocks.likedTrack ]))
@@ -438,12 +466,14 @@ module Run =
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
-    let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-    musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some platform.Object)
+    musicPlatformFactory
+      .Setup(_.GetMusicPlatform(It.IsAny()))
+      .ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)

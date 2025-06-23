@@ -5,7 +5,6 @@ open Domain.Repos
 open Domain.Tests
 open Moq
 open MusicPlatform
-open NSubstitute
 open Telegram.Core
 open FsUnit.Xunit
 open Telegram.Handlers.Click
@@ -85,15 +84,18 @@ let ``show click should send included playlist details`` () =
 
   let resourceProvider = Mock<IResourceProvider>()
 
-  let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-  musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some musicPlatform.Object)
+  musicPlatformFactory
+    .Setup(_.GetMusicPlatform(It.IsAny()))
+    .ReturnsAsync(Some musicPlatform.Object)
 
   let click =
     createClick [ "p"; Mocks.preset.Id.Value; "ip"; Mocks.includedPlaylistId.Value; "i" ]
 
   task {
-    let! result = showIncludedPlaylistClickHandler presetRepo.Object musicPlatformFactory resourceProvider.Object botService.Object click
+    let! result =
+      showIncludedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
 
     result |> should equal (Some())
 
@@ -111,14 +113,17 @@ let ``show click should not send included playlist details if data does not matc
 
   let click = createClick []
 
-  let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-  musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some musicPlatform.Object)
+  musicPlatformFactory
+    .Setup(_.GetMusicPlatform(It.IsAny()))
+    .ReturnsAsync(Some musicPlatform.Object)
 
   let resourceProvider = Mock<IResourceProvider>()
 
   task {
-    let! result = showIncludedPlaylistClickHandler presetRepo.Object musicPlatformFactory resourceProvider.Object botService.Object click
+    let! result =
+      showIncludedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
 
     result |> should equal None
 
@@ -129,15 +134,14 @@ let ``show click should not send included playlist details if data does not matc
 
 [<Fact>]
 let ``remove click should delete playlist and show included playlists`` () =
-  let presetRepo = Mock<IPresetRepo>()
-
-  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
-
   let presetService = Mock<IPresetService>()
 
   presetService
     .Setup(_.RemoveIncludedPlaylist(Mocks.presetId, Mocks.includedPlaylist.Id))
-    .ReturnsAsync(())
+    .ReturnsAsync(
+      { Mocks.preset with
+          IncludedPlaylists = [] }
+    )
 
   let botService = Mock<IBotService>()
 
@@ -151,18 +155,16 @@ let ``remove click should delete playlist and show included playlists`` () =
   let resourceProvider = Mock<IResourceProvider>()
 
   task {
-    let! result = removeIncludedPlaylistClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object click
+    let! result = removeIncludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object click
 
     result |> should equal (Some())
 
-    presetRepo.VerifyAll()
     botService.VerifyAll()
     presetService.VerifyAll()
   }
 
 [<Fact>]
 let ``remove click should not delete playlist`` () =
-  let presetRepo = Mock<IPresetRepo>()
   let presetService = Mock<IPresetService>()
   let botService = Mock<IBotService>()
 
@@ -171,11 +173,10 @@ let ``remove click should not delete playlist`` () =
   let resourceProvider = Mock<IResourceProvider>()
 
   task {
-    let! result = removeIncludedPlaylistClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object click
+    let! result = removeIncludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object click
 
     result |> should equal None
 
-    presetRepo.VerifyAll()
     botService.VerifyAll()
     presetService.VerifyAll()
   }

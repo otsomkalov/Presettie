@@ -5,6 +5,7 @@ open Domain.Repos
 open Domain.Workflows
 open Moq
 open Xunit
+open FsUnit.Xunit
 
 [<Fact>]
 let ``remove should remove playlist from preset`` () =
@@ -21,7 +22,10 @@ let ``remove should remove playlist from preset`` () =
   let sut = ExcludedPlaylist.remove mock.Object
 
   task {
-    do! sut Mocks.presetId Mocks.excludedPlaylist.Id
+    let! preset = sut Mocks.presetId Mocks.excludedPlaylist.Id
 
     mock.VerifyAll()
+
+    preset.ExcludedPlaylists
+    |> should equal List.empty<ExcludedPlaylist>
   }
