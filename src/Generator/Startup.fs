@@ -24,6 +24,7 @@ let private configureServices (builderContext: HostBuilderContext) (services: IS
   |> Domain.Startup.addDomain cfg
   |> MusicPlatform.ReccoBeats.Startup.addReccoBeatsMusicPlatform cfg
   |> MusicPlatform.Spotify.Startup.addSpotifyMusicPlatform cfg
+  |> MusicPlatform.Cached.Startup.addCachedMusicPlatform cfg
   |> Telegram.Startup.addBot cfg
   |> Infrastructure.Startup.addInfrastructure cfg
   |> Infrastructure.Telegram.Startup.addTelegram cfg

@@ -2,11 +2,11 @@
 
 #nowarn "20"
 
-open System.Threading.Tasks
 open Domain.Core
 open Domain.Repos
 open Moq
 open MusicPlatform
+open NSubstitute
 open Telegram.Core
 open Telegram.Handlers.Click
 open Xunit
@@ -84,8 +84,9 @@ let ``show click should send targeted playlist details`` () =
     .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
     .ReturnsAsync(())
 
-  let buildMusicPlatform _ =
-    Task.FromResult(Some musicPlatform.Object)
+  let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+
+  musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some musicPlatform.Object)
 
   let resourceProvider = Mock<IResourceProvider>()
 
@@ -93,7 +94,7 @@ let ``show click should send targeted playlist details`` () =
     createClick [ "p"; Mocks.preset.Id.Value; "tp"; Mocks.targetedPlaylistId.Value; "i" ]
 
   task {
-    let! result = showTargetedPlaylistClickHandler presetRepo.Object buildMusicPlatform resourceProvider.Object botService.Object click
+    let! result = showTargetedPlaylistClickHandler presetRepo.Object musicPlatformFactory resourceProvider.Object botService.Object click
 
     result |> should equal (Some())
 
@@ -113,11 +114,12 @@ let ``show click should not send playlist details if data does not match`` () =
 
   let click = createClick []
 
-  let buildMusicPlatform _ =
-    Task.FromResult(Some musicPlatform.Object)
+  let musicPlatformFactory = Substitute.For<IMusicPlatformFactory>()
+
+  musicPlatformFactory.GetMusicPlatform(Arg.Any()).Returns(Some musicPlatform.Object)
 
   task {
-    let! result = showTargetedPlaylistClickHandler presetRepo.Object buildMusicPlatform resourceProvider.Object botService.Object click
+    let! result = showTargetedPlaylistClickHandler presetRepo.Object musicPlatformFactory resourceProvider.Object botService.Object click
 
     result |> should equal None
 
