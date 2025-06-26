@@ -39,7 +39,7 @@ let ``sendCurrentPreset should show current preset details with actions keyboard
 
   presetRepo
     .Setup(fun m -> m.LoadPreset Mocks.presetId)
-    .ReturnsAsync(Mocks.preset)
+    .ReturnsAsync(Some Mocks.preset)
 
   let botService = Mock<IBotService>()
 

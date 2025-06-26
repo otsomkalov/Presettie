@@ -8,7 +8,7 @@ type IIdGenerator =
   abstract GenerateId: unit -> string
 
 type ILoadPreset =
-  abstract LoadPreset: PresetId -> Task<Preset>
+  abstract LoadPreset: PresetId -> Task<Preset option>
 
 type ISavePreset =
   abstract SavePreset: Preset -> Task<unit>

@@ -20,13 +20,12 @@ open MongoDB.Driver.Linq
 [<RequireQualifiedAccess>]
 module PresetRepo =
   let load (collection: IMongoCollection<Entities.Preset>) =
-    fun (PresetId presetId) -> task {
+    fun (PresetId presetId) ->
       let presetsFilter = Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId presetId)
 
-      let! dbPreset = collection.Find(presetsFilter).SingleOrDefaultAsync()
-
-      return dbPreset |> Preset.fromDb
-    }
+      collection.Find(presetsFilter).SingleOrDefaultAsync()
+      |> Task.map Option.ofObj
+      |> TaskOption.map Preset.fromDb
 
   let save (collection: IMongoCollection<Entities.Preset>) =
     fun preset -> task {
