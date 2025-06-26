@@ -12,3 +12,5 @@ module List =
 module Result =
   let errorIf condition (error: 'e) =
     fun arg -> if (condition arg) then Error error else Ok arg
+
+let flip f a b = f b a

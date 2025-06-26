@@ -564,6 +564,13 @@ type PresetService
 
     member this.RemovePreset(presetId) = presetRepo.RemovePreset presetId
 
+    member this.GetPreset(userId, presetId) =
+      presetId
+      |> presetRepo.LoadPreset
+      |> Task.map (function
+        | Some preset when preset.OwnerId = userId -> Ok preset
+        | _ -> Error Preset.GetPresetError.NotFound)
+
 type UserService(userRepo: IUserRepo, presetService: IPresetService) =
   interface IUserService with
     member this.SetCurrentPresetSize(userId, size) =

@@ -17,7 +17,7 @@
     <Compile Include="TargetedPlaylist.fs"/>
     <Compile Include="Tracks.fs"/>
     <Compile Include="Preset.fs"/>
-    <Compile Include="User.fs"/>
+    <Compile Include="User.fs" />
   </ItemGroup>
 
   <ItemGroup>

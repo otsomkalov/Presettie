@@ -121,6 +121,9 @@ module Preset =
     | AccessError of AccessError
     | Unauthorized
 
+  type GetPresetError =
+    | NotFound
+
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
   let fromSpotifyPlaylist =
@@ -224,6 +227,9 @@ type IRunPreset =
 type IRemovePreset =
   abstract RemovePreset: PresetId -> Task<unit>
 
+type IGetPreset =
+  abstract GetPreset: UserId * PresetId -> Task<Result<Preset, Preset.GetPresetError>>
+
 type IPresetService =
   inherit IQueueRun
   inherit IRunPreset
@@ -231,6 +237,7 @@ type IPresetService =
   inherit ISetPresetSize
   inherit ICreatePreset
   inherit IRemovePreset
+  inherit IGetPreset
 
   inherit IIncludePlaylist
   inherit IExcludePlaylist

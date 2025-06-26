@@ -1,12 +1,12 @@
 ﻿module Domain.Tests.Preset
 
-open Domain.Core
 open Domain.Repos
 open Domain.Workflows
 open Moq
-open MusicPlatform
 open Xunit
 open FsUnit.Xunit
+open MusicPlatform
+open Domain.Core
 
 module Run =
   let shuffler: Shuffler<Track> = id
@@ -483,3 +483,49 @@ module Run =
       platform.VerifyAll()
       presetRepo.VerifyAll()
     }
+
+type GetPreset() =
+    let parseId = fun _ -> Ok Mocks.includedPlaylistId
+
+    let presetRepo = Mock<IPresetRepo>()
+
+    do presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset) |> ignore
+
+    let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+
+    let sut = PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, id) :> IGetPreset
+
+    [<Fact>]
+    let ``returns Preset if it belongs to User`` () =
+
+      task {
+        let! preset = sut.GetPreset(Mocks.userId, Mocks.presetId)
+
+        preset |> should equal (Result<_, Preset.GetPresetError>.Ok(Mocks.preset))
+
+        presetRepo.VerifyAll()
+      }
+
+    [<Fact>]
+    let ``returns NotFound when preset does not exist`` () =
+      presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(None)
+
+      task {
+        let! preset = sut.GetPreset(Mocks.userId, Mocks.presetId)
+
+        preset |> should equal (Result<Preset, _>.Error Preset.GetPresetError.NotFound)
+
+        presetRepo.VerifyAll()
+      }
+
+    [<Fact>]
+    let ``returns NotFound when preset belongs to another user`` () =
+      let otherUserId = otsom.fs.Core.UserId "other-user"
+
+      task {
+        let! preset = sut.GetPreset(otherUserId, Mocks.presetId)
+
+        preset |> should equal (Result<Preset, _>.Error Preset.GetPresetError.NotFound)
+
+        presetRepo.VerifyAll()
+      }
