@@ -2,6 +2,7 @@
 
 #nowarn "20"
 
+open Domain.Query
 open Domain.Repos
 open Domain.Tests
 open Moq
@@ -11,21 +12,21 @@ open otsom.fs.Bot
 
 [<Fact>]
 let ``should list presets`` () =
-  let userRepo = Mock<IUserRepo>()
-
-  userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
-
   let botService = Mock<IBotService>()
 
   botService
     .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
     .ReturnsAsync(())
 
-  task {
-    do! User.listPresets botService.Object userRepo.Object Mocks.botMessageId Mocks.userId
+  let presetReadRepo = Mock<IPresetReadRepo>()
 
-    userRepo.VerifyAll()
+  presetReadRepo.Setup(_.ListUserPresets(Mocks.userId)).ReturnsAsync([{ Id = Mocks.presetId.Value; Name = Mocks.preset.Name }])
+
+  task {
+    do! User.listPresets botService.Object presetReadRepo.Object Mocks.botMessageId Mocks.userId
+
     botService.VerifyAll()
+    presetReadRepo.VerifyAll()
   }
 
 [<Fact>]

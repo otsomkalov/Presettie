@@ -3,6 +3,7 @@
 open System
 open Database
 open Domain.Core
+open Domain.Query
 open Domain.Workflows
 open MongoDB.Bson
 open MusicPlatform
@@ -10,29 +11,20 @@ open otsom.fs.Core
 
 [<RequireQualifiedAccess>]
 module SimplePreset =
-  let fromDb (preset: Entities.SimplePreset) : SimplePreset =
-    { Id = preset.Id |> PresetId
+  let fromDb (preset: Entities.Preset) : SimplePreset =
+    { Id = preset.Id.ToString()
       Name = preset.Name }
-
-  let toDb (preset: SimplePreset) : Entities.SimplePreset =
-    Entities.SimplePreset(Id = preset.Id.Value, Name = preset.Name)
 
 [<RequireQualifiedAccess>]
 module User =
   let fromDb (user: Entities.User) : User =
     { Id = user.Id.ToString() |> UserId
-      CurrentPresetId =
-        if isNull user.CurrentPresetId then
-          None
-        else
-          Some(user.CurrentPresetId |> PresetId)
-      Presets = user.Presets |> Seq.map SimplePreset.fromDb |> Seq.toList }
+      CurrentPresetId = user.CurrentPresetId |> Option.ofNullable |> Option.map (string >> PresetId) }
 
   let toDb (user: User) : Entities.User =
     Entities.User(
       Id = (user.Id.Value |> ObjectId),
-      CurrentPresetId = (user.CurrentPresetId |> Option.map _.Value |> Option.toObj),
-      Presets = (user.Presets |> Seq.map SimplePreset.toDb)
+      CurrentPresetId = (user.CurrentPresetId |> Option.map (_.Value >> ObjectId.Parse) |> Option.toNullable)
     )
 
 [<RequireQualifiedAccess>]
@@ -99,8 +91,9 @@ module Preset =
     let mapExcludedPlaylist playlists =
       playlists |> Seq.map ExcludedPlaylist.fromDb |> Seq.toList
 
-    { Id = preset.Id |> PresetId
+    { Id = preset.Id |> string |> PresetId
       Name = preset.Name
+      OwnerId = preset.OwnerId |> string |> UserId
       IncludedPlaylists = mapIncludedPlaylist preset.IncludedPlaylists
       ExcludedPlaylists = mapExcludedPlaylist preset.ExcludedPlaylists
       TargetedPlaylists = TargetedPlaylist.mapPlaylists preset.TargetedPlaylists
@@ -108,9 +101,10 @@ module Preset =
 
   let toDb (preset: Domain.Core.Preset) : Entities.Preset =
     Entities.Preset(
-      Id = preset.Id.Value,
+      Id = (preset.Id.Value |> ObjectId.Parse),
       Name = preset.Name,
       Settings = (preset.Settings |> PresetSettings.toDb),
+      OwnerId = (preset.OwnerId.Value |> ObjectId.Parse),
       IncludedPlaylists = (preset.IncludedPlaylists |> Seq.map IncludedPlaylist.toDb),
       ExcludedPlaylists = (preset.ExcludedPlaylists |> Seq.map ExcludedPlaylist.toDb),
       TargetedPlaylists = (preset.TargetedPlaylists |> Seq.map TargetedPlaylist.toDb)

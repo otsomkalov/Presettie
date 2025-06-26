@@ -36,6 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Domain.Query\Domain.Query.fsproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.fsproj"/>
   </ItemGroup>
 </Project>

@@ -492,7 +492,7 @@ let setAllTracksIncludedPlaylistClickHandler
   }
 
 let removePresetClickHandler
-  userRepo
+  presetReadRepo
   (userService: #IRemoveUserPreset)
   (resp: IResourceProvider)
   (botService: #ISendNotification)
@@ -504,7 +504,7 @@ let removePresetClickHandler
 
       do! userService.RemoveUserPreset(click.Chat.UserId, presetId)
       do! botService.SendNotification(click.Id, Messages.PresetRemoved)
-      do! User.listPresets botService userRepo click.MessageId click.Chat.UserId
+      do! User.listPresets botService presetReadRepo click.MessageId click.Chat.UserId
 
       return Some()
     | _ -> return None

@@ -1,5 +1,6 @@
 ﻿module Telegram.Handlers.Message
 
+open Domain.Query
 open Domain.Repos
 open MusicPlatform
 open Resources
@@ -88,8 +89,8 @@ let helpMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Mess
     | _ -> return None
   }
 
-let myPresetsMessageHandler (userRepo: #ILoadUser) (resp: IResourceProvider) (chatCtx: #ISendMessageButtons) : MessageHandler =
-  let sendUserPresets = User.sendPresets chatCtx userRepo
+let myPresetsMessageHandler (presetReadRepo: #IListUserPresets) (resp: IResourceProvider) (chatCtx: #ISendMessageButtons) : MessageHandler =
+  let sendUserPresets = User.sendPresets chatCtx presetReadRepo
 
   fun message -> task {
     match message.Text with
@@ -111,8 +112,8 @@ let backMessageButtonHandler loadUser getPreset (resp: IResourceProvider) (chatC
     | _ -> return None
   }
 
-let presetSettingsMessageHandler userRepo presetRepo (resp: IResourceProvider) chatCtx : MessageHandler =
-  let sendSettingsMessage = User.sendCurrentPresetSettings userRepo presetRepo chatCtx
+let presetSettingsMessageHandler userRepo presetReadRepo presetRepo (resp: IResourceProvider) chatCtx : MessageHandler =
+  let sendSettingsMessage = User.sendCurrentPresetSettings userRepo presetReadRepo presetRepo chatCtx
 
   fun message -> task {
     match message.Text with
@@ -136,12 +137,13 @@ let setPresetSizeMessageButtonHandler (resp: IResourceProvider) (chatCtx: #IAskF
 let setPresetSizeMessageHandler
   (userService: #ISetCurrentPresetSize)
   userRepo
+  presetReadRepo
   presetRepo
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
   : MessageHandler =
   let onSuccess chat =
-    fun () -> User.sendCurrentPresetSettings userRepo presetRepo chatCtx chat
+    fun () -> User.sendCurrentPresetSettings userRepo presetReadRepo presetRepo chatCtx chat
 
   let onError =
     function
@@ -177,18 +179,18 @@ let createPresetButtonMessageHandler (resp: IResourceProvider) (chatCtx: #IAskFo
     | _ -> return None
   }
 
-let createPresetMessageHandler (userService: #ICreateUserPreset) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
+let createPresetMessageHandler (presetService: IPresetService) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message with
     | { Text = text
         ReplyMessage = Some { Text = replyText } } when replyText = Messages.SendPresetName ->
-      let! preset = userService.CreateUserPreset(message.Chat.UserId, text)
+      let! preset = presetService.CreatePreset(message.Chat.UserId, text)
 
       do! Preset.send chatCtx preset
 
       return Some()
     | { Text = CommandWithData "/new" text } ->
-      let! preset = userService.CreateUserPreset(message.Chat.UserId, text)
+      let! preset = presetService.CreatePreset(message.Chat.UserId, text)
 
       do! Preset.send chatCtx preset
 

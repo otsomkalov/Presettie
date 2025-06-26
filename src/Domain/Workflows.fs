@@ -8,16 +8,7 @@ open Microsoft.FSharp.Core
 open MusicPlatform
 open otsom.fs.Core
 open otsom.fs.Extensions
-open shortid
-open shortid.Configuration
 open Domain.Extensions
-
-[<RequireQualifiedAccess>]
-module PresetId =
-  let create () =
-    let options = GenerationOptions(true, false, 12)
-
-    ShortId.Generate(options) |> PresetId
 
 [<RequireQualifiedAccess>]
 module Tracks =
@@ -29,10 +20,6 @@ module Tracks =
         knownArtists, uniqueTracks
 
     tracks |> Seq.fold addUniqueTrack (Set.empty, []) |> snd |> List.rev
-
-[<RequireQualifiedAccess>]
-module SimplePreset =
-  let fromPreset (preset: Preset) : SimplePreset = { Id = preset.Id; Name = preset.Name }
 
 [<RequireQualifiedAccess>]
 module PresetSettings =
@@ -212,11 +199,12 @@ module Preset =
       | [], PresetSettings.LikedTracksHandling.Ignore, _ -> [ Preset.ValidationError.NoIncludedPlaylists ] |> Error
       | _ -> Ok preset
 
-  let create (presetRepo: #ISavePreset) =
-    fun name -> task {
+  let create (presetRepo: #ISavePreset & #IIdGenerator) =
+    fun userId name -> task {
       let newPreset =
-        { Id = PresetId.create ()
+        { Id = PresetId(presetRepo.GenerateId())
           Name = name
+          OwnerId = userId
           IncludedPlaylists = []
           ExcludedPlaylists = []
           TargetedPlaylists = []
@@ -322,7 +310,7 @@ module Preset =
         |> TaskResult.taskMap updatePreset
 
     fun (userId: UserId) presetId rawPlaylistId ->
-      musicPlatformFactory.GetMusicPlatform (userId.ToMusicPlatformId())
+      musicPlatformFactory.GetMusicPlatform(userId.ToMusicPlatformId())
       |> Task.bind (function
         | Some mp -> includePlaylist' mp presetId rawPlaylistId
         | None -> Preset.IncludePlaylistError.Unauthorized |> Error |> Task.FromResult)
@@ -356,7 +344,7 @@ module Preset =
         |> TaskResult.taskMap updatePreset
 
     fun (UserId userId) presetId rawPlaylistId ->
-      musicPlatformFactory.GetMusicPlatform (userId |> MusicPlatform.UserId)
+      musicPlatformFactory.GetMusicPlatform(userId |> MusicPlatform.UserId)
       |> Task.bind (function
         | Some mp -> excludePlaylist' mp presetId rawPlaylistId
         | None -> Preset.ExcludePlaylistError.Unauthorized |> Error |> Task.FromResult)
@@ -395,7 +383,7 @@ module Preset =
         |> TaskResult.taskMap updatePreset
 
     fun (UserId userId) presetId rawPlaylistId ->
-      musicPlatformFactory.GetMusicPlatform (userId |> MusicPlatform.UserId)
+      musicPlatformFactory.GetMusicPlatform(userId |> MusicPlatform.UserId)
       |> Task.bind (function
         | Some mp -> targetPlaylist' mp presetId rawPlaylistId
         | None -> Preset.TargetPlaylistError.Unauthorized |> Error |> Task.FromResult)
@@ -407,9 +395,7 @@ module Preset =
       |> Result.taskMap (fun s ->
         presetId
         |> presetRepo.LoadPreset
-        |> Task.map (fun p ->
-          { p with
-              Settings.Size = s })
+        |> Task.map (fun p -> { p with Settings.Size = s })
         |> Task.bind presetRepo.SavePreset)
 
 [<RequireQualifiedAccess>]
@@ -429,7 +415,6 @@ module User =
       |> userRepo.LoadUser
       |> Task.map (fun u ->
         { u with
-            Presets = u.Presets |> List.filter (fun p -> p.Id <> presetId)
             CurrentPresetId =
               if u.CurrentPresetId = Some presetId then
                 None
@@ -445,28 +430,12 @@ module User =
       |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
       |> Task.bind (fun presetId -> presetService.SetPresetSize(presetId, size))
 
-  let internal createPreset (presetService: #ICreatePreset) (userRepo: #ILoadUser & #ISaveUser) =
-    fun userId name -> task {
-      let! user = userRepo.LoadUser userId
-
-      let! newPreset = presetService.CreatePreset name
-
-      let updatedUser =
-        { user with
-            Presets = SimplePreset.fromPreset newPreset :: user.Presets }
-
-      do! userRepo.SaveUser updatedUser
-
-      return newPreset
-    }
-
-  let create (userRepo: #ISaveUser & #IUserIdGenerator) =
+  let create (userRepo: #ISaveUser & #IIdGenerator) =
     fun () -> task {
-      let newUserId = userRepo.GenerateUserId()
+      let newUserId = userRepo.GenerateId() |> UserId
 
       let newUser: User =
         { Id = newUserId
-          Presets = []
           CurrentPresetId = None }
 
       do! userRepo.SaveUser newUser
@@ -519,13 +488,14 @@ module TargetedPlaylist =
 
 type Shuffler<'a> = 'a list -> 'a list
 
-type PresetService(parseId: Playlist.ParseId, presetRepo: IPresetRepo, musicPlatformFactory: IMusicPlatformFactory, shuffler: Shuffler<Track>) =
+type PresetService
+  (parseId: Playlist.ParseId, presetRepo: IPresetRepo, musicPlatformFactory: IMusicPlatformFactory, shuffler: Shuffler<Track>) =
   interface IPresetService with
     member this.QueueRun(userId, presetId) =
       Preset.queueRun presetRepo userId presetId
 
     member this.SetPresetSize(presetId, size) = Preset.setSize presetRepo presetId size
-    member this.CreatePreset(name) = Preset.create presetRepo name
+    member this.CreatePreset(userId, name) = Preset.create presetRepo userId name
 
     member this.EnableRecommendations(presetId) =
       PresetSettings.enableRecommendations presetRepo presetId
@@ -579,7 +549,7 @@ type PresetService(parseId: Playlist.ParseId, presetRepo: IPresetRepo, musicPlat
       IncludedPlaylist.setLikedOnly presetRepo presetId playlistId
 
     member this.RunPreset(userId, presetId) = task {
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform (userId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(userId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some platform -> return! Preset.run presetRepo shuffler platform presetId
@@ -592,9 +562,6 @@ type UserService(userRepo: IUserRepo, presetService: IPresetService) =
   interface IUserService with
     member this.SetCurrentPresetSize(userId, size) =
       User.setCurrentPresetSize userRepo presetService userId size
-
-    member this.CreateUserPreset(userId, name) =
-      User.createPreset presetService userRepo userId name
 
     member this.SetCurrentPreset(userId, presetId) =
       User.setCurrentPreset userRepo userId presetId

@@ -46,7 +46,6 @@ let ``removePreset removes preset`` () =
 
   let expectedUser =
     { Mocks.user with
-        Presets = []
         CurrentPresetId = None }
 
   userRepo.Setup(_.SaveUser(expectedUser)).ReturnsAsync(())

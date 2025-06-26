@@ -1,6 +1,7 @@
 ﻿module Telegram.Startup
 
 open Domain.Core
+open Domain.Query
 open Domain.Repos
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -17,10 +18,10 @@ open otsom.fs.Resources
 
 let private addClickHandlers (services: IServiceCollection) =
   services
-    .BuildSingleton<ClickHandlerFactory, IUserRepo>(listPresetsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetReadRepo>(listPresetsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(presetInfoClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetService>(runPresetClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IUserRepo, IUserService>(removePresetClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetReadRepo, IUserService>(removePresetClickHandler)
     .BuildSingleton<ClickHandlerFactory, IUserService>(setCurrentPresetClickHandler)
 
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(enableRecommendationsClickHandler)
@@ -59,15 +60,15 @@ let private addMessageHandlers (services: IServiceCollection) =
     .AddSingleton<MessageHandlerFactory>(guideMessageHandler)
     .AddSingleton<MessageHandlerFactory>(helpMessageHandler)
 
-    .BuildSingleton<MessageHandlerFactory, IUserRepo>(myPresetsMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetRepo>(presetSettingsMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IPresetReadRepo>(myPresetsMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetReadRepo, IPresetRepo>(presetSettingsMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService>(queuePresetRunMessageHandler)
 
-    .BuildSingleton<MessageHandlerFactory, IUserService>(createPresetMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IPresetService>(createPresetMessageHandler)
     .AddSingleton<MessageHandlerFactory>(createPresetButtonMessageHandler)
 
     .AddSingleton<MessageHandlerFactory>(setPresetSizeMessageButtonHandler)
-    .BuildSingleton<MessageHandlerFactory, IUserService, IUserRepo, IPresetRepo>(setPresetSizeMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IUserService, IUserRepo, IPresetReadRepo, IPresetRepo>(setPresetSizeMessageHandler)
 
     .BuildSingleton<MessageHandlerFactory, _, IAuthService>(includePlaylistButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, IAuthService>(excludePlaylistButtonMessageHandler)
