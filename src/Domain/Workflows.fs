@@ -229,6 +229,8 @@ module Preset =
 
   let run (presetRepo: #ILoadPreset) shuffler platform =
 
+    let tracksCountToLoadArtists = 50
+
     let saveTracks (platform: #IAddTracks & #IReplaceTracks) =
       fun preset (tracks: Track list) ->
         preset.TargetedPlaylists
@@ -251,14 +253,16 @@ module Preset =
         | PresetSettings.LikedTracksHandling.Exclude -> platform.ListLikedTracks() |> Task.map (List.append tracks)
         | _ -> Task.FromResult tracks
 
-    let getRecommendations (platform: #IGetRecommendations) =
+    let getRecommendations (platform: #IListArtistTracks) =
       fun (preset: Preset) (tracks: Track list) ->
         match preset.Settings.RecommendationsEnabled with
         | true ->
           tracks
-          |> List.map _.Id
-          |> platform.GetRecommendations
-          |> Task.map (List.prepend tracks)
+          |> List.takeSafe tracksCountToLoadArtists
+          |> List.collect (fun t -> t.Artists |> List.ofSeq)
+          |> List.map (fun a -> platform.ListArtistTracks a.Id)
+          |> Task.WhenAll
+          |> Task.map (List.concat >> List.prepend tracks)
         | false -> tracks |> Task.FromResult
 
     presetRepo.LoadPreset
@@ -268,6 +272,7 @@ module Preset =
       &|> Result.errorIf List.isEmpty Preset.RunError.NoIncludedTracks
       &=|> shuffler
       &=|&> getRecommendations platform preset
+      &=|> shuffler
       &=|&> (fun includedTracks ->
         preset.ExcludedPlaylists |> ExcludedPlaylist.listTracks platform
         &|&> (excludeLiked platform preset)

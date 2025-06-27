@@ -23,7 +23,7 @@ let private prependList (telemetryClient: TelemetryClient) (cache: IDatabase) =
       return ()
     }
 
-let private replaceList (telemetryClient: TelemetryClient) (cache: IDatabase) =
+let internal replaceList (telemetryClient: TelemetryClient) (cache: IDatabase) =
   fun (key: string) values ->
     task {
       let dependency = DependencyTelemetry("Redis", key, "replaceList", key)
@@ -43,7 +43,7 @@ let private replaceList (telemetryClient: TelemetryClient) (cache: IDatabase) =
       return ()
     }
 
-let private loadList (telemetryClient: TelemetryClient) (cache: IDatabase) =
+let internal loadList (telemetryClient: TelemetryClient) (cache: IDatabase) =
   fun key ->
     task {
       let dependency = DependencyTelemetry("Redis", key, "loadList", key)
@@ -76,7 +76,7 @@ let listCachedTracks telemetryClient cache =
     loadList telemetryClient cache key
     |> Task.map (List.ofArray >> List.map (string >> JSON.deserialize<Track>))
 
-let private serializeTracks tracks =
+let internal serializeTracks tracks =
   tracks |> List.map (JSON.serialize >> RedisValue)
 
 [<RequireQualifiedAccess>]

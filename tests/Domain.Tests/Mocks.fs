@@ -3,21 +3,26 @@
 open Domain.Core
 open MusicPlatform
 
+let artist1 = { Id = ArtistId "artist-1" }
+let artist2 = { Id = ArtistId "artist-2" }
+let artist3 = { Id = ArtistId "artist-3" }
+let artist4 = { Id = ArtistId "artist-4" }
+
 let includedTrack =
   { Id = TrackId "included-track-id"
-    Artists = Set.ofList [ { Id = ArtistId "1" }; { Id = ArtistId "2" } ] }
+    Artists = Set.ofList [ artist1; artist2 ] }
 
 let excludedTrack =
   { Id = TrackId "excluded-track-id"
-    Artists = Set.ofList [ { Id = ArtistId "2" }; { Id = ArtistId "3" } ] }
+    Artists = Set.ofList [ artist2; artist3 ] }
 
 let likedTrack =
   { Id = TrackId "liked-track-id"
-    Artists = Set.ofList [ { Id = ArtistId "3" }; { Id = ArtistId "4" } ] }
+    Artists = Set.ofList [ artist3; artist4 ] }
 
 let recommendedTrack =
   { Id = TrackId "recommended-track-id"
-    Artists = Set.ofList [ { Id = ArtistId "3" }; { Id = ArtistId "4" } ] }
+    Artists = Set.ofList [ artist1; artist3 ] }
 
 let readablePlaylistId = PlaylistId("readable-playlist-id")
 
