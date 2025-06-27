@@ -44,9 +44,9 @@ let private addClickHandlers (services: IServiceCollection) =
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(appendToTargetedPlaylistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(overwriteTargetedPlaylistClickHandler)
 
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(removeIncludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(removeExcludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(removeTargetedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetService>(removeIncludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetService>(removeExcludedPlaylistClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetService>(removeTargetedPlaylistClickHandler)
 
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(setAllTracksIncludedPlaylistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(setOnlyLikedIncludedPlaylistClickHandler)

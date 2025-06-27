@@ -186,7 +186,6 @@ let showIncludedPlaylistClickHandler
   }
 
 let removeIncludedPlaylistClickHandler
-  presetRepo
   (presetService: #IRemoveIncludedPlaylist)
   (resp: IResourceProvider)
   botService
@@ -197,8 +196,8 @@ let removeIncludedPlaylistClickHandler
       let presetId = PresetId presetId
       let playlistId = PlaylistId playlistId
 
-      do! presetService.RemoveIncludedPlaylist(presetId, (ReadablePlaylistId playlistId))
-      do! IncludedPlaylist.list presetRepo botService click.MessageId presetId (Page 0)
+      let! preset = presetService.RemoveIncludedPlaylist(presetId, (ReadablePlaylistId playlistId))
+      do! IncludedPlaylist.list botService click.MessageId preset (Page 0)
 
       return Some()
     | _ -> return None
@@ -248,7 +247,6 @@ let showExcludedPlaylistClickHandler
   }
 
 let removeExcludedPlaylistClickHandler
-  presetRepo
   (presetService: #IRemoveExcludedPlaylist)
   (resp: IResourceProvider)
   botService
@@ -260,8 +258,8 @@ let removeExcludedPlaylistClickHandler
       let presetId = PresetId presetId
       let playlistId = PlaylistId playlistId
 
-      do! presetService.RemoveExcludedPlaylist(presetId, (ReadablePlaylistId playlistId))
-      do! ExcludedPlaylist.list presetRepo botService click.MessageId presetId (Page 0)
+      let! preset = presetService.RemoveExcludedPlaylist(presetId, (ReadablePlaylistId playlistId))
+      do! ExcludedPlaylist.list botService click.MessageId preset (Page 0)
 
       return Some()
     | _ -> return None
@@ -288,7 +286,6 @@ let showTargetedPlaylistClickHandler
   }
 
 let removeTargetedPlaylistClickHandler
-  presetRepo
   (presetService: #IRemoveTargetedPlaylist)
   (resp: IResourceProvider)
   botService
@@ -299,8 +296,8 @@ let removeTargetedPlaylistClickHandler
       let presetId = PresetId presetId
       let playlistId = PlaylistId playlistId
 
-      do! presetService.RemoveTargetedPlaylist(presetId, (WritablePlaylistId playlistId))
-      do! TargetedPlaylist.list presetRepo botService click.MessageId presetId (Page 0)
+      let! preset = presetService.RemoveTargetedPlaylist(presetId, (WritablePlaylistId playlistId))
+      do! TargetedPlaylist.list botService click.MessageId preset (Page 0)
 
       return Some()
     | _ -> return None
@@ -406,14 +403,15 @@ let setCurrentPresetClickHandler
     | _ -> return None
   }
 
-let listIncludedPlaylistsClickHandler presetRepo (resp: IResourceProvider) botService : ClickHandler =
+let listIncludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) botService : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "ip"; page ] ->
       let presetId = PresetId presetId
       let page = Page(int page)
 
-      do! IncludedPlaylist.list presetRepo botService click.MessageId presetId page
+      let! preset = presetRepo.LoadPreset(presetId)
+      do! IncludedPlaylist.list botService click.MessageId preset page
 
       return Some()
     | _ -> return None
@@ -426,7 +424,8 @@ let listExcludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
       let presetId = PresetId presetId
       let page = Page(int page)
 
-      do! ExcludedPlaylist.list presetRepo botService click.MessageId presetId page
+      let! preset = presetRepo.LoadPreset(presetId)
+      do! ExcludedPlaylist.list botService click.MessageId preset page
 
       return Some()
     | _ -> return None
@@ -439,7 +438,8 @@ let listTargetedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
       let presetId = PresetId presetId
       let page = Page(int page)
 
-      do! TargetedPlaylist.list presetRepo botService click.MessageId presetId page
+      let! preset = presetRepo.LoadPreset(presetId)
+      do! TargetedPlaylist.list botService click.MessageId preset page
 
       return Some()
     | _ -> return None
