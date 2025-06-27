@@ -233,6 +233,8 @@ module Preset =
 
   let run (presetRepo: #ILoadPreset) shuffler platform =
 
+    let tracksCountToLoadArtists = 50
+
     let saveTracks (platform: #IAddTracks & #IReplaceTracks) =
       fun preset (tracks: Track list) ->
         preset.TargetedPlaylists
@@ -260,7 +262,7 @@ module Preset =
         match preset.Settings.RecommendationsEnabled with
         | true ->
           tracks
-          |> List.takeSafe preset.Settings.Size.Value
+          |> List.takeSafe tracksCountToLoadArtists
           |> List.collect (fun t -> t.Artists |> List.ofSeq)
           |> List.map (fun a -> platform.ListArtistTracks a.Id)
           |> Task.WhenAll
@@ -274,6 +276,7 @@ module Preset =
       &|> Result.errorIf List.isEmpty Preset.RunError.NoIncludedTracks
       &=|> shuffler
       &=|&> getRecommendations platform preset
+      &=|> shuffler
       &=|&> (fun includedTracks ->
         preset.ExcludedPlaylists |> ExcludedPlaylist.listTracks platform
         &|&> (excludeLiked platform preset)
