@@ -67,22 +67,17 @@ let presetSettingsMock: PresetSettings.PresetSettings =
     UniqueArtists = false }
 
 let presetId = PresetId("1")
+let userId = otsom.fs.Core.UserId("user-id")
 
 let preset =
   { Id = presetId
     Name = "test-preset-name"
+    OwnerId = userId
     IncludedPlaylists = [ includedPlaylist ]
     ExcludedPlaylists = [ excludedPlaylist ]
     TargetedPlaylists = [ targetedPlaylist ]
     Settings = presetSettingsMock }
 
-let userPreset: SimplePreset =
-  { Id = presetId
-    Name = "user-preset-name" }
-
-let userId = otsom.fs.Core.UserId("user-id")
-
 let user: User =
   { Id = userId
-    CurrentPresetId = Some presetId
-    Presets = [ userPreset ] }
+    CurrentPresetId = Some presetId }

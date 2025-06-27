@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Database.Entities;
 
@@ -17,17 +18,17 @@ public class Settings
 [BsonIgnoreExtraElements]
 public class Preset
 {
-    public string Id { get; set; }
+    public ObjectId Id { get; set; }
 
     public string Name { get; set; }
 
-    public long UserId { get; set; }
+    public ObjectId OwnerId { get; set; }
 
     public Settings Settings { get; set; }
 
-    public IEnumerable<IncludedPlaylist> IncludedPlaylists { get; set; } = Array.Empty<IncludedPlaylist>();
+    public IEnumerable<IncludedPlaylist> IncludedPlaylists { get; set; } = [];
 
-    public IEnumerable<ExcludedPlaylist> ExcludedPlaylists { get; set; } = Array.Empty<ExcludedPlaylist>();
+    public IEnumerable<ExcludedPlaylist> ExcludedPlaylists { get; set; } = [];
 
-    public IEnumerable<TargetedPlaylist> TargetedPlaylists { get; set; } = Array.Empty<TargetedPlaylist>();
+    public IEnumerable<TargetedPlaylist> TargetedPlaylists { get; set; } = [];
 }

@@ -22,11 +22,11 @@ let presetInfoClickHandler presetRepo (resp: IResourceProvider) botService : Cli
     | _ -> return None
   }
 
-let listPresetsClickHandler userRepo (resp: IResourceProvider) botService : ClickHandler =
+let listPresetsClickHandler presetRepo (resp: IResourceProvider) botService : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p" ] ->
-      do! User.listPresets botService userRepo click.MessageId click.Chat.UserId
+      do! User.listPresets botService presetRepo click.MessageId click.Chat.UserId
 
       return Some()
     | _ -> return None
@@ -492,7 +492,7 @@ let setAllTracksIncludedPlaylistClickHandler
   }
 
 let removePresetClickHandler
-  userRepo
+  presetRepo
   (userService: #IRemoveUserPreset)
   (resp: IResourceProvider)
   (botService: #ISendNotification)
@@ -504,7 +504,7 @@ let removePresetClickHandler
 
       do! userService.RemoveUserPreset(click.Chat.UserId, presetId)
       do! botService.SendNotification(click.Id, Messages.PresetRemoved)
-      do! User.listPresets botService userRepo click.MessageId click.Chat.UserId
+      do! User.listPresets botService presetRepo click.MessageId click.Chat.UserId
 
       return Some()
     | _ -> return None

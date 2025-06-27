@@ -13,12 +13,14 @@ open otsom.fs.Core
 open otsom.fs.Extensions
 open Infrastructure.Mapping
 open System.Threading.Tasks
+open System.Linq
+open MongoDB.Driver.Linq
 
 [<RequireQualifiedAccess>]
 module PresetRepo =
   let load (collection: IMongoCollection<Entities.Preset>) =
     fun (PresetId presetId) -> task {
-      let presetsFilter = Builders<Entities.Preset>.Filter.Eq(_.Id, presetId)
+      let presetsFilter = Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId presetId)
 
       let! dbPreset = collection.Find(presetsFilter).SingleOrDefaultAsync()
 
@@ -30,7 +32,7 @@ module PresetRepo =
       let dbPreset = preset |> Preset.toDb
 
       let presetsFilter =
-        Builders<Entities.Preset>.Filter.Eq(_.Id, preset.Id.Value)
+        Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId preset.Id.Value)
 
       return!
         collection.ReplaceOneAsync(presetsFilter, dbPreset, ReplaceOptions(IsUpsert = true))
@@ -39,7 +41,7 @@ module PresetRepo =
 
   let remove (collection: IMongoCollection<Entities.Preset>) =
     fun (PresetId presetId) ->
-      let presetsFilter = Builders<Entities.Preset>.Filter.Eq(_.Id, presetId)
+      let presetsFilter = Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId presetId)
 
       collection.DeleteOneAsync(presetsFilter) |> Task.ignore
 
@@ -96,6 +98,15 @@ type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
       |> Task.map ignore
 
     member this.RemovePreset(presetId) = PresetRepo.remove collection presetId
+    member this.GenerateId() = ObjectId.GenerateNewId() |> string
+
+    member this.ListUserPresets(userId) =
+      collection
+        .AsQueryable()
+        .Where(fun p -> p.OwnerId = (userId.Value |> ObjectId.Parse))
+        .Select(SimplePreset.fromDb)
+        .ToListAsync()
+      |> Task.map List.ofSeq
 
 type UserRepo(db: IMongoDatabase) =
   let collection = db.GetCollection<Entities.User> "users"
@@ -104,5 +115,4 @@ type UserRepo(db: IMongoDatabase) =
     member this.LoadUser(userId) = UserRepo.load collection userId
     member this.SaveUser(user) = UserRepo.save collection user
 
-    member this.GenerateUserId() =
-      ObjectId.GenerateNewId().ToString() |> UserId
+    member this.GenerateId() = ObjectId.GenerateNewId() |> string

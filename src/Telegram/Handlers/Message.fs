@@ -88,8 +88,8 @@ let helpMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Mess
     | _ -> return None
   }
 
-let myPresetsMessageHandler (userRepo: #ILoadUser) (resp: IResourceProvider) (chatCtx: #ISendMessageButtons) : MessageHandler =
-  let sendUserPresets = User.sendPresets chatCtx userRepo
+let myPresetsMessageHandler presetRepo (resp: IResourceProvider) (chatCtx: #ISendMessageButtons) : MessageHandler =
+  let sendUserPresets = User.sendPresets chatCtx presetRepo
 
   fun message -> task {
     match message.Text with
@@ -177,18 +177,18 @@ let createPresetButtonMessageHandler (resp: IResourceProvider) (chatCtx: #IAskFo
     | _ -> return None
   }
 
-let createPresetMessageHandler (userService: #ICreateUserPreset) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
+let createPresetMessageHandler (presetService: IPresetService) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message with
     | { Text = text
         ReplyMessage = Some { Text = replyText } } when replyText = Messages.SendPresetName ->
-      let! preset = userService.CreateUserPreset(message.Chat.UserId, text)
+      let! preset = presetService.CreatePreset(message.Chat.UserId, text)
 
       do! Preset.send chatCtx preset
 
       return Some()
     | { Text = CommandWithData "/new" text } ->
-      let! preset = userService.CreateUserPreset(message.Chat.UserId, text)
+      let! preset = presetService.CreatePreset(message.Chat.UserId, text)
 
       do! Preset.send chatCtx preset
 
