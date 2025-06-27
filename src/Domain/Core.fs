@@ -40,6 +40,8 @@ type PresetId =
 
   member this.Value = let (PresetId id) = this in id
 
+type SimplePreset = { Id: PresetId; Name: string }
+
 [<RequireQualifiedAccess>]
 module PresetSettings =
   [<RequireQualifiedAccess>]

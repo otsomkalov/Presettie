@@ -2,7 +2,6 @@
 
 open Azure.Storage.Queues
 open Domain.Core
-open Domain.Query
 open Domain.Repos
 open FSharp
 open MongoDB.Bson
@@ -32,7 +31,8 @@ module PresetRepo =
     fun preset -> task {
       let dbPreset = preset |> Preset.toDb
 
-      let presetsFilter = Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId preset.Id.Value)
+      let presetsFilter =
+        Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId preset.Id.Value)
 
       return!
         collection.ReplaceOneAsync(presetsFilter, dbPreset, ReplaceOptions(IsUpsert = true))
@@ -98,8 +98,15 @@ type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
       |> Task.map ignore
 
     member this.RemovePreset(presetId) = PresetRepo.remove collection presetId
-    member this.GenerateId() =
-      ObjectId.GenerateNewId() |> string
+    member this.GenerateId() = ObjectId.GenerateNewId() |> string
+
+    member this.ListUserPresets(userId) =
+      collection
+        .AsQueryable()
+        .Where(fun p -> p.OwnerId = (userId.Value |> ObjectId.Parse))
+        .Select(SimplePreset.fromDb)
+        .ToListAsync()
+      |> Task.map List.ofSeq
 
 type UserRepo(db: IMongoDatabase) =
   let collection = db.GetCollection<Entities.User> "users"
@@ -108,17 +115,4 @@ type UserRepo(db: IMongoDatabase) =
     member this.LoadUser(userId) = UserRepo.load collection userId
     member this.SaveUser(user) = UserRepo.save collection user
 
-    member this.GenerateId() =
-      ObjectId.GenerateNewId() |> string
-
-type PresetReadRepo(db: IMongoDatabase) =
-  let collection = db.GetCollection<Entities.Preset> "presets"
-
-  interface IPresetReadRepo with
-    member this.ListUserPresets(userId) =
-      collection
-        .AsQueryable()
-        .Where(fun p -> p.OwnerId = (userId.Value |> ObjectId.Parse))
-        .Select(SimplePreset.fromDb)
-        .ToListAsync()
-      |> Task.map List.ofSeq
+    member this.GenerateId() = ObjectId.GenerateNewId() |> string

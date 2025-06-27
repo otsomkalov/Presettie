@@ -7,7 +7,6 @@
   </Folder>
   <Folder Name="/src/Domain/">
     <Project Path="Database\Database.csproj" Type="Classic C#" />
-    <Project Path="Domain.Query\Domain.Query.fsproj" Type="Classic F#" />
     <Project Path="Domain\Domain.fsproj" Type="Classic F#" />
     <Project Path="Infrastructure\Infrastructure.fsproj" Type="Classic F#" />
     <Project Path="MusicPlatform\MusicPlatform.fsproj" Type="Classic F#" />

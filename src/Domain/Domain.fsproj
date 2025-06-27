@@ -15,9 +15,11 @@
   <ItemGroup>
     <Compile Include="Extensions.fs"/>
     <Compile Include="Core.fs"/>
+    <Compile Include="Commands.fs" />
     <Compile Include="Repos.fs"/>
     <Compile Include="Workflows.fs"/>
     <Compile Include="Startup.fs"/>
+    <Compile Include="Handlers.fs" />
   </ItemGroup>
 
   <ItemGroup>

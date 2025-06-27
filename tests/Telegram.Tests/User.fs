@@ -2,13 +2,13 @@
 
 #nowarn "20"
 
-open Domain.Query
 open Domain.Repos
 open Domain.Tests
 open Moq
 open Xunit
 open Telegram.Workflows
 open otsom.fs.Bot
+open Domain.Core
 
 [<Fact>]
 let ``should list presets`` () =
@@ -18,9 +18,9 @@ let ``should list presets`` () =
     .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
     .ReturnsAsync(())
 
-  let presetReadRepo = Mock<IPresetReadRepo>()
+  let presetReadRepo = Mock<IPresetRepo>()
 
-  presetReadRepo.Setup(_.ListUserPresets(Mocks.userId)).ReturnsAsync([{ Id = Mocks.presetId.Value; Name = Mocks.preset.Name }])
+  presetReadRepo.Setup(_.ListUserPresets(Mocks.userId)).ReturnsAsync([{ Id = Mocks.presetId; Name = Mocks.preset.Name }])
 
   task {
     do! User.listPresets botService.Object presetReadRepo.Object Mocks.botMessageId Mocks.userId

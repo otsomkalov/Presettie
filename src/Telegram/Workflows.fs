@@ -1,6 +1,5 @@
 ﻿module Telegram.Workflows
 
-open Domain.Query
 open Domain.Repos
 open MusicPlatform
 open Domain.Core
@@ -323,9 +322,9 @@ module Preset =
 
 [<RequireQualifiedAccess>]
 module User =
-  let private showPresets' sendOrEditButtons (resetReadRepo: #IListUserPresets) =
+  let private showPresets' sendOrEditButtons (presetRepo: #IListUserPresets) =
     fun userId -> task {
-      let! presets = resetReadRepo.ListUserPresets userId
+      let! presets = presetRepo.ListUserPresets userId
 
       return! sendPresetsMessage sendOrEditButtons presets "Your presets"
     }
@@ -336,11 +335,11 @@ module User =
 
     showPresets' sendButtons presetReadRepo
 
-  let listPresets (botMessageCtx: #IEditMessageButtons) presetReadRepo =
+  let listPresets (botMessageCtx: #IEditMessageButtons) presetRepo =
     let editButtons messageId text buttons =
       botMessageCtx.EditMessageButtons(messageId, text, buttons)
 
-    fun messageId -> showPresets' (editButtons messageId) presetReadRepo
+    fun messageId -> showPresets' (editButtons messageId) presetRepo
 
   let sendCurrentPreset (userRepo: #ILoadUser) (presetRepo: #ILoadPreset) (chatCtx: #ISendKeyboard) =
     fun userId ->
@@ -359,8 +358,7 @@ module User =
 
   let sendCurrentPresetSettings
     (userRepo: #ILoadUser)
-    (presetReadRepo: IPresetReadRepo)
-    (presetRepo: #ILoadPreset)
+    (presetRepo: #ILoadPreset & #IListUserPresets)
     (chatCtx: #ISendKeyboard & #ISendMessageButtons)
     =
     fun userId -> task {
@@ -383,7 +381,7 @@ module User =
         let sendButtons text buttons =
           chatCtx.SendMessageButtons(text, buttons) &|> ignore
 
-        let! presets = presetReadRepo.ListUserPresets userId
+        let! presets = presetRepo.ListUserPresets userId
 
         do! sendPresetsMessage sendButtons presets Messages.NoCurrentPreset
 

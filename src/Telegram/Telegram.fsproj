@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domain.Query\Domain.Query.fsproj" />
     <ProjectReference Include="..\Domain\Domain.fsproj"/>
     <ProjectReference Include="..\Resources\Resources.csproj"/>
   </ItemGroup>

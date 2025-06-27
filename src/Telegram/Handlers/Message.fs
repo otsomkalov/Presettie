@@ -1,6 +1,5 @@
 ﻿module Telegram.Handlers.Message
 
-open Domain.Query
 open Domain.Repos
 open MusicPlatform
 open Resources
@@ -89,8 +88,8 @@ let helpMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Mess
     | _ -> return None
   }
 
-let myPresetsMessageHandler (presetReadRepo: #IListUserPresets) (resp: IResourceProvider) (chatCtx: #ISendMessageButtons) : MessageHandler =
-  let sendUserPresets = User.sendPresets chatCtx presetReadRepo
+let myPresetsMessageHandler presetRepo (resp: IResourceProvider) (chatCtx: #ISendMessageButtons) : MessageHandler =
+  let sendUserPresets = User.sendPresets chatCtx presetRepo
 
   fun message -> task {
     match message.Text with
@@ -112,8 +111,8 @@ let backMessageButtonHandler loadUser getPreset (resp: IResourceProvider) (chatC
     | _ -> return None
   }
 
-let presetSettingsMessageHandler userRepo presetReadRepo presetRepo (resp: IResourceProvider) chatCtx : MessageHandler =
-  let sendSettingsMessage = User.sendCurrentPresetSettings userRepo presetReadRepo presetRepo chatCtx
+let presetSettingsMessageHandler userRepo presetRepo (resp: IResourceProvider) chatCtx : MessageHandler =
+  let sendSettingsMessage = User.sendCurrentPresetSettings userRepo presetRepo chatCtx
 
   fun message -> task {
     match message.Text with
@@ -137,13 +136,12 @@ let setPresetSizeMessageButtonHandler (resp: IResourceProvider) (chatCtx: #IAskF
 let setPresetSizeMessageHandler
   (userService: #ISetCurrentPresetSize)
   userRepo
-  presetReadRepo
   presetRepo
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
   : MessageHandler =
   let onSuccess chat =
-    fun () -> User.sendCurrentPresetSettings userRepo presetReadRepo presetRepo chatCtx chat
+    fun () -> User.sendCurrentPresetSettings userRepo presetRepo chatCtx chat
 
   let onError =
     function

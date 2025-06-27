@@ -3,7 +3,6 @@
 #nowarn "20"
 
 open Azure.Storage.Queues
-open Domain.Query
 open Domain.Repos
 open Infrastructure.Repos
 open Infrastructure.Settings
@@ -36,8 +35,6 @@ let addInfrastructure (configuration: IConfiguration) (services: IServiceCollect
 
   services.BuildSingleton<IMongoClient, IOptions<DatabaseSettings>>(configureMongoClient)
   services.BuildSingleton<IMongoDatabase, IOptions<DatabaseSettings>, IMongoClient>(configureMongoDatabase)
-
-  services.AddSingleton<IPresetReadRepo, PresetReadRepo>()
 
   services.AddSingleton<IPresetRepo, PresetRepo>()
   services.AddSingleton<IUserRepo, UserRepo>()
