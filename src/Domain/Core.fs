@@ -40,6 +40,8 @@ type PresetId =
 
   member this.Value = let (PresetId id) = this in id
 
+type SimplePreset = { Id: PresetId; Name: string }
+
 [<RequireQualifiedAccess>]
 module PresetSettings =
   [<RequireQualifiedAccess>]
@@ -76,11 +78,10 @@ module PresetSettings =
       RecommendationsEnabled: bool
       UniqueArtists: bool }
 
-type SimplePreset = { Id: PresetId; Name: string }
-
 type Preset =
   { Id: PresetId
     Name: string
+    OwnerId: UserId
     Settings: PresetSettings.PresetSettings
     IncludedPlaylists: IncludedPlaylist list
     ExcludedPlaylists: ExcludedPlaylist list
@@ -88,8 +89,7 @@ type Preset =
 
 type User =
   { Id: UserId
-    CurrentPresetId: PresetId option
-    Presets: SimplePreset list }
+    CurrentPresetId: PresetId option }
 
 [<RequireQualifiedAccess>]
 module Preset =
@@ -167,7 +167,7 @@ type IQueueRun =
   abstract QueueRun: UserId * PresetId -> Task<Result<Preset, Preset.ValidationError list>>
 
 type ICreatePreset =
-  abstract CreatePreset: string -> Task<Preset>
+  abstract CreatePreset: UserId * string -> Task<Preset>
 
 type IIncludePlaylist =
   abstract IncludePlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<IncludedPlaylist, Preset.IncludePlaylistError>>
@@ -261,9 +261,6 @@ type IPresetService =
 type ISetCurrentPresetSize =
   abstract SetCurrentPresetSize: UserId * PresetSettings.RawPresetSize -> Task<Result<unit, PresetSettings.ParsingError>>
 
-type ICreateUserPreset =
-  abstract CreateUserPreset: UserId * string -> Task<Preset>
-
 type ISetCurrentPreset =
   abstract SetCurrentPreset: UserId * PresetId -> Task<unit>
 
@@ -275,7 +272,6 @@ type ICreateUser =
 
 type IUserService =
   inherit ISetCurrentPresetSize
-  inherit ICreateUserPreset
   inherit ISetCurrentPreset
   inherit IRemoveUserPreset
   inherit ICreateUser

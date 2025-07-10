@@ -71,10 +71,10 @@ let getPresetMessage =
     (text, keyboard)
 
 let private sendPresetsMessage sendOrEditButtons =
-  fun user message -> task {
+  fun (presets: SimplePreset list) message -> task {
     let keyboardMarkup =
-      user.Presets
-      |> Seq.map (fun p -> MessageButton(p.Name, $"p|{p.Id.Value}|i"))
+      presets
+      |> Seq.map (fun p -> MessageButton(p.Name, $"p|{p.Id}|i"))
       |> Seq.singleton
 
     do! sendOrEditButtons message keyboardMarkup &|> ignore
@@ -322,24 +322,24 @@ module Preset =
 
 [<RequireQualifiedAccess>]
 module User =
-  let private showPresets' sendOrEditButtons (userRepo: #ILoadUser) =
+  let private showPresets' sendOrEditButtons (presetRepo: #IListUserPresets) =
     fun userId -> task {
-      let! user = userRepo.LoadUser userId
+      let! presets = presetRepo.ListUserPresets userId
 
-      return! sendPresetsMessage sendOrEditButtons user "Your presets"
+      return! sendPresetsMessage sendOrEditButtons presets "Your presets"
     }
 
-  let sendPresets (chatCtx: #ISendMessageButtons) userRepo =
+  let sendPresets (chatCtx: #ISendMessageButtons) presetReadRepo =
     let sendButtons text buttons =
       chatCtx.SendMessageButtons(text, buttons) &|> ignore
 
-    showPresets' sendButtons userRepo
+    showPresets' sendButtons presetReadRepo
 
-  let listPresets (botMessageCtx: #IEditMessageButtons) userRepo =
+  let listPresets (botMessageCtx: #IEditMessageButtons) presetRepo =
     let editButtons messageId text buttons =
       botMessageCtx.EditMessageButtons(messageId, text, buttons)
 
-    fun messageId -> showPresets' (editButtons messageId) userRepo
+    fun messageId -> showPresets' (editButtons messageId) presetRepo
 
   let sendCurrentPreset (userRepo: #ILoadUser) (presetRepo: #ILoadPreset) (chatCtx: #ISendKeyboard) =
     fun userId ->
@@ -356,36 +356,37 @@ module User =
 
         chatCtx.SendKeyboard("You did not select current preset", keyboard) &|> ignore)
 
-  let private runOnCurrentPresetId (userRepo: #ILoadUser) (chatCtx: #ISendKeyboard & #ISendMessageButtons) fn =
-    fun userId ->
-      userId
-      |> userRepo.LoadUser
-      |> Task.bind (fun user ->
-        match user.CurrentPresetId with
-        | Some presetId -> fn presetId
-        | None when user.Presets.IsEmpty ->
-          let buttons: Keyboard = [ [ KeyboardButton(Buttons.CreatePreset) ] ]
+  let sendCurrentPresetSettings
+    (userRepo: #ILoadUser)
+    (presetRepo: #ILoadPreset & #IListUserPresets)
+    (chatCtx: #ISendKeyboard & #ISendMessageButtons)
+    =
+    fun userId -> task {
+      let! user = userRepo.LoadUser userId
 
-          chatCtx.SendKeyboard(Messages.NoCurrentPreset, buttons) &|> ignore
-        | _ ->
-          let sendButtons text buttons =
-            chatCtx.SendMessageButtons(text, buttons) &|> ignore
+      match user.CurrentPresetId with
+      | Some presetId ->
+        let! preset = presetRepo.LoadPreset presetId
 
-          sendPresetsMessage sendButtons user Messages.NoCurrentPreset)
+        let text, _ = getPresetMessage preset
 
-  let sendCurrentPresetSettings userRepo (presetRepo: #ILoadPreset) (chatCtx: #ISendKeyboard) =
-    let handler presetId =
-      presetId
-      |> presetRepo.LoadPreset
-      |> Task.map getPresetMessage
-      |> Task.bind (fun (text, _) ->
         let buttons: Keyboard =
           [| [| KeyboardButton Buttons.SetPresetSize |]
              [| KeyboardButton(Buttons.Back) |] |]
 
-        chatCtx.SendKeyboard(text, buttons) &|> ignore)
+        do! chatCtx.SendKeyboard(text, buttons) &|> ignore
 
-    runOnCurrentPresetId userRepo chatCtx handler
+        return ()
+      | None ->
+        let sendButtons text buttons =
+          chatCtx.SendMessageButtons(text, buttons) &|> ignore
+
+        let! presets = presetRepo.ListUserPresets userId
+
+        do! sendPresetsMessage sendButtons presets Messages.NoCurrentPreset
+
+        return ()
+    }
 
   let queueCurrentPresetRun (userRepo: #ILoadUser) (chatCtx: #ISendMessage) (presetService: #IQueueRun) =
     let onSuccess (preset: Preset) =
@@ -423,7 +424,7 @@ module Resources =
   let getResourceProvider createResp createDefaultResp : Resources.GetResourceProvider =
     function
     | Some l -> createResp l
-    | None -> createDefaultResp()
+    | None -> createDefaultResp ()
 
 type ChatService(chatRepo: IChatRepo, userService: IUserService) =
   interface IChatService with

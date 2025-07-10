@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="shortid" Version="4.0.0"/>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3"/>
     <PackageReference Include="otsom.fs.Extensions" Version="0.0.44"/>
     <PackageReference Include="otsom.fs.Core" Version="0.0.4"/>
@@ -16,9 +15,11 @@
   <ItemGroup>
     <Compile Include="Extensions.fs"/>
     <Compile Include="Core.fs"/>
+    <Compile Include="Commands.fs" />
     <Compile Include="Repos.fs"/>
     <Compile Include="Workflows.fs"/>
     <Compile Include="Startup.fs"/>
+    <Compile Include="Handlers.fs" />
   </ItemGroup>
 
   <ItemGroup>
