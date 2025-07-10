@@ -100,10 +100,12 @@ type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
     member this.RemovePreset(presetId) = PresetRepo.remove collection presetId
     member this.GenerateId() = ObjectId.GenerateNewId() |> string
 
-    member this.ListUserPresets(userId) =
+    member this.ListUserPresets(UserId userId) =
+      let id = userId |> ObjectId.Parse
+
       collection
         .AsQueryable()
-        .Where(fun p -> p.OwnerId = (userId.Value |> ObjectId.Parse))
+        .Where(fun p -> p.OwnerId = id)
         .Select(SimplePreset.fromDb)
         .ToListAsync()
       |> Task.map List.ofSeq
