@@ -34,7 +34,7 @@ let internal replaceList (telemetryClient: TelemetryClient) (cache: IDatabase) =
 
       let _ = transaction.KeyDeleteAsync(key)
       let _ = transaction.ListLeftPushAsync(key, values |> List.toArray)
-      let _ = transaction.KeyExpireAsync(key, TimeSpan.FromDays(1))
+      let _ = transaction.KeyExpireAsync(key, TimeSpan.FromDays(7))
 
       let! _ = transaction.ExecuteAsync() |> Task.map ignore
 
