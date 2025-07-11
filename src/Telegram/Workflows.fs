@@ -74,7 +74,7 @@ let private sendPresetsMessage sendOrEditButtons =
   fun (presets: SimplePreset list) message -> task {
     let keyboardMarkup =
       presets
-      |> Seq.map (fun p -> MessageButton(p.Name, $"p|{p.Id}|i"))
+      |> Seq.map (fun p -> MessageButton(p.Name, $"p|{p.Id.Value}|i"))
       |> Seq.singleton
 
     do! sendOrEditButtons message keyboardMarkup &|> ignore
