@@ -100,13 +100,15 @@ type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
     member this.RemovePreset(presetId) = PresetRepo.remove collection presetId
     member this.GenerateId() = ObjectId.GenerateNewId() |> string
 
-    member this.ListUserPresets(userId) =
+    member this.ListUserPresets(UserId userId) =
+      let id = userId |> ObjectId.Parse
+
       collection
         .AsQueryable()
-        .Where(fun p -> p.OwnerId = (userId.Value |> ObjectId.Parse))
-        .Select(SimplePreset.fromDb)
+        .Where(fun p -> p.OwnerId = id)
+        .Select(fun p -> {| Id = p.Id; Name = p.Name |})
         .ToListAsync()
-      |> Task.map List.ofSeq
+      |> Task.map (Seq.map SimplePreset.fromDb >> List.ofSeq)
 
 type UserRepo(db: IMongoDatabase) =
   let collection = db.GetCollection<Entities.User> "users"
