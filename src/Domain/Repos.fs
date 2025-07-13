@@ -19,12 +19,16 @@ type IQueueRun =
 type IRemovePreset =
   abstract RemovePreset: PresetId -> Task<unit>
 
+type IListUserPresets =
+  abstract ListUserPresets: UserId -> Task<SimplePreset list>
+
 type IPresetRepo =
   inherit ILoadPreset
   inherit ISavePreset
   inherit IQueueRun
   inherit IRemovePreset
   inherit IIdGenerator
+  inherit IListUserPresets
 
 type ILoadUser =
   abstract LoadUser: userId: UserId -> Task<User>

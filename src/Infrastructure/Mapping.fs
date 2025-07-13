@@ -3,7 +3,6 @@
 open System
 open Database
 open Domain.Core
-open Domain.Query
 open Domain.Workflows
 open MongoDB.Bson
 open MusicPlatform
@@ -11,8 +10,8 @@ open otsom.fs.Core
 
 [<RequireQualifiedAccess>]
 module SimplePreset =
-  let fromDb (preset: Entities.Preset) : SimplePreset =
-    { Id = preset.Id.ToString()
+  let fromDb (preset: {| Id: ObjectId; Name: string |}) : SimplePreset =
+    { Id = preset.Id |> string |> PresetId
       Name = preset.Name }
 
 [<RequireQualifiedAccess>]

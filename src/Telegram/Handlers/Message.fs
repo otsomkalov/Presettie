@@ -1,6 +1,5 @@
 ﻿module Telegram.Handlers.Message
 
-open Domain.Query
 open Domain.Repos
 open MusicPlatform
 open Resources

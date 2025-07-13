@@ -2,13 +2,13 @@
 
 open System.Threading.Tasks
 open API.Services
-open Domain.Query
+open Domain.Repos
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
 open otsom.fs.Extensions
 
-type PresetFunctions(jwtService: IJWTService, presetReadRepo: IPresetReadRepo) =
+type PresetFunctions(jwtService: IJWTService, presetRepo: IPresetRepo) =
   let runForUser (req: HttpRequest) fn =
     req.Headers.Authorization
     |> string
@@ -27,7 +27,7 @@ type PresetFunctions(jwtService: IJWTService, presetReadRepo: IPresetReadRepo) =
     ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets")>] request: HttpRequest)
     : Task<IActionResult> =
     let handler (user: TokenUser) = task {
-      let! presets = presetReadRepo.ListUserPresets user.Id
+      let! presets = presetRepo.ListUserPresets user.Id
 
       return OkObjectResult(presets) :> IActionResult
     }

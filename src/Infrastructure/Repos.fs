@@ -2,7 +2,6 @@
 
 open Azure.Storage.Queues
 open Domain.Core
-open Domain.Query
 open Domain.Repos
 open FSharp
 open MongoDB.Bson
@@ -100,6 +99,17 @@ type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
     member this.GenerateId() =
       ObjectId.GenerateNewId() |> string
 
+    member this.ListUserPresets(UserId userId) =
+      let id = userId |> ObjectId.Parse
+
+      collection
+        .AsQueryable()
+        .Where(fun p -> p.OwnerId = id)
+        .Select(fun p -> {| Id = p.Id; Name = p.Name |})
+        .ToListAsync()
+      |> Task.map List.ofSeq
+      |> Task.map (Seq.map SimplePreset.fromDb >> List.ofSeq)
+
 type UserRepo(db: IMongoDatabase) =
   let collection = db.GetCollection<Entities.User> "users"
 
@@ -109,15 +119,3 @@ type UserRepo(db: IMongoDatabase) =
 
     member this.GenerateId() =
       ObjectId.GenerateNewId() |> string
-
-type PresetReadRepo(db: IMongoDatabase) =
-  let collection = db.GetCollection<Entities.Preset> "presets"
-
-  interface IPresetReadRepo with
-    member this.ListUserPresets(userId) =
-      collection
-        .AsQueryable()
-        .Where(fun p -> p.OwnerId = (userId.Value |> ObjectId.Parse))
-        .Select(SimplePreset.fromDb)
-        .ToListAsync()
-      |> Task.map List.ofSeq

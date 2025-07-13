@@ -1,6 +1,5 @@
 ﻿module Telegram.Workflows
 
-open Domain.Query
 open Domain.Repos
 open MusicPlatform
 open Domain.Core
@@ -358,7 +357,7 @@ module User =
 
   let sendCurrentPresetSettings
     (userRepo: #ILoadUser)
-    (presetReadRepo: IPresetReadRepo)
+    (presetReadRepo: #IListUserPresets)
     (presetRepo: #ILoadPreset)
     (chatCtx: #ISendKeyboard & #ISendMessageButtons)
     =
