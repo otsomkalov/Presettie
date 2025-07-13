@@ -74,7 +74,7 @@ let private sendPresetsMessage sendOrEditButtons =
   fun (presets: SimplePreset list) message -> task {
     let keyboardMarkup =
       presets
-      |> Seq.map (fun p -> MessageButton(p.Name, $"p|{p.Id}|i"))
+      |> Seq.map (fun p -> MessageButton(p.Name, $"p|{p.Id.Value}|i"))
       |> Seq.singleton
 
     do! sendOrEditButtons message keyboardMarkup &|> ignore
@@ -321,24 +321,24 @@ module Preset =
 
 [<RequireQualifiedAccess>]
 module User =
-  let private showPresets' sendOrEditButtons (resetReadRepo: #IListUserPresets) =
+  let private showPresets' sendOrEditButtons (presetRepo: #IListUserPresets) =
     fun userId -> task {
-      let! presets = resetReadRepo.ListUserPresets userId
+      let! presets = presetRepo.ListUserPresets userId
 
       return! sendPresetsMessage sendOrEditButtons presets "Your presets"
     }
 
-  let sendPresets (chatCtx: #ISendMessageButtons) presetReadRepo =
+  let sendPresets (chatCtx: #ISendMessageButtons) presetRepo =
     let sendButtons text buttons =
       chatCtx.SendMessageButtons(text, buttons) &|> ignore
 
-    showPresets' sendButtons presetReadRepo
+    showPresets' sendButtons presetRepo
 
-  let listPresets (botMessageCtx: #IEditMessageButtons) presetReadRepo =
+  let listPresets (botMessageCtx: #IEditMessageButtons) presetRepo =
     let editButtons messageId text buttons =
       botMessageCtx.EditMessageButtons(messageId, text, buttons)
 
-    fun messageId -> showPresets' (editButtons messageId) presetReadRepo
+    fun messageId -> showPresets' (editButtons messageId) presetRepo
 
   let sendCurrentPreset (userRepo: #ILoadUser) (presetRepo: #ILoadPreset) (chatCtx: #ISendKeyboard) =
     fun userId ->
@@ -357,8 +357,7 @@ module User =
 
   let sendCurrentPresetSettings
     (userRepo: #ILoadUser)
-    (presetReadRepo: #IListUserPresets)
-    (presetRepo: #ILoadPreset)
+    (presetRepo: #ILoadPreset & #IListUserPresets)
     (chatCtx: #ISendKeyboard & #ISendMessageButtons)
     =
     fun userId -> task {
@@ -381,7 +380,7 @@ module User =
         let sendButtons text buttons =
           chatCtx.SendMessageButtons(text, buttons) &|> ignore
 
-        let! presets = presetReadRepo.ListUserPresets userId
+        let! presets = presetRepo.ListUserPresets userId
 
         do! sendPresetsMessage sendButtons presets Messages.NoCurrentPreset
 

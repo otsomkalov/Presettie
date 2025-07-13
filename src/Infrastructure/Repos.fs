@@ -107,7 +107,6 @@ type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
         .Where(fun p -> p.OwnerId = id)
         .Select(fun p -> {| Id = p.Id; Name = p.Name |})
         .ToListAsync()
-      |> Task.map List.ofSeq
       |> Task.map (Seq.map SimplePreset.fromDb >> List.ofSeq)
 
 type UserRepo(db: IMongoDatabase) =

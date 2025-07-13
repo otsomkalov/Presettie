@@ -60,14 +60,14 @@ let private addMessageHandlers (services: IServiceCollection) =
     .AddSingleton<MessageHandlerFactory>(helpMessageHandler)
 
     .BuildSingleton<MessageHandlerFactory, IPresetRepo>(myPresetsMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetRepo, IPresetRepo>(presetSettingsMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetRepo>(presetSettingsMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService>(queuePresetRunMessageHandler)
 
     .BuildSingleton<MessageHandlerFactory, IPresetService>(createPresetMessageHandler)
     .AddSingleton<MessageHandlerFactory>(createPresetButtonMessageHandler)
 
     .AddSingleton<MessageHandlerFactory>(setPresetSizeMessageButtonHandler)
-    .BuildSingleton<MessageHandlerFactory, IUserService, IUserRepo, IPresetRepo, IPresetRepo>(setPresetSizeMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IUserService, IUserRepo, IPresetRepo>(setPresetSizeMessageHandler)
 
     .BuildSingleton<MessageHandlerFactory, _, IAuthService>(includePlaylistButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, IAuthService>(excludePlaylistButtonMessageHandler)
