@@ -109,6 +109,11 @@ type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
         .ToListAsync()
       |> Task.map (Seq.map SimplePreset.fromDb >> List.ofSeq)
 
+    member this.ParseId(RawPresetId rawPresetId) =
+      match ObjectId.TryParse rawPresetId with
+      | true, id -> Some(PresetId(string id))
+      | _ -> None
+
 type UserRepo(db: IMongoDatabase) =
   let collection = db.GetCollection<Entities.User> "users"
 

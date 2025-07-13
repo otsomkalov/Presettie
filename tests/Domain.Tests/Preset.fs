@@ -490,6 +490,7 @@ type GetPreset() =
     let presetRepo = Mock<IPresetRepo>()
 
     do presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset) |> ignore
+    do presetRepo.Setup(_.ParseId(Mocks.rawPresetId)).Returns(Some Mocks.presetId) |> ignore
 
     let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
@@ -499,7 +500,7 @@ type GetPreset() =
     let ``returns Preset if it belongs to User`` () =
 
       task {
-        let! preset = sut.GetPreset(Mocks.userId, Mocks.presetId)
+        let! preset = sut.GetPreset(Mocks.userId, Mocks.rawPresetId)
 
         preset |> should equal (Result<_, Preset.GetPresetError>.Ok(Mocks.preset))
 
@@ -511,7 +512,7 @@ type GetPreset() =
       presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(None)
 
       task {
-        let! preset = sut.GetPreset(Mocks.userId, Mocks.presetId)
+        let! preset = sut.GetPreset(Mocks.userId, Mocks.rawPresetId)
 
         preset |> should equal (Result<Preset, _>.Error Preset.GetPresetError.NotFound)
 
@@ -523,7 +524,7 @@ type GetPreset() =
       let otherUserId = otsom.fs.Core.UserId "other-user"
 
       task {
-        let! preset = sut.GetPreset(otherUserId, Mocks.presetId)
+        let! preset = sut.GetPreset(otherUserId, Mocks.rawPresetId)
 
         preset |> should equal (Result<Preset, _>.Error Preset.GetPresetError.NotFound)
 

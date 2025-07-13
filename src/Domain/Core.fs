@@ -40,6 +40,9 @@ type PresetId =
 
   member this.Value = let (PresetId id) = this in id
 
+type RawPresetId =
+  | RawPresetId of string
+
 type SimplePreset = { Id: PresetId; Name: string }
 
 [<RequireQualifiedAccess>]
@@ -230,7 +233,7 @@ type IRemovePreset =
   abstract RemovePreset: PresetId -> Task<unit>
 
 type IGetPreset =
-  abstract GetPreset: UserId * PresetId -> Task<Result<Preset, Preset.GetPresetError>>
+  abstract GetPreset: UserId * RawPresetId -> Task<Result<Preset, Preset.GetPresetError>>
 
 type IPresetService =
   inherit IQueueRun

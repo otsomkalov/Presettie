@@ -566,7 +566,8 @@ type PresetService
 
     member this.GetPreset(userId, presetId) =
       presetId
-      |> presetRepo.LoadPreset
+      |> presetRepo.ParseId
+      |> TaskOption.taskBind presetRepo.LoadPreset
       |> Task.map (function
         | Some preset when preset.OwnerId = userId -> Ok preset
         | _ -> Error Preset.GetPresetError.NotFound)

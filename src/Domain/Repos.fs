@@ -7,6 +7,9 @@ open otsom.fs.Core
 type IIdGenerator =
   abstract GenerateId: unit -> string
 
+type IPresetIdParser =
+  abstract ParseId: RawPresetId -> PresetId option
+
 type ILoadPreset =
   abstract LoadPreset: PresetId -> Task<Preset option>
 
@@ -29,6 +32,7 @@ type IPresetRepo =
   inherit IRemovePreset
   inherit IIdGenerator
   inherit IListUserPresets
+  inherit IPresetIdParser
 
 type ILoadUser =
   abstract LoadUser: userId: UserId -> Task<User>
