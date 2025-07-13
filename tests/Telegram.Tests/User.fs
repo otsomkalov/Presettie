@@ -2,7 +2,7 @@
 
 #nowarn "20"
 
-open Domain.Query
+open Domain.Core
 open Domain.Repos
 open Domain.Tests
 open Moq
@@ -18,15 +18,15 @@ let ``should list presets`` () =
     .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
     .ReturnsAsync(())
 
-  let presetReadRepo = Mock<IPresetReadRepo>()
+  let presetRepo = Mock<IPresetRepo>()
 
-  presetReadRepo.Setup(_.ListUserPresets(Mocks.userId)).ReturnsAsync([{ Id = Mocks.presetId.Value; Name = Mocks.preset.Name }])
+  presetRepo.Setup(_.ListUserPresets(Mocks.userId)).ReturnsAsync([{ Id = Mocks.presetId; Name = Mocks.preset.Name }])
 
   task {
-    do! User.listPresets botService.Object presetReadRepo.Object Mocks.botMessageId Mocks.userId
+    do! User.listPresets botService.Object presetRepo.Object Mocks.botMessageId Mocks.userId
 
     botService.VerifyAll()
-    presetReadRepo.VerifyAll()
+    presetRepo.VerifyAll()
   }
 
 [<Fact>]

@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Database\Database.csproj"/>
-    <ProjectReference Include="..\Domain.Query\Domain.Query.fsproj" />
     <ProjectReference Include="..\Domain\Domain.fsproj"/>
     <ProjectReference Include="..\MusicPlatform.Cached\MusicPlatform.Cached.fsproj" />
     <ProjectReference Include="..\MusicPlatform.Spotify\MusicPlatform.Spotify.fsproj"/>
