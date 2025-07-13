@@ -10,7 +10,7 @@ open otsom.fs.Core
 
 [<RequireQualifiedAccess>]
 module SimplePreset =
-  let fromDb (preset: Entities.Preset) : SimplePreset =
+  let fromDb (preset: {| Id: ObjectId; Name: string |}) : SimplePreset =
     { Id = preset.Id |> string |> PresetId
       Name = preset.Name }
 
