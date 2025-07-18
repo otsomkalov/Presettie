@@ -25,7 +25,7 @@ let private createClick data : Click =
 let ``list click should list targeted playlists if data match`` () =
   let presetRepo = Mock<IPresetRepo>()
 
-  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
+  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some Mocks.preset)
 
   let botService = Mock<IBotService>()
 
@@ -69,7 +69,7 @@ let ``list click should not list targeted playlists if data does not match`` () 
 let ``show click should send targeted playlist details`` () =
   let presetRepo = Mock<IPresetRepo>()
 
-  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Mocks.preset)
+  presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some Mocks.preset)
 
   let musicPlatform = Mock<IMusicPlatform>()
 

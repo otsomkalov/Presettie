@@ -19,20 +19,18 @@ open MongoDB.Driver.Linq
 [<RequireQualifiedAccess>]
 module PresetRepo =
   let load (collection: IMongoCollection<Entities.Preset>) =
-    fun (PresetId presetId) -> task {
+    fun (PresetId presetId) ->
       let presetsFilter = Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId presetId)
 
-      let! dbPreset = collection.Find(presetsFilter).SingleOrDefaultAsync()
-
-      return dbPreset |> Preset.fromDb
-    }
+      collection.Find(presetsFilter).SingleOrDefaultAsync()
+      |> Task.map Option.ofObj
+      |> TaskOption.map Preset.fromDb
 
   let save (collection: IMongoCollection<Entities.Preset>) =
     fun preset -> task {
       let dbPreset = preset |> Preset.toDb
 
-      let presetsFilter =
-        Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId preset.Id.Value)
+      let presetsFilter = Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId preset.Id.Value)
 
       return!
         collection.ReplaceOneAsync(presetsFilter, dbPreset, ReplaceOptions(IsUpsert = true))
@@ -98,7 +96,8 @@ type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
       |> Task.map ignore
 
     member this.RemovePreset(presetId) = PresetRepo.remove collection presetId
-    member this.GenerateId() = ObjectId.GenerateNewId() |> string
+    member this.GenerateId() =
+      ObjectId.GenerateNewId() |> string
 
     member this.ListUserPresets(UserId userId) =
       let id = userId |> ObjectId.Parse
@@ -117,4 +116,5 @@ type UserRepo(db: IMongoDatabase) =
     member this.LoadUser(userId) = UserRepo.load collection userId
     member this.SaveUser(user) = UserRepo.save collection user
 
-    member this.GenerateId() = ObjectId.GenerateNewId() |> string
+    member this.GenerateId() =
+      ObjectId.GenerateNewId() |> string

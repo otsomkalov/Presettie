@@ -24,7 +24,7 @@ let private createClick data : Click =
 let ``enableUniqueArtists should update preset and show updated if data matched`` () =
   let presetRepo = Mock<IPresetRepo>()
 
-  presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
+  presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
 
   let presetService = Mock<IPresetService>()
 
@@ -80,7 +80,7 @@ let ``enableUniqueArtists should not update preset if data does not match`` () =
 let ``disableUniqueArtists should update preset and show updated if data matched`` () =
   let presetRepo = Mock<IPresetRepo>()
 
-  presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
+  presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
 
   let presetService = Mock<IPresetService>()
 
