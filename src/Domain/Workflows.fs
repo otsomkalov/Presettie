@@ -266,6 +266,7 @@ module Preset =
       &|> Result.errorIf List.isEmpty Preset.RunError.NoIncludedTracks
       &=|> shuffler
       &=|&> getRecommendations platform preset
+      &=|> shuffler
       &=|&> (fun includedTracks ->
         preset.ExcludedPlaylists |> ExcludedPlaylist.listTracks platform
         &|&> (excludeLiked platform preset)
