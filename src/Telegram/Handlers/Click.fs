@@ -22,11 +22,11 @@ let presetInfoClickHandler presetRepo (resp: IResourceProvider) botService : Cli
     | _ -> return None
   }
 
-let listPresetsClickHandler presetRepo (resp: IResourceProvider) botService : ClickHandler =
+let listPresetsClickHandler userRepo (resp: IResourceProvider) botService : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p" ] ->
-      do! User.listPresets botService presetRepo click.MessageId click.Chat.UserId
+      do! User.listPresets botService userRepo click.MessageId click.Chat.UserId
 
       return Some()
     | _ -> return None
@@ -215,7 +215,7 @@ let showExcludedPlaylistClickHandler
       let presetId = PresetId presetId
       let playlistId = PlaylistId playlistId
 
-      let! preset = presetRepo.LoadPreset presetId
+      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
       let excludedPlaylist =
         preset.ExcludedPlaylists
@@ -410,7 +410,7 @@ let listIncludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
       let presetId = PresetId presetId
       let page = Page(int page)
 
-      let! preset = presetRepo.LoadPreset(presetId)
+      let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
       do! IncludedPlaylist.list botService click.MessageId preset page
 
       return Some()
@@ -424,7 +424,7 @@ let listExcludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
       let presetId = PresetId presetId
       let page = Page(int page)
 
-      let! preset = presetRepo.LoadPreset(presetId)
+      let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
       do! ExcludedPlaylist.list botService click.MessageId preset page
 
       return Some()
@@ -438,7 +438,7 @@ let listTargetedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
       let presetId = PresetId presetId
       let page = Page(int page)
 
-      let! preset = presetRepo.LoadPreset(presetId)
+      let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
       do! TargetedPlaylist.list botService click.MessageId preset page
 
       return Some()

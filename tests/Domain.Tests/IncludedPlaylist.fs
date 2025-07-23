@@ -11,7 +11,7 @@ open FsUnit.Xunit
 let ``remove should remove playlist from preset`` () =
   let mock = Mock<IPresetRepo>()
 
-  mock.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
+  mock.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
 
   let expected =
     { Mocks.preset with

@@ -39,7 +39,7 @@ module Run =
 
     let presetRepo = Mock<IPresetRepo>()
 
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
@@ -77,7 +77,7 @@ module Run =
 
     let presetRepo = Mock<IPresetRepo>()
 
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
@@ -107,7 +107,7 @@ module Run =
 
     let presetRepo = Mock<IPresetRepo>()
 
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
@@ -143,7 +143,7 @@ module Run =
 
     let presetRepo = Mock<IPresetRepo>()
 
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
@@ -183,8 +183,6 @@ module Run =
 
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
-    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
-
     platform
       .Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.includedTrack ]))
       .ReturnsAsync(())
@@ -195,7 +193,7 @@ module Run =
       { Mocks.preset with
           Settings.RecommendationsEnabled = true }
 
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
@@ -240,7 +238,7 @@ module Run =
       { Mocks.preset with
           Settings.LikedTracksHandling = PresetSettings.LikedTracksHandling.Include }
 
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
@@ -284,7 +282,7 @@ module Run =
       { Mocks.preset with
           Settings.LikedTracksHandling = PresetSettings.LikedTracksHandling.Exclude }
 
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
@@ -325,7 +323,7 @@ module Run =
 
     let presetRepo = Mock<IPresetRepo>()
 
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Mocks.preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
@@ -365,7 +363,7 @@ module Run =
 
     let presetRepo = Mock<IPresetRepo>()
 
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
@@ -407,15 +405,13 @@ module Run =
 
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
-    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
-
     platform
       .Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.recommendedTrack; Mocks.includedTrack ]))
       .ReturnsAsync(())
 
     let presetRepo = Mock<IPresetRepo>()
 
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 
@@ -460,15 +456,13 @@ module Run =
 
     platform.Setup(_.ListArtistTracks(Mocks.artist4.Id)).ReturnsAsync([])
 
-    platform.Setup(_.ListArtistTracks(Mocks.artist4.Id)).ReturnsAsync([])
-
     platform
       .Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.recommendedTrack; Mocks.likedTrack ]))
       .ReturnsAsync(())
 
     let presetRepo = Mock<IPresetRepo>()
 
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
 

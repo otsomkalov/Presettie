@@ -147,8 +147,7 @@ module IncludedPlaylist =
 
   let show (botMessageCtx: #IEditMessageButtons) (presetRepo: #ILoadPreset) (mp: #ILoadPlaylist option) =
     fun messageId presetId playlistId -> task {
-      let! preset = presetRepo.LoadPreset presetId
-
+      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
       let includedPlaylist =
         preset.IncludedPlaylists
         |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
@@ -215,7 +214,7 @@ module TargetedPlaylist =
 
   let show (botMessageCtx: #IEditMessageButtons) (presetRepo: #ILoadPreset) (mp: #ILoadPlaylist option) =
     fun messageId presetId playlistId -> task {
-      let! preset = presetRepo.LoadPreset presetId
+      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
       let targetedPlaylist =
         preset.TargetedPlaylists |> List.find (fun p -> p.Id = playlistId)
@@ -281,7 +280,7 @@ module Preset =
     let editButtons messageId text buttons =
       botService.EditMessageButtons(messageId, text, buttons)
 
-    fun messageId -> presetRepo.LoadPreset >> Task.bind (show' (editButtons messageId))
+    fun messageId -> presetRepo.LoadPreset >> Task.map Option.get >> Task.bind (show' (editButtons messageId))
 
   let run (chatCtx: #ISendMessage & #IEditMessage) (presetService: #IRunPreset) =
     fun presetId ->
@@ -329,11 +328,11 @@ module User =
       return! sendPresetsMessage sendOrEditButtons presets "Your presets"
     }
 
-  let sendPresets (chatCtx: #ISendMessageButtons) presetReadRepo =
+  let sendPresets (chatCtx: #ISendMessageButtons) presetRepo =
     let sendButtons text buttons =
       chatCtx.SendMessageButtons(text, buttons) &|> ignore
 
-    showPresets' sendButtons presetReadRepo
+    showPresets' sendButtons presetRepo
 
   let listPresets (botMessageCtx: #IEditMessageButtons) presetRepo =
     let editButtons messageId text buttons =
@@ -346,7 +345,7 @@ module User =
       userId |> userRepo.LoadUser &|> _.CurrentPresetId
       &|&> (function
       | Some presetId -> task {
-          let! preset = presetRepo.LoadPreset presetId
+          let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
           return! Preset.send chatCtx preset
         }
       | None ->
@@ -366,7 +365,7 @@ module User =
 
       match user.CurrentPresetId with
       | Some presetId ->
-        let! preset = presetRepo.LoadPreset presetId
+        let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
         let text, _ = getPresetMessage preset
 
