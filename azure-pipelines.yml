@@ -24,7 +24,7 @@ steps:
     inputs:
       command: 'custom'
       custom: 'tool'
-      arguments: 'install -g fantomas-tool'
+      arguments: 'install -g fantomas'
   - task: Bash@3
     displayName: "Run fantomas"
     inputs:
