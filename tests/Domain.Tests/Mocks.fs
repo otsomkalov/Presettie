@@ -66,6 +66,7 @@ let presetSettingsMock: PresetSettings.PresetSettings =
     LikedTracksHandling = PresetSettings.LikedTracksHandling.Ignore
     UniqueArtists = false }
 
+let rawPresetId = RawPresetId "raw-preset-id"
 let presetId = PresetId("1")
 let userId = otsom.fs.Core.UserId("user-id")
 
