@@ -20,18 +20,17 @@ steps:
     inputs:
       version: '9.x'
   - task: DotNetCoreCLI@2
-    name: Install_Fantomas
+    displayName: "Install Fantomas tool"
     inputs:
       command: 'custom'
       custom: 'tool'
       arguments: 'install -g fantomas'
   - task: Bash@3
-    displayName: "Run fantomas"
+    displayName: "Run Fantomas check"
     inputs:
       targetType: 'inline'
       script: |
-        ls -a
-        fantomas "./src" --check
+        fantomas "src" "tests" --check
       workingDirectory: '$(Build.SourcesDirectory)'
   - task: DotNetCoreCLI@2
     name: Restore

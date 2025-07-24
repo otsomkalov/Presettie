@@ -109,7 +109,13 @@ module User =
       client.Library.GetTracks(LibraryTracksRequest(Offset = offset, Limit = 50))
       |> Async.AwaitTask
 
-    return (tracks.Items |> Seq.map _.Track |> filterValidTracks |> Seq.map Track.fromFull |> List.ofSeq, tracks.Total)
+    return
+      (tracks.Items
+       |> Seq.map _.Track
+       |> filterValidTracks
+       |> Seq.map Track.fromFull
+       |> List.ofSeq,
+       tracks.Total)
   }
 
   let listLikedTracks' (client: ISpotifyClient) : User.ListLikedTracks =
@@ -215,10 +221,7 @@ module Library =
             SimpleRetryHandler(RetryAfter = TimeSpan.FromSeconds(30L), RetryTimes = 3, TooManyRequestsConsumesARetry = true)
 
           let config =
-            SpotifyClientConfig
-              .CreateDefault()
-              .WithRetryHandler(retryHandler)
-              .WithToken(tokenResponse.AccessToken)
+            SpotifyClientConfig.CreateDefault().WithRetryHandler(retryHandler).WithToken(tokenResponse.AccessToken)
 
           return config |> SpotifyClient :> ISpotifyClient
         })

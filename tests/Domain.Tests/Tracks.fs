@@ -10,9 +10,7 @@ let ``uniqueByArtists returns tracks which have only unique artists`` () =
   // Arrange
 
   let tracks: Track list =
-    [ Mocks.includedTrack
-      Mocks.excludedTrack
-      Mocks.likedTrack ]
+    [ Mocks.includedTrack; Mocks.excludedTrack; Mocks.likedTrack ]
 
   // Act
 

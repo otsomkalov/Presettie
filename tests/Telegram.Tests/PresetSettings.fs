@@ -32,9 +32,7 @@ let ``enableUniqueArtists should update preset and show updated if data matched`
 
   let botService = Mock<IBotService>()
 
-  botService
-    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
-    .ReturnsAsync(())
+  botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
   let resourceProvider = Mock<IResourceProvider>()
 
@@ -88,9 +86,7 @@ let ``disableUniqueArtists should update preset and show updated if data matched
 
   let botService = Mock<IBotService>()
 
-  botService
-    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
-    .ReturnsAsync(())
+  botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
   let resourceProvider = Mock<IResourceProvider>()
 

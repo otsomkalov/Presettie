@@ -31,10 +31,7 @@ let private configureServices (builderContext: HostBuilderContext) (services: IS
   services
     .AddMvcCore()
     .AddJsonOptions(fun opts ->
-      JsonFSharpOptions
-        .Default()
-        .WithUnionUnwrapFieldlessTags()
-        .AddToJsonSerializerOptions(opts.JsonSerializerOptions))
+      JsonFSharpOptions.Default().WithUnionUnwrapFieldlessTags().AddToJsonSerializerOptions(opts.JsonSerializerOptions))
 
   ()
 
@@ -46,10 +43,7 @@ let private configureAppConfiguration _ (configBuilder: IConfigurationBuilder) =
 
 let private configureWebApp (builder: IFunctionsWorkerApplicationBuilder) =
   builder.Services.Configure<JsonSerializerOptions>(fun opts ->
-    JsonFSharpOptions
-      .Default()
-      .WithUnionUnwrapFieldlessTags()
-      .AddToJsonSerializerOptions(opts))
+    JsonFSharpOptions.Default().WithUnionUnwrapFieldlessTags().AddToJsonSerializerOptions(opts))
 
   ()
 

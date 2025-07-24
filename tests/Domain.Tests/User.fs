@@ -57,9 +57,7 @@ let ``removePreset removes preset`` () =
 
   let presetService = Mock<IPresetService>()
 
-  presetService
-    .Setup(_.RemovePreset(Mocks.presetId))
-    .ReturnsAsync(())
+  presetService.Setup(_.RemovePreset(Mocks.presetId)).ReturnsAsync(())
 
   let sut = User.removePreset userRepo.Object presetService.Object
 

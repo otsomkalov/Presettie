@@ -41,8 +41,7 @@ let private configureAppConfiguration _ (configBuilder: IConfigurationBuilder) =
   ()
 
 let private configureWebApp (builder: IFunctionsWorkerApplicationBuilder) =
-  builder.Services.Configure<JsonSerializerOptions>(fun opts ->
-    JsonFSharpOptions.Default().AddToJsonSerializerOptions(opts))
+  builder.Services.Configure<JsonSerializerOptions>(fun opts -> JsonFSharpOptions.Default().AddToJsonSerializerOptions(opts))
 
   ()
 

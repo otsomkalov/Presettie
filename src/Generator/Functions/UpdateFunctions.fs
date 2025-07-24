@@ -14,7 +14,9 @@ type UpdateFunctions(_messageService: MessageService, _logger: ILogger<UpdateFun
   inherit ControllerBase()
 
   [<Function("HandleUpdateAsync")>]
-  member this.HandleUpdateAsync([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "telegram/update")>] request: HttpRequest, [<FromBody>]update: Update) =
+  member this.HandleUpdateAsync
+    ([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "telegram/update")>] request: HttpRequest, [<FromBody>] update: Update)
+    =
     task {
       try
         let handleUpdateTask =
@@ -24,6 +26,6 @@ type UpdateFunctions(_messageService: MessageService, _logger: ILogger<UpdateFun
           | _ -> () |> Task.FromResult
 
         do! handleUpdateTask
-      with
-      | e -> _logger.LogError(e, "Error during processing update:")
+      with e ->
+        _logger.LogError(e, "Error during processing update:")
     }

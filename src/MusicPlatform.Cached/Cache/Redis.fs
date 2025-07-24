@@ -10,66 +10,62 @@ open System.Threading.Tasks
 open otsom.fs.Extensions
 
 let private prependList (telemetryClient: TelemetryClient) (cache: IDatabase) =
-  fun (key: string) values ->
-    task {
-      let dependency = DependencyTelemetry("Redis", key, "prependList", key)
+  fun (key: string) values -> task {
+    let dependency = DependencyTelemetry("Redis", key, "prependList", key)
 
-      use operation = telemetryClient.StartOperation dependency
+    use operation = telemetryClient.StartOperation dependency
 
-      let! _ = cache.ListLeftPushAsync(key, values |> List.toArray)
+    let! _ = cache.ListLeftPushAsync(key, values |> List.toArray)
 
-      operation.Telemetry.Success <- true
+    operation.Telemetry.Success <- true
 
-      return ()
-    }
+    return ()
+  }
 
 let internal replaceList (telemetryClient: TelemetryClient) (cache: IDatabase) =
-  fun (key: string) values ->
-    task {
-      let dependency = DependencyTelemetry("Redis", key, "replaceList", key)
+  fun (key: string) values -> task {
+    let dependency = DependencyTelemetry("Redis", key, "replaceList", key)
 
-      use operation = telemetryClient.StartOperation dependency
+    use operation = telemetryClient.StartOperation dependency
 
-      let transaction = cache.CreateTransaction()
+    let transaction = cache.CreateTransaction()
 
-      let _ = transaction.KeyDeleteAsync(key)
-      let _ = transaction.ListLeftPushAsync(key, values |> List.toArray)
-      let _ = transaction.KeyExpireAsync(key, TimeSpan.FromDays(7))
+    let _ = transaction.KeyDeleteAsync(key)
+    let _ = transaction.ListLeftPushAsync(key, values |> List.toArray)
+    let _ = transaction.KeyExpireAsync(key, TimeSpan.FromDays(7))
 
-      let! _ = transaction.ExecuteAsync() |> Task.map ignore
+    let! _ = transaction.ExecuteAsync() |> Task.map ignore
 
-      operation.Telemetry.Success <- true
+    operation.Telemetry.Success <- true
 
-      return ()
-    }
+    return ()
+  }
 
 let internal loadList (telemetryClient: TelemetryClient) (cache: IDatabase) =
-  fun key ->
-    task {
-      let dependency = DependencyTelemetry("Redis", key, "loadList", key)
+  fun key -> task {
+    let dependency = DependencyTelemetry("Redis", key, "loadList", key)
 
-      use operation = telemetryClient.StartOperation dependency
+    use operation = telemetryClient.StartOperation dependency
 
-      let! values = key |> cache.ListRangeAsync
+    let! values = key |> cache.ListRangeAsync
 
-      operation.Telemetry.Success <- true
+    operation.Telemetry.Success <- true
 
-      return values
-    }
+    return values
+  }
 
 let private listLength (telemetryClient: TelemetryClient) (cache: IDatabase) =
-  fun key ->
-    task {
-      let dependency = DependencyTelemetry("Redis", key, "listLength", key)
+  fun key -> task {
+    let dependency = DependencyTelemetry("Redis", key, "listLength", key)
 
-      use operation = telemetryClient.StartOperation dependency
+    use operation = telemetryClient.StartOperation dependency
 
-      let! value = key |> cache.ListLengthAsync
+    let! value = key |> cache.ListLengthAsync
 
-      operation.Telemetry.Success <- true
+    operation.Telemetry.Success <- true
 
-      return value |> int
-    }
+    return value |> int
+  }
 
 let listCachedTracks telemetryClient cache =
   fun key ->
@@ -91,8 +87,7 @@ module UserRepo =
     fun () ->
       listCachedTracks key
       |> Task.bind (function
-        | [] ->
-          task {
+        | [] -> task {
             let! likedTracks = listLikedTracks ()
 
             do! replaceList telemetryClient database key (serializeTracks likedTracks)
@@ -111,18 +106,15 @@ module Playlist =
   let appendTracks (telemetryClient: TelemetryClient) multiplexer =
     let prependList = prependList telemetryClient (getPlaylistsDatabase multiplexer)
 
-    fun (playlistId: PlaylistId) tracks ->
-      prependList playlistId.Value (serializeTracks tracks)
+    fun (playlistId: PlaylistId) tracks -> prependList playlistId.Value (serializeTracks tracks)
 
   let replaceTracks (telemetryClient: TelemetryClient) multiplexer =
     let replaceList = replaceList telemetryClient (getPlaylistsDatabase multiplexer)
 
-    fun (playlistId: PlaylistId) tracks ->
-      replaceList playlistId.Value (serializeTracks tracks)
+    fun (playlistId: PlaylistId) tracks -> replaceList playlistId.Value (serializeTracks tracks)
 
   let listTracks telemetryClient multiplexer =
-    fun (PlaylistId playlistId) ->
-      listCachedTracks telemetryClient (getPlaylistsDatabase multiplexer) playlistId
+    fun (PlaylistId playlistId) -> listCachedTracks telemetryClient (getPlaylistsDatabase multiplexer) playlistId
 
   let countTracks telemetryClient multiplexer =
     let listLength = listLength telemetryClient (getPlaylistsDatabase multiplexer)

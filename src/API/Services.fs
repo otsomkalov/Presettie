@@ -41,8 +41,7 @@ type JWTService(options: IOptions<JWTSettings>) =
 
   interface IJWTService with
     member this.GenerateToken(userId: UserId) =
-      let claims =
-        [ Claim(JwtRegisteredClaimNames.Sub, userId.Value) ]
+      let claims = [ Claim(JwtRegisteredClaimNames.Sub, userId.Value) ]
 
       let token =
         JwtSecurityToken(

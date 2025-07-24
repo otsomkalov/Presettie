@@ -29,9 +29,7 @@ let ``list click should list targeted playlists if data match`` () =
 
   let botService = Mock<IBotService>()
 
-  botService
-    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
-    .ReturnsAsync(())
+  botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
   let resourceProvider = Mock<IResourceProvider>()
 
@@ -73,15 +71,11 @@ let ``show click should send targeted playlist details`` () =
 
   let musicPlatform = Mock<IMusicPlatform>()
 
-  musicPlatform
-    .Setup(_.LoadPlaylist(Mocks.targetedPlaylistId))
-    .ReturnsAsync(Ok Mocks.writablePlatformPlaylist)
+  musicPlatform.Setup(_.LoadPlaylist(Mocks.targetedPlaylistId)).ReturnsAsync(Ok Mocks.writablePlatformPlaylist)
 
   let botService = Mock<IBotService>()
 
-  botService
-    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
-    .ReturnsAsync(())
+  botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
 
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
@@ -93,7 +87,8 @@ let ``show click should send targeted playlist details`` () =
     createClick [ "p"; Mocks.preset.Id.Value; "tp"; Mocks.targetedPlaylistId.Value; "i" ]
 
   task {
-    let! result = showTargetedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
+    let! result =
+      showTargetedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
 
     result |> should equal (Some())
 
@@ -118,7 +113,8 @@ let ``show click should not send playlist details if data does not match`` () =
   musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
 
   task {
-    let! result = showTargetedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
+    let! result =
+      showTargetedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
 
     result |> should equal None
 
@@ -140,9 +136,7 @@ let ``remove click should delete targeted playlist and show excluded playlists``
 
   let botService = Mock<IBotService>()
 
-  botService
-    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
-    .ReturnsAsync(())
+  botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
   let resourceProvider = Mock<IResourceProvider>()
 
