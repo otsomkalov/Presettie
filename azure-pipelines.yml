@@ -31,7 +31,7 @@ steps:
       targetType: 'inline'
       script: |
         ls -a
-        fantomas "src" --check
+        fantomas "./src" --check
       workingDirectory: '$(Build.SourcesDirectory)'
   - task: DotNetCoreCLI@2
     name: Restore
