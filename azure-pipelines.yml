@@ -31,6 +31,7 @@ steps:
       targetType: 'inline'
       script: |
         fantomas "src" --check
+      workingDirectory: '$(Build.SourcesDirectory)'
   - task: DotNetCoreCLI@2
     name: Restore
     inputs:
