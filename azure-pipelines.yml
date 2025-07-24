@@ -16,6 +16,7 @@ variables:
 
 steps:
   - task: UseDotNet@2
+    displayName: "Install .NET SDK 9.x"
     inputs:
       version: '9.x'
   - task: DotNetCoreCLI@2
@@ -24,12 +25,12 @@ steps:
       command: 'custom'
       custom: 'tool'
       arguments: 'install -g fantomas-tool'
-  - task: DotNetCoreCLI@2
-    name: Run_Fantomas
+  - task: Bash@3
+    displayName: "Run fantomas"
     inputs:
-      command: 'custom'
-      custom: 'fantomas'
-      arguments: 'src --check'
+      targetType: 'inline'
+      script: |
+        fantomas "src" --check
   - task: DotNetCoreCLI@2
     name: Restore
     inputs:
