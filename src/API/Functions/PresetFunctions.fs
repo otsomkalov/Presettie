@@ -2,14 +2,17 @@
 
 open System.Threading.Tasks
 open API.Services
+open Domain.Core
 open Domain.Repos
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
 open otsom.fs.Extensions
+open Domain.Extensions
+open Domain.Workflows
 
-type PresetFunctions(jwtService: IJWTService, presetRepo: IPresetRepo) =
-  let runForUser (req: HttpRequest) fn =
+type PresetFunctions(jwtService: IJWTService, presetRepo: IPresetRepo, presetService: IPresetService) =
+  let runForUser (req: HttpRequest) handler =
     req.Headers.Authorization
     |> string
     |> Option.ofObj
@@ -19,8 +22,8 @@ type PresetFunctions(jwtService: IJWTService, presetRepo: IPresetRepo) =
       | _ -> None)
     |> Option.taskMap jwtService.DecodeToken
     |> Task.map Option.flatten
-    |> TaskOption.taskMap fn
-    |> Task.bind (Option.defaultWithTask (fun () -> UnauthorizedResult() :> IActionResult |> Task.FromResult))
+    |> TaskOption.taskMap handler
+    |> Task.map (Option.defaultValue (UnauthorizedResult() :> IActionResult))
 
   [<Function("ListPresets")>]
   member this.ListPresets
@@ -33,3 +36,16 @@ type PresetFunctions(jwtService: IJWTService, presetRepo: IPresetRepo) =
     }
 
     runForUser request handler
+
+  [<Function("GetPreset")>]
+  member this.GetPreset
+    ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets/{presetId}")>] request: HttpRequest, presetId: string)
+    : Task<IActionResult> =
+    let handler (user: TokenUser) =
+      fun presetId ->
+        presetService.GetPreset(user.Id, presetId)
+        |> Task.map (function
+          | Ok preset -> OkObjectResult preset :> IActionResult
+          | Error Preset.NotFound -> NotFoundResult() :> IActionResult)
+
+    runForUser request (flip handler (RawPresetId presetId))

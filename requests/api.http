@@ -1,11 +1,15 @@
 ﻿###
 GET http://localhost:7071/api/presets
-Authorization: Bearer {{token}}
+Authorization: Bearer {{apiToken}}
+
+###
+GET http://localhost:7071/api/presets/{{presetId}}
+Authorization: Bearer {{apiToken}}
 
 ###
 POST http://localhost:7071/api/auth/token
 Content-Type: application/json
 
 {
-  "userId": {{userId}}
+  "userId": "{{userId}}"
 }
