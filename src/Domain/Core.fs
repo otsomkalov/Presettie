@@ -40,6 +40,9 @@ type PresetId =
 
   member this.Value = let (PresetId id) = this in id
 
+type RawPresetId =
+  | RawPresetId of string
+
 type SimplePreset = { Id: PresetId; Name: string }
 
 [<RequireQualifiedAccess>]
@@ -122,6 +125,9 @@ module Preset =
     | Load of Playlist.LoadError
     | AccessError of AccessError
     | Unauthorized
+
+  type GetPresetError =
+    | NotFound
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
@@ -226,6 +232,9 @@ type IRunPreset =
 type IRemovePreset =
   abstract RemovePreset: PresetId -> Task<unit>
 
+type IGetPreset =
+  abstract GetPreset: UserId * RawPresetId -> Task<Result<Preset, Preset.GetPresetError>>
+
 type IPresetService =
   inherit IQueueRun
   inherit IRunPreset
@@ -233,6 +242,7 @@ type IPresetService =
   inherit ISetPresetSize
   inherit ICreatePreset
   inherit IRemovePreset
+  inherit IGetPreset
 
   inherit IIncludePlaylist
   inherit IExcludePlaylist
