@@ -110,3 +110,15 @@ resource "azurerm_linux_function_app" "func-presettie" {
 
   tags = local.tags
 }
+
+resource "azurerm_storage_account" "st-presettie-web" {
+  resource_group_name = azurerm_resource_group.rg-presettie.name
+  location            = azurerm_resource_group.rg-presettie.location
+
+  name                     = "stpresettieweb${var.env}"
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  account_kind             = "Storage"
+
+  tags = local.tags
+}
