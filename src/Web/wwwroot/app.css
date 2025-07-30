@@ -1,0 +1,7 @@
+﻿.progress-bar {
+    width: var(--blazor-load-percentage);
+}
+
+.progress-text {
+    content: var(--blazor-load-percentage-text);
+}

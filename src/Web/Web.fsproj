@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Shared.fs" />
     <Compile Include="Layout.fs" />
     <Compile Include="Main.fs"/>
     <Compile Include="Startup.fs"/>
@@ -21,10 +22,6 @@
     <Content Update="wwwroot\appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="Properties\launchSettings.json" />
   </ItemGroup>
 
 </Project>

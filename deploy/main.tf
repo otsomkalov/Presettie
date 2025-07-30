@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">=4.14.0"
+      version = ">=4.38.0"
     }
   }
 }
@@ -44,7 +44,6 @@ resource "azurerm_storage_account" "st-presettie" {
   name                     = "stpresettie${var.env}"
   account_tier             = "Standard"
   account_replication_type = "LRS"
-  account_kind             = "Storage"
 
   tags = local.tags
 }
@@ -118,7 +117,12 @@ resource "azurerm_storage_account" "st-presettie-web" {
   name                     = "stpresettieweb${var.env}"
   account_tier             = "Standard"
   account_replication_type = "LRS"
-  account_kind             = "Storage"
 
   tags = local.tags
+}
+
+resource "azurerm_storage_account_static_website" "st-ws-presettie-web" {
+  storage_account_id = azurerm_storage_account.st-presettie-web.id
+  error_404_document = "index.html"
+  index_document     = "index.html"
 }

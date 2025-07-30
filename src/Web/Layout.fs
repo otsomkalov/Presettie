@@ -2,6 +2,8 @@
 module Web.Layout
 
 open Bolero.Html
+open Microsoft.AspNetCore.Components.Routing
+open Web.Shared
 
 module Header =
   let view dispatch = nav {
@@ -39,7 +41,7 @@ module Header =
           li {
             attr.``class`` "nav-item"
 
-            a {
+            navLink NavLinkMatch.All {
               attr.``class`` "nav-link"
               attr.href "/"
 
@@ -50,9 +52,9 @@ module Header =
           li {
             attr.``class`` "nav-item"
 
-            a {
+            navLink NavLinkMatch.All {
               attr.``class`` "nav-link"
-              attr.href "presets"
+              attr.href (router.Link(Page.Presets))
 
               "Presets"
             }
