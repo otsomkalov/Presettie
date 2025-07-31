@@ -9,7 +9,7 @@ pr:
       - main
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 variables:
   Runtime: 'linux-x64'
@@ -104,11 +104,11 @@ stages:
             inputs:
               buildType: 'current'
               artifactName: 'Web'
-              targetPath: '$(Build.ArtifactStagingDirectory)'
+              targetPath: '$(Build.ArtifactStagingDirectory)/Web'
           - task: AzureFileCopy@6
             displayName: 'Copy Web to Blob Storage'
             inputs:
-              SourcePath: '$(Build.ArtifactStagingDirectory)/Web'
+              SourcePath: '$(Build.ArtifactStagingDirectory)/Web/**'
               azureSubscription: '$(subscription)'
               Destination: 'AzureBlob'
               storage: '$(web-storage-account)'
