@@ -17,7 +17,7 @@ variables:
 stages:
   - stage: build
     jobs:
-      - job: build-all
+      - job: build_all
         steps:
           - task: UseDotNet@2
             inputs:
@@ -94,7 +94,7 @@ stages:
               ArtifactName: 'Web'
   - stage: deploy
     jobs:
-      - job: deploy-bot
+      - job: deploy_bot
         steps:
           - task: AzureFileCopy@5
             displayName: 'Publish Web to Blob Storage'
