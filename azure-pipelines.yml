@@ -92,10 +92,10 @@ jobs:
           ArtifactName: 'Web'
   - job: deploy
     steps:
-      - task: AzureFileCopy@6
+      - task: AzureFileCopy@5
         displayName: 'Publish Web to Blob Storage'
         inputs:
-          SourcePath: '$(Build.ArtifactStagingDirectory)/Web' # string. Required. Source.
+          SourcePath: '$(Build.ArtifactStagingDirectory)/Web'
           azureSubscription: '$(subscription)'
           Destination: 'AzureBlob'
           storage: '$(web-storage-account)'
