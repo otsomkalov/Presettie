@@ -81,7 +81,7 @@ stages:
           - task: PublishBuildArtifacts@1
             name: Pack_Bot
             inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Runtime'
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Generator'
               ArtifactName: 'Bot'
           - task: PublishBuildArtifacts@1
             name: Pack_API
