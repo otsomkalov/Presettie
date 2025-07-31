@@ -15,89 +15,92 @@ variables:
   Runtime: 'linux-x64'
 
 stages:
-#  - stage: build
-#    jobs:
-#      - job: build_all
-#        steps:
-#          - task: UseDotNet@2
-#            inputs:
-#              version: '9.x'
-#          - task: DotNetCoreCLI@2
-#            name: Restore
-#            inputs:
-#              command: 'restore'
-#              projects: 'src/**/**.fsproj'
-#              arguments: '-r $(Runtime)'
-#          - task: DotNetCoreCLI@2
-#            name: Build_Bot
-#            inputs:
-#              command: 'build'
-#              configuration: 'Release'
-#              projects: 'src/**/Generator.fsproj'
-#              arguments: '-r $(Runtime) -c Release'
-#              publishWebProjects: false
-#          - task: DotNetCoreCLI@2
-#            name: Build_API
-#            inputs:
-#              command: 'build'
-#              configuration: 'Release'
-#              projects: 'src/**/API.fsproj'
-#              arguments: '-r $(Runtime) -c Release'
-#              publishWebProjects: false
-#          - task: DotNetCoreCLI@2
-#            name: Build_Web
-#            inputs:
-#              command: 'build'
-#              configuration: 'Release'
-#              projects: 'src/**/Web.fsproj'
-#              arguments: '-c Release'
-#              publishWebProjects: false
-#          - task: DotNetCoreCLI@2
-#            name: Publish_Bot
-#            inputs:
-#              command: 'publish'
-#              configuration: 'Release'
-#              projects: 'src/**/Generator.fsproj'
-#              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/Bot /p:InformationalVersion=$(Build.BuildNumber)'
-#              publishWebProjects: false
-#          - task: DotNetCoreCLI@2
-#            name: Publish_API
-#            inputs:
-#              command: 'publish'
-#              configuration: 'Release'
-#              projects: 'src/**/API.fsproj'
-#              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/API /p:InformationalVersion=$(Build.BuildNumber)'
-#              publishWebProjects: false
-#          - task: DotNetCoreCLI@2
-#            name: Publish_Web
-#            inputs:
-#              command: 'publish'
-#              configuration: 'Release'
-#              projects: 'src/**/Web.fsproj'
-#              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/Web /p:InformationalVersion=$(Build.BuildNumber)'
-#              publishWebProjects: false
-#              zipAfterPublish: false
-#          - task: PublishBuildArtifacts@1
-#            name: Pack_Bot
-#            inputs:
-#              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Bot'
-#              ArtifactName: 'Bot'
-#          - task: PublishBuildArtifacts@1
-#            name: Pack_API
-#            inputs:
-#              PathtoPublish: '$(Build.ArtifactStagingDirectory)/API'
-#              ArtifactName: 'API'
-#          - task: PublishBuildArtifacts@1
-#            name: Pack_Web
-#            inputs:
-#              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Web'
-#              ArtifactName: 'Web'
+  - stage: build
+    displayName: 'Build'
+    jobs:
+      - job: build_all
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              version: '9.x'
+          - task: DotNetCoreCLI@2
+            name: Restore
+            inputs:
+              command: 'restore'
+              projects: 'src/**/**.fsproj'
+              arguments: '-r $(Runtime)'
+          - task: DotNetCoreCLI@2
+            name: Build_Bot
+            inputs:
+              command: 'build'
+              configuration: 'Release'
+              projects: 'src/**/Generator.fsproj'
+              arguments: '-r $(Runtime) -c Release'
+              publishWebProjects: false
+          - task: DotNetCoreCLI@2
+            name: Build_API
+            inputs:
+              command: 'build'
+              configuration: 'Release'
+              projects: 'src/**/API.fsproj'
+              arguments: '-r $(Runtime) -c Release'
+              publishWebProjects: false
+          - task: DotNetCoreCLI@2
+            name: Build_Web
+            inputs:
+              command: 'build'
+              configuration: 'Release'
+              projects: 'src/**/Web.fsproj'
+              arguments: '-c Release'
+              publishWebProjects: false
+          - task: DotNetCoreCLI@2
+            name: Publish_Bot
+            inputs:
+              command: 'publish'
+              configuration: 'Release'
+              projects: 'src/**/Generator.fsproj'
+              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/Bot /p:InformationalVersion=$(Build.BuildNumber)'
+              publishWebProjects: false
+          - task: DotNetCoreCLI@2
+            name: Publish_API
+            inputs:
+              command: 'publish'
+              configuration: 'Release'
+              projects: 'src/**/API.fsproj'
+              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/API /p:InformationalVersion=$(Build.BuildNumber)'
+              publishWebProjects: false
+          - task: DotNetCoreCLI@2
+            name: Publish_Web
+            inputs:
+              command: 'publish'
+              configuration: 'Release'
+              projects: 'src/**/Web.fsproj'
+              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/Web /p:InformationalVersion=$(Build.BuildNumber)'
+              publishWebProjects: false
+              zipAfterPublish: false
+          - task: PublishBuildArtifacts@1
+            name: Pack_Bot
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Bot'
+              ArtifactName: 'Bot'
+          - task: PublishBuildArtifacts@1
+            name: Pack_API
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/API'
+              ArtifactName: 'API'
+          - task: PublishBuildArtifacts@1
+            name: Pack_Web
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Web'
+              ArtifactName: 'Web'
   - stage: deploy
+    displayName: 'Deploy'
     jobs:
       - job: deploy_web
+        displayName: 'Deploy Web'
         steps:
           - task: AzureFileCopy@6
-            displayName: 'Publish Web to Blob Storage'
+            displayName: 'Copy Web to Blob Storage'
             inputs:
               SourcePath: '$(Build.ArtifactStagingDirectory)/Web'
               azureSubscription: '$(subscription)'
