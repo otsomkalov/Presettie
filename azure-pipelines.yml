@@ -104,7 +104,7 @@ stages:
             inputs:
               buildType: 'current'
               artifactName: 'Web'
-              targetPath: '$(Build.ArtifactStagingDirectory)/Web' # string. Alias: path | downloadPath. Required. Destination directory. Default: $(Pipeline.Workspace).
+              targetPath: '$(Build.ArtifactStagingDirectory)'
           - task: AzureFileCopy@6
             displayName: 'Copy Web to Blob Storage'
             inputs:
