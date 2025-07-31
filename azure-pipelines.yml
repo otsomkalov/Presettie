@@ -91,7 +91,7 @@ stages:
           - task: PublishBuildArtifacts@1
             name: Pack_Web
             inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Web'
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Web/wwwroot'
               ArtifactName: 'Web'
   - stage: deploy
     displayName: 'Deploy'
