@@ -94,9 +94,9 @@ stages:
 #              ArtifactName: 'Web'
   - stage: deploy
     jobs:
-      - job: deploy_bot
+      - job: deploy_web
         steps:
-          - task: AzureFileCopy@5
+          - task: AzureFileCopy@6
             displayName: 'Publish Web to Blob Storage'
             inputs:
               SourcePath: '$(Build.ArtifactStagingDirectory)/Web'
