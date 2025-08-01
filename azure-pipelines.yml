@@ -95,10 +95,12 @@ stages:
               ArtifactName: 'Web'
   - stage: deploy
     displayName: 'Deploy DEV'
+    environment: 'dev'
+    variables:
+      - group: dev
     jobs:
       - deployment: deploy_api
         displayName: Deploy API
-        environment: 'dev'
         strategy:
           runOnce:
             deploy:
