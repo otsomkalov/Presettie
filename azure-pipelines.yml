@@ -95,12 +95,12 @@ stages:
               ArtifactName: 'Web'
   - stage: deploy
     displayName: 'Deploy DEV'
-    environment: 'dev'
     variables:
       - group: dev
     jobs:
       - deployment: deploy_api
         displayName: Deploy API
+        environment: 'dev'
         strategy:
           runOnce:
             deploy:
@@ -118,7 +118,6 @@ stages:
 
       - job: deploy_web
         displayName: 'Deploy Web'
-        environment: 'dev'
         steps:
           - checkout: none
           - task: DownloadPipelineArtifact@2
