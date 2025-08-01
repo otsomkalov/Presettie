@@ -37,10 +37,14 @@ type IPresetRepo =
 type ILoadUser =
   abstract LoadUser: userId: UserId -> Task<User>
 
+type ILoadUserByMusicPlatform =
+  abstract LoadUserByMusicPlatform: MusicPlatform.UserId -> Task<User>
+
 type ISaveUser =
   abstract SaveUser: user: User -> Task<unit>
 
 type IUserRepo =
   inherit ILoadUser
+  inherit ILoadUserByMusicPlatform
   inherit ISaveUser
   inherit IIdGenerator

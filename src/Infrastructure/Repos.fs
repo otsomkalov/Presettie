@@ -30,7 +30,8 @@ module PresetRepo =
     fun preset -> task {
       let dbPreset = preset |> Preset.toDb
 
-      let presetsFilter = Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId preset.Id.Value)
+      let presetsFilter =
+        Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId preset.Id.Value)
 
       return!
         collection.ReplaceOneAsync(presetsFilter, dbPreset, ReplaceOptions(IsUpsert = true))
@@ -65,6 +66,12 @@ module UserRepo =
 
       collection.Find(usersFilter).SingleOrDefaultAsync() |> Task.map User.fromDb
 
+  let loadByMusicPlatform (collection: IMongoCollection<Entities.User>) =
+    fun (MusicPlatform.UserId userId) ->
+      let usersFilter = Builders<Entities.User>.Filter.AnyEq(_.MusicPlatforms, userId)
+
+      collection.Find(usersFilter).SingleOrDefaultAsync() |> Task.map User.fromDb
+
   let save (collection: IMongoCollection<Entities.User>) =
     fun (user: User) ->
       let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, ObjectId user.Id.Value)
@@ -96,17 +103,12 @@ type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
       |> Task.map ignore
 
     member this.RemovePreset(presetId) = PresetRepo.remove collection presetId
-    member this.GenerateId() =
-      ObjectId.GenerateNewId() |> string
+    member this.GenerateId() = ObjectId.GenerateNewId() |> string
 
     member this.ListUserPresets(UserId userId) =
       let id = userId |> ObjectId.Parse
 
-      collection
-        .AsQueryable()
-        .Where(fun p -> p.OwnerId = id)
-        .Select(fun p -> {| Id = p.Id; Name = p.Name |})
-        .ToListAsync()
+      collection.AsQueryable().Where(fun p -> p.OwnerId = id).Select(fun p -> {| Id = p.Id; Name = p.Name |}).ToListAsync()
       |> Task.map (Seq.map SimplePreset.fromDb >> List.ofSeq)
 
     member this.ParseId(RawPresetId rawPresetId) =
@@ -121,5 +123,7 @@ type UserRepo(db: IMongoDatabase) =
     member this.LoadUser(userId) = UserRepo.load collection userId
     member this.SaveUser(user) = UserRepo.save collection user
 
-    member this.GenerateId() =
-      ObjectId.GenerateNewId() |> string
+    member this.GenerateId() = ObjectId.GenerateNewId() |> string
+
+    member this.LoadUserByMusicPlatform(userId) =
+      UserRepo.loadByMusicPlatform collection userId
