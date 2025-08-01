@@ -19,6 +19,7 @@
   <Folder Name="/src/Runners/">
     <Project Path="API\API.fsproj" Type="Classic F#" />
     <Project Path="Generator\Generator.fsproj" Type="Classic F#" />
+    <Project Path="Web\Web.fsproj" Type="Classic F#" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="..\tests\Domain.Tests\Domain.Tests.fsproj" Type="Classic F#" />
