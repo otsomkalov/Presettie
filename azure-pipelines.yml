@@ -93,9 +93,98 @@ stages:
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)/Web/wwwroot'
               ArtifactName: 'Web'
-  - stage: deploy
-    displayName: 'Deploy'
+  - stage: deploy_dev
+    displayName: 'Deploy DEV'
+    variables:
+      - group: dev
     jobs:
+      - deployment: deploy_bot
+        displayName: Deploy Bot
+        environment: 'dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: Bot
+
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: '$(subscription)'
+                    appType: 'functionAppLinux'
+                    appName: '$(bot-functions-name)'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+      - deployment: deploy_api
+        displayName: Deploy API
+        environment: 'dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: API
+
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: '$(subscription)'
+                    appType: 'functionAppLinux'
+                    appName: '$(api-functions-name)'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+      - job: deploy_web
+        displayName: 'Deploy Web'
+        steps:
+          - checkout: none
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'Web'
+              targetPath: '$(Build.ArtifactStagingDirectory)/Web'
+          - task: AzureFileCopy@6
+            displayName: 'Copy Web to Blob Storage'
+            inputs:
+              SourcePath: '$(Build.ArtifactStagingDirectory)/Web/**'
+              azureSubscription: '$(subscription)'
+              Destination: 'AzureBlob'
+              storage: '$(web-storage-account)'
+              ContainerName: '$web'
+              CleanTargetBeforeCopy: true
+  - stage: deploy_prd
+    displayName: 'Deploy PRD'
+    variables:
+      - group: prd
+    jobs:
+      - deployment: deploy_bot
+        displayName: Deploy Bot
+        environment: 'prd'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: Bot
+
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: '$(subscription)'
+                    appType: 'functionAppLinux'
+                    appName: '$(bot-functions-name)'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+      - deployment: deploy_api
+        displayName: Deploy API
+        environment: 'prd'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: API
+
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: '$(subscription)'
+                    appType: 'functionAppLinux'
+                    appName: '$(api-functions-name)'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
       - job: deploy_web
         displayName: 'Deploy Web'
         steps:

@@ -81,4 +81,5 @@ let preset =
 
 let user: User =
   { Id = userId
-    CurrentPresetId = Some presetId }
+    CurrentPresetId = Some presetId
+    MusicPlatforms = [] }

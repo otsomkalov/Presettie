@@ -18,7 +18,8 @@ module SimplePreset =
 module User =
   let fromDb (user: Entities.User) : User =
     { Id = user.Id.ToString() |> UserId
-      CurrentPresetId = user.CurrentPresetId |> Option.ofNullable |> Option.map (string >> PresetId) }
+      CurrentPresetId = user.CurrentPresetId |> Option.ofNullable |> Option.map (string >> PresetId)
+      MusicPlatforms = user.MusicPlatforms |> Seq.map MusicPlatform.UserId |> List.ofSeq }
 
   let toDb (user: User) : Entities.User =
     Entities.User(

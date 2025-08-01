@@ -92,7 +92,8 @@ type Preset =
 
 type User =
   { Id: UserId
-    CurrentPresetId: PresetId option }
+    CurrentPresetId: PresetId option
+    MusicPlatforms: MusicPlatform.UserId list }
 
 [<RequireQualifiedAccess>]
 module Preset =

@@ -443,7 +443,8 @@ module User =
 
       let newUser: User =
         { Id = newUserId
-          CurrentPresetId = None }
+          CurrentPresetId = None
+          MusicPlatforms = [] }
 
       do! userRepo.SaveUser newUser
 
