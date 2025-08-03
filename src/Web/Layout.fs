@@ -46,48 +46,57 @@ module internal HeaderLinks =
   }
 
 [<RequireQualifiedAccess>]
+module internal HeaderLogin =
+  let view dispatch = li {
+    attr.``class`` "nav-item"
+
+    navLink NavLinkMatch.All {
+      attr.``class`` "nav-link"
+      attr.href (router.Link(Page.Auth "login"))
+
+      "Login"
+    }
+  }
+
+[<RequireQualifiedAccess>]
 module internal HeaderAuth =
-  let view (state: AuthenticationState) dispatch = ul {
-    attr.``class`` "navbar-nav"
+  let view (state: AuthenticationState) dispatch = li {
+    attr.``class`` "nav-item dropdown"
 
-    li {
-      attr.``class`` "nav-item dropdown"
+    navLink NavLinkMatch.All {
+      attr.``class`` "nav-link dropdown-toggle"
+      attr.href "#"
+      "role" => "button"
+      "data-bs-toggle" => "dropdown"
+      "aria-expanded" => "false"
 
-      navLink NavLinkMatch.All {
-        attr.``class`` "nav-link dropdown-toggle"
-        attr.href "#"
-        "role" => "button"
-        "data-bs-toggle" => "dropdown"
-        "aria-expanded" => "false"
+      string state.User.Identity.Name
+    }
 
-        string state.User.Identity.Name
+    ul {
+      attr.``class`` "dropdown-menu"
+
+      li {
+        attr.``class`` "dropdown-item"
+
+        navLink NavLinkMatch.All {
+          attr.``class`` "nav-link"
+
+          attr.href (router.Link(Page.Profile))
+
+          "Profile"
+        }
       }
 
-      ul {
-        attr.``class`` "dropdown-menu"
+      li {
+        attr.``class`` "dropdown-item"
 
-        li {
-          attr.``class`` "dropdown-item"
+        navLink NavLinkMatch.All {
+          attr.``class`` "nav-link"
 
-          navLink NavLinkMatch.All {
-            attr.``class`` "nav-link"
+          attr.href (router.Link(Page.Auth "logout"))
 
-            attr.href (router.Link(Page.Profile))
-
-            "Profile"
-          }
-        }
-
-        li {
-          attr.``class`` "dropdown-item"
-
-          navLink NavLinkMatch.All {
-            attr.``class`` "nav-link"
-
-            attr.href (router.Link(Page.Auth "logout"))
-
-            "Logout"
-          }
+          "Logout"
         }
       }
     }
@@ -125,9 +134,14 @@ module Header =
 
         HeaderLinks.view dispatch
 
-        match authState with
-        | Some state when state.User.Identity.IsAuthenticated -> HeaderAuth.view state dispatch
-        | _ -> empty ()
+        ul {
+          attr.``class`` "navbar-nav"
+
+          match authState with
+          | Some state when state.User.Identity.IsAuthenticated -> HeaderAuth.view state dispatch
+          | Some state when not state.User.Identity.IsAuthenticated -> HeaderLogin.view dispatch
+          | _ -> empty ()
+        }
       }
     }
   }

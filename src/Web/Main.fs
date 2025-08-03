@@ -32,9 +32,15 @@ let initModel =
 
 let update (authProvider: AuthenticationStateProvider) (message: Message) (model: Model) =
   match message, model with
-  | PageChanged(Page.Home), m -> { m with Page = Page.Home }, Cmd.none
   | PageChanged(Page.Loading), m -> { m with Page = Page.Loading }, Cmd.none
+
+  | PageChanged(Page.Home), { AuthState = None } ->
+    { model with Page = Page.Home }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
+  | PageChanged(Page.Home), m -> { m with Page = Page.Home }, Cmd.none
   | PageChanged(Page.NotFound), m -> { m with Page = Page.NotFound }, Cmd.none
+
+  | PageChanged(Page.About), { AuthState = None } ->
+    { model with Page = Page.About }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
   | PageChanged(Page.About), m -> { m with Page = Page.About }, Cmd.none
 
   | PageChanged(Page.Profile), { AuthState = None } ->
@@ -45,8 +51,7 @@ let update (authProvider: AuthenticationStateProvider) (message: Message) (model
     { model with Page = Page.Presets }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
   | PageChanged(Page.Presets), m -> { m with Page = Page.Presets }, Cmd.none
 
-  | PageChanged(Page.Auth action), _ ->
-    { model with Page = Page.Auth action }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
+  | PageChanged(Page.Auth action), _ -> { model with Page = Page.Auth action }, Cmd.none
 
   | Auth(AuthMsg.AuthChecked result), _ -> { model with AuthState = Some result }, Cmd.none
 
