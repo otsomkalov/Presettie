@@ -6,6 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Util.fs" />
+    <Compile Include="Repos.fs" />
+    <Compile Include="Preset.fs" />
     <Compile Include="Shared.fs" />
     <Compile Include="Layout.fs" />
     <Compile Include="Main.fs"/>
@@ -15,8 +18,10 @@
   <ItemGroup>
     <PackageReference Include="Bolero" Version="0.*"/>
     <PackageReference Include="Bolero.Build" Version="0.*"/>
+    <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.*"/>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.18"/>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +31,10 @@
     <Content Update="wwwroot\appsettings.Development.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.fsproj" />
   </ItemGroup>
 
 </Project>

@@ -15,5 +15,8 @@
     "Storage__QueueName": "requests",
     "Auth__Audience": "<Audience>",
     "Auth__Authority": "<Authority>"
+  },
+  "Host": {
+    "CORS": "*"
   }
 }

@@ -6,6 +6,7 @@ open Bolero.Html
 open Microsoft.AspNetCore.Components
 open Microsoft.AspNetCore.Components.Authorization
 open Microsoft.AspNetCore.Components.WebAssembly.Authentication
+open Web.Repos
 open Web.Shared
 
 [<RequireQualifiedAccess>]
@@ -30,7 +31,14 @@ let initModel =
       AuthState = None },
     Cmd.none
 
-let update (authProvider: AuthenticationStateProvider) (message: Message) (model: Model) =
+let presetUpdate env (message: Preset.Message) (model: Preset.Page) =
+  match message, model with
+  | Preset.Message.List(msg), Preset.Page.List m ->
+    let model', cmd' = Preset.List.update env msg m.Model
+
+    Page.Presets { Model = model' }, Cmd.map (Preset.Message.List >> Message.Preset) cmd'
+
+let update (authProvider: AuthenticationStateProvider) (env: #IListPresets) (message: Message) (model: Model) =
   match message, model with
   | PageChanged(Page.Loading), m -> { m with Page = Page.Loading }, Cmd.none
 
@@ -47,13 +55,32 @@ let update (authProvider: AuthenticationStateProvider) (message: Message) (model
     { model with Page = Page.Profile }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
   | PageChanged(Page.Profile), m -> { m with Page = Page.Profile }, Cmd.none
 
-  | PageChanged(Page.Presets), { AuthState = None } ->
-    { model with Page = Page.Presets }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
-  | PageChanged(Page.Presets), m -> { m with Page = Page.Presets }, Cmd.none
+
+  | PageChanged(Page.Presets { Model = p }), ({ AuthState = Some(state) } as m) when state.User.Identity.IsAuthenticated ->
+    { m with
+        Page = Page.Presets { Model = p } },
+    Cmd.OfTask.perform env.ListPresets () (Preset.List.PresetsLoaded >> Preset.Message.List >> Message.Preset)
+  | PageChanged(Page.Presets p), _ ->
+    { model with Page = Page.Presets p }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
 
   | PageChanged(Page.Auth action), _ -> { model with Page = Page.Auth action }, Cmd.none
 
-  | Auth(AuthMsg.AuthChecked result), _ -> { model with AuthState = Some result }, Cmd.none
+  | Auth(AuthMsg.AuthChecked result), m ->
+    match m with
+    | { Page = Page.Presets p } ->
+      { m with AuthState = Some result },
+      Cmd.OfTask.perform env.ListPresets () (Preset.List.PresetsLoaded >> Preset.Message.List >> Message.Preset)
+
+    | _ -> { m with AuthState = Some result }, Cmd.none
+
+  | Preset(presetMsg), { Page = Page.Presets p } ->
+    match presetMsg with
+    | Preset.Message.List msg ->
+      let model', cmd = Preset.List.update env msg p.Model
+
+      { model with
+          Page = Page.Presets { Model = model' } },
+      Cmd.map (Preset.Message.List >> Message.Preset) cmd
 
 let view model dispatch = concat {
   Layout.Header.view model.AuthState dispatch
@@ -64,9 +91,9 @@ let view model dispatch = concat {
   | Page.Loading, _ -> Loading.render () dispatch
   | Page.NotFound, _ -> div { text "Not Found" }
 
-  | Page.Presets, Some(state) when state.User.Identity.IsAuthenticated -> div { "Presets" }
-  | Page.Presets, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
-  | Page.Presets, _ -> Loading.render () dispatch
+  | Page.Presets m, Some(state) when state.User.Identity.IsAuthenticated -> Preset.List.view m.Model dispatch
+  | Page.Presets _, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
+  | Page.Presets _, _ -> Loading.render () dispatch
 
   | Page.Profile, Some(state) when state.User.Identity.IsAuthenticated -> div { $"Hello {state.User.Identity.Name}" }
   | Page.Profile, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
@@ -81,7 +108,10 @@ type App() =
   [<Inject>]
   member val AuthenticationProvider: AuthenticationStateProvider = null with get, set
 
+  [<Inject>]
+  member val Env: IEnv = Unchecked.defaultof<IEnv> with get, set
+
   override this.Program =
-    Program.mkProgram initModel (update this.AuthenticationProvider) view
+    Program.mkProgram initModel (update this.AuthenticationProvider this.Env) view
     |> Program.withConsoleTrace
     |> Program.withRouter router
