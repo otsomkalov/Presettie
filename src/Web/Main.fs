@@ -31,13 +31,6 @@ let initModel =
       AuthState = None },
     Cmd.none
 
-let presetUpdate env (message: Preset.Message) (model: Preset.Page) =
-  match message, model with
-  | Preset.Message.List(msg), Preset.Page.List m ->
-    let model', cmd' = Preset.List.update env msg m.Model
-
-    Page.Presets { Model = model' }, Cmd.map (Preset.Message.List >> Message.Preset) cmd'
-
 let update (authProvider: AuthenticationStateProvider) (env: #IListPresets) (message: Message) (model: Model) =
   match message, model with
   | PageChanged(Page.Loading), m -> { m with Page = Page.Loading }, Cmd.none
@@ -85,21 +78,25 @@ let update (authProvider: AuthenticationStateProvider) (env: #IListPresets) (mes
 let view model dispatch = concat {
   Layout.Header.view model.AuthState dispatch
 
-  match model.Page, model.AuthState with
-  | Page.Home, _ -> div { "Home" }
-  | Page.About, _ -> div { "About" }
-  | Page.Loading, _ -> Loading.render () dispatch
-  | Page.NotFound, _ -> div { text "Not Found" }
+  div {
+    attr.``class`` "container-fluid"
 
-  | Page.Presets m, Some(state) when state.User.Identity.IsAuthenticated -> Preset.List.view m.Model dispatch
-  | Page.Presets _, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
-  | Page.Presets _, _ -> Loading.render () dispatch
+    match model.Page, model.AuthState with
+    | Page.Home, _ -> div { "Home" }
+    | Page.About, _ -> div { "About" }
+    | Page.Loading, _ -> Loading.render () dispatch
+    | Page.NotFound, _ -> div { text "Not Found" }
 
-  | Page.Profile, Some(state) when state.User.Identity.IsAuthenticated -> div { $"Hello {state.User.Identity.Name}" }
-  | Page.Profile, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
-  | Page.Profile, _ -> Loading.render () dispatch
+    | Page.Presets m, Some(state) when state.User.Identity.IsAuthenticated -> Preset.List.view m.Model dispatch
+    | Page.Presets _, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
+    | Page.Presets _, _ -> Loading.render () dispatch
 
-  | Page.Auth action, _ -> comp<RemoteAuthenticatorView> { "Action" => action }
+    | Page.Profile, Some(state) when state.User.Identity.IsAuthenticated -> div { $"Hello {state.User.Identity.Name}" }
+    | Page.Profile, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
+    | Page.Profile, _ -> Loading.render () dispatch
+
+    | Page.Auth action, _ -> comp<RemoteAuthenticatorView> { "Action" => action }
+  }
 }
 
 type App() =

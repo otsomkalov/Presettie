@@ -80,7 +80,4 @@ module List =
       }
 
 [<RequireQualifiedAccess>]
-type Page = | [<EndPoint("/")>] List of PageModel<List.Model>
-
-[<RequireQualifiedAccess>]
 type Message = List of List.Message
