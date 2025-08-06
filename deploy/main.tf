@@ -142,6 +142,8 @@ resource "azurerm_linux_function_app" "func-presettie-api" {
       Resources__DefaultLang     = var.resources-default-lang
       Auth__Audience             = var.jwt-audience
       Auth__Authority            = var.jwt-authority
+      Storage__ConnectionString  = azurerm_storage_account.st-presettie.primary_connection_string
+      Storage__QueueName         = azurerm_storage_queue.stq-requests-presettie.name
     })
 
   tags = local.tags
