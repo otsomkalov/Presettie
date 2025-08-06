@@ -1,10 +1,12 @@
 ﻿[<RequireQualifiedAccess>]
 module Web.Layout
 
+open Bolero
 open Bolero.Html
 open Microsoft.AspNetCore.Components.Authorization
 open Microsoft.AspNetCore.Components.Routing
 open Web.Shared
+open Web.Util
 
 [<RequireQualifiedAccess>]
 module internal HeaderLinks =
@@ -27,7 +29,7 @@ module internal HeaderLinks =
 
       navLink NavLinkMatch.All {
         attr.``class`` "nav-link"
-        attr.href (router.Link(Page.Presets))
+        attr.href (router.Link(Page.Presets({ Model = { Presets = AsyncOp.Loading } })))
 
         "Presets"
       }
@@ -104,7 +106,7 @@ module internal HeaderAuth =
 
 module Header =
   let view (authState: AuthenticationState option) dispatch = nav {
-    attr.``class`` "navbar bg-primary navbar-expand-lg"
+    attr.``class`` "navbar bg-primary navbar-expand-lg mb-2"
     "data-bs-theme" => "dark"
 
     div {

@@ -95,6 +95,7 @@ stages:
               ArtifactName: 'Web'
   - stage: deploy_dev
     displayName: 'Deploy DEV'
+    trigger: manual
     variables:
       - group: dev
     jobs:
@@ -147,7 +148,6 @@ stages:
               Destination: 'AzureBlob'
               storage: '$(web-storage-account)'
               ContainerName: '$web'
-              CleanTargetBeforeCopy: true
   - stage: deploy_prd
     displayName: 'Deploy PRD'
     variables:
