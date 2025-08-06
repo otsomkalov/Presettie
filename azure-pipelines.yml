@@ -202,4 +202,3 @@ stages:
               Destination: 'AzureBlob'
               storage: '$(web-storage-account)'
               ContainerName: '$web'
-              CleanTargetBeforeCopy: true

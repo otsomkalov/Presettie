@@ -1,13 +1,17 @@
 ﻿module Web.Main
 
+open Domain.Core
 open Elmish
 open Bolero
 open Bolero.Html
 open Microsoft.AspNetCore.Components
 open Microsoft.AspNetCore.Components.Authorization
 open Microsoft.AspNetCore.Components.WebAssembly.Authentication
+open Web.Messages
+open Web.Models
 open Web.Repos
-open Web.Shared
+open Web.Router
+open Web.Views
 
 [<RequireQualifiedAccess>]
 module Loading =
@@ -31,49 +35,72 @@ let initModel =
       AuthState = None },
     Cmd.none
 
-let update (authProvider: AuthenticationStateProvider) (env: #IListPresets) (message: Message) (model: Model) =
+let anonPageUpdate (authProvider: AuthenticationStateProvider) (page: Page) model =
+  let withAuthCheck model page =
+    { model with Page = page }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
+
+  match page with
+  | Page.Auth action -> { model with Page = Page.Auth action }, Cmd.none
+  | Page.Loading -> { model with Page = Page.Loading }, Cmd.none
+  | page -> withAuthCheck model page
+
+let unauthorizedPageUpdate (page: Page) model =
+  let withNoAuth model page = { model with Page = page }, Cmd.none
+
+  match page with
+  | p -> withNoAuth model p
+
+let authorizedPageUpdate (env: #IListPresets & #IGetPreset) (page: Page) model =
+  let withNoCommand model page = { model with Page = page }, Cmd.none
+
+  match page with
+  | Page.Presets p ->
+    { model with Page = Page.Presets p },
+    Cmd.OfTask.perform env.ListPresets () (Preset.List'.Message.PresetsLoaded >> Preset.Message.List >> Message.Preset)
+  | Page.Preset(id, p) ->
+    { model with Page = Page.Preset(id, p) },
+    Cmd.OfTask.perform env.GetPreset' (RawPresetId id) (Preset.Details'.Message.PresetLoaded >> Preset.Message.Details >> Message.Preset)
+  | p -> withNoCommand model p
+
+let authUpdate (env: #IListPresets & #IGetPreset) (authResult: AuthenticationState) model =
+  match model.Page with
+  | Page.Presets p when authResult.User.Identity.IsAuthenticated ->
+    { model with
+        AuthState = Some authResult },
+    Cmd.OfTask.perform env.ListPresets () (Preset.List'.Message.PresetsLoaded >> Preset.Message.List >> Message.Preset)
+  | Page.Preset(id, p) when authResult.User.Identity.IsAuthenticated ->
+    { model with
+        AuthState = Some authResult },
+    Cmd.OfTask.perform env.GetPreset' (RawPresetId id) (Preset.Details'.Message.PresetLoaded >> Preset.Message.Details >> Message.Preset)
+  | _ ->
+    { model with
+        AuthState = Some authResult },
+    Cmd.none
+
+let presetUpdate env (message: Preset.Message) (model: Model) =
   match message, model with
-  | PageChanged(Page.Loading), m -> { m with Page = Page.Loading }, Cmd.none
+  | Preset.Message.List(msg), { Page = Page.Presets m } ->
+    let model', cmd' = Preset.List.update env msg m.Model
 
-  | PageChanged(Page.Home), { AuthState = None } ->
-    { model with Page = Page.Home }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
-  | PageChanged(Page.Home), m -> { m with Page = Page.Home }, Cmd.none
-  | PageChanged(Page.NotFound), m -> { m with Page = Page.NotFound }, Cmd.none
+    { model with
+        Page = Page.Presets { Model = model' } },
+    Cmd.map (Preset.Message.List >> Message.Preset) cmd'
+  | Preset.Message.Details(msg), { Page = Page.Preset(id, m) } ->
+    let model', cmd' = Preset.Details.update msg m.Model
 
-  | PageChanged(Page.About), { AuthState = None } ->
-    { model with Page = Page.About }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
-  | PageChanged(Page.About), m -> { m with Page = Page.About }, Cmd.none
+    { model with
+        Page = Page.Preset(id, { Model = model' }) },
+    Cmd.map (Preset.Message.Details >> Message.Preset) cmd'
+  | _ -> model, Cmd.none
 
-  | PageChanged(Page.Profile), { AuthState = None } ->
-    { model with Page = Page.Profile }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
-  | PageChanged(Page.Profile), m -> { m with Page = Page.Profile }, Cmd.none
-
-
-  | PageChanged(Page.Presets { Model = p }), ({ AuthState = Some(state) } as m) when state.User.Identity.IsAuthenticated ->
-    { m with
-        Page = Page.Presets { Model = p } },
-    Cmd.OfTask.perform env.ListPresets () (Preset.List.PresetsLoaded >> Preset.Message.List >> Message.Preset)
-  | PageChanged(Page.Presets p), _ ->
-    { model with Page = Page.Presets p }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
-
-  | PageChanged(Page.Auth action), _ -> { model with Page = Page.Auth action }, Cmd.none
-
-  | Auth(AuthMsg.AuthChecked result), m ->
-    match m with
-    | { Page = Page.Presets p } ->
-      { m with AuthState = Some result },
-      Cmd.OfTask.perform env.ListPresets () (Preset.List.PresetsLoaded >> Preset.Message.List >> Message.Preset)
-
-    | _ -> { m with AuthState = Some result }, Cmd.none
-
-  | Preset(presetMsg), { Page = Page.Presets p } ->
-    match presetMsg with
-    | Preset.Message.List msg ->
-      let model', cmd = Preset.List.update env msg p.Model
-
-      { model with
-          Page = Page.Presets { Model = model' } },
-      Cmd.map (Preset.Message.List >> Message.Preset) cmd
+let update authProvider env (message: Message) (model: Model) =
+  match message, model with
+  | PageChanged page, { AuthState = None } -> anonPageUpdate authProvider page model
+  | PageChanged page, { AuthState = Some(state) } when not state.User.Identity.IsAuthenticated -> unauthorizedPageUpdate page model
+  | PageChanged page, { AuthState = Some(state) } when state.User.Identity.IsAuthenticated -> authorizedPageUpdate env page model
+  | Auth(AuthMsg.AuthChecked result), m -> authUpdate env result m
+  | Preset(msg), m -> presetUpdate env msg m
+  | _ -> model, Cmd.none
 
 let view model dispatch = concat {
   Layout.Header.view model.AuthState dispatch
@@ -90,6 +117,10 @@ let view model dispatch = concat {
     | Page.Presets m, Some(state) when state.User.Identity.IsAuthenticated -> Preset.List.view m.Model dispatch
     | Page.Presets _, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
     | Page.Presets _, _ -> Loading.render () dispatch
+
+    | Page.Preset(id, m), Some(state) when state.User.Identity.IsAuthenticated -> Preset.Details.view m.Model dispatch
+    | Page.Preset _, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
+    | Page.Preset _, _ -> Loading.render () dispatch
 
     | Page.Profile, Some(state) when state.User.Identity.IsAuthenticated -> div { $"Hello {state.User.Identity.Name}" }
     | Page.Profile, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
