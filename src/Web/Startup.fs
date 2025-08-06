@@ -25,6 +25,14 @@ type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
         return []
     }
 
+    member this.GetPreset'(RawPresetId presetId) = task {
+      try
+        return! httpClient.GetFromJsonAsync<Preset>($"api/presets/{presetId}", JSON.options)
+      with e ->
+        logger.LogError(e, "Error while fetching preset")
+        return Unchecked.defaultof<Preset>
+    }
+
 type APIAuthorizationMessageHandler(accessTokenProvider: IAccessTokenProvider, navigationManager: NavigationManager, cfg: IConfiguration) =
   inherit AuthorizationMessageHandler(accessTokenProvider, navigationManager)
 

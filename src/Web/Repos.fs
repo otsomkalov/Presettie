@@ -7,5 +7,9 @@ open Domain.Core
 type IListPresets =
   abstract ListPresets: unit -> Task<SimplePreset list>
 
+type IGetPreset =
+  abstract GetPreset': RawPresetId -> Task<Preset>
+
 type IEnv =
   inherit IListPresets
+  inherit IGetPreset

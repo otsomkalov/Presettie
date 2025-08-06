@@ -5,7 +5,8 @@ open Bolero
 open Bolero.Html
 open Microsoft.AspNetCore.Components.Authorization
 open Microsoft.AspNetCore.Components.Routing
-open Web.Shared
+open Web.Models
+open Web.Router
 open Web.Util
 
 [<RequireQualifiedAccess>]
