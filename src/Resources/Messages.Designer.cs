@@ -224,6 +224,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Preset not found!.
+        /// </summary>
+        public static string PresetNotFound {
+            get {
+                return ResourceManager.GetString("PresetNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Preset successfully removed!.
         /// </summary>
         public static string PresetRemoved {

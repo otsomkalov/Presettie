@@ -231,7 +231,7 @@ type IRunPreset =
   abstract RunPreset: UserId * PresetId -> Task<Result<Preset, Preset.RunError>>
 
 type IRemovePreset =
-  abstract RemovePreset: PresetId -> Task<unit>
+  abstract RemovePreset: UserId * RawPresetId -> Task<Result<Preset, Preset.GetPresetError>>
 
 type IGetPreset =
   abstract GetPreset: UserId * RawPresetId -> Task<Result<Preset, Preset.GetPresetError>>
@@ -276,7 +276,7 @@ type ISetCurrentPreset =
   abstract SetCurrentPreset: UserId * PresetId -> Task<unit>
 
 type IRemoveUserPreset =
-  abstract RemoveUserPreset: UserId * PresetId -> Task<unit>
+  abstract RemoveUserPreset: UserId * RawPresetId -> Task<Result<unit, Preset.GetPresetError>>
 
 type ICreateUser =
   abstract CreateUser: unit -> Task<User>
