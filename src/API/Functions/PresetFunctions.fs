@@ -1,6 +1,6 @@
 ﻿namespace API.Functions
 
-open System
+open System.ComponentModel.DataAnnotations
 open System.Threading.Tasks
 open API.Shared
 open Domain.Core
@@ -14,21 +14,31 @@ open otsom.fs.Extensions
 open Domain.Extensions
 open Domain.Workflows
 
-type CreatePresetRequest = { Name: string }
+type CreatePresetRequest = {
+  [<Required>] Name: string
+}
 
 type CreatePresetResponse = { Id: PresetId }
 
-type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, userRepo: IUserRepo, authService: IAuthenticationService, userService: IUserService) =
+type PresetFunctions
+  (
+    presetRepo: IPresetRepo,
+    presetService: IPresetService,
+    userRepo: IUserRepo,
+    authService: IAuthenticationService,
+    userService: IUserService
+  ) =
   let runForUser (req: HttpRequest) (handler: TokenUser -> Task<IActionResult>) = task {
-    let! authResult =
-      authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
-    let suceeded =
-      authResult |> Option.someIf _.Succeeded
+    let! authResult = authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
+    let suceeded = authResult |> Option.someIf _.Succeeded
 
     let principal = suceeded |> Option.bind (_.Principal >> Option.ofObj)
     let identity = principal |> Option.bind (_.Identity >> Option.ofObj)
     let name = identity |> Option.bind (_.Name >> Option.ofObj)
-    let userId = name |> Option.map(fun name -> name.Split "|" |> Array.last |> _.Split(":") |> Array.last)
+
+    let userId =
+      name
+      |> Option.map (fun name -> name.Split "|" |> Array.last |> _.Split(":") |> Array.last)
 
     return!
       userId
@@ -65,6 +75,21 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, use
       }
 
     runForUser request (flip handler (RawPresetId presetId))
+
+  [<Function("CreatePreset")>]
+  member this.CreatePreset
+    ([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets")>] request: HttpRequest, [<FromBody>] body: CreatePresetRequest)
+    : Task<IActionResult> =
+    let handler (token: TokenUser) = task {
+      let! user = userRepo.LoadUserByMusicPlatform token.UserId
+
+      // TODO: Validation
+      let! newPreset = presetService.CreatePreset(user.Id, body.Name)
+
+      return CreatedAtRouteResult("presets", { Id = newPreset.Id }) :> IActionResult
+    }
+
+    runForUser request handler
 
   [<Function("DeletePreset")>]
   member this.DeletePreset
