@@ -18,7 +18,7 @@ type CreatePresetRequest = { Name: string }
 
 type CreatePresetResponse = { Id: PresetId }
 
-type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, userRepo: IUserRepo, authService: IAuthenticationService) =
+type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, userRepo: IUserRepo, authService: IAuthenticationService, userService: IUserService) =
   let runForUser (req: HttpRequest) (handler: TokenUser -> Task<IActionResult>) = task {
     let! authResult =
       authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
@@ -61,6 +61,23 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, use
 
         match preset with
         | Ok preset -> return OkObjectResult preset :> IActionResult
+        | Error Preset.NotFound -> return NotFoundResult() :> IActionResult
+      }
+
+    runForUser request (flip handler (RawPresetId presetId))
+
+  [<Function("DeletePreset")>]
+  member this.DeletePreset
+    ([<HttpTrigger(AuthorizationLevel.Function, "DELETE", Route = "presets/{presetId}")>] request: HttpRequest, presetId: string)
+    : Task<IActionResult> =
+    let handler (token: TokenUser) =
+      fun presetId -> task {
+        let! user = userRepo.LoadUserByMusicPlatform token.UserId
+
+        let! result = userService.RemoveUserPreset(user.Id, presetId)
+
+        match result with
+        | Ok _ -> return NoContentResult() :> IActionResult
         | Error Preset.NotFound -> return NotFoundResult() :> IActionResult
       }
 

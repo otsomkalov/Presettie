@@ -202,4 +202,7 @@ Click "Generate" keyboard button or send "/generate" command. After a few second
     <data name="PresetRemoved" xml:space="preserve">
         <value>Preset successfully removed!</value>
     </data>
+    <data name="PresetNotFound" xml:space="preserve">
+      <value>Preset not found!</value>
+    </data>
 </root>

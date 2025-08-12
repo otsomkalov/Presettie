@@ -418,17 +418,18 @@ module User =
 
   let removePreset (userRepo: #ILoadUser & #ISaveUser) (presetService: #Core.IRemovePreset) =
     fun userId presetId ->
-      userId
-      |> userRepo.LoadUser
-      |> Task.map (fun u ->
-        { u with
-            CurrentPresetId =
-              if u.CurrentPresetId = Some presetId then
-                None
-              else
-                u.CurrentPresetId })
-      |> Task.bind userRepo.SaveUser
-      |> Task.bind (fun _ -> presetService.RemovePreset presetId)
+      presetService.RemovePreset(userId, presetId)
+      |> Task.bind (Result.taskMap (fun preset -> userRepo.LoadUser userId |> Task.map (fun u -> (preset, u))))
+      |> TaskResult.taskMap (fun (preset, user) ->
+        match user.CurrentPresetId with
+        | Some p when p = preset.Id -> task {
+            let updatedUser = { user with CurrentPresetId = None }
+
+            do! userRepo.SaveUser updatedUser
+
+            return ()
+          }
+        | _ -> Task.FromResult())
 
   let setCurrentPresetSize (userRepo: #ILoadUser) (presetService: #ISetPresetSize) =
     fun userId size ->
@@ -564,7 +565,14 @@ type PresetService
       | None -> return Preset.RunError.Unauthorized |> Error
     }
 
-    member this.RemovePreset(presetId) = presetRepo.RemovePreset presetId
+    member this.RemovePreset(userId, presetId) =
+      presetId
+      |> presetRepo.ParseId
+      |> TaskOption.taskBind presetRepo.LoadPreset
+      |> Task.map (function
+        | Some preset when preset.OwnerId = userId -> Ok preset
+        | _ -> Error Preset.GetPresetError.NotFound)
+      |> TaskResult.taskTap (_.Id >> presetRepo.RemovePreset)
 
     member this.GetPreset(userId, presetId) =
       presetId

@@ -500,12 +500,17 @@ let removePresetClickHandler
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "rm" ] ->
-      let presetId = PresetId presetId
+      let presetId = RawPresetId presetId
 
-      do! userService.RemoveUserPreset(click.Chat.UserId, presetId)
-      do! botService.SendNotification(click.Id, Messages.PresetRemoved)
-      do! User.listPresets botService presetRepo click.MessageId click.Chat.UserId
+      match! userService.RemoveUserPreset(click.Chat.UserId, presetId) with
+      | Ok _ ->
+        do! botService.SendNotification(click.Id, Messages.PresetRemoved)
+        do! User.listPresets botService presetRepo click.MessageId click.Chat.UserId
 
-      return Some()
+        return Some()
+      | Error Preset.GetPresetError.NotFound ->
+        do! botService.SendNotification(click.Id, Messages.PresetNotFound)
+
+        return Some()
     | _ -> return None
   }

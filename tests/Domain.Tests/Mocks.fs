@@ -67,8 +67,10 @@ let presetSettingsMock: PresetSettings.PresetSettings =
     UniqueArtists = false }
 
 let rawPresetId = RawPresetId "raw-preset-id"
-let presetId = PresetId("1")
+let presetId = PresetId("preset-id")
+let otherPresetId = PresetId("other-preset-id")
 let userId = otsom.fs.Core.UserId("user-id")
+let otherUserId = otsom.fs.Core.UserId("other-user-id")
 
 let preset =
   { Id = presetId
