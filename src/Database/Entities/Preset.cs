@@ -3,6 +3,11 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Database.Entities;
 
+public enum RecommendationsEngine
+{
+    ArtistsAlbums
+}
+
 [BsonIgnoreExtraElements]
 public class Settings
 {
@@ -10,7 +15,7 @@ public class Settings
 
     public int Size { get; set; }
 
-    public bool RecommendationsEnabled { get; set; }
+    public RecommendationsEngine? RecommendationsEngine { get; set; }
 
     public bool UniqueArtists { get; set; }
 }

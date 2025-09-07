@@ -3,6 +3,7 @@
 open System
 open Database
 open Domain.Core
+open Domain.Core.PresetSettings
 open Domain.Workflows
 open MongoDB.Bson
 open MusicPlatform
@@ -24,7 +25,10 @@ module User =
   let toDb (user: User) : Entities.User =
     Entities.User(
       Id = (user.Id.Value |> ObjectId),
-      CurrentPresetId = (user.CurrentPresetId |> Option.map (_.Value >> ObjectId.Parse) |> Option.toNullable)
+      CurrentPresetId =
+        (user.CurrentPresetId
+         |> Option.map (_.Value >> ObjectId.Parse)
+         |> Option.toNullable)
     )
 
 [<RequireQualifiedAccess>]
@@ -63,22 +67,29 @@ module PresetSettings =
   let fromDb (settings: Entities.Settings) : PresetSettings.PresetSettings =
     { LikedTracksHandling =
         (match settings.IncludeLikedTracks |> Option.ofNullable with
-         | Some true -> PresetSettings.LikedTracksHandling.Include
-         | Some false -> PresetSettings.LikedTracksHandling.Exclude
-         | None -> PresetSettings.LikedTracksHandling.Ignore)
-      Size = settings.Size |> PresetSettings.Size.Size
-      RecommendationsEnabled = settings.RecommendationsEnabled
+         | Some true -> LikedTracksHandling.Include
+         | Some false -> LikedTracksHandling.Exclude
+         | None -> LikedTracksHandling.Ignore)
+      Size = settings.Size |> Size.Size
+      RecommendationsEngine =
+        settings.RecommendationsEngine
+        |> Option.ofNullable
+        |> Option.map (function
+          | Entities.RecommendationsEngine.ArtistsAlbums -> RecommendationsEngine.ArtistAlbums)
       UniqueArtists = settings.UniqueArtists }
 
   let toDb (settings: PresetSettings.PresetSettings) : Entities.Settings =
     Entities.Settings(
       IncludeLikedTracks =
         (match settings.LikedTracksHandling with
-         | PresetSettings.LikedTracksHandling.Include -> Nullable true
-         | PresetSettings.LikedTracksHandling.Exclude -> Nullable false
-         | PresetSettings.LikedTracksHandling.Ignore -> Nullable<bool>()),
+         | LikedTracksHandling.Include -> Nullable true
+         | LikedTracksHandling.Exclude -> Nullable false
+         | LikedTracksHandling.Ignore -> Nullable<bool>()),
       Size = settings.Size.Value,
-      RecommendationsEnabled = settings.RecommendationsEnabled,
+      RecommendationsEngine =
+        (match settings.RecommendationsEngine with
+         | Some RecommendationsEngine.ArtistAlbums -> Nullable<_> Entities.RecommendationsEngine.ArtistsAlbums
+         | None -> Nullable<Entities.RecommendationsEngine>()),
       UniqueArtists = settings.UniqueArtists
     )
 

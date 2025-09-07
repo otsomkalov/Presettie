@@ -1,5 +1,6 @@
 ﻿module Telegram.Workflows
 
+open Domain.Core.PresetSettings
 open Domain.Repos
 open MusicPlatform
 open Domain.Core
@@ -27,23 +28,23 @@ let getPresetMessage =
 
     let likedTracksHandlingText, likedTracksButtonText, likedTracksButtonData =
       match preset.Settings.LikedTracksHandling with
-      | PresetSettings.LikedTracksHandling.Include ->
+      | LikedTracksHandling.Include ->
         Messages.LikedTracksIncluded, Buttons.ExcludeLikedTracks, $"p|{presetId}|{CallbackQueryConstants.excludeLikedTracks}"
-      | PresetSettings.LikedTracksHandling.Exclude ->
+      | LikedTracksHandling.Exclude ->
         Messages.LikedTracksExcluded, Buttons.IgnoreLikedTracks, $"p|{presetId}|{CallbackQueryConstants.ignoreLikedTracks}"
-      | PresetSettings.LikedTracksHandling.Ignore ->
+      | LikedTracksHandling.Ignore ->
         Messages.LikedTracksIgnored, Buttons.IncludeLikedTracks, $"p|{presetId}|{CallbackQueryConstants.includeLikedTracks}"
 
     let recommendationsText, recommendationsButtonText, recommendationsButtonData =
-      match preset.Settings.RecommendationsEnabled with
-      | true ->
-        Messages.RecommendationsEnabled,
+      match preset.Settings.RecommendationsEngine with
+      | Some RecommendationsEngine.ArtistAlbums ->
+        Messages.ArtistsAlbumsRecommendation,
         Buttons.DisableRecommendations,
         sprintf "p|%s|%s" presetId CallbackQueryConstants.disableRecommendations
-      | false ->
+      | None ->
         Messages.RecommendationsDisabled,
         Buttons.EnableRecommendations,
-        sprintf "p|%s|%s" presetId CallbackQueryConstants.enableRecommendations
+        sprintf "p|%s|%s" presetId CallbackQueryConstants.artistsAlbumsRecommendations
 
     let uniqueArtistsText, uniqueArtistsButtonText, uniqueArtistsButtonData =
       match preset.Settings.UniqueArtists with

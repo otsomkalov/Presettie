@@ -62,7 +62,7 @@ let targetedPlaylist: TargetedPlaylist =
 
 let presetSettingsMock: PresetSettings.PresetSettings =
   { Size = PresetSettings.Size.Size 10
-    RecommendationsEnabled = false
+    RecommendationsEngine = None
     LikedTracksHandling = PresetSettings.LikedTracksHandling.Ignore
     UniqueArtists = false }
 
