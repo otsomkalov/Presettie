@@ -24,7 +24,8 @@ module User =
   let toDb (user: User) : Entities.User =
     Entities.User(
       Id = (user.Id.Value |> ObjectId),
-      CurrentPresetId = (user.CurrentPresetId |> Option.map (_.Value >> ObjectId.Parse) |> Option.toNullable)
+      CurrentPresetId = (user.CurrentPresetId |> Option.map (_.Value >> ObjectId.Parse) |> Option.toNullable),
+      MusicPlatforms = (user.MusicPlatforms |> List.map string)
     )
 
 [<RequireQualifiedAccess>]
