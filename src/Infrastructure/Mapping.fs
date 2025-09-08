@@ -28,7 +28,8 @@ module User =
       CurrentPresetId =
         (user.CurrentPresetId
          |> Option.map (_.Value >> ObjectId.Parse)
-         |> Option.toNullable)
+         |> Option.toNullable),
+      MusicPlatforms = (user.MusicPlatforms |> List.map string)
     )
 
 [<RequireQualifiedAccess>]

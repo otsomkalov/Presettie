@@ -10,6 +10,8 @@ open System.Text.Json.Serialization
 open Domain
 open Infrastructure
 open Microsoft.AspNetCore.Authentication.JwtBearer
+open Microsoft.Azure.Functions.Worker.Middleware
+open Microsoft.Extensions.Logging.Console
 open Microsoft.IdentityModel.Tokens
 open MusicPlatform.Spotify
 open Microsoft.Extensions.Configuration
@@ -25,7 +27,8 @@ open otsom.fs.Auth.Spotify
 module internal Settings =
   [<RequireQualifiedAccess>]
   module Auth =
-    let [<Literal>] SectionName = "Auth"
+    [<Literal>]
+    let SectionName = "Auth"
 
 let private configureServices (builderContext: HostBuilderContext) (services: IServiceCollection) : unit =
 
@@ -58,6 +61,33 @@ let private configureServices (builderContext: HostBuilderContext) (services: IS
 
   ()
 
+type BindingErrorHandlerMiddleware(logger: ILogger<BindingErrorHandlerMiddleware>) =
+  interface IFunctionsWorkerMiddleware with
+    member this.Invoke(context, next) = task {
+      try
+        return! next.Invoke context
+      with
+      | :? InvalidOperationException as ioe ->
+        logger.LogWarning(ioe, String.Empty)
+
+        let! request = context.GetHttpRequestDataAsync()
+        let response = request.CreateResponse()
+
+        response.StatusCode <- System.Net.HttpStatusCode.BadRequest
+        response.Headers.Add("Content-Type", "application/json")
+
+        do! JsonSerializer.SerializeAsync(response.Body, {| Error = ioe.Message |})
+
+        ()
+      | e ->
+        logger.LogError(e, "Error")
+    }
+
+let private configureFunctionsWebApp (builder: IFunctionsWorkerApplicationBuilder) =
+  builder.UseMiddleware<BindingErrorHandlerMiddleware>()
+
+  ()
+
 let private configureAppConfiguration _ (configBuilder: IConfigurationBuilder) =
 
   configBuilder.AddUserSecrets(Assembly.GetExecutingAssembly())
@@ -66,7 +96,9 @@ let private configureAppConfiguration _ (configBuilder: IConfigurationBuilder) =
 
 let private configureWebApp (builder: IFunctionsWorkerApplicationBuilder) =
   builder.Services.Configure<JsonSerializerOptions>(fun opts ->
-    JsonFSharpOptions.Default().WithUnionUnwrapFieldlessTags().AddToJsonSerializerOptions(opts))
+    // JsonFSharpOptions.Default().WithUnionUntagged().AddToJsonSerializerOptions(opts)
+
+    ())
 
   ()
 
@@ -77,7 +109,7 @@ let private configureLogging (builder: ILoggingBuilder) =
 
 let host =
   HostBuilder()
-    .ConfigureFunctionsWebApplication()
+    .ConfigureFunctionsWebApplication(configureFunctionsWebApp)
     .ConfigureAppConfiguration(configureAppConfiguration)
     .ConfigureLogging(configureLogging)
     .ConfigureServices(configureServices)

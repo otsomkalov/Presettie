@@ -1,6 +1,7 @@
 ﻿namespace API.Functions
 
-open System
+open System.Collections.Generic
+open System.ComponentModel.DataAnnotations
 open System.Threading.Tasks
 open API.Shared
 open Domain.Core
@@ -10,31 +11,64 @@ open Microsoft.AspNetCore.Authentication.JwtBearer
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
+open Microsoft.Azure.Functions.Worker.Http
 open otsom.fs.Extensions
 open Domain.Extensions
-open Domain.Workflows
 
-type CreatePresetRequest = { Name: string }
+[<CLIMutable>]
+type CreatePresetRequest =
+  { [<Required; MinLength(3)>]
+    Name: string }
 
 type CreatePresetResponse = { Id: PresetId }
 
-type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, userRepo: IUserRepo, authService: IAuthenticationService, userService: IUserService) =
-  let runForUser (req: HttpRequest) (handler: TokenUser -> Task<IActionResult>) = task {
-    let! authResult =
-      authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
-    let suceeded =
-      authResult |> Option.someIf _.Succeeded
+type ValidRequest<'a> = { User: TokenUser; Body: 'a }
 
-    let principal = suceeded |> Option.bind (_.Principal >> Option.ofObj)
-    let identity = principal |> Option.bind (_.Identity >> Option.ofObj)
-    let name = identity |> Option.bind (_.Name >> Option.ofObj)
-    let userId = name |> Option.map(fun name -> name.Split "|" |> Array.last |> _.Split(":") |> Array.last)
+type ValidationError = { Member: string; Error: string }
 
-    return!
-      userId
-      |> Option.taskMap (fun userId -> handler { UserId = MusicPlatform.UserId userId })
-      |> Task.map (Option.defaultValue (UnauthorizedResult() :> IActionResult))
-  }
+type RequestError<'a> =
+  | Unauthorized
+  | Validation of ValidationError list
+  | OperationError of 'a
+
+type PresetFunctions
+  (
+    presetRepo: IPresetRepo,
+    presetService: IPresetService,
+    userRepo: IUserRepo,
+    authService: IAuthenticationService,
+    userService: IUserService
+  ) =
+  let validateUser (req: HttpRequest) : Task<Result<TokenUser, RequestError<_>>> =
+    authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
+    |> Task.map (Option.someIf _.Succeeded)
+    |> Task.map (Option.bind (_.Principal >> Option.ofObj))
+    |> Task.map (Option.bind (_.Identity >> Option.ofObj))
+    |> Task.map (Option.bind (_.Name >> Option.ofObj))
+    |> TaskOption.map (fun name -> name.Split "|" |> Array.last |> _.Split(":") |> Array.last)
+    |> TaskOption.map (fun userId -> { UserId = MusicPlatform.UserId userId })
+    |> Task.map (Result.ofOption RequestError.Unauthorized)
+
+  let validateBody (request: 'a) : Result<'a, RequestError<_>> =
+    let validationCtx = ValidationContext(request, null, null)
+
+    let validationErrors = List<ValidationResult>()
+
+    match Validator.TryValidateObject(request, validationCtx, validationErrors, true) with
+    | true -> Ok request
+    | false ->
+      Error(
+        validationErrors
+        |> List.ofSeq
+        |> List.map (fun e ->
+          { Error = e.ErrorMessage
+            Member = e.MemberNames |> Seq.head })
+        |> RequestError.Validation
+      )
+
+  let validateRequest (request: HttpRequest) (body: 'a) : Task<Result<ValidRequest<'a>, RequestError<_>>> =
+    validateUser request
+    |> Task.map (Result.bind (fun user -> validateBody body |> Result.map (fun body -> { User = user; Body = body })))
 
   [<Function("ListPresets")>]
   member this.ListPresets
@@ -42,12 +76,17 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, use
     : Task<IActionResult> =
     let handler (token: TokenUser) = task {
       let! user = userRepo.LoadUserByMusicPlatform token.UserId
-      let! presets = presetRepo.ListUserPresets user.Id
 
-      return OkObjectResult(presets) :> IActionResult
+      return! presetRepo.ListUserPresets user.Id
     }
 
-    runForUser request handler
+    validateUser request
+    |> Task.bind (Result.taskMap handler)
+    |> Task.map (function
+      | Ok presets -> OkObjectResult(presets) :> IActionResult
+      | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
+      | Error Unauthorized -> UnauthorizedResult() :> IActionResult
+      | Error(OperationError e) -> BadRequestObjectResult(e) :> IActionResult)
 
   [<Function("GetPreset")>]
   member this.GetPreset
@@ -59,12 +98,36 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, use
 
         let! preset = presetService.GetPreset(user.Id, presetId)
 
-        match preset with
-        | Ok preset -> return OkObjectResult preset :> IActionResult
-        | Error Preset.NotFound -> return NotFoundResult() :> IActionResult
+        return preset |> Result.mapError RequestError.OperationError
       }
 
-    runForUser request (flip handler (RawPresetId presetId))
+    validateUser request
+    |> TaskResult.bind (flip handler (RawPresetId presetId))
+    |> Task.map (function
+      | Ok preset -> OkObjectResult(preset) :> IActionResult
+      | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
+      | Error Unauthorized -> UnauthorizedResult() :> IActionResult
+      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult)
+
+  [<Function("CreatePreset")>]
+  member this.CreatePreset
+    ([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets")>] request: HttpRequest, [<FromBody>] body: CreatePresetRequest)
+    : Task<IActionResult> =
+    let handler (token: TokenUser) (body: CreatePresetRequest) = task {
+      let! user = userRepo.LoadUserByMusicPlatform token.UserId
+
+      let! newPreset = presetService.CreatePreset(user.Id, body.Name)
+
+      return newPreset
+    }
+
+    validateRequest request body
+    |> TaskResult.taskMap (fun { User = user; Body = body } -> handler user body)
+    |> Task.map (function
+      | Ok result -> CreatedResult("presets", { Id = result.Id }) :> IActionResult
+      | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
+      | Error Unauthorized -> UnauthorizedResult() :> IActionResult
+      | Error(OperationError e) -> BadRequestObjectResult(e) :> IActionResult)
 
   [<Function("DeletePreset")>]
   member this.DeletePreset
@@ -76,9 +139,13 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, use
 
         let! result = userService.RemoveUserPreset(user.Id, presetId)
 
-        match result with
-        | Ok _ -> return NoContentResult() :> IActionResult
-        | Error Preset.NotFound -> return NotFoundResult() :> IActionResult
+        return result |> Result.mapError RequestError.OperationError
       }
 
-    runForUser request (flip handler (RawPresetId presetId))
+    validateUser request
+    |> TaskResult.bind (flip handler (RawPresetId presetId))
+    |> Task.map (function
+      | Ok _ -> NoContentResult() :> IActionResult
+      | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
+      | Error Unauthorized -> UnauthorizedResult() :> IActionResult
+      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult)
