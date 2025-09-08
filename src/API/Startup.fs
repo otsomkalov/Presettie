@@ -57,7 +57,7 @@ let private configureServices (builderContext: HostBuilderContext) (services: IS
   services
     .AddMvcCore()
     .AddJsonOptions(fun opts ->
-      JsonFSharpOptions.Default().WithUnionUntagged().WithUnionUnwrapRecordCases().AddToJsonSerializerOptions(opts.JsonSerializerOptions))
+      JsonFSharpOptions.Default().WithUnionUnwrapFieldlessTags().AddToJsonSerializerOptions(opts.JsonSerializerOptions))
 
   ()
 
