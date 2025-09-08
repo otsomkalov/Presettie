@@ -14,7 +14,9 @@
     "Storage__ConnectionString": "<Azure storage account connection string>",
     "Storage__QueueName": "requests",
     "Auth__Audience": "<Audience>",
-    "Auth__Authority": "<Authority>"
+    "Auth__Authority": "<Authority>",
+
+    "Logging__LogLevel__Microsoft.IdentityModel.Tokens": "Warning"
   },
   "Host": {
     "CORS": "*"
