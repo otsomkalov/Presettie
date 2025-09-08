@@ -45,7 +45,6 @@ type RawPresetId =
 
 type SimplePreset = { Id: PresetId; Name: string }
 
-[<RequireQualifiedAccess>]
 module PresetSettings =
   [<RequireQualifiedAccess>]
   type LikedTracksHandling =
@@ -56,6 +55,9 @@ module PresetSettings =
   type RawPresetSize =
     | RawPresetSize of string
     member this.Value = let (RawPresetSize va) = this in va
+
+  type RecommendationsEngine =
+    | ArtistAlbums
 
   type ParsingError =
     | NotANumber
@@ -78,7 +80,7 @@ module PresetSettings =
   type PresetSettings =
     { LikedTracksHandling: LikedTracksHandling
       Size: Size
-      RecommendationsEnabled: bool
+      RecommendationsEngine: RecommendationsEngine option
       UniqueArtists: bool }
 
 type Preset =
@@ -185,11 +187,8 @@ type IExcludePlaylist =
 type ITargetPlaylist =
   abstract TargetPlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, Preset.TargetPlaylistError>>
 
-type IEnableRecommendations =
-  abstract EnableRecommendations: PresetId -> Task<unit>
-
-type IDisableRecommendations =
-  abstract DisableRecommendations: PresetId -> Task<unit>
+type ISetRecommendationsEngine =
+  abstract SetRecommendationsEngine: PresetId * PresetSettings.RecommendationsEngine option -> Task<unit>
 
 type IEnableUniqueArtists =
   abstract EnableUniqueArtists: PresetId -> Task<unit>
@@ -249,8 +248,7 @@ type IPresetService =
   inherit IExcludePlaylist
   inherit ITargetPlaylist
 
-  inherit IEnableRecommendations
-  inherit IDisableRecommendations
+  inherit ISetRecommendationsEngine
 
   inherit IEnableUniqueArtists
   inherit IDisableUniqueArtists

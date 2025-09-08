@@ -12,7 +12,7 @@ module CallbackQueryConstants =
   [<Literal>]
   let setPresetSize = "sps"
   [<Literal>]
-  let enableRecommendations = "er"
+  let artistsAlbumsRecommendations = "aar"
   [<Literal>]
   let disableRecommendations = "dr"
   [<Literal>]

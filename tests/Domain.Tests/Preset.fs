@@ -1,5 +1,6 @@
 ﻿module Domain.Tests.Preset
 
+open Domain.Core.PresetSettings
 open Domain.Repos
 open Domain.Workflows
 open Moq
@@ -165,7 +166,7 @@ module Run =
 
     let preset =
       { Mocks.preset with
-          Settings.RecommendationsEnabled = true }
+          Settings.RecommendationsEngine = Some RecommendationsEngine.ArtistAlbums }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
@@ -335,7 +336,7 @@ module Run =
   let ``saves included tracks with recommendations`` () =
     let preset =
       { Mocks.preset with
-          Settings.RecommendationsEnabled = true }
+          Settings.RecommendationsEngine = Some RecommendationsEngine.ArtistAlbums }
 
     let platform = Mock<IMusicPlatform>()
 
@@ -377,8 +378,8 @@ module Run =
       { Mocks.preset with
           Settings =
             { Mocks.preset.Settings with
-                RecommendationsEnabled = true
-                LikedTracksHandling = PresetSettings.LikedTracksHandling.Include } }
+                RecommendationsEngine = Some RecommendationsEngine.ArtistAlbums
+                LikedTracksHandling = LikedTracksHandling.Include } }
 
     let platform = Mock<IMusicPlatform>()
 

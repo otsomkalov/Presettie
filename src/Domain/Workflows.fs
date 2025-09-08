@@ -2,6 +2,7 @@
 
 open System.Threading.Tasks
 open Domain.Core
+open Domain.Core.PresetSettings
 open Domain.Repos
 open Microsoft.FSharp.Control
 open Microsoft.FSharp.Core
@@ -36,18 +37,14 @@ module PresetSettings =
 
   let disableUniqueArtists presetRepo = setUniqueArtists presetRepo false
 
-  let private setRecommendations (presetRepo: #ILoadPreset & #ISavePreset) =
-    fun enabled ->
+  let setRecommendationsEngine (presetRepo: #ILoadPreset & #ISavePreset) =
+    fun engine ->
       presetRepo.LoadPreset
       >> Task.map Option.get
       >> Task.map (fun preset ->
         { preset with
-            Settings.RecommendationsEnabled = enabled })
+            Settings.RecommendationsEngine = engine })
       >> Task.bind presetRepo.SavePreset
-
-  let enableRecommendations presetRepo = setRecommendations presetRepo true
-
-  let disableRecommendations presetRepo = setRecommendations presetRepo false
 
   let private setLikedTracksHandling (presetRepo: #ILoadPreset & #ISavePreset) =
     fun handling presetId ->
@@ -60,13 +57,13 @@ module PresetSettings =
       |> Task.bind presetRepo.SavePreset
 
   let includeLikedTracks presetRepo =
-    setLikedTracksHandling presetRepo PresetSettings.LikedTracksHandling.Include
+    setLikedTracksHandling presetRepo LikedTracksHandling.Include
 
   let excludeLikedTracks presetRepo =
-    setLikedTracksHandling presetRepo PresetSettings.LikedTracksHandling.Exclude
+    setLikedTracksHandling presetRepo LikedTracksHandling.Exclude
 
   let ignoreLikedTracks presetRepo =
-    setLikedTracksHandling presetRepo PresetSettings.LikedTracksHandling.Ignore
+    setLikedTracksHandling presetRepo LikedTracksHandling.Ignore
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
@@ -186,20 +183,20 @@ module Preset =
   let validate: Preset.Validate =
     fun preset ->
       match preset.IncludedPlaylists, preset.Settings.LikedTracksHandling, preset.TargetedPlaylists with
-      | [], PresetSettings.LikedTracksHandling.Include, [] -> [ Preset.ValidationError.NoTargetedPlaylists ] |> Error
-      | [], PresetSettings.LikedTracksHandling.Exclude, [] ->
+      | [], LikedTracksHandling.Include, [] -> [ Preset.ValidationError.NoTargetedPlaylists ] |> Error
+      | [], LikedTracksHandling.Exclude, [] ->
         [ Preset.ValidationError.NoIncludedPlaylists
           Preset.ValidationError.NoTargetedPlaylists ]
         |> Error
-      | [], PresetSettings.LikedTracksHandling.Ignore, [] ->
+      | [], LikedTracksHandling.Ignore, [] ->
         [ Preset.ValidationError.NoIncludedPlaylists
           Preset.ValidationError.NoTargetedPlaylists ]
         |> Error
-      | _, PresetSettings.LikedTracksHandling.Include, [] -> [ Preset.ValidationError.NoTargetedPlaylists ] |> Error
-      | _, PresetSettings.LikedTracksHandling.Exclude, [] -> [ Preset.ValidationError.NoTargetedPlaylists ] |> Error
-      | _, PresetSettings.LikedTracksHandling.Ignore, [] -> [ Preset.ValidationError.NoTargetedPlaylists ] |> Error
-      | [], PresetSettings.LikedTracksHandling.Exclude, _ -> [ Preset.ValidationError.NoIncludedPlaylists ] |> Error
-      | [], PresetSettings.LikedTracksHandling.Ignore, _ -> [ Preset.ValidationError.NoIncludedPlaylists ] |> Error
+      | _, LikedTracksHandling.Include, [] -> [ Preset.ValidationError.NoTargetedPlaylists ] |> Error
+      | _, LikedTracksHandling.Exclude, [] -> [ Preset.ValidationError.NoTargetedPlaylists ] |> Error
+      | _, LikedTracksHandling.Ignore, [] -> [ Preset.ValidationError.NoTargetedPlaylists ] |> Error
+      | [], LikedTracksHandling.Exclude, _ -> [ Preset.ValidationError.NoIncludedPlaylists ] |> Error
+      | [], LikedTracksHandling.Ignore, _ -> [ Preset.ValidationError.NoIncludedPlaylists ] |> Error
       | _ -> Ok preset
 
   let create (presetRepo: #ISavePreset & #IIdGenerator) =
@@ -212,9 +209,9 @@ module Preset =
           ExcludedPlaylists = []
           TargetedPlaylists = []
           Settings =
-            { Size = PresetSettings.Size.Size 20
-              RecommendationsEnabled = false
-              LikedTracksHandling = PresetSettings.LikedTracksHandling.Include
+            { Size = Size.Size 20
+              RecommendationsEngine = None
+              LikedTracksHandling = LikedTracksHandling.Include
               UniqueArtists = false } }
 
       do! presetRepo.SavePreset newPreset
@@ -237,26 +234,26 @@ module Preset =
     let includeLiked (platform: #IListLikedTracks) =
       fun (preset: Preset) tracks ->
         match preset.Settings.LikedTracksHandling with
-        | PresetSettings.LikedTracksHandling.Include -> platform.ListLikedTracks() |> Task.map (List.append tracks)
+        | LikedTracksHandling.Include -> platform.ListLikedTracks() |> Task.map (List.append tracks)
         | _ -> Task.FromResult tracks
 
     let excludeLiked (platform: #IListLikedTracks) =
       fun (preset: Preset) tracks ->
         match preset.Settings.LikedTracksHandling with
-        | PresetSettings.LikedTracksHandling.Exclude -> platform.ListLikedTracks() |> Task.map (List.append tracks)
+        | LikedTracksHandling.Exclude -> platform.ListLikedTracks() |> Task.map (List.append tracks)
         | _ -> Task.FromResult tracks
 
     let getRecommendations (platform: #IListArtistTracks) =
       fun (preset: Preset) (tracks: Track list) ->
-        match preset.Settings.RecommendationsEnabled with
-        | true ->
+        match preset.Settings.RecommendationsEngine with
+        | Some RecommendationsEngine.ArtistAlbums ->
           tracks
           |> List.takeSafe preset.Settings.Size.Value
           |> List.collect (fun t -> t.Artists |> List.ofSeq)
           |> List.map (fun a -> platform.ListArtistTracks a.Id)
           |> Task.WhenAll
           |> Task.map (List.concat >> List.prepend tracks)
-        | false -> tracks |> Task.FromResult
+        | None -> tracks |> Task.FromResult
 
     presetRepo.LoadPreset
     >> Task.map Option.get
@@ -397,7 +394,7 @@ module Preset =
   let setSize (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId size ->
       size
-      |> PresetSettings.Size.TryParse
+      |> Size.TryParse
       |> Result.taskMap (fun s ->
         presetId
         |> presetRepo.LoadPreset
@@ -506,11 +503,8 @@ type PresetService
     member this.SetPresetSize(presetId, size) = Preset.setSize presetRepo presetId size
     member this.CreatePreset(userId, name) = Preset.create presetRepo userId name
 
-    member this.EnableRecommendations(presetId) =
-      PresetSettings.enableRecommendations presetRepo presetId
-
-    member this.DisableRecommendations(presetId) =
-      PresetSettings.disableRecommendations presetRepo presetId
+    member this.SetRecommendationsEngine(presetId, engine) =
+      PresetSettings.setRecommendationsEngine presetRepo engine presetId
 
     member this.IncludePlaylist(userId, presetId, rawPlaylistId) =
       Preset.includePlaylist parseId presetRepo musicPlatformFactory userId presetId rawPlaylistId
