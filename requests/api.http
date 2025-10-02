@@ -7,9 +7,14 @@ GET http://localhost:7071/api/presets/{{presetId}}
 Authorization: Bearer {{apiToken}}
 
 ###
-POST http://localhost:7071/api/auth/token
+POST http://localhost:7071/api/presets
+Authorization: Bearer {{apiToken}}
 Content-Type: application/json
 
 {
-  "userId": "{{userId}}"
+  "name": "Test[0]"
 }
+
+###
+DELETE http://localhost:7071/api/presets/{{presetId}}
+Authorization: Bearer {{apiToken}}

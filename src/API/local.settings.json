@@ -16,7 +16,7 @@
     "Auth__Audience": "<Audience>",
     "Auth__Authority": "<Authority>",
 
-    "Logging__LogLevel__Microsoft.IdentityModel.Tokens": "Warning"
+    "Logging__LogLevel__Microsoft.IdentityModel": "Critical"
   },
   "Host": {
     "CORS": "*"
