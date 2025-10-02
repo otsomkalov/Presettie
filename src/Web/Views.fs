@@ -71,6 +71,7 @@ module Preset =
 
           button {
             attr.``class`` "btn btn-danger"
+            on.click (fun _ -> preset.Id |> Preset.Remove'.Message.RemovePreset |> Preset.Message.Remove |> dispatch)
 
             "Delete"
           }
@@ -89,7 +90,7 @@ module Preset =
             Presets = AsyncOp.Finished presets },
         Cmd.none
 
-    let view (model: Preset.List.Model) dispatch =
+    let view (model: Preset.List.Model) (dispatch: Preset.Message -> unit) =
       match model.Presets with
       | AsyncOp.Loading -> div { text "Loading presets..." }
       | AsyncOp.Finished presets -> concat {

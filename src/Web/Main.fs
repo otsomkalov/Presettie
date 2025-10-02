@@ -11,6 +11,7 @@ open Web.Messages
 open Web.Models
 open Web.Repos
 open Web.Router
+open Web.Util
 open Web.Views
 
 [<RequireQualifiedAccess>]
@@ -77,7 +78,7 @@ let authUpdate (env: #IListPresets & #IGetPreset) (authResult: AuthenticationSta
         AuthState = Some authResult },
     Cmd.none
 
-let presetUpdate env (message: Preset.Message) (model: Model) =
+let presetUpdate (env: #IRemovePreset) (message: Preset.Message) (model: Model) =
   match message, model with
   | Preset.Message.List(msg), { Page = Page.Presets m } ->
     let model', cmd' = Preset.List.update env msg m.Model
@@ -91,6 +92,15 @@ let presetUpdate env (message: Preset.Message) (model: Model) =
     { model with
         Page = Page.Preset(id, { Model = model' }) },
     Cmd.map (Preset.Message.Details >> Message.Preset) cmd'
+  | Preset.Message.Remove(Preset.Remove'.Message.RemovePreset id), { Page = Page.Presets m } ->
+    model, Cmd.OfTask.perform env.RemovePreset id (fun _ -> Preset.Remove'.Message.PresetRemoved id |> Preset.Message.Remove |> Preset)
+  | Preset.Message.Remove(Preset.Remove'.Message.PresetRemoved removedPresetId),
+    { Page = Page.Presets { Model = { Presets = AsyncOp.Finished presets } } } ->
+    let presets' = presets |> List.filter (fun p -> p.Id <> removedPresetId)
+
+    { model with
+        Page = Page.Presets { Model = { Presets = AsyncOp.Finished presets' } } },
+    Cmd.none
   | _ -> model, Cmd.none
 
 let update authProvider env (message: Message) (model: Model) =
@@ -114,7 +124,7 @@ let view model dispatch = concat {
     | Page.Loading, _ -> Loading.render () dispatch
     | Page.NotFound, _ -> div { text "Not Found" }
 
-    | Page.Presets m, Some(state) when state.User.Identity.IsAuthenticated -> Preset.List.view m.Model dispatch
+    | Page.Presets m, Some(state) when state.User.Identity.IsAuthenticated -> Preset.List.view m.Model (Message.Preset >> dispatch)
     | Page.Presets _, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
     | Page.Presets _, _ -> Loading.render () dispatch
 

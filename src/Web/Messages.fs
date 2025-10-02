@@ -7,6 +7,13 @@ open Web.Models
 [<RequireQualifiedAccess>]
 module Preset =
   [<RequireQualifiedAccess>]
+  module Remove' =
+    [<RequireQualifiedAccess>]
+    type Message =
+      | RemovePreset of PresetId
+      | PresetRemoved of PresetId
+
+  [<RequireQualifiedAccess>]
   module Details' =
     [<RequireQualifiedAccess>]
     type Message = PresetLoaded of Preset
@@ -14,12 +21,14 @@ module Preset =
   [<RequireQualifiedAccess>]
   module List' =
     [<RequireQualifiedAccess>]
-    type Message = PresetsLoaded of SimplePreset list
+    type Message =
+      | PresetsLoaded of SimplePreset list
 
   [<RequireQualifiedAccess>]
   type Message =
     | List of List'.Message
     | Details of Details'.Message
+    | Remove of Remove'.Message
 
 type AuthMsg = AuthChecked of AuthenticationState
 

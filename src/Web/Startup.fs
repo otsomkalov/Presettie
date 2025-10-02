@@ -12,6 +12,7 @@ open Microsoft.Extensions.Configuration
 open Web.Repos
 open System.Net.Http.Json
 open Web.Util
+open otsom.fs.Extensions
 
 type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
   let httpClient = httpClientFactory.CreateClient(nameof Env)
@@ -31,6 +32,13 @@ type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
       with e ->
         logger.LogError(e, "Error while fetching preset")
         return Unchecked.defaultof<Preset>
+    }
+
+    member this.RemovePreset(PresetId presetId) = task {
+      try
+        do! httpClient.DeleteAsync($"api/presets/{presetId}") |> Task.ignore
+      with e ->
+        logger.LogError(e, "Error while removing preset")
     }
 
 type APIAuthorizationMessageHandler(accessTokenProvider: IAccessTokenProvider, navigationManager: NavigationManager, cfg: IConfiguration) =
