@@ -576,14 +576,6 @@ type PresetService
         | Some preset when preset.OwnerId = userId -> Ok preset
         | _ -> Error Preset.GetPresetError.NotFound)
 
-    member this.GetPreset(userId, presetId) =
-      presetId
-      |> presetRepo.ParseId
-      |> TaskOption.taskBind presetRepo.LoadPreset
-      |> Task.map (function
-        | Some preset when preset.OwnerId = userId -> Ok preset
-        | _ -> Error Preset.GetPresetError.NotFound)
-
 type UserService(userRepo: IUserRepo, presetService: IPresetService) =
   interface IUserService with
     member this.SetCurrentPresetSize(userId, size) =

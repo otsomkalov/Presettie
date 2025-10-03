@@ -40,8 +40,7 @@ type PresetId =
 
   member this.Value = let (PresetId id) = this in id
 
-type RawPresetId =
-  | RawPresetId of string
+type RawPresetId = RawPresetId of string
 
 type SimplePreset = { Id: PresetId; Name: string }
 
@@ -57,8 +56,7 @@ module PresetSettings =
 
     member this.Value = let (RawPresetSize va) = this in va
 
-  type RecommendationsEngine =
-    | ArtistAlbums
+  type RecommendationsEngine = | ArtistAlbums
 
   type ParsingError =
     | NotANumber
@@ -130,8 +128,7 @@ module Preset =
     | AccessError of AccessError
     | Unauthorized
 
-  type GetPresetError =
-    | NotFound
+  type GetPresetError = | NotFound
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
