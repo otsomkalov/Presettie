@@ -54,6 +54,7 @@ module PresetSettings =
 
   type RawPresetSize =
     | RawPresetSize of string
+
     member this.Value = let (RawPresetSize va) = this in va
 
   type RecommendationsEngine =
