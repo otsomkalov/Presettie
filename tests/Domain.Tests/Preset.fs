@@ -1,5 +1,6 @@
 ﻿module Domain.Tests.Preset
 
+open Domain.Core.PresetSettings
 open Domain.Repos
 open Domain.Workflows
 open Moq
@@ -165,7 +166,7 @@ module Run =
 
     let preset =
       { Mocks.preset with
-          Settings.RecommendationsEnabled = true }
+          Settings.RecommendationsEngine = Some RecommendationsEngine.ArtistAlbums }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
@@ -335,7 +336,7 @@ module Run =
   let ``saves included tracks with recommendations`` () =
     let preset =
       { Mocks.preset with
-          Settings.RecommendationsEnabled = true }
+          Settings.RecommendationsEngine = Some RecommendationsEngine.ArtistAlbums }
 
     let platform = Mock<IMusicPlatform>()
 
@@ -377,8 +378,8 @@ module Run =
       { Mocks.preset with
           Settings =
             { Mocks.preset.Settings with
-                RecommendationsEnabled = true
-                LikedTracksHandling = PresetSettings.LikedTracksHandling.Include } }
+                RecommendationsEngine = Some RecommendationsEngine.ArtistAlbums
+                LikedTracksHandling = LikedTracksHandling.Include } }
 
     let platform = Mock<IMusicPlatform>()
 
@@ -465,6 +466,63 @@ type GetPreset() =
       let! preset = sut.GetPreset(otherUserId, Mocks.rawPresetId)
 
       preset |> should equal (Result<Preset, _>.Error Preset.GetPresetError.NotFound)
+
+      presetRepo.VerifyAll()
+    }
+
+type RemovePreset() =
+  let parseId = fun _ -> Ok Mocks.includedPlaylistId
+
+  let presetRepo = Mock<IPresetRepo>()
+
+  do
+    presetRepo.Setup(_.ParseId(Mocks.rawPresetId)).Returns(Some Mocks.presetId)
+    |> ignore
+
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+
+  let sut =
+    PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, id) :> IRemovePreset
+
+  [<Fact>]
+  let ``removes preset if found and belongs to user`` () =
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    presetRepo.Setup(_.RemovePreset(Mocks.presetId)).ReturnsAsync(())
+
+    task {
+      let! result = sut.RemovePreset(Mocks.userId, Mocks.rawPresetId)
+
+      result |> should equal (Result<_, Preset.GetPresetError>.Ok(Mocks.preset))
+
+      presetRepo.VerifyAll()
+    }
+
+  [<Fact>]
+  let ``returns error if preset not found`` () =
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(None)
+
+    task {
+      let! result = sut.RemovePreset(Mocks.userId, Mocks.rawPresetId)
+
+      result |> should equal (Result<Preset, _>.Error(Preset.GetPresetError.NotFound))
+
+      presetRepo.VerifyAll()
+    }
+
+  [<Fact>]
+  let ``returns error if preset doesn't belong to user`` () =
+    presetRepo
+      .Setup(_.LoadPreset(Mocks.presetId))
+      .ReturnsAsync(
+        Some
+          { Mocks.preset with
+              OwnerId = Mocks.otherUserId }
+      )
+
+    task {
+      let! result = sut.RemovePreset(Mocks.userId, Mocks.rawPresetId)
+
+      result |> should equal (Result<Preset, _>.Error(Preset.GetPresetError.NotFound))
 
       presetRepo.VerifyAll()
     }

@@ -40,11 +40,11 @@ type PresetId =
 
   member this.Value = let (PresetId id) = this in id
 
-type RawPresetId = RawPresetId of string
+type RawPresetId =
+  | RawPresetId of string
 
 type SimplePreset = { Id: PresetId; Name: string }
 
-[<RequireQualifiedAccess>]
 module PresetSettings =
   [<RequireQualifiedAccess>]
   type LikedTracksHandling =
@@ -54,8 +54,10 @@ module PresetSettings =
 
   type RawPresetSize =
     | RawPresetSize of string
-
     member this.Value = let (RawPresetSize va) = this in va
+
+  type RecommendationsEngine =
+    | ArtistAlbums
 
   type ParsingError =
     | NotANumber
@@ -78,7 +80,7 @@ module PresetSettings =
   type PresetSettings =
     { LikedTracksHandling: LikedTracksHandling
       Size: Size
-      RecommendationsEnabled: bool
+      RecommendationsEngine: RecommendationsEngine option
       UniqueArtists: bool }
 
 type Preset =
@@ -92,7 +94,8 @@ type Preset =
 
 type User =
   { Id: UserId
-    CurrentPresetId: PresetId option }
+    CurrentPresetId: PresetId option
+    MusicPlatforms: MusicPlatform.UserId list }
 
 [<RequireQualifiedAccess>]
 module Preset =
@@ -126,7 +129,8 @@ module Preset =
     | AccessError of AccessError
     | Unauthorized
 
-  type GetPresetError = | NotFound
+  type GetPresetError =
+    | NotFound
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
@@ -183,11 +187,8 @@ type IExcludePlaylist =
 type ITargetPlaylist =
   abstract TargetPlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, Preset.TargetPlaylistError>>
 
-type IEnableRecommendations =
-  abstract EnableRecommendations: PresetId -> Task<unit>
-
-type IDisableRecommendations =
-  abstract DisableRecommendations: PresetId -> Task<unit>
+type ISetRecommendationsEngine =
+  abstract SetRecommendationsEngine: PresetId * PresetSettings.RecommendationsEngine option -> Task<unit>
 
 type IEnableUniqueArtists =
   abstract EnableUniqueArtists: PresetId -> Task<unit>
@@ -229,7 +230,7 @@ type IRunPreset =
   abstract RunPreset: UserId * PresetId -> Task<Result<Preset, Preset.RunError>>
 
 type IRemovePreset =
-  abstract RemovePreset: PresetId -> Task<unit>
+  abstract RemovePreset: UserId * RawPresetId -> Task<Result<Preset, Preset.GetPresetError>>
 
 type IGetPreset =
   abstract GetPreset: UserId * RawPresetId -> Task<Result<Preset, Preset.GetPresetError>>
@@ -247,8 +248,7 @@ type IPresetService =
   inherit IExcludePlaylist
   inherit ITargetPlaylist
 
-  inherit IEnableRecommendations
-  inherit IDisableRecommendations
+  inherit ISetRecommendationsEngine
 
   inherit IEnableUniqueArtists
   inherit IDisableUniqueArtists
@@ -274,7 +274,7 @@ type ISetCurrentPreset =
   abstract SetCurrentPreset: UserId * PresetId -> Task<unit>
 
 type IRemoveUserPreset =
-  abstract RemoveUserPreset: UserId * PresetId -> Task<unit>
+  abstract RemoveUserPreset: UserId * RawPresetId -> Task<Result<unit, Preset.GetPresetError>>
 
 type ICreateUser =
   abstract CreateUser: unit -> Task<User>

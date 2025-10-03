@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">=4.14.0"
+      version = ">=4.38.1"
     }
   }
 }
@@ -44,7 +44,6 @@ resource "azurerm_storage_account" "st-presettie" {
   name                     = "stpresettie${var.env}"
   account_tier             = "Standard"
   account_replication_type = "LRS"
-  account_kind             = "Storage"
 
   tags = local.tags
 }
@@ -66,7 +65,7 @@ resource "azurerm_service_plan" "asp-presettie" {
   tags = local.tags
 }
 
-resource "azurerm_linux_function_app" "func-presettie" {
+resource "azurerm_linux_function_app" "func-presettie-bot" {
   resource_group_name = azurerm_resource_group.rg-presettie.name
   location            = azurerm_resource_group.rg-presettie.location
 
@@ -74,7 +73,7 @@ resource "azurerm_linux_function_app" "func-presettie" {
   storage_account_access_key = azurerm_storage_account.st-presettie.primary_access_key
   service_plan_id            = azurerm_service_plan.asp-presettie.id
 
-  name = "func-presettie-${var.env}"
+  name = "func-presettie-bot-${var.env}"
 
   functions_extension_version = "~4"
 
@@ -109,4 +108,50 @@ resource "azurerm_linux_function_app" "func-presettie" {
     })
 
   tags = local.tags
+}
+
+resource "azurerm_linux_function_app" "func-presettie-api" {
+  resource_group_name = azurerm_resource_group.rg-presettie.name
+  location            = azurerm_resource_group.rg-presettie.location
+
+  storage_account_name       = azurerm_storage_account.st-presettie.name
+  storage_account_access_key = azurerm_storage_account.st-presettie.primary_access_key
+  service_plan_id            = azurerm_service_plan.asp-presettie.id
+
+  name = "func-presettie-api-${var.env}"
+
+  functions_extension_version = "~4"
+
+  site_config {
+    application_insights_key = azurerm_application_insights.appi-presettie.instrumentation_key
+    app_scale_limit          = 10
+
+    application_stack {
+      dotnet_version              = "9.0"
+      use_dotnet_isolated_runtime = true
+    }
+  }
+
+  app_settings = merge(
+    {
+      Telegram__Token            = var.telegram-token
+      Telegram__BotUrl           = var.telegram-bot-url
+      Database__ConnectionString = var.database-connection-string
+      Database__Name             = var.database-name
+      Redis__ConnectionString    = var.redis-connection-string
+      Resources__DefaultLang     = var.resources-default-lang
+      Auth__Audience             = var.jwt-audience
+      Auth__Authority            = var.jwt-authority
+      Storage__ConnectionString  = azurerm_storage_account.st-presettie.primary_connection_string
+      Storage__QueueName         = azurerm_storage_queue.stq-requests-presettie.name
+    })
+
+  tags = local.tags
+}
+
+resource "azurerm_storage_account_static_website" "st-sw-presettie" {
+  storage_account_id = azurerm_storage_account.st-presettie.id
+
+  error_404_document = "index.html"
+  index_document     = "index.html"
 }

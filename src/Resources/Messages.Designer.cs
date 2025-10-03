@@ -60,6 +60,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 💽 Artists albums.
+        /// </summary>
+        public static string ArtistsAlbumsRecommendation {
+            get {
+                return ResourceManager.GetString("ArtistsAlbumsRecommendation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 
         ///*Name*: {0}
         ///*Tracks*: {1}
@@ -224,6 +233,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Preset not found!.
+        /// </summary>
+        public static string PresetNotFound {
+            get {
+                return ResourceManager.GetString("PresetNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Preset successfully removed!.
         /// </summary>
         public static string PresetRemoved {
@@ -295,15 +313,6 @@ namespace Resources {
         public static string RecommendationsDisabled {
             get {
                 return ResourceManager.GetString("RecommendationsDisabled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ➕ Recommendations are enabled.
-        /// </summary>
-        public static string RecommendationsEnabled {
-            get {
-                return ResourceManager.GetString("RecommendationsEnabled", resourceCulture);
             }
         }
         

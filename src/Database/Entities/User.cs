@@ -9,4 +9,6 @@ public class User
     public ObjectId Id { get; set; }
 
     public ObjectId? CurrentPresetId { get; set; }
+
+    public IEnumerable<string> MusicPlatforms { get; set; }
 }

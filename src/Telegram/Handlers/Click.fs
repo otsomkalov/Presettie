@@ -11,6 +11,7 @@ open otsom.fs.Bot
 open System
 open otsom.fs.Extensions
 open otsom.fs.Resources
+open Domain.Core.PresetSettings
 
 let presetInfoClickHandler presetRepo (resp: IResourceProvider) botService : ClickHandler =
   fun click -> task {
@@ -34,16 +35,16 @@ let listPresetsClickHandler userRepo (resp: IResourceProvider) botService : Clic
 
 let enableRecommendationsClickHandler
   presetRepo
-  (presetService: #IEnableRecommendations)
+  (presetService: #ISetRecommendationsEngine)
   (resp: IResourceProvider)
   (botService: #ISendNotification)
   : ClickHandler =
   fun click -> task {
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.enableRecommendations ] ->
+    | [ "p"; presetId; CallbackQueryConstants.artistsAlbumsRecommendations ] ->
       let presetId = PresetId presetId
 
-      do! presetService.EnableRecommendations presetId
+      do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ArtistAlbums)
       do! botService.SendNotification(click.Id, Messages.Updated)
       do! Preset.show presetRepo botService click.MessageId presetId
 
@@ -53,7 +54,7 @@ let enableRecommendationsClickHandler
 
 let disableRecommendationsClickHandler
   presetRepo
-  (presetService: #IDisableRecommendations)
+  (presetService: #ISetRecommendationsEngine)
   (resp: IResourceProvider)
   (botService: #ISendNotification)
   : ClickHandler =
@@ -62,7 +63,7 @@ let disableRecommendationsClickHandler
     | [ "p"; presetId; CallbackQueryConstants.disableRecommendations ] ->
       let presetId = PresetId presetId
 
-      do! presetService.DisableRecommendations presetId
+      do! presetService.SetRecommendationsEngine(presetId, None)
       do! botService.SendNotification(click.Id, Messages.Updated)
       do! Preset.show presetRepo botService click.MessageId presetId
 
@@ -488,12 +489,17 @@ let removePresetClickHandler
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "rm" ] ->
-      let presetId = PresetId presetId
+      let presetId = RawPresetId presetId
 
-      do! userService.RemoveUserPreset(click.Chat.UserId, presetId)
-      do! botService.SendNotification(click.Id, Messages.PresetRemoved)
-      do! User.listPresets botService presetRepo click.MessageId click.Chat.UserId
+      match! userService.RemoveUserPreset(click.Chat.UserId, presetId) with
+      | Ok _ ->
+        do! botService.SendNotification(click.Id, Messages.PresetRemoved)
+        do! User.listPresets botService presetRepo click.MessageId click.Chat.UserId
 
-      return Some()
+        return Some()
+      | Error Preset.GetPresetError.NotFound ->
+        do! botService.SendNotification(click.Id, Messages.PresetNotFound)
+
+        return Some()
     | _ -> return None
   }

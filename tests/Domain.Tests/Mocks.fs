@@ -62,13 +62,15 @@ let targetedPlaylist: TargetedPlaylist =
 
 let presetSettingsMock: PresetSettings.PresetSettings =
   { Size = PresetSettings.Size.Size 10
-    RecommendationsEnabled = false
+    RecommendationsEngine = None
     LikedTracksHandling = PresetSettings.LikedTracksHandling.Ignore
     UniqueArtists = false }
 
 let rawPresetId = RawPresetId "raw-preset-id"
-let presetId = PresetId("1")
+let presetId = PresetId("preset-id")
+let otherPresetId = PresetId("other-preset-id")
 let userId = otsom.fs.Core.UserId("user-id")
+let otherUserId = otsom.fs.Core.UserId("other-user-id")
 
 let preset =
   { Id = presetId
@@ -81,4 +83,5 @@ let preset =
 
 let user: User =
   { Id = userId
-    CurrentPresetId = Some presetId }
+    CurrentPresetId = Some presetId
+    MusicPlatforms = [] }

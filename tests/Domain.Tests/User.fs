@@ -1,6 +1,5 @@
 ﻿module Domain.Tests.User
 
-open System.Threading.Tasks
 open Domain.Repos
 open Moq
 open Xunit
@@ -33,36 +32,61 @@ let ``setCurrentPreset updates User.CurrentPresetId`` () =
     repo.VerifyAll()
   }
 
-[<Fact>]
-let ``removePreset removes preset`` () =
+type RemovePreset() =
   let userRepo = Mock<IUserRepo>()
-
-  userRepo
-    .Setup(_.LoadUser(Mocks.userId))
-    .ReturnsAsync(
-      { Mocks.user with
-          CurrentPresetId = None }
-    )
-
-  let expectedUser =
-    { Mocks.user with
-        CurrentPresetId = None }
-
-  userRepo.Setup(_.SaveUser(expectedUser)).ReturnsAsync(())
-
-  let removePreset =
-    fun presetId ->
-      presetId |> should equal Mocks.presetId
-      Task.FromResult()
-
   let presetService = Mock<IPresetService>()
 
-  presetService.Setup(_.RemovePreset(Mocks.presetId)).ReturnsAsync(())
+  let sut = UserService(userRepo.Object, presetService.Object) :> IRemoveUserPreset
 
-  let sut = User.removePreset userRepo.Object presetService.Object
+  [<Fact>]
+  let ``keeps current Preset untouched if other was removed`` () =
+    let expectedUser =
+      { Mocks.user with
+          CurrentPresetId = Some Mocks.otherPresetId }
 
-  task {
-    do! sut Mocks.userId Mocks.presetId
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(expectedUser)
 
-    userRepo.VerifyAll()
-  }
+    presetService.Setup(_.RemovePreset(Mocks.userId, Mocks.rawPresetId)).ReturnsAsync(Ok Mocks.preset)
+
+    task {
+      let! result = sut.RemoveUserPreset(Mocks.userId, Mocks.rawPresetId)
+
+      result |> should equal (Result<unit, Preset.GetPresetError>.Ok())
+
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+    }
+
+  [<Fact>]
+  let ``unsets current Preset if successfully removed`` () =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    let expectedUser =
+      { Mocks.user with
+          CurrentPresetId = None }
+
+    userRepo.Setup(_.SaveUser(expectedUser)).ReturnsAsync(())
+
+    presetService.Setup(_.RemovePreset(Mocks.userId, Mocks.rawPresetId)).ReturnsAsync(Ok Mocks.preset)
+
+    task {
+      let! result = sut.RemoveUserPreset(Mocks.userId, Mocks.rawPresetId)
+
+      result |> should equal (Result<unit, Preset.GetPresetError>.Ok())
+
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+    }
+
+  [<Fact>]
+  let ``returns error if Preset not found`` () =
+    presetService.Setup(_.RemovePreset(Mocks.userId, Mocks.rawPresetId)).ReturnsAsync(Error Preset.GetPresetError.NotFound)
+
+    task {
+      let! result = sut.RemoveUserPreset(Mocks.userId, Mocks.rawPresetId)
+
+      result |> should equal (Result<unit, _>.Error Preset.GetPresetError.NotFound)
+
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+    }

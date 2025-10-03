@@ -80,8 +80,8 @@ Preset settings:
     <data name="SendPresetName" xml:space="preserve">
         <value>Send new preset name in reply to this message</value>
     </data>
-    <data name="RecommendationsEnabled" xml:space="preserve">
-        <value>➕ Recommendations are enabled</value>
+    <data name="ArtistsAlbumsRecommendation" xml:space="preserve">
+        <value>💽 Artists albums</value>
     </data>
     <data name="RecommendationsDisabled" xml:space="preserve">
         <value>➖ Recommendations are disabled</value>
@@ -201,5 +201,8 @@ Click "Generate" keyboard button or send "/generate" command. After a few second
     </data>
     <data name="PresetRemoved" xml:space="preserve">
         <value>Preset successfully removed!</value>
+    </data>
+    <data name="PresetNotFound" xml:space="preserve">
+      <value>Preset not found!</value>
     </data>
 </root>

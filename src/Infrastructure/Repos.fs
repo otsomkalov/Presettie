@@ -66,6 +66,12 @@ module UserRepo =
 
       collection.Find(usersFilter).SingleOrDefaultAsync() |> Task.map User.fromDb
 
+  let loadByMusicPlatform (collection: IMongoCollection<Entities.User>) =
+    fun (MusicPlatform.UserId userId) ->
+      let usersFilter = Builders<Entities.User>.Filter.AnyEq(_.MusicPlatforms, userId)
+
+      collection.Find(usersFilter).SingleOrDefaultAsync() |> Task.map User.fromDb
+
   let save (collection: IMongoCollection<Entities.User>) =
     fun (user: User) ->
       let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, ObjectId user.Id.Value)
@@ -118,3 +124,6 @@ type UserRepo(db: IMongoDatabase) =
     member this.SaveUser(user) = UserRepo.save collection user
 
     member this.GenerateId() = ObjectId.GenerateNewId() |> string
+
+    member this.LoadUserByMusicPlatform(userId) =
+      UserRepo.loadByMusicPlatform collection userId
