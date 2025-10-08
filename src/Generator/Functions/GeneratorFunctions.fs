@@ -27,13 +27,7 @@ type GeneratorFunctions
   }
 
   [<Function("GenerateAsync")>]
-  member this.GenerateAsync
-    (
-      [<QueueTrigger("%Storage:QueueName%")>] command:
-        {| UserId: string
-           PresetId: string |},
-      _: FunctionContext
-    ) =
+  member this.GenerateAsync([<QueueTrigger("%Storage:QueueName%")>] command: {| UserId: string; PresetId: string |}, _: FunctionContext) =
     Logf.logfi _logger "Running playlist generation for user %s{UserId} and preset %s{PresetId}" command.UserId command.PresetId
 
     let userId = command.UserId |> UserId

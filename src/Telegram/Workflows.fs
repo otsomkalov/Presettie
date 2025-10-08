@@ -149,6 +149,7 @@ module IncludedPlaylist =
   let show (botMessageCtx: #IEditMessageButtons) (presetRepo: #ILoadPreset) (mp: #ILoadPlaylist option) =
     fun messageId presetId playlistId -> task {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+
       let includedPlaylist =
         preset.IncludedPlaylists
         |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
@@ -281,7 +282,10 @@ module Preset =
     let editButtons messageId text buttons =
       botService.EditMessageButtons(messageId, text, buttons)
 
-    fun messageId -> presetRepo.LoadPreset >> Task.map Option.get >> Task.bind (show' (editButtons messageId))
+    fun messageId ->
+      presetRepo.LoadPreset
+      >> Task.map Option.get
+      >> Task.bind (show' (editButtons messageId))
 
   let run (chatCtx: #ISendMessage & #IEditMessage) (presetService: #IRunPreset) =
     fun presetId ->

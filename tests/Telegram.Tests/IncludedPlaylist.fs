@@ -28,9 +28,7 @@ let ``list click should list included playlists if data match`` () =
 
   let botService = Mock<IBotService>()
 
-  botService
-    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
-    .ReturnsAsync(())
+  botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
   let resourceProvider = Mock<IResourceProvider>()
 
@@ -72,23 +70,17 @@ let ``show click should send included playlist details`` () =
 
   let musicPlatform = Mock<IMusicPlatform>()
 
-  musicPlatform
-    .Setup(_.LoadPlaylist(Mocks.includedPlaylistId))
-    .ReturnsAsync(Ok Mocks.readablePlatformPlaylist)
+  musicPlatform.Setup(_.LoadPlaylist(Mocks.includedPlaylistId)).ReturnsAsync(Ok Mocks.readablePlatformPlaylist)
 
   let botService = Mock<IBotService>()
 
-  botService
-    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
-    .ReturnsAsync(())
+  botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
   let resourceProvider = Mock<IResourceProvider>()
 
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-  musicPlatformFactory
-    .Setup(_.GetMusicPlatform(It.IsAny()))
-    .ReturnsAsync(Some musicPlatform.Object)
+  musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
 
   let click =
     createClick [ "p"; Mocks.preset.Id.Value; "ip"; Mocks.includedPlaylistId.Value; "i" ]
@@ -115,9 +107,7 @@ let ``show click should not send included playlist details if data does not matc
 
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-  musicPlatformFactory
-    .Setup(_.GetMusicPlatform(It.IsAny()))
-    .ReturnsAsync(Some musicPlatform.Object)
+  musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
 
   let resourceProvider = Mock<IResourceProvider>()
 
@@ -145,9 +135,7 @@ let ``remove click should delete playlist and show included playlists`` () =
 
   let botService = Mock<IBotService>()
 
-  botService
-    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
-    .ReturnsAsync(())
+  botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
   let click =
     createClick [ "p"; Mocks.preset.Id.Value; "ip"; Mocks.includedPlaylistId.Value; "rm" ]

@@ -71,7 +71,12 @@ module Preset =
 
           button {
             attr.``class`` "btn btn-danger"
-            on.click (fun _ -> preset.Id |> Preset.Remove'.Message.RemovePreset |> Preset.Message.Remove |> dispatch)
+
+            on.click (fun _ ->
+              preset.Id
+              |> Preset.Remove'.Message.RemovePreset
+              |> Preset.Message.Remove
+              |> dispatch)
 
             "Delete"
           }
@@ -83,7 +88,11 @@ module Preset =
   module List =
     let init () : Preset.List.Model = { Presets = AsyncOp.Loading }
 
-    let update (env: #IListPresets) (message: Preset.List'.Message) (model: Preset.List.Model) : Preset.List.Model * Cmd<Preset.List'.Message> =
+    let update
+      (env: #IListPresets)
+      (message: Preset.List'.Message)
+      (model: Preset.List.Model)
+      : Preset.List.Model * Cmd<Preset.List'.Message> =
       match message, model with
       | Preset.List'.Message.PresetsLoaded presets, _ ->
         { model with

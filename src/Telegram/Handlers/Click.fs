@@ -186,11 +186,7 @@ let showIncludedPlaylistClickHandler
     | _ -> return None
   }
 
-let removeIncludedPlaylistClickHandler
-  (presetService: #IRemoveIncludedPlaylist)
-  (resp: IResourceProvider)
-  botService
-  : ClickHandler =
+let removeIncludedPlaylistClickHandler (presetService: #IRemoveIncludedPlaylist) (resp: IResourceProvider) botService : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "ip"; playlistId; "rm" ] ->
@@ -247,11 +243,7 @@ let showExcludedPlaylistClickHandler
     | _ -> return None
   }
 
-let removeExcludedPlaylistClickHandler
-  (presetService: #IRemoveExcludedPlaylist)
-  (resp: IResourceProvider)
-  botService
-  : ClickHandler =
+let removeExcludedPlaylistClickHandler (presetService: #IRemoveExcludedPlaylist) (resp: IResourceProvider) botService : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "ep"; playlistId; "rm" ] ->
@@ -286,11 +278,7 @@ let showTargetedPlaylistClickHandler
     | _ -> return None
   }
 
-let removeTargetedPlaylistClickHandler
-  (presetService: #IRemoveTargetedPlaylist)
-  (resp: IResourceProvider)
-  botService
-  : ClickHandler =
+let removeTargetedPlaylistClickHandler (presetService: #IRemoveTargetedPlaylist) (resp: IResourceProvider) botService : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "tp"; playlistId; "rm" ] ->

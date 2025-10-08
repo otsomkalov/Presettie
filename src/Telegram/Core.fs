@@ -10,18 +10,20 @@ open otsom.fs.Resources
 type Page = Page of int
 
 type Chat = { Id: ChatId; UserId: UserId }
-type Click = { Id: ButtonClickId; MessageId: BotMessageId; Chat: Chat; Data: string list }
 
-type ReplyMessage = {
-  Text: string
-}
+type Click =
+  { Id: ButtonClickId
+    MessageId: BotMessageId
+    Chat: Chat
+    Data: string list }
 
-type Message = {
-  Id: ChatMessageId
-  Chat: Chat
-  Text: string
-  ReplyMessage: ReplyMessage option
-}
+type ReplyMessage = { Text: string }
+
+type Message =
+  { Id: ChatMessageId
+    Chat: Chat
+    Text: string
+    ReplyMessage: ReplyMessage option }
 
 type MessageHandler = Message -> Task<unit option>
 

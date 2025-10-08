@@ -2,7 +2,6 @@
 
 module UserRepo =
   let listLikedTracks listLikedTracks =
-    let listLikedTracksLazy = lazy listLikedTracks()
+    let listLikedTracksLazy = lazy listLikedTracks ()
 
-    fun () ->
-      listLikedTracksLazy.Value
+    fun () -> listLikedTracksLazy.Value

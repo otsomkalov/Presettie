@@ -26,6 +26,5 @@ let ``remove should remove playlist from preset`` () =
 
     mock.VerifyAll()
 
-    preset.ExcludedPlaylists
-    |> should equal List.empty<ExcludedPlaylist>
+    preset.ExcludedPlaylists |> should equal List.empty<ExcludedPlaylist>
   }

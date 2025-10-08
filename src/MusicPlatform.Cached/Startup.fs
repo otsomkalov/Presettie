@@ -20,6 +20,4 @@ let addCachedMusicPlatform (cfg: IConfiguration) (services: IServiceCollection) 
 
   services.BuildSingleton<IConnectionMultiplexer, IOptions<RedisSettings>>(configureRedisCache)
 
-  services
-    .Decorate<IMusicPlatformFactory, RedisMusicPlatformFactory>()
-    .Decorate<IMusicPlatformFactory, MemoryCachedMusicPlatformFactory>()
+  services.Decorate<IMusicPlatformFactory, RedisMusicPlatformFactory>().Decorate<IMusicPlatformFactory, MemoryCachedMusicPlatformFactory>()

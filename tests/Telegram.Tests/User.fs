@@ -14,13 +14,16 @@ open otsom.fs.Bot
 let ``should list presets`` () =
   let botService = Mock<IBotService>()
 
-  botService
-    .Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny()))
-    .ReturnsAsync(())
+  botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
   let presetRepo = Mock<IPresetRepo>()
 
-  presetRepo.Setup(_.ListUserPresets(Mocks.userId)).ReturnsAsync([{ Id = Mocks.presetId; Name = Mocks.preset.Name }])
+  presetRepo
+    .Setup(_.ListUserPresets(Mocks.userId))
+    .ReturnsAsync(
+      [ { Id = Mocks.presetId
+          Name = Mocks.preset.Name } ]
+    )
 
   task {
     do! User.listPresets botService.Object presetRepo.Object Mocks.botMessageId Mocks.userId
@@ -37,15 +40,11 @@ let ``sendCurrentPreset should show current preset details with actions keyboard
 
   let presetRepo = Mock<IPresetRepo>()
 
-  presetRepo
-    .Setup(fun m -> m.LoadPreset Mocks.presetId)
-    .ReturnsAsync(Some Mocks.preset)
+  presetRepo.Setup(fun m -> m.LoadPreset Mocks.presetId).ReturnsAsync(Some Mocks.preset)
 
   let botService = Mock<IBotService>()
 
-  botService
-    .Setup(_.SendKeyboard(It.IsAny(), It.IsAny()))
-    .ReturnsAsync(Mocks.botMessageId)
+  botService.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
   let sut = User.sendCurrentPreset userRepo.Object presetRepo.Object botService.Object
 
@@ -72,9 +71,7 @@ let ``sendCurrentPreset should send "create preset" button if current preset is 
 
   let botService = Mock<IBotService>()
 
-  botService
-    .Setup(_.SendKeyboard(It.IsAny(), It.IsAny()))
-    .ReturnsAsync(Mocks.botMessageId)
+  botService.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
   let sut = User.sendCurrentPreset userRepo.Object presetRepo.Object botService.Object
 

@@ -79,8 +79,7 @@ type BindingErrorHandlerMiddleware(logger: ILogger<BindingErrorHandlerMiddleware
         do! JsonSerializer.SerializeAsync(response.Body, {| Error = ioe.Message |})
 
         ()
-      | e ->
-        logger.LogError(e, "Error")
+      | e -> logger.LogError(e, "Error")
     }
 
 let private configureFunctionsWebApp (builder: IFunctionsWorkerApplicationBuilder) =

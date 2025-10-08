@@ -205,7 +205,7 @@ let includePlaylistButtonMessageHandler
   fun message -> task {
     match message.Text with
     | Equals Buttons.IncludePlaylist ->
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform (message.Chat.UserId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(message.Chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -228,7 +228,7 @@ let excludePlaylistButtonMessageHandler
   fun message -> task {
     match message.Text with
     | Equals Buttons.ExcludePlaylist ->
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform (message.Chat.UserId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(message.Chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -252,7 +252,7 @@ let targetPlaylistButtonMessageHandler
     match message.Text with
     | Equals Buttons.TargetPlaylist ->
 
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform (message.Chat.UserId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(message.Chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->

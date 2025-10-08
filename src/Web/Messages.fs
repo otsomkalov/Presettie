@@ -21,8 +21,7 @@ module Preset =
   [<RequireQualifiedAccess>]
   module List' =
     [<RequireQualifiedAccess>]
-    type Message =
-      | PresetsLoaded of SimplePreset list
+    type Message = PresetsLoaded of SimplePreset list
 
   [<RequireQualifiedAccess>]
   type Message =
