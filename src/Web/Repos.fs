@@ -13,7 +13,11 @@ type IGetPreset =
 type IRemovePreset =
   abstract RemovePreset: PresetId -> Task<unit>
 
+type ICreatePreset =
+  abstract CreatePreset: string -> Task<PresetId>
+
 type IEnv =
   inherit IListPresets
   inherit IGetPreset
   inherit IRemovePreset
+  inherit ICreatePreset

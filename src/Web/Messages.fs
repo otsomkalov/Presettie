@@ -24,10 +24,19 @@ module Preset =
     type Message = PresetsLoaded of SimplePreset list
 
   [<RequireQualifiedAccess>]
+  module Create' =
+    [<RequireQualifiedAccess>]
+    type Message =
+      | CreatePreset
+      | NameChanged of string
+      | CreatePresetError of exn
+
+  [<RequireQualifiedAccess>]
   type Message =
     | List of List'.Message
     | Details of Details'.Message
     | Remove of Remove'.Message
+    | Create of Create'.Message
 
 type AuthMsg = AuthChecked of AuthenticationState
 
