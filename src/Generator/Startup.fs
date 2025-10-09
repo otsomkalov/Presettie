@@ -12,6 +12,7 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.ApplicationInsights
 open Microsoft.Azure.Functions.Worker
+open Telegram.Bot.AspNetCore
 
 let private configureServices (builderContext: HostBuilderContext) (services: IServiceCollection) : unit =
 

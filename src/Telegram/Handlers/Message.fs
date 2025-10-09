@@ -3,7 +3,6 @@
 open Domain.Repos
 open MusicPlatform
 open Resources
-open Telegram.Core
 open otsom.fs.Auth
 open otsom.fs.Bot
 open otsom.fs.Extensions.String
@@ -14,6 +13,7 @@ open Telegram.Helpers
 open Domain.Workflows
 open System
 open otsom.fs.Resources
+open Telegram.Core
 
 let startMessageHandler
   (userRepo: #ILoadUser)
