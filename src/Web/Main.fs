@@ -131,20 +131,18 @@ let view model dispatch = concat {
     | Page.Loading, _ -> Loading.render () dispatch
     | Page.NotFound, _ -> div { text "Not Found" }
 
+    | _, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
+
     | Page.Presets m, Some(state) when state.User.Identity.IsAuthenticated -> Preset.List.view m.Model (Message.Preset >> dispatch)
-    | Page.Presets _, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
     | Page.Presets _, _ -> Loading.render () dispatch
 
     | Page.Preset(id, m), Some(state) when state.User.Identity.IsAuthenticated -> Preset.Details.view m.Model dispatch
-    | Page.Preset _, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
     | Page.Preset _, _ -> Loading.render () dispatch
 
     | Page.CreatePreset m, Some(state) when state.User.Identity.IsAuthenticated -> Preset.Create.view m.Model dispatch
-    | Page.CreatePreset m, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
     | Page.CreatePreset m, _ -> Loading.render () dispatch
 
     | Page.Profile, Some(state) when state.User.Identity.IsAuthenticated -> div { $"Hello {state.User.Identity.Name}" }
-    | Page.Profile, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
     | Page.Profile, _ -> Loading.render () dispatch
 
     | Page.Auth action, _ -> comp<RemoteAuthenticatorView> { "Action" => action }
