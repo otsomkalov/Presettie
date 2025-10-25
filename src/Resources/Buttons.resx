@@ -54,8 +54,11 @@
     <data name="CreatePreset" xml:space="preserve">
         <value>➕ Create preset</value>
     </data>
-    <data name="EnableRecommendations" xml:space="preserve">
-        <value>➕ Enable recommendations</value>
+    <data name="ArtistsAlbumsRecommendations" xml:space="preserve">
+        <value>💽 Albums</value>
+    </data>
+    <data name="ReccoBeatsRecommendations" xml:space="preserve">
+        <value>🎛️ ReccoBeats</value>
     </data>
     <data name="DisableRecommendations" xml:space="preserve">
         <value>➖ Disable recommendations</value>

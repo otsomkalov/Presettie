@@ -90,6 +90,7 @@ module PresetSettings =
       RecommendationsEngine =
         (match settings.RecommendationsEngine with
          | Some RecommendationsEngine.ArtistAlbums -> Nullable<_> Entities.RecommendationsEngine.ArtistsAlbums
+         | Some RecommendationsEngine.ReccoBeats -> Nullable<_> Entities.RecommendationsEngine.ReccoBeats
          | None -> Nullable<Entities.RecommendationsEngine>()),
       UniqueArtists = settings.UniqueArtists
     )

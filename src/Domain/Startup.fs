@@ -9,6 +9,7 @@ open MusicPlatform
 
 let addDomain cfg (services: IServiceCollection) =
   services
+    .AddKeyedSingleton<IRecommender, ArtistAlbumsRecommender>("artistAlbums")
     .AddSingleton<Shuffler<Track>>(List.randomShuffle)
     .AddSingleton<IPresetService, PresetService>()
     .AddSingleton<IUserService, UserService>()
