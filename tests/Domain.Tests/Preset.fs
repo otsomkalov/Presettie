@@ -42,8 +42,10 @@ module Run =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    let recommender = Mock<IRecommender>()
+
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -78,8 +80,10 @@ module Run =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    let recommender = Mock<IRecommender>()
+
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -106,8 +110,10 @@ module Run =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    let recommender = Mock<IRecommender>()
+
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -136,8 +142,10 @@ module Run =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    let recommender = Mock<IRecommender>()
+
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -176,8 +184,10 @@ module Run =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    let recommender = Mock<IRecommender>()
+
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -213,8 +223,10 @@ module Run =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    let recommender = Mock<IRecommender>()
+
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -251,8 +263,10 @@ module Run =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    let recommender = Mock<IRecommender>()
+
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -284,8 +298,10 @@ module Run =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    let recommender = Mock<IRecommender>()
+
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -320,8 +336,10 @@ module Run =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    let recommender = Mock<IRecommender>()
+
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -360,8 +378,10 @@ module Run =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    let recommender = Mock<IRecommender>()
+
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -370,6 +390,7 @@ module Run =
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
+      recommender.VerifyAll()
     }
 
   [<Fact>]
@@ -405,8 +426,10 @@ module Run =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    let recommender = Mock<IRecommender>()
+
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler)
+      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -432,8 +455,10 @@ type GetPreset() =
 
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-  let sut =
-    PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, id) :> IGetPreset
+  let recommender = Mock<IRecommender>()
+
+  let sut: IPresetService =
+    PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, id, recommender.Object)
 
   [<Fact>]
   let ``returns Preset if it belongs to User`` () =
@@ -481,8 +506,10 @@ type RemovePreset() =
 
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
 
-  let sut =
-    PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, id) :> IRemovePreset
+  let recommender = Mock<IRecommender>()
+
+  let sut: IPresetService =
+    PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, id, recommender.Object)
 
   [<Fact>]
   let ``removes preset if found and belongs to user`` () =
