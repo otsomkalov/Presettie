@@ -3,7 +3,6 @@
 open Domain.Core
 open Domain.Repos
 open MusicPlatform
-open Resources
 open Telegram.Constants
 open Telegram.Core
 open Telegram.Workflows
@@ -12,12 +11,13 @@ open System
 open otsom.fs.Extensions
 open otsom.fs.Resources
 open Domain.Core.PresetSettings
+open Telegram.Resources
 
 let presetInfoClickHandler presetRepo (resp: IResourceProvider) botService : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; id; "i" ] ->
-      do! Preset.show presetRepo botService click.MessageId (PresetId id)
+      do! Preset.show presetRepo botService resp click.MessageId (PresetId id)
 
       return Some()
     | _ -> return None
@@ -45,8 +45,8 @@ let artistsAlbumsRecommendationsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ArtistAlbums)
-      do! botService.SendNotification(click.Id, Messages.Updated)
-      do! Preset.show presetRepo botService click.MessageId presetId
+      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -64,8 +64,8 @@ let reccoBeatsRecommendationsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ReccoBeats)
-      do! botService.SendNotification(click.Id, Messages.Updated)
-      do! Preset.show presetRepo botService click.MessageId presetId
+      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -83,8 +83,8 @@ let disableRecommendationsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.SetRecommendationsEngine(presetId, None)
-      do! botService.SendNotification(click.Id, Messages.Updated)
-      do! Preset.show presetRepo botService click.MessageId presetId
+      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -102,8 +102,8 @@ let enableUniqueArtistsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.EnableUniqueArtists presetId
-      do! botService.SendNotification(click.Id, Messages.Updated)
-      do! Preset.show presetRepo botService click.MessageId presetId
+      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -121,8 +121,8 @@ let disableUniqueArtistsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.DisableUniqueArtists presetId
-      do! botService.SendNotification(click.Id, Messages.Updated)
-      do! Preset.show presetRepo botService click.MessageId presetId
+      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -140,8 +140,8 @@ let includeLikedTracksClickHandler
       let presetId = (PresetId presetId)
 
       do! presetService.IncludeLikedTracks presetId
-      do! botService.SendNotification(click.Id, Messages.Updated)
-      do! Preset.show presetRepo botService click.MessageId presetId
+      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -159,8 +159,8 @@ let excludeLikedTracksClickHandler
       let presetId = (PresetId presetId)
 
       do! presetService.ExcludeLikedTracks presetId
-      do! botService.SendNotification(click.Id, Messages.Updated)
-      do! Preset.show presetRepo botService click.MessageId presetId
+      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -178,8 +178,8 @@ let ignoreLikedTracksClickHandler
       let presetId = (PresetId presetId)
 
       do! presetService.IgnoreLikedTracks presetId
-      do! botService.SendNotification(click.Id, Messages.Updated)
-      do! Preset.show presetRepo botService click.MessageId presetId
+      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -199,7 +199,7 @@ let showIncludedPlaylistClickHandler
 
       let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
-      do! IncludedPlaylist.show botService presetRepo mp click.MessageId presetId playlistId
+      do! IncludedPlaylist.show resp botService presetRepo mp click.MessageId presetId playlistId
 
       return Some()
     | _ -> return None
@@ -252,7 +252,7 @@ let showExcludedPlaylistClickHandler
         )
 
       let messageText =
-        String.Format(Messages.ExcludedPlaylistDetails, excludedPlaylist.Name, playlistTracksCount)
+        resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name, playlistTracksCount |]]
 
       let buttons = getPlaylistButtons presetId playlistId "ep" Seq.empty
 
@@ -291,7 +291,7 @@ let showTargetedPlaylistClickHandler
 
       let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
-      do! TargetedPlaylist.show botService presetRepo mp click.MessageId presetId (WritablePlaylistId playlistId)
+      do! TargetedPlaylist.show resp botService presetRepo mp click.MessageId presetId (WritablePlaylistId playlistId)
 
       return Some()
     | _ -> return None
@@ -327,7 +327,7 @@ let appendToTargetedPlaylistClickHandler
       do! presetService.AppendToTargetedPlaylist(presetId, playlistId)
 
       let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
-      do! TargetedPlaylist.show botService presetRepo mp click.MessageId presetId playlistId
+      do! TargetedPlaylist.show resp botService presetRepo mp click.MessageId presetId playlistId
 
       return Some()
     | _ -> return None
@@ -350,7 +350,7 @@ let overwriteTargetedPlaylistClickHandler
 
       let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
-      do! TargetedPlaylist.show botService presetRepo mp click.MessageId presetId playlistId
+      do! TargetedPlaylist.show resp botService presetRepo mp click.MessageId presetId playlistId
 
       return Some()
     | _ -> return None
@@ -470,7 +470,7 @@ let setOnlyLikedIncludedPlaylistClickHandler
 
       let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
-      do! IncludedPlaylist.show botService presetRepo mp click.MessageId presetId playlistId
+      do! IncludedPlaylist.show resp botService presetRepo mp click.MessageId presetId playlistId
 
       return Some()
     | _ -> return None
@@ -493,7 +493,7 @@ let setAllTracksIncludedPlaylistClickHandler
 
       let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
-      do! IncludedPlaylist.show botService presetRepo mp click.MessageId presetId playlistId
+      do! IncludedPlaylist.show resp botService presetRepo mp click.MessageId presetId playlistId
 
       return Some()
     | _ -> return None
@@ -512,12 +512,12 @@ let removePresetClickHandler
 
       match! userService.RemoveUserPreset(click.Chat.UserId, presetId) with
       | Ok _ ->
-        do! botService.SendNotification(click.Id, Messages.PresetRemoved)
+        do! botService.SendNotification(click.Id, resp[Messages.PresetRemoved])
         do! User.listPresets botService presetRepo click.MessageId click.Chat.UserId
 
         return Some()
       | Error Preset.GetPresetError.NotFound ->
-        do! botService.SendNotification(click.Id, Messages.PresetNotFound)
+        do! botService.SendNotification(click.Id, resp[Messages.PresetNotFound])
 
         return Some()
     | _ -> return None

@@ -9,6 +9,7 @@ open Infrastructure
 open Telegram.Bot.Types
 open Telegram.Core
 open Telegram.Repos
+open Telegram.Resources
 open otsom.fs.Extensions
 open otsom.fs.Bot
 
@@ -67,7 +68,7 @@ type MessageService
       | None ->
         Logf.logfw logger "Message content didn't match any handler. Running default one."
 
-        return! chatCtx.SendMessage Messages.UnknownCommand &|> ignore
+        return! chatCtx.SendMessage resp[Messages.UnknownCommand] &|> ignore
     }
 
 type CallbackQueryService
@@ -124,5 +125,5 @@ type CallbackQueryService
       | None ->
         Logf.logfw logger "Button click data didn't match any handler. Running default one."
 
-        return! botService.SendNotification(clickId, Messages.UnknownCommand)
+        return! botService.SendNotification(clickId, resp[Messages.UnknownCommand])
     }
