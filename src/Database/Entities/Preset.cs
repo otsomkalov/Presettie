@@ -5,7 +5,8 @@ namespace Database.Entities;
 
 public enum RecommendationsEngine
 {
-    ArtistsAlbums
+    ArtistsAlbums,
+    ReccoBeats
 }
 
 [BsonIgnoreExtraElements]

@@ -60,6 +60,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 💽 Albums.
+        /// </summary>
+        public static string ArtistsAlbumsRecommendations {
+            get {
+                return ResourceManager.GetString("ArtistsAlbumsRecommendations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ⬅️Back.
         /// </summary>
         public static string Back {
@@ -92,15 +101,6 @@ namespace Resources {
         public static string DisableUniqueArtists {
             get {
                 return ResourceManager.GetString("DisableUniqueArtists", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ➕ Enable recommendations.
-        /// </summary>
-        public static string EnableRecommendations {
-            get {
-                return ResourceManager.GetString("EnableRecommendations", resourceCulture);
             }
         }
         
@@ -173,6 +173,15 @@ namespace Resources {
         public static string MyPresets {
             get {
                 return ResourceManager.GetString("MyPresets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 🎛️ ReccoBeats.
+        /// </summary>
+        public static string ReccoBeatsRecommendations {
+            get {
+                return ResourceManager.GetString("ReccoBeatsRecommendations", resourceCulture);
             }
         }
         

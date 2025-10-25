@@ -19,6 +19,9 @@ module CallbackQueryConstants =
   let artistsAlbumsRecommendations = "aar"
 
   [<Literal>]
+  let reccoBeatsRecommendations = "rbr"
+
+  [<Literal>]
   let disableRecommendations = "dr"
 
   [<Literal>]

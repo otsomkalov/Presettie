@@ -56,7 +56,9 @@ module PresetSettings =
 
     member this.Value = let (RawPresetSize va) = this in va
 
-  type RecommendationsEngine = | ArtistAlbums
+  type RecommendationsEngine =
+    | ArtistAlbums
+    | ReccoBeats
 
   type ParsingError =
     | NotANumber
@@ -282,3 +284,6 @@ type IUserService =
   inherit ISetCurrentPreset
   inherit IRemoveUserPreset
   inherit ICreateUser
+
+type IRecommenderFactory =
+  abstract Create: PresetSettings.RecommendationsEngine -> IRecommender

@@ -308,6 +308,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 🎛️ ReccoBeats.
+        /// </summary>
+        public static string ReccoBeatsRecommendation {
+            get {
+                return ResourceManager.GetString("ReccoBeatsRecommendation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ➖ Recommendations are disabled.
         /// </summary>
         public static string RecommendationsDisabled {

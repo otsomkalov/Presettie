@@ -33,7 +33,7 @@ let listPresetsClickHandler userRepo (resp: IResourceProvider) botService : Clic
     | _ -> return None
   }
 
-let enableRecommendationsClickHandler
+let artistsAlbumsRecommendationsClickHandler
   presetRepo
   (presetService: #ISetRecommendationsEngine)
   (resp: IResourceProvider)
@@ -45,6 +45,25 @@ let enableRecommendationsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ArtistAlbums)
+      do! botService.SendNotification(click.Id, Messages.Updated)
+      do! Preset.show presetRepo botService click.MessageId presetId
+
+      return Some()
+    | _ -> return None
+  }
+
+let reccoBeatsRecommendationsClickHandler
+  presetRepo
+  (presetService: #ISetRecommendationsEngine)
+  (resp: IResourceProvider)
+  (botService: #ISendNotification)
+  : ClickHandler =
+  fun click -> task {
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.reccoBeatsRecommendations ] ->
+      let presetId = PresetId presetId
+
+      do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ReccoBeats)
       do! botService.SendNotification(click.Id, Messages.Updated)
       do! Preset.show presetRepo botService click.MessageId presetId
 

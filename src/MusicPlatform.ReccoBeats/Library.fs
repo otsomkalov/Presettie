@@ -30,16 +30,21 @@ type internal TrackResponse =
 
 type internal Response = { Content: TrackResponse list }
 
-type GetRecommendations(httpClientFactory: IHttpClientFactory) =
+type ReccoBeatsRecommender(httpClientFactory: IHttpClientFactory) =
+  [<Literal>]
+  let seedsLimit = 5
+
+  [<Literal>]
   let recommendationsLimit = 100
+
   let jsonSettings = JsonFSharpOptions.Default().ToJsonSerializerOptions()
 
   do jsonSettings.PropertyNameCaseInsensitive <- true
 
-  interface IGetRecommendations with
-    member this.GetRecommendations(tracksIds) =
+  interface IRecommender with
+    member this.Recommend(tracks) =
       let queryParams =
-        [ ("seeds", String.concat "," (tracksIds |> List.takeSafe 5 |> List.map _.Value))
+        [ ("seeds", String.concat "," (tracks |> List.takeSafe seedsLimit |> List.map _.Id.Value))
           ("size", string recommendationsLimit) ]
         |> dict
 
