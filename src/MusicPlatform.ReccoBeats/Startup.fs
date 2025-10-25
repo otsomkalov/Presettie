@@ -22,4 +22,4 @@ let addReccoBeatsMusicPlatform (cfg: IConfiguration) (services: IServiceCollecti
 
   services.AddHttpClient(Settings.SectionName, configureHttpClient)
 
-  services.AddKeyedSingleton<IRecommender, ReccoBeatsRecommender>("reccoBeats")
+  services.AddSingleton<IRecommender, ReccoBeatsRecommender>()
