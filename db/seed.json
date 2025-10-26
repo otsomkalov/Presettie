@@ -20,6 +20,7 @@
   { "key": "messages.send-preset-name", "value": "Send new preset name in reply to this message" },
   { "key": "messages.artists-albums-recommendation", "value": "💽 Artists albums" },
   { "key": "messages.recco-beats-recommendation", "value": "🎛️ ReccoBeats" },
+  { "key": "messages.spotify-recommendation", "value": "🎵 Spotify" },
   { "key": "messages.recommendations-disabled", "value": "➖ Recommendations are disabled" },
   { "key": "messages.unique-artists-enabled", "value": "👤 Unique artists" },
   { "key": "messages.unique-artists-disabled", "value": "👥 Non-unique artists" },
@@ -35,5 +36,7 @@
   { "key": "messages.no-current-preset", "value": "No current preset selected!" },
   { "key": "messages.preset-validation-error", "value": "Error during preset validation!" },
   { "key": "messages.preset-removed", "value": "Preset successfully removed!" },
-  { "key": "messages.preset-not-found", "value": "Preset not found!" }
+  { "key": "messages.preset-not-found", "value": "Preset not found!" },
+
+  { "key": "buttons.spotify-recommendation", "value": "🎵 Spotify"  }
 ]

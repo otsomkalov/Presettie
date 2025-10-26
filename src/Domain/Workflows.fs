@@ -511,6 +511,7 @@ type RecommenderFactory(musicPlatform: IMusicPlatform, reccoBeatsRecommender: IR
       match recommenderType with
       | RecommendationsEngine.ArtistAlbums -> ArtistAlbumsRecommender(musicPlatform)
       | RecommendationsEngine.ReccoBeats -> reccoBeatsRecommender
+      | RecommendationsEngine.Spotify -> musicPlatform
 
 type Shuffler<'a> = 'a list -> 'a list
 

@@ -91,6 +91,7 @@ type IMusicPlatform =
   inherit IListPlaylistTracks
   inherit IListLikedTracks
   inherit IListArtistTracks
+  inherit IRecommender
 
 type IMusicPlatformFactory =
   abstract GetMusicPlatform: UserId -> Task<IMusicPlatform option>

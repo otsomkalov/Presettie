@@ -44,6 +44,10 @@ let getPresetMessage (resp: IResourceProvider) =
         sprintf "p|%s|%s" presetId CallbackQueryConstants.reccoBeatsRecommendations
       | Some RecommendationsEngine.ReccoBeats ->
         resp[Messages.ReccoBeatsRecommendation],
+        resp[Buttons.SpotifyRecommendations],
+        sprintf "p|%s|%s" presetId CallbackQueryConstants.spotifyRecommendations
+      | Some RecommendationsEngine.Spotify ->
+        resp[Messages.SpotifyRecommendation],
         Buttons.DisableRecommendations,
         sprintf "p|%s|%s" presetId CallbackQueryConstants.disableRecommendations
       | None ->
@@ -54,9 +58,13 @@ let getPresetMessage (resp: IResourceProvider) =
     let uniqueArtistsText, uniqueArtistsButtonText, uniqueArtistsButtonData =
       match preset.Settings.UniqueArtists with
       | true ->
-        resp[Messages.UniqueArtistsEnabled], Buttons.DisableUniqueArtists, sprintf "p|%s|%s" presetId CallbackQueryConstants.disableUniqueArtists
+        resp[Messages.UniqueArtistsEnabled],
+        Buttons.DisableUniqueArtists,
+        sprintf "p|%s|%s" presetId CallbackQueryConstants.disableUniqueArtists
       | false ->
-        resp[Messages.UniqueArtistsDisabled], Buttons.EnableUniqueArtists, sprintf "p|%s|%s" presetId CallbackQueryConstants.enableUniqueArtists
+        resp[Messages.UniqueArtistsDisabled],
+        Buttons.EnableUniqueArtists,
+        sprintf "p|%s|%s" presetId CallbackQueryConstants.enableUniqueArtists
 
     let text =
       String.Format(

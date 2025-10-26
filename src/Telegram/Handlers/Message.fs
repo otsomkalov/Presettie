@@ -113,7 +113,8 @@ let backMessageButtonHandler loadUser getPreset (resp: IResourceProvider) (chatC
   }
 
 let presetSettingsMessageHandler userRepo presetRepo (resp: IResourceProvider) chatCtx : MessageHandler =
-  let sendSettingsMessage = User.sendCurrentPresetSettings resp userRepo presetRepo chatCtx
+  let sendSettingsMessage =
+    User.sendCurrentPresetSettings resp userRepo presetRepo chatCtx
 
   fun message -> task {
     match message.Text with

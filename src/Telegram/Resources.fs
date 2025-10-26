@@ -70,6 +70,9 @@ module Messages =
   let ReccoBeatsRecommendation = "messages.recco-beats-recommendation"
 
   [<Literal>]
+  let SpotifyRecommendation = "messages.spotify-recommendation"
+
+  [<Literal>]
   let RecommendationsDisabled = "messages.recommendations-disabled"
 
   [<Literal>]
@@ -116,3 +119,8 @@ module Messages =
 
   [<Literal>]
   let PresetNotFound = "messages.preset-not-found"
+
+[<RequireQualifiedAccess>]
+module Buttons =
+  [<Literal>]
+  let SpotifyRecommendations = "buttons.spotify-recommendations"
