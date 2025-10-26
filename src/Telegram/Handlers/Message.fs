@@ -2,7 +2,6 @@
 
 open Domain.Repos
 open MusicPlatform
-open Resources
 open otsom.fs.Auth
 open otsom.fs.Bot
 open otsom.fs.Extensions.String
@@ -94,10 +93,11 @@ let myPresetsMessageHandler presetRepo (resp: IResourceProvider) (chatCtx: #ISen
 
   fun message -> task {
     match message.Text with
-    | Equals Buttons.MyPresets
+    | Equals(resp.Item(Buttons.MyPresets)) ->
+      do! sendUserPresets message.Chat.UserId
+      return Some()
     | Equals "/presets" ->
       do! sendUserPresets message.Chat.UserId
-
       return Some()
     | _ -> return None
   }
@@ -105,7 +105,7 @@ let myPresetsMessageHandler presetRepo (resp: IResourceProvider) (chatCtx: #ISen
 let backMessageButtonHandler loadUser getPreset (resp: IResourceProvider) (chatCtx: #ISendKeyboard) : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals Buttons.Back ->
+    | Equals(resp.Item(Buttons.Back)) ->
       do! User.sendCurrentPreset resp loadUser getPreset chatCtx message.Chat.UserId
 
       return Some()
@@ -113,11 +113,12 @@ let backMessageButtonHandler loadUser getPreset (resp: IResourceProvider) (chatC
   }
 
 let presetSettingsMessageHandler userRepo presetRepo (resp: IResourceProvider) chatCtx : MessageHandler =
-  let sendSettingsMessage = User.sendCurrentPresetSettings resp userRepo presetRepo chatCtx
+  let sendSettingsMessage =
+    User.sendCurrentPresetSettings resp userRepo presetRepo chatCtx
 
   fun message -> task {
     match message.Text with
-    | Equals Buttons.Settings ->
+    | Equals(resp.Item(Buttons.Settings)) ->
       do! sendSettingsMessage message.Chat.UserId
 
       return Some()
@@ -127,9 +128,8 @@ let presetSettingsMessageHandler userRepo presetRepo (resp: IResourceProvider) c
 let setPresetSizeMessageButtonHandler (resp: IResourceProvider) (chatCtx: #IAskForReply) : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals Buttons.SetPresetSize ->
+    | Equals(resp.Item(Buttons.SetPresetSize)) ->
       do! chatCtx.AskForReply resp[Messages.SendPresetSize]
-
       return Some()
     | _ -> return None
   }
@@ -153,7 +153,7 @@ let setPresetSizeMessageHandler
   fun message -> task {
     match message with
     | { Text = text
-        ReplyMessage = Some { Text = replyText } } when replyText = Buttons.SetPresetSize ->
+        ReplyMessage = Some { Text = replyText } } when replyText = resp[Buttons.SetPresetSize] ->
       do!
         userService.SetCurrentPresetSize(message.Chat.UserId, (PresetSettings.RawPresetSize text))
         |> TaskResult.taskEither (onSuccess message.Chat.UserId) (onError >> Task.ignore)
@@ -171,7 +171,7 @@ let setPresetSizeMessageHandler
 let createPresetButtonMessageHandler (resp: IResourceProvider) (chatCtx: #IAskForReply) : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals Buttons.CreatePreset ->
+    | Equals(resp.Item(Buttons.CreatePreset)) ->
       do! chatCtx.AskForReply resp[Messages.SendPresetName]
 
       return Some()
@@ -205,7 +205,7 @@ let includePlaylistButtonMessageHandler
   : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals Buttons.IncludePlaylist ->
+    | Equals(resp.Item(Buttons.IncludePlaylist)) ->
       let! musicPlatform = musicPlatformFactory.GetMusicPlatform(message.Chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
@@ -228,7 +228,7 @@ let excludePlaylistButtonMessageHandler
   : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals Buttons.ExcludePlaylist ->
+    | Equals(resp.Item(Buttons.ExcludePlaylist)) ->
       let! musicPlatform = musicPlatformFactory.GetMusicPlatform(message.Chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
@@ -251,7 +251,7 @@ let targetPlaylistButtonMessageHandler
   : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals Buttons.TargetPlaylist ->
+    | Equals(resp.Item(Buttons.TargetPlaylist)) ->
 
       let! musicPlatform = musicPlatformFactory.GetMusicPlatform(message.Chat.UserId.ToMusicPlatformId())
 
@@ -287,11 +287,11 @@ let includePlaylistMessageHandler
       let onError =
         function
         | Preset.IncludePlaylistError.IdParsing(Playlist.IdParsingError id) ->
-          chatCtx.SendMessage(String.Format(Messages.PlaylistIdCannotBeParsed, id))
+          chatCtx.SendMessage resp[Messages.PlaylistIdCannotBeParsed, [| id |]]
         | Preset.IncludePlaylistError.Load(Playlist.LoadError.NotFound) ->
           let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
 
-          chatCtx.SendMessage(String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
+          chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId |]]
         | Preset.IncludePlaylistError.Unauthorized -> sendLoginMessage authService resp chatCtx userId
 
       return! includePlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
@@ -331,10 +331,10 @@ let excludePlaylistMessageHandler
       let onError =
         function
         | Preset.ExcludePlaylistError.IdParsing(Playlist.IdParsingError id) ->
-          chatCtx.SendMessage(String.Format(Messages.PlaylistIdCannotBeParsed, id))
+          chatCtx.SendMessage resp[Messages.PlaylistIdCannotBeParsed, [| id |]]
         | Preset.ExcludePlaylistError.Load(Playlist.LoadError.NotFound) ->
           let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
-          chatCtx.SendMessage(String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
+          chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId |]]
         | Preset.ExcludePlaylistError.Unauthorized -> sendLoginMessage authService resp chatCtx userId
 
       return! excludePlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
@@ -374,10 +374,10 @@ let targetPlaylistMessageHandler
       let onError =
         function
         | Preset.TargetPlaylistError.IdParsing(Playlist.IdParsingError id) ->
-          chatCtx.SendMessage(String.Format(Messages.PlaylistIdCannotBeParsed, id))
+          chatCtx.SendMessage resp[Messages.PlaylistIdCannotBeParsed, [| id |]]
         | Preset.TargetPlaylistError.Load(Playlist.LoadError.NotFound) ->
           let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
-          chatCtx.SendMessage(String.Format(Messages.PlaylistNotFoundInSpotify, rawPlaylistId))
+          chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId |]]
         | Preset.TargetPlaylistError.AccessError _ -> chatCtx.SendMessage resp[Messages.PlaylistIsReadonly]
         | Preset.TargetPlaylistError.Unauthorized -> sendLoginMessage authService resp chatCtx userId
 
@@ -402,10 +402,11 @@ let queuePresetRunMessageHandler userRepo presetService (resp: IResourceProvider
   fun message -> task {
 
     match message.Text with
-    | Equals "/run"
-    | Equals Buttons.RunPreset ->
+    | Equals "/run" ->
       do! User.queueCurrentPresetRun userRepo chatCtx presetService message.Chat.UserId
-
+      return Some()
+    | Equals(resp.Item(Buttons.RunPreset)) ->
+      do! User.queueCurrentPresetRun userRepo chatCtx presetService message.Chat.UserId
       return Some()
     | _ -> return None
   }

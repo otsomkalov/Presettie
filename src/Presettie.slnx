@@ -2,7 +2,6 @@
   <Folder Name="/src/" />
   <Folder Name="/src/Bot/">
     <Project Path="Infrastructure.Telegram\Infrastructure.Telegram.fsproj" Type="Classic F#" />
-    <Project Path="Resources\Resources.csproj" Type="Classic C#" />
     <Project Path="Telegram\Telegram.fsproj" Type="Classic F#" />
   </Folder>
   <Folder Name="/src/Domain/">

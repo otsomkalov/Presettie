@@ -5,6 +5,7 @@ open Microsoft.FSharp.Core
 // String constants mirroring Resources project keys with kebab-case values
 // These are [<Literal>] so they can be used in attributes and active patterns
 
+[<RequireQualifiedAccess>]
 module Messages =
   [<Literal>]
   let PresetInfo = "messages.preset-info"
@@ -116,3 +117,59 @@ module Messages =
 
   [<Literal>]
   let PresetNotFound = "messages.preset-not-found"
+
+[<RequireQualifiedAccess>]
+module Buttons =
+  [<Literal>]
+  let RunPreset = "buttons.run-preset"
+
+  [<Literal>]
+  let Login = "buttons.login"
+
+  [<Literal>]
+  let Settings = "buttons.settings"
+
+  [<Literal>]
+  let SetPresetSize = "buttons.set-preset-size"
+
+  [<Literal>]
+  let IncludeLikedTracks = "buttons.include-liked-tracks"
+
+  [<Literal>]
+  let ExcludeLikedTracks = "buttons.exclude-liked-tracks"
+
+  [<Literal>]
+  let IgnoreLikedTracks = "buttons.ignore-liked-tracks"
+
+  [<Literal>]
+  let IncludePlaylist = "buttons.include-playlist"
+
+  [<Literal>]
+  let ExcludePlaylist = "buttons.exclude-playlist"
+
+  [<Literal>]
+  let TargetPlaylist = "buttons.target-playlist"
+
+  [<Literal>]
+  let MyPresets = "buttons.my-presets"
+
+  [<Literal>]
+  let CreatePreset = "buttons.create-preset"
+
+  [<Literal>]
+  let ArtistsAlbumsRecommendations = "buttons.artists-albums-recommendations"
+
+  [<Literal>]
+  let ReccoBeatsRecommendations = "buttons.recco-beats-recommendations"
+
+  [<Literal>]
+  let DisableRecommendations = "buttons.disable-recommendations"
+
+  [<Literal>]
+  let EnableUniqueArtists = "buttons.enable-unique-artists"
+
+  [<Literal>]
+  let DisableUniqueArtists = "buttons.disable-unique-artists"
+
+  [<Literal>]
+  let Back = "buttons.back"

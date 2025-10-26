@@ -30,43 +30,45 @@ let getPresetMessage (resp: IResourceProvider) =
     let likedTracksHandlingText, likedTracksButtonText, likedTracksButtonData =
       match preset.Settings.LikedTracksHandling with
       | LikedTracksHandling.Include ->
-        resp[Messages.LikedTracksIncluded], Buttons.ExcludeLikedTracks, $"p|{presetId}|{CallbackQueryConstants.excludeLikedTracks}"
+        resp[Messages.LikedTracksIncluded], resp[Buttons.ExcludeLikedTracks], $"p|{presetId}|{CallbackQueryConstants.excludeLikedTracks}"
       | LikedTracksHandling.Exclude ->
-        resp[Messages.LikedTracksExcluded], Buttons.IgnoreLikedTracks, $"p|{presetId}|{CallbackQueryConstants.ignoreLikedTracks}"
+        resp[Messages.LikedTracksExcluded], resp[Buttons.IgnoreLikedTracks], $"p|{presetId}|{CallbackQueryConstants.ignoreLikedTracks}"
       | LikedTracksHandling.Ignore ->
-        resp[Messages.LikedTracksIgnored], Buttons.IncludeLikedTracks, $"p|{presetId}|{CallbackQueryConstants.includeLikedTracks}"
+        resp[Messages.LikedTracksIgnored], resp[Buttons.IncludeLikedTracks], $"p|{presetId}|{CallbackQueryConstants.includeLikedTracks}"
 
     let recommendationsText, recommendationsButtonText, recommendationsButtonData =
       match preset.Settings.RecommendationsEngine with
       | Some RecommendationsEngine.ArtistAlbums ->
         resp[Messages.ArtistsAlbumsRecommendation],
-        Buttons.ReccoBeatsRecommendations,
+        resp[Buttons.ReccoBeatsRecommendations],
         sprintf "p|%s|%s" presetId CallbackQueryConstants.reccoBeatsRecommendations
       | Some RecommendationsEngine.ReccoBeats ->
         resp[Messages.ReccoBeatsRecommendation],
-        Buttons.DisableRecommendations,
+        resp[Buttons.DisableRecommendations],
         sprintf "p|%s|%s" presetId CallbackQueryConstants.disableRecommendations
       | None ->
         resp[Messages.RecommendationsDisabled],
-        Buttons.ArtistsAlbumsRecommendations,
+        resp[Buttons.ArtistsAlbumsRecommendations],
         sprintf "p|%s|%s" presetId CallbackQueryConstants.artistsAlbumsRecommendations
 
     let uniqueArtistsText, uniqueArtistsButtonText, uniqueArtistsButtonData =
       match preset.Settings.UniqueArtists with
       | true ->
-        resp[Messages.UniqueArtistsEnabled], Buttons.DisableUniqueArtists, sprintf "p|%s|%s" presetId CallbackQueryConstants.disableUniqueArtists
+        resp[Messages.UniqueArtistsEnabled],
+        resp[Buttons.DisableUniqueArtists],
+        sprintf "p|%s|%s" presetId CallbackQueryConstants.disableUniqueArtists
       | false ->
-        resp[Messages.UniqueArtistsDisabled], Buttons.EnableUniqueArtists, sprintf "p|%s|%s" presetId CallbackQueryConstants.enableUniqueArtists
+        resp[Messages.UniqueArtistsDisabled],
+        resp[Buttons.EnableUniqueArtists],
+        sprintf "p|%s|%s" presetId CallbackQueryConstants.enableUniqueArtists
 
     let text =
-      String.Format(
-        resp[Messages.PresetInfo],
-        preset.Name,
-        likedTracksHandlingText,
-        recommendationsText,
-        uniqueArtistsText,
-        preset.Settings.Size.Value
-      )
+      resp[Messages.PresetInfo,
+           [| preset.Name
+              likedTracksHandlingText
+              recommendationsText
+              uniqueArtistsText
+              preset.Settings.Size.Value |]]
 
     let keyboard = seq {
       MessageButton(likedTracksButtonText, likedTracksButtonData)
@@ -134,7 +136,7 @@ let getPlaylistButtons (presetId: PresetId) (playlistId: PlaylistId) playlistTyp
 let sendLoginMessage (authService: #IInitAuth) (resp: IResourceProvider) (chatCtx: #ISendLink) =
   fun (userId: UserId) ->
     authService.InitAuth(userId.ToAccountId())
-    |> Task.bind (fun uri -> chatCtx.SendLink(resp[Messages.LoginToSpotify], Buttons.Login, uri))
+    |> Task.bind (fun uri -> chatCtx.SendLink(resp[Messages.LoginToSpotify], resp[Buttons.Login], uri))
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
@@ -172,7 +174,12 @@ module IncludedPlaylist =
         )
 
       let messageText =
-        String.Format(resp[Messages.IncludedPlaylistDetails], includedPlaylist.Name, playlistTracksCount, includedPlaylist.LikedOnly)
+        let fmt =
+          match resp[Messages.IncludedPlaylistDetails] with
+          | null -> Messages.IncludedPlaylistDetails
+          | s -> s
+
+        String.Format(fmt, includedPlaylist.Name, playlistTracksCount, includedPlaylist.LikedOnly)
 
       let buttonText, buttonDataBuilder =
         if includedPlaylist.LikedOnly then
@@ -239,7 +246,7 @@ module TargetedPlaylist =
         )
 
       let messageText =
-        String.Format(resp[Messages.TargetedPlaylistDetails], targetedPlaylist.Name, playlistTracksCount, targetedPlaylist.Overwrite)
+        resp[Messages.TargetedPlaylistDetails, [| targetedPlaylist.Name; playlistTracksCount; targetedPlaylist.Overwrite |]]
 
       let buttonText, buttonDataBuilder =
         if targetedPlaylist.Overwrite then
@@ -317,15 +324,15 @@ module Preset =
       let text, _ = getPresetMessage resp preset
 
       let keyboard: Keyboard =
-        [ [ KeyboardButton(Buttons.RunPreset) ]
-          [ KeyboardButton(Buttons.MyPresets) ]
-          [ KeyboardButton(Buttons.CreatePreset) ]
+        [ [ KeyboardButton(resp[Buttons.RunPreset]) ]
+          [ KeyboardButton(resp[Buttons.MyPresets]) ]
+          [ KeyboardButton(resp[Buttons.CreatePreset]) ]
 
-          [ KeyboardButton(Buttons.IncludePlaylist)
-            KeyboardButton(Buttons.ExcludePlaylist)
-            KeyboardButton(Buttons.TargetPlaylist) ]
+          [ KeyboardButton(resp[Buttons.IncludePlaylist])
+            KeyboardButton(resp[Buttons.ExcludePlaylist])
+            KeyboardButton(resp[Buttons.TargetPlaylist]) ]
 
-          [ Buttons.Settings ] ]
+          [ resp[Buttons.Settings] ] ]
 
       chatCtx.SendKeyboard(text, keyboard) &|> ignore
 
@@ -360,8 +367,8 @@ module User =
         }
       | None ->
         let keyboard: Keyboard =
-          [ [ KeyboardButton(Buttons.MyPresets) ]
-            [ KeyboardButton(Buttons.CreatePreset) ] ]
+          [ [ KeyboardButton(resp[Buttons.MyPresets]) ]
+            [ KeyboardButton(resp[Buttons.CreatePreset]) ] ]
 
         chatCtx.SendKeyboard("You did not select current preset", keyboard) &|> ignore)
 
@@ -381,8 +388,8 @@ module User =
         let text, _ = getPresetMessage resp preset
 
         let buttons: Keyboard =
-          [| [| KeyboardButton Buttons.SetPresetSize |]
-             [| KeyboardButton(Buttons.Back) |] |]
+          [| [| KeyboardButton(resp[Buttons.SetPresetSize]) |]
+             [| KeyboardButton(resp[Buttons.Back]) |] |]
 
         do! chatCtx.SendKeyboard(text, buttons) &|> ignore
 
@@ -437,5 +444,5 @@ module Resources =
     | None -> createDefaultResp ()
 
 type ChatService(chatRepo: IChatRepo, userService: IUserService) =
-  interface IChatService with
+  interface IChatService with1
     member this.CreateChat(chatId) = Chat.create chatRepo userService chatId
