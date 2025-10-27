@@ -211,6 +211,9 @@ module Buttons =
   let ReccoBeatsRecommendations = "buttons.recco-beats-recommendations"
 
   [<Literal>]
+  let SpotifyRecommendations = "buttons.spotify-recommendations"
+
+  [<Literal>]
   let DisableRecommendations = "buttons.disable-recommendations"
 
   [<Literal>]
@@ -248,9 +251,6 @@ module Buttons =
 
   [<Literal>]
   let SetCurrentPreset = "buttons.set-current-preset"
-
-  [<Literal>]
-  let SpotifyRecommendations = "buttons.spotify-recommendations"
 
   [<Literal>]
   let IncludedPlaylistAll = "buttons.included-playlist-all"

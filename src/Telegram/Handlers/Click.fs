@@ -83,7 +83,7 @@ let spotifyRecommendationsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.Spotify)
-      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! botService.SendNotification(click.Id, resp[Notifications.Updated])
       do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
