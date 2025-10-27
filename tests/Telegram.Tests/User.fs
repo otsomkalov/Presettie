@@ -26,8 +26,10 @@ let ``should list presets`` () =
           Name = Mocks.preset.Name } ]
     )
 
+  let resp = Mock<IResourceProvider>()
+
   task {
-    do! User.listPresets botService.Object presetRepo.Object Mocks.botMessageId Mocks.userId
+    do! User.listPresets resp.Object botService.Object presetRepo.Object Mocks.botMessageId Mocks.userId
 
     botService.VerifyAll()
     presetRepo.VerifyAll()

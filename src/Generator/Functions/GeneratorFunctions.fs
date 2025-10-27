@@ -10,6 +10,7 @@ open Telegram.Core
 open Telegram.Repos
 open otsom.fs.Bot
 open otsom.fs.Core
+open otsom.fs.Resources
 
 type GeneratorFunctions
   (
@@ -17,14 +18,16 @@ type GeneratorFunctions
     _logger: ILogger<GeneratorFunctions>,
     buildChatContext: BuildBotService,
     chatRepo: IChatRepo,
-    presetService: IPresetService
+    presetService: IPresetService,
+    getResp: CreateResourceProvider
   ) =
 
-  let runPreset userId presetId chatId = task {
-    let chatCtx = buildChatContext chatId
+  let runPreset resp =
+    fun userId presetId chatId -> task {
+      let chatCtx = buildChatContext chatId
 
-    do! Telegram.Workflows.Preset.run chatCtx presetService (userId, presetId)
-  }
+      do! Telegram.Workflows.Preset.run resp chatCtx presetService (userId, presetId)
+    }
 
   [<Function("GenerateAsync")>]
   member this.GenerateAsync([<QueueTrigger("%Storage:QueueName%")>] command: {| UserId: string; PresetId: string |}, _: FunctionContext) =
@@ -37,6 +40,8 @@ type GeneratorFunctions
       let! chat = chatRepo.LoadUserChat userId
 
       match chat with
-      | Some chat -> do! runPreset userId presetId chat.Id
+      | Some chat ->
+        let! resp = getResp chat.Lang
+        do! runPreset resp userId presetId chat.Id
       | None -> Logf.logfw _logger "No chat found for user with id %s{UserId}" command.UserId
     }
