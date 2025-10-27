@@ -1,6 +1,5 @@
 ﻿module Infrastructure.Telegram.Services
 
-open Resources
 open System
 open FSharp
 open Microsoft.Extensions.Logging
@@ -9,6 +8,7 @@ open Infrastructure
 open Telegram.Bot.Types
 open Telegram.Core
 open Telegram.Repos
+open Telegram.Resources
 open otsom.fs.Extensions
 open otsom.fs.Bot
 
@@ -37,7 +37,7 @@ type MessageService
     task {
       let! chat =
         chatRepo.LoadChat chatId
-        |> Task.bind (Option.defaultWithTask (fun () -> chatService.CreateChat chatId))
+        |> Task.bind (Option.defaultWithTask (fun () -> chatService.CreateChat(chatId, lang)))
 
       let message' =
         { Id = ChatMessageId message.MessageId
@@ -67,7 +67,7 @@ type MessageService
       | None ->
         Logf.logfw logger "Message content didn't match any handler. Running default one."
 
-        return! chatCtx.SendMessage Messages.UnknownCommand &|> ignore
+        return! chatCtx.SendMessage resp[Messages.UnknownCommand] &|> ignore
     }
 
 type CallbackQueryService
@@ -97,7 +97,7 @@ type CallbackQueryService
     task {
       let! chat =
         chatRepo.LoadChat chatId
-        |> Task.bind (Option.defaultWithTask (fun () -> chatService.CreateChat chatId))
+        |> Task.bind (Option.defaultWithTask (fun () -> chatService.CreateChat(chatId, lang)))
 
       let click: Click =
         { Id = clickId
@@ -124,5 +124,5 @@ type CallbackQueryService
       | None ->
         Logf.logfw logger "Button click data didn't match any handler. Running default one."
 
-        return! botService.SendNotification(clickId, Messages.UnknownCommand)
+        return! botService.SendNotification(clickId, resp[Notifications.UnknownCommand])
     }

@@ -23,7 +23,8 @@ let private addClickHandlers (services: IServiceCollection) =
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IUserService>(removePresetClickHandler)
     .BuildSingleton<ClickHandlerFactory, IUserService>(setCurrentPresetClickHandler)
 
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(enableRecommendationsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(artistsAlbumsRecommendationsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(reccoBeatsRecommendationsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(disableRecommendationsClickHandler)
 
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(enableUniqueArtistsClickHandler)

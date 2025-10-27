@@ -9,6 +9,7 @@ open Moq
 open Xunit
 open Telegram.Workflows
 open otsom.fs.Bot
+open otsom.fs.Resources
 
 [<Fact>]
 let ``should list presets`` () =
@@ -25,8 +26,10 @@ let ``should list presets`` () =
           Name = Mocks.preset.Name } ]
     )
 
+  let resp = Mock<IResourceProvider>()
+
   task {
-    do! User.listPresets botService.Object presetRepo.Object Mocks.botMessageId Mocks.userId
+    do! User.listPresets resp.Object botService.Object presetRepo.Object Mocks.botMessageId Mocks.userId
 
     botService.VerifyAll()
     presetRepo.VerifyAll()
@@ -46,7 +49,10 @@ let ``sendCurrentPreset should show current preset details with actions keyboard
 
   botService.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
-  let sut = User.sendCurrentPreset userRepo.Object presetRepo.Object botService.Object
+  let resp = Mock<IResourceProvider>()
+
+  let sut =
+    User.sendCurrentPreset resp.Object userRepo.Object presetRepo.Object botService.Object
 
   task {
     do! sut Mocks.userId
@@ -73,7 +79,10 @@ let ``sendCurrentPreset should send "create preset" button if current preset is 
 
   botService.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
-  let sut = User.sendCurrentPreset userRepo.Object presetRepo.Object botService.Object
+  let resp = Mock<IResourceProvider>()
+
+  let sut =
+    User.sendCurrentPreset resp.Object userRepo.Object presetRepo.Object botService.Object
 
   task {
     do! sut Mocks.userId

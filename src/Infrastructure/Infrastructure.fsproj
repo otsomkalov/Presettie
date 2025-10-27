@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Queues" Version="12.23.0"/>
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.9"/>
+    <PackageReference Include="Azure.Storage.Queues" Version="12.24.0"/>
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.10"/>
     <PackageReference Include="shortid" Version="4.0.0"/>
   </ItemGroup>
 
@@ -23,8 +23,8 @@
     <ProjectReference Include="..\Database\Database.csproj"/>
     <ProjectReference Include="..\Domain\Domain.fsproj"/>
     <ProjectReference Include="..\MusicPlatform.Cached\MusicPlatform.Cached.fsproj" />
+    <ProjectReference Include="..\MusicPlatform.ReccoBeats\MusicPlatform.ReccoBeats.fsproj" />
     <ProjectReference Include="..\MusicPlatform.Spotify\MusicPlatform.Spotify.fsproj"/>
-    <ProjectReference Include="..\Resources\Resources.csproj"/>
   </ItemGroup>
 
 </Project>
