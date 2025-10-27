@@ -76,7 +76,8 @@ module PresetSettings =
         settings.RecommendationsEngine
         |> Option.ofNullable
         |> Option.map (function
-          | Entities.RecommendationsEngine.ArtistsAlbums -> RecommendationsEngine.ArtistAlbums)
+          | Entities.RecommendationsEngine.ArtistsAlbums -> RecommendationsEngine.ArtistAlbums
+          | Entities.RecommendationsEngine.ReccoBeats -> RecommendationsEngine.ReccoBeats)
       UniqueArtists = settings.UniqueArtists }
 
   let toDb (settings: PresetSettings.PresetSettings) : Entities.Settings =
