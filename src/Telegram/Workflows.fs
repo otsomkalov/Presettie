@@ -174,6 +174,7 @@ module IncludedPlaylist =
               | Readable r -> r.TracksCount)
             >> Result.defaultValue 0
           )
+          >> Option.defaultValue 0
         )
 
       let messageText =
@@ -209,6 +210,35 @@ module ExcludedPlaylist =
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.ExcludedPlaylists, [| preset.Name |]], replyMarkup)
     }
 
+  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (presetRepo: #ILoadPreset) (mp: #ILoadPlaylist option) =
+    fun messageId presetId playlistId -> task {
+      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+
+      let excludedPlaylist =
+        preset.ExcludedPlaylists
+        |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
+
+      let! playlistTracksCount =
+        mp
+        |> Option.taskMap (fun m -> m.LoadPlaylist playlistId)
+        |> Task.map (
+          Option.map (
+            Result.map (function
+              | Writable p -> p.TracksCount
+              | Readable r -> r.TracksCount)
+            >> Result.defaultValue 0
+          )
+          >> Option.defaultValue 0
+        )
+
+      let messageText =
+        resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name; playlistTracksCount |]]
+
+      let buttons = getPlaylistButtons resp presetId playlistId "ep" Seq.empty
+
+      do! botService.EditMessageButtons(messageId, messageText, buttons)
+    }
+
 [<RequireQualifiedAccess>]
 module TargetedPlaylist =
   let list resp (botMessageCtx: #IEditMessageButtons) =
@@ -241,6 +271,7 @@ module TargetedPlaylist =
               | Readable r -> r.TracksCount)
             >> Result.defaultValue 0
           )
+          >> Option.defaultValue 0
         )
 
       let messageText =

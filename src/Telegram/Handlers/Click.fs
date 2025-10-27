@@ -231,32 +231,9 @@ let showExcludedPlaylistClickHandler
       let presetId = PresetId presetId
       let playlistId = PlaylistId playlistId
 
-      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
-
-      let excludedPlaylist =
-        preset.ExcludedPlaylists
-        |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
-
       let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
 
-      let! playlistTracksCount =
-        mp
-        |> Option.taskMap (fun m -> m.LoadPlaylist playlistId)
-        |> Task.map (
-          Option.map (
-            Result.map (function
-              | Writable p -> p.TracksCount
-              | Readable r -> r.TracksCount)
-            >> Result.defaultValue 0
-          )
-        )
-
-      let messageText =
-        resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name; playlistTracksCount |]]
-
-      let buttons = getPlaylistButtons resp presetId playlistId "ep" Seq.empty
-
-      do! botService.EditMessageButtons(click.MessageId, messageText, buttons)
+      do! ExcludedPlaylist.show resp botService presetRepo mp click.MessageId presetId playlistId
 
       return Some()
     | _ -> return None
