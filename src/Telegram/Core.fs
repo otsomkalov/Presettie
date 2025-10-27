@@ -9,7 +9,10 @@ open otsom.fs.Resources
 
 type Page = Page of int
 
-type Chat = { Id: ChatId; UserId: UserId; Lang: string }
+type Chat =
+  { Id: ChatId
+    UserId: UserId
+    Lang: string }
 
 type Click =
   { Id: ButtonClickId

@@ -124,5 +124,5 @@ type CallbackQueryService
       | None ->
         Logf.logfw logger "Button click data didn't match any handler. Running default one."
 
-        return! botService.SendNotification(clickId, resp[Messages.UnknownCommand])
+        return! botService.SendNotification(clickId, resp[Notifications.UnknownCommand])
     }

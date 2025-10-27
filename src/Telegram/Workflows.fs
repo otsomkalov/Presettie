@@ -178,6 +178,7 @@ module IncludedPlaylist =
               | Readable r -> r.TracksCount)
             >> Result.defaultValue 0
           )
+          >> Option.defaultValue 0
         )
 
       let messageText =
@@ -185,9 +186,9 @@ module IncludedPlaylist =
 
       let buttonText, buttonDataBuilder =
         if includedPlaylist.LikedOnly then
-          ("All", sprintf "p|%s|ip|%s|a")
+          (resp[Buttons.IncludedPlaylistAll], sprintf "p|%s|ip|%s|a")
         else
-          ("Only liked", sprintf "p|%s|ip|%s|o")
+          (resp[Buttons.IncludedPlaylistLikedOnly], sprintf "p|%s|ip|%s|o")
 
       let buttonData = buttonDataBuilder presetId.Value playlistId.Value
 
@@ -211,6 +212,35 @@ module ExcludedPlaylist =
         createPlaylistsPage resp page preset.ExcludedPlaylists createButtonFromPlaylist preset.Id
 
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.ExcludedPlaylists, [| preset.Name |]], replyMarkup)
+    }
+
+  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (presetRepo: #ILoadPreset) (mp: #ILoadPlaylist option) =
+    fun messageId presetId playlistId -> task {
+      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+
+      let excludedPlaylist =
+        preset.ExcludedPlaylists
+        |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
+
+      let! playlistTracksCount =
+        mp
+        |> Option.taskMap (fun m -> m.LoadPlaylist playlistId)
+        |> Task.map (
+          Option.map (
+            Result.map (function
+              | Writable p -> p.TracksCount
+              | Readable r -> r.TracksCount)
+            >> Result.defaultValue 0
+          )
+          >> Option.defaultValue 0
+        )
+
+      let messageText =
+        resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name; playlistTracksCount |]]
+
+      let buttons = getPlaylistButtons resp presetId playlistId "ep" Seq.empty
+
+      do! botService.EditMessageButtons(messageId, messageText, buttons)
     }
 
 [<RequireQualifiedAccess>]
@@ -245,6 +275,7 @@ module TargetedPlaylist =
               | Readable r -> r.TracksCount)
             >> Result.defaultValue 0
           )
+          >> Option.defaultValue 0
         )
 
       let messageText =
@@ -433,7 +464,11 @@ module Chat =
     fun chatId lang -> task {
       let! newUser = userService.CreateUser()
 
-      let newChat: Chat = { Id = chatId; UserId = newUser.Id; Lang = lang |> Option.defaultValue resourceSettings.DefaultLang }
+      let newChat: Chat =
+        { Id = chatId
+          UserId = newUser.Id
+          Lang = lang |> Option.defaultValue resourceSettings.DefaultLang }
+
       do! chatRepo.SaveChat newChat
 
       return newChat
@@ -448,4 +483,5 @@ module Resources =
 
 type ChatService(chatRepo: IChatRepo, userService: IUserService, resourceOptions: IOptions<ResourcesSettings>) =
   interface IChatService with
-    member this.CreateChat(chatId, lang) = Chat.create chatRepo userService resourceOptions.Value chatId lang
+    member this.CreateChat(chatId, lang) =
+      Chat.create chatRepo userService resourceOptions.Value chatId lang
