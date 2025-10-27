@@ -59,6 +59,7 @@ module PresetSettings =
   type RecommendationsEngine =
     | ArtistAlbums
     | ReccoBeats
+    | Spotify
 
   type ParsingError =
     | NotANumber
