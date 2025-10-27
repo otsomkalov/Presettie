@@ -18,11 +18,12 @@
 
   <ItemGroup>
     <PackageReference Include="otsom.fs.Bot" Version="0.0.39"/>
-    <PackageReference Include="otsom.fs.Auth" Version="0.0.22"/>
-    <PackageReference Include="otsom.fs.Resources" Version="0.0.32"/>
+    <PackageReference Include="otsom.fs.Auth" Version="0.0.24"/>
+    <PackageReference Include="otsom.fs.Resources" Version="0.0.34"/>
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="9.0.303" />
     <ProjectReference Include="..\Domain\Domain.fsproj"/>
     <ProjectReference Include="..\Resources\Resources.csproj"/>
   </ItemGroup>
