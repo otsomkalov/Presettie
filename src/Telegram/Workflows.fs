@@ -49,7 +49,7 @@ let getPresetMessage (resp: IResourceProvider) =
         sprintf "p|%s|%s" presetId CallbackQueryConstants.spotifyRecommendations
       | Some RecommendationsEngine.Spotify ->
         resp[Messages.SpotifyRecommendation],
-        Buttons.DisableRecommendations,
+        resp[Buttons.DisableRecommendations],
         sprintf "p|%s|%s" presetId CallbackQueryConstants.disableRecommendations
       | None ->
         resp[Messages.RecommendationsDisabled],
