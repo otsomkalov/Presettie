@@ -45,7 +45,7 @@ let artistsAlbumsRecommendationsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ArtistAlbums)
-      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! botService.SendNotification(click.Id, resp[Notifications.Updated])
       do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
@@ -64,7 +64,7 @@ let reccoBeatsRecommendationsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ReccoBeats)
-      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! botService.SendNotification(click.Id, resp[Notifications.Updated])
       do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
@@ -83,7 +83,7 @@ let disableRecommendationsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.SetRecommendationsEngine(presetId, None)
-      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! botService.SendNotification(click.Id, resp[Notifications.Updated])
       do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
@@ -102,7 +102,7 @@ let enableUniqueArtistsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.EnableUniqueArtists presetId
-      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! botService.SendNotification(click.Id, resp[Notifications.Updated])
       do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
@@ -121,7 +121,7 @@ let disableUniqueArtistsClickHandler
       let presetId = PresetId presetId
 
       do! presetService.DisableUniqueArtists presetId
-      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! botService.SendNotification(click.Id, resp[Notifications.Updated])
       do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
@@ -140,7 +140,7 @@ let includeLikedTracksClickHandler
       let presetId = (PresetId presetId)
 
       do! presetService.IncludeLikedTracks presetId
-      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! botService.SendNotification(click.Id, resp[Notifications.Updated])
       do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
@@ -159,7 +159,7 @@ let excludeLikedTracksClickHandler
       let presetId = (PresetId presetId)
 
       do! presetService.ExcludeLikedTracks presetId
-      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! botService.SendNotification(click.Id, resp[Notifications.Updated])
       do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
@@ -178,7 +178,7 @@ let ignoreLikedTracksClickHandler
       let presetId = (PresetId presetId)
 
       do! presetService.IgnoreLikedTracks presetId
-      do! botService.SendNotification(click.Id, resp[Messages.Updated])
+      do! botService.SendNotification(click.Id, resp[Notifications.Updated])
       do! Preset.show presetRepo botService resp click.MessageId presetId
 
       return Some()
@@ -363,7 +363,7 @@ let runPresetClickHandler
   : ClickHandler =
   let onSuccess clickId =
     fun (preset: Preset) -> task {
-      do! botService.SendNotification(clickId, resp[Messages.PresetQueued, [| preset.Name |]])
+      do! botService.SendNotification(clickId, resp[Notifications.PresetQueued, [| preset.Name |]])
 
       do!
         botService.SendMessage(resp[Messages.PresetQueued, [| preset.Name |]])
@@ -406,7 +406,7 @@ let setCurrentPresetClickHandler
 
       do! userService.SetCurrentPreset(click.Chat.UserId, presetId)
 
-      do! chatService.SendNotification(click.Id, resp[Messages.CurrentPresetSet])
+      do! chatService.SendNotification(click.Id, resp[Notifications.CurrentPresetSet])
 
       return Some()
     | _ -> return None
@@ -513,12 +513,12 @@ let removePresetClickHandler
 
       match! userService.RemoveUserPreset(click.Chat.UserId, presetId) with
       | Ok _ ->
-        do! botService.SendNotification(click.Id, resp[Messages.PresetRemoved])
+        do! botService.SendNotification(click.Id, resp[Notifications.PresetRemoved])
         do! User.listPresets resp botService presetRepo click.MessageId click.Chat.UserId
 
         return Some()
       | Error Preset.GetPresetError.NotFound ->
-        do! botService.SendNotification(click.Id, resp[Messages.PresetNotFound])
+        do! botService.SendNotification(click.Id, resp[Notifications.PresetNotFound])
 
         return Some()
     | _ -> return None

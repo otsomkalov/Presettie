@@ -11,9 +11,6 @@ module Messages =
   let PresetInfo = "messages.preset-info"
 
   [<Literal>]
-  let Updated = "messages.updated"
-
-  [<Literal>]
   let LoginToSpotify = "messages.login-to-spotify"
 
   [<Literal>]
@@ -113,12 +110,6 @@ module Messages =
   let PresetValidationError = "messages.preset-validation-error"
 
   [<Literal>]
-  let PresetRemoved = "messages.preset-removed"
-
-  [<Literal>]
-  let PresetNotFound = "messages.preset-not-found"
-
-  [<Literal>]
   let SuccessfulLogin = "messages.successful-login"
 
   [<Literal>]
@@ -144,9 +135,6 @@ module Messages =
 
   [<Literal>]
   let NoTargetedPlaylists = "messages.no-targeted-playlists"
-
-  [<Literal>]
-  let CurrentPresetSet = "messages.current-preset-set"
 
   [<Literal>]
   let IncludedPlaylists = "messages.included-playlists"
@@ -257,3 +245,23 @@ module Buttons =
 
   [<Literal>]
   let SetCurrentPreset = "buttons.set-current-preset"
+
+[<RequireQualifiedAccess>]
+module Notifications =
+  [<Literal>]
+  let UnknownCommand = "notifications.unknown-command"
+
+  [<Literal>]
+  let Updated = "notifications.updated"
+
+  [<Literal>]
+  let PresetQueued = "notifications.preset-queued"
+
+  [<Literal>]
+  let CurrentPresetSet = "notifications.current-preset-set"
+
+  [<Literal>]
+  let PresetRemoved = "notifications.preset-removed"
+
+  [<Literal>]
+  let PresetNotFound = "notifications.preset-not-found"

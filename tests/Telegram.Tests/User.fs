@@ -51,7 +51,8 @@ let ``sendCurrentPreset should show current preset details with actions keyboard
 
   let resp = Mock<IResourceProvider>()
 
-  let sut = User.sendCurrentPreset resp.Object userRepo.Object presetRepo.Object botService.Object
+  let sut =
+    User.sendCurrentPreset resp.Object userRepo.Object presetRepo.Object botService.Object
 
   task {
     do! sut Mocks.userId
@@ -80,7 +81,8 @@ let ``sendCurrentPreset should send "create preset" button if current preset is 
 
   let resp = Mock<IResourceProvider>()
 
-  let sut = User.sendCurrentPreset resp.Object userRepo.Object presetRepo.Object botService.Object
+  let sut =
+    User.sendCurrentPreset resp.Object userRepo.Object presetRepo.Object botService.Object
 
   task {
     do! sut Mocks.userId

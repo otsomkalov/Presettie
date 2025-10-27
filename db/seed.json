@@ -1,88 +1,427 @@
 ﻿[
-  { "key": "messages.preset-info", "value": "Preset name: *{0}*\nPreset settings:\n*Include liked tracks* - {1}\n*Recommendations* - {2}\n*Unique artists* - {3}\n*Playlist size* - {4}", "lang": "en" },
-  { "key": "messages.updated", "value": "Updated", "lang": "en" },
-  { "key": "messages.login-to-spotify", "value": "Seems like my access to your Spotify library has expired. Please, re-login using link below", "lang": "en" },
-  { "key": "messages.send-preset-size", "value": "Send me new playlist size in reply to this message", "lang": "en" },
-  { "key": "messages.preset-size-set", "value": "New playlist size is set!", "lang": "en" },
-  { "key": "messages.wrong-preset-size", "value": "Command data should be positive number indicates playlist size", "lang": "en" },
-  { "key": "messages.preset-size-too-small", "value": "Playlist size should be greater than 0!", "lang": "en" },
-  { "key": "messages.preset-size-too-big", "value": "Playlist size should be lower than 10000!", "lang": "en" },
-  { "key": "messages.preset-size-not-a-number", "value": "Playlist size should be a number!", "lang": "en" },
-  { "key": "messages.liked-tracks-included", "value": "➕ Liked tracks are included", "lang": "en" },
-  { "key": "messages.liked-tracks-excluded", "value": "➖ Liked tracks are excluded", "lang": "en" },
-  { "key": "messages.liked-tracks-ignored", "value": "❌ Liked tracks are ignored", "lang": "en" },
-  { "key": "messages.send-included-playlist", "value": "Send id/url of Spotify playlist to include it tracks into generation", "lang": "en" },
-  { "key": "messages.send-excluded-playlist", "value": "Send id/url of Spotify playlist to exclude it tracks from generation", "lang": "en" },
-  { "key": "messages.send-targeted-playlist", "value": "Send id/url of Spotify playlist to save generated tracks into", "lang": "en" },
-  { "key": "messages.playlist-id-cannot-be-parsed", "value": "Cannot parse provided playlist id: {0}", "lang": "en" },
-  { "key": "messages.playlist-not-found-in-spotify", "value": "Playlist with id {0} not found is Spotify!", "lang": "en" },
-  { "key": "messages.playlist-is-readonly", "value": "You don't have permission to modify this playlist", "lang": "en" },
-  { "key": "messages.send-preset-name", "value": "Send new preset name in reply to this message", "lang": "en" },
-  { "key": "messages.artists-albums-recommendation", "value": "💽 Artists albums", "lang": "en" },
-  { "key": "messages.recco-beats-recommendation", "value": "🎛️ ReccoBeats", "lang": "en" },
-  { "key": "messages.recommendations-disabled", "value": "➖ Recommendations are disabled", "lang": "en" },
-  { "key": "messages.unique-artists-enabled", "value": "👤 Unique artists", "lang": "en" },
-  { "key": "messages.unique-artists-disabled", "value": "👥 Non-unique artists", "lang": "en" },
-  { "key": "messages.welcome", "value": "Hello!\n\nTo get more information about the bot use /help command.\n\nUse the link below to log in using Spotify and generate playlists.", "lang": "en" },
-  { "key": "messages.help", "value": "Bot can generate playlists from the other playlists or liked tracks and get Spotify recommendations for them\n\nThe idea is based on concept called *presets*: set of *included playlists*, *excluded playlists* and *targeted playlists*:\n1. *Targeted playlists* are your destination playlists for generated tracks\n2. *Included playlists* are the sources for tracks\n3. *Excluded playlists* tracks are removed from both recommended and included tracks\n\nAdditionally, *preset* has the next options:\n1. Include/exclude/ignore liked tracks - how to utilize liked tracks during the process of generation\n2. Enable/disable recommendations - either ask Spotify to get recommendations for tracks or not\n3. Playlist size - the amount of tracks to be put into *targeted playlists*\n\nA few use cases:\n1. *Don't listen twice*\nTrack already listened songs by automatically putting them into *targeted playlist* and exclude them from the next generations\n2. *Fresh Daily Mixes*\nExclude your liked tracks from Daily Mixes and listen to the fresh mixes\n3. *Get recommendations for your liked tracks*\nCreate preset with included liked tracks and receive recommendations right into *targeted playlist*\n4. *Randomize your liked tracks*\nInclude your liked tracks and put them into *targeted playlist* in random order\n\nPrivacy: /privacy\nGuide: /guide\nFAQ: /faq", "lang": "en" },
-  { "key": "messages.privacy", "value": "Bot needs you to log in into Spotify in order to perform some actions, including playlist generation.\nBot request 3 permissions from you in Spotify: modify public playlists, modify private playlists, read user library (liked tracks).", "lang": "en" },
-  { "key": "messages.faq", "value": "*Q:* Why tracks, that I've added to playlist using Spotify, are not respected by the bot?\n*A:* Bot uses caching in order not to bomb Spotify API with requests. Your playlist tracks is cached once a week. For the moment there is no possibility to force cache clean.\n*Q:* Why sometimes it takes minutes to generate my playlist?\n*A:* When cached playlist tracks expires, we need to fetch tracks from Spotify API, which takes some time.", "lang": "en" },
-  { "key": "messages.guide", "value": "*Your first preset*\nIn this guide, we are going to prepare your first preset that will do the next:\n1. Include your liked tracks\n2. Exclude already listened tracks\n3. Get recommendations\n4. Save to targeted playlist\nSteps would be the next:\n1. Login to the bot via Spotify\n2. Click \"➕ Create preset\" keyboard button\n3. Enter the name for your preset. You may use something like \"Recommendations.gen\"4. You'll see the info about created preset. Lets configure it:\n    1. By default, preset includes liked tracks, so no need to change anything here\n    2. Click on \"➕ Enable recommendations\" button to enable Spotify recommendations for this preset\n    3. Click \"Set as current\" to set this preset as current\n5. Create the next Spotify playlists manually:\n    1. Target playlist, that you'll listen\n    2. Playlist for already listened tracks\n6. For both playlists, created in step 5, click \"📩 Target playlist\" keyboard button and send url\n7. Click \"➖ Exclude playlist\" keyboard button and send url of Spotify playlist create in step 5.2\n\nClick \"Generate\" keyboard button or send \"/generate\" command. After a few seconds enjoy your playlist!", "lang": "en" },
-  { "key": "messages.included-playlist-details", "value": "*Name*: {0}\n*Tracks*: {1}\n*Only liked*: {2}", "lang": "en" },
-  { "key": "messages.excluded-playlist-details", "value": "*Name*: {0}\n*Tracks*: {1}", "lang": "en" },
-  { "key": "messages.targeted-playlist-details", "value": "*Name*: {0}\n*Tracks*: {1}\n*Overwrite*: {2}", "lang": "en" },
-  { "key": "messages.unknown-command", "value": "Unknown command!", "lang": "en" },
-  { "key": "messages.no-current-preset", "value": "No current preset selected!", "lang": "en" },
-  { "key": "messages.preset-validation-error", "value": "Error during preset validation!", "lang": "en" },
-  { "key": "messages.preset-removed", "value": "Preset successfully removed!", "lang": "en" },
-  { "key": "messages.preset-not-found", "value": "Preset not found!", "lang": "en" },
-  { "key":  "messages.success-login", "value": "Successful login!", "lang": "en" },
-  { "key":  "messages.state-not-found", "value": "State not found!", "lang": "en" },
-  { "key":  "messages.other-user-state", "value":  "State provided does not belong to your login request. Try to login via fresh link.", "lang":  "en"},
-  { "key":  "messages.playlist-included", "value":  "*{0}* successfully included into current preset!", "lang": "en"},
-  { "key":  "messages.playlist-excluded", "value":  "*{0}* successfully excluded from current preset!", "lang": "en"},
-  { "key":  "messages.playlist-targeted", "value":  "*{0}* successfully targeted for current preset!", "lang": "en"},
-  { "key":  "messages.preset-queued", "value":  "Preset *{0}* run is queued!", "lang": "en"},
-  { "key":  "messages.no-included-playlists", "value":  "No included playlists!", "lang": "en"},
-  { "key":  "messages.no-targeted-playlists", "value":  "No targeted playlists!", "lang": "en"},
-  { "key":  "messages.current-preset-set", "value":  "Current preset is successfully set!", "lang": "en"},
-  { "key":  "messages.included-playlists", "value":  "Preset *{0}* has the next included playlists:", "lang": "en"},
-  { "key":  "messages.excluded-playlists", "value":  "Preset *{0}* has the next excluded playlists:", "lang": "en"},
-  { "key":  "messages.targeted-playlists", "value":  "Preset *{0}* has the next targeted playlists:", "lang": "en"},
-  { "key":  "messages.preset-executed", "value":  "Preset *{0}* executed!", "lang": "en"},
-  { "key":  "messages.running-preset", "value":  "Running preset...", "lang": "en"},
-  { "key":  "messages.not-authorized", "value":  "You are not authorized to music platform!", "lang": "en"},
-  { "key":  "messages.no-included-tracks", "value":  "Your preset has 0 included tracks!", "lang": "en"},
-  { "key":  "messages.no-potential-tracks", "value":  "Playlists combination in your preset produced 0 potential tracks", "lang": "en"},
-  { "key":  "messages.your-presets", "value":  "Your presets", "lang": "en"},
-
-
-  { "key": "buttons.run-preset", "value": "🚀 Run preset", "lang": "en" },
-  { "key": "buttons.login", "value": "Login", "lang": "en" },
-  { "key": "buttons.settings", "value": "⚙ Settings", "lang": "en" },
-  { "key": "buttons.set-preset-size", "value": "#️⃣ Set preset size", "lang": "en" },
-  { "key": "buttons.include-liked-tracks", "value": "➕ Include liked", "lang": "en" },
-  { "key": "buttons.exclude-liked-tracks", "value": "➖ Exclude liked", "lang": "en" },
-  { "key": "buttons.ignore-liked-tracks", "value": "❌ Ignore liked", "lang": "en" },
-  { "key": "buttons.include-playlist", "value": "➕ Include playlist", "lang": "en" },
-  { "key": "buttons.exclude-playlist", "value": "➖ Exclude playlist", "lang": "en" },
-  { "key": "buttons.target-playlist", "value": "📩 Target playlist", "lang": "en" },
-  { "key": "buttons.my-presets", "value": "🗄️ My presets", "lang": "en" },
-  { "key": "buttons.create-preset", "value": "➕ Create preset", "lang": "en" },
-  { "key": "buttons.artists-albums-recommendations", "value": "💽 Albums", "lang": "en" },
-  { "key": "buttons.recco-beats-recommendations", "value": "🎛️ ReccoBeats", "lang": "en" },
-  { "key": "buttons.disable-recommendations", "value": "➖ Disable recommendations", "lang": "en" },
-  { "key": "buttons.enable-unique-artists", "value": "👤 Unique artists", "lang": "en" },
-  { "key": "buttons.disable-unique-artists", "value": "👥 Non-unique artists", "lang": "en" },
-  { "key": "buttons.back", "value": "\uFE0F Back", "lang": "en" },
-  { "key":  "buttons.prev-page", "value": "\uFE0F Prev", "lang":  "en"},
-  { "key":  "buttons.next-page", "value": "\uFE0F Next", "lang":  "en"},
-  { "key": "buttons.remove", "value": "\uD83D\uDDD1\uFE0F Remove", "lang": "en"},
-  { "key": "buttons.append", "value":  "Append", "lang": "en"},
-  { "key": "buttons.overwrite", "value":  "Overwrite", "lang": "en"},
-  { "key": "buttons.included-playlists", "value":  "Included playlists", "lang": "en"},
-  { "key": "buttons.excluded-playlists", "value":  "Excluded playlists", "lang": "en"},
-  { "key": "buttons.targeted-playlists", "value":  "Target playlists", "lang": "en"},
-  { "key": "buttons.set-current-preset", "value":  "Set as current", "lang": "en"},
-
+  {
+    "key": "messages.preset-info",
+    "value": "Preset name: *{0}*\nPreset settings:\n*Include liked tracks* - {1}\n*Recommendations* - {2}\n*Unique artists* - {3}\n*Playlist size* - {4}",
+    "lang": "en"
+  },
+  {
+    "key": "messages.login-to-spotify",
+    "value": "Seems like my access to your Spotify library has expired. Please, re-login using link below",
+    "lang": "en"
+  },
+  {
+    "key": "messages.send-preset-size",
+    "value": "Send me new playlist size in reply to this message",
+    "lang": "en"
+  },
+  {
+    "key": "messages.preset-size-set",
+    "value": "New playlist size is set!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.wrong-preset-size",
+    "value": "Command data should be positive number indicates playlist size",
+    "lang": "en"
+  },
+  {
+    "key": "messages.preset-size-too-small",
+    "value": "Playlist size should be greater than 0!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.preset-size-too-big",
+    "value": "Playlist size should be lower than 10000!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.preset-size-not-a-number",
+    "value": "Playlist size should be a number!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.liked-tracks-included",
+    "value": "➕ Liked tracks are included",
+    "lang": "en"
+  },
+  {
+    "key": "messages.liked-tracks-excluded",
+    "value": "➖ Liked tracks are excluded",
+    "lang": "en"
+  },
+  {
+    "key": "messages.liked-tracks-ignored",
+    "value": "❌ Liked tracks are ignored",
+    "lang": "en"
+  },
+  {
+    "key": "messages.send-included-playlist",
+    "value": "Send id/url of Spotify playlist to include it tracks into generation",
+    "lang": "en"
+  },
+  {
+    "key": "messages.send-excluded-playlist",
+    "value": "Send id/url of Spotify playlist to exclude it tracks from generation",
+    "lang": "en"
+  },
+  {
+    "key": "messages.send-targeted-playlist",
+    "value": "Send id/url of Spotify playlist to save generated tracks into",
+    "lang": "en"
+  },
+  {
+    "key": "messages.playlist-id-cannot-be-parsed",
+    "value": "Cannot parse provided playlist id: {0}",
+    "lang": "en"
+  },
+  {
+    "key": "messages.playlist-not-found-in-spotify",
+    "value": "Playlist with id {0} not found is Spotify!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.playlist-is-readonly",
+    "value": "You don't have permission to modify this playlist",
+    "lang": "en"
+  },
+  {
+    "key": "messages.send-preset-name",
+    "value": "Send new preset name in reply to this message",
+    "lang": "en"
+  },
+  {
+    "key": "messages.artists-albums-recommendation",
+    "value": "💽 Artists albums",
+    "lang": "en"
+  },
+  {
+    "key": "messages.recco-beats-recommendation",
+    "value": "🎛️ ReccoBeats",
+    "lang": "en"
+  },
+  {
+    "key": "messages.recommendations-disabled",
+    "value": "➖ Recommendations are disabled",
+    "lang": "en"
+  },
+  {
+    "key": "messages.unique-artists-enabled",
+    "value": "👤 Unique artists",
+    "lang": "en"
+  },
+  {
+    "key": "messages.unique-artists-disabled",
+    "value": "👥 Non-unique artists",
+    "lang": "en"
+  },
+  {
+    "key": "messages.welcome",
+    "value": "Hello!\n\nTo get more information about the bot use /help command.\n\nUse the link below to log in using Spotify and generate playlists.",
+    "lang": "en"
+  },
+  {
+    "key": "messages.help",
+    "value": "Bot can generate playlists from the other playlists or liked tracks and get Spotify recommendations for them\n\nThe idea is based on concept called *presets*: set of *included playlists*, *excluded playlists* and *targeted playlists*:\n1. *Targeted playlists* are your destination playlists for generated tracks\n2. *Included playlists* are the sources for tracks\n3. *Excluded playlists* tracks are removed from both recommended and included tracks\n\nAdditionally, *preset* has the next options:\n1. Include/exclude/ignore liked tracks - how to utilize liked tracks during the process of generation\n2. Enable/disable recommendations - either ask Spotify to get recommendations for tracks or not\n3. Playlist size - the amount of tracks to be put into *targeted playlists*\n\nA few use cases:\n1. *Don't listen twice*\nTrack already listened songs by automatically putting them into *targeted playlist* and exclude them from the next generations\n2. *Fresh Daily Mixes*\nExclude your liked tracks from Daily Mixes and listen to the fresh mixes\n3. *Get recommendations for your liked tracks*\nCreate preset with included liked tracks and receive recommendations right into *targeted playlist*\n4. *Randomize your liked tracks*\nInclude your liked tracks and put them into *targeted playlist* in random order\n\nPrivacy: /privacy\nGuide: /guide\nFAQ: /faq",
+    "lang": "en"
+  },
+  {
+    "key": "messages.privacy",
+    "value": "Bot needs you to log in into Spotify in order to perform some actions, including playlist generation.\nBot request 3 permissions from you in Spotify: modify public playlists, modify private playlists, read user library (liked tracks).",
+    "lang": "en"
+  },
+  {
+    "key": "messages.faq",
+    "value": "*Q:* Why tracks, that I've added to playlist using Spotify, are not respected by the bot?\n*A:* Bot uses caching in order not to bomb Spotify API with requests. Your playlist tracks is cached once a week. For the moment there is no possibility to force cache clean.\n*Q:* Why sometimes it takes minutes to generate my playlist?\n*A:* When cached playlist tracks expires, we need to fetch tracks from Spotify API, which takes some time.",
+    "lang": "en"
+  },
+  {
+    "key": "messages.guide",
+    "value": "*Your first preset*\nIn this guide, we are going to prepare your first preset that will do the next:\n1. Include your liked tracks\n2. Exclude already listened tracks\n3. Get recommendations\n4. Save to targeted playlist\nSteps would be the next:\n1. Login to the bot via Spotify\n2. Click \"➕ Create preset\" keyboard button\n3. Enter the name for your preset. You may use something like \"Recommendations.gen\"4. You'll see the info about created preset. Lets configure it:\n    1. By default, preset includes liked tracks, so no need to change anything here\n    2. Click on \"➕ Enable recommendations\" button to enable Spotify recommendations for this preset\n    3. Click \"Set as current\" to set this preset as current\n5. Create the next Spotify playlists manually:\n    1. Target playlist, that you'll listen\n    2. Playlist for already listened tracks\n6. For both playlists, created in step 5, click \"📩 Target playlist\" keyboard button and send url\n7. Click \"➖ Exclude playlist\" keyboard button and send url of Spotify playlist create in step 5.2\n\nClick \"Generate\" keyboard button or send \"/generate\" command. After a few seconds enjoy your playlist!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.included-playlist-details",
+    "value": "*Name*: {0}\n*Tracks*: {1}\n*Only liked*: {2}",
+    "lang": "en"
+  },
+  {
+    "key": "messages.excluded-playlist-details",
+    "value": "*Name*: {0}\n*Tracks*: {1}",
+    "lang": "en"
+  },
+  {
+    "key": "messages.targeted-playlist-details",
+    "value": "*Name*: {0}\n*Tracks*: {1}\n*Overwrite*: {2}",
+    "lang": "en"
+  },
+  {
+    "key": "messages.unknown-command",
+    "value": "Unknown command!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.no-current-preset",
+    "value": "No current preset selected!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.preset-validation-error",
+    "value": "Error during preset validation!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.success-login",
+    "value": "Successful login!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.state-not-found",
+    "value": "State not found!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.other-user-state",
+    "value": "State provided does not belong to your login request. Try to login via fresh link.",
+    "lang": "en"
+  },
+  {
+    "key": "messages.playlist-included",
+    "value": "*{0}* successfully included into current preset!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.playlist-excluded",
+    "value": "*{0}* successfully excluded from current preset!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.playlist-targeted",
+    "value": "*{0}* successfully targeted for current preset!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.preset-queued",
+    "value": "Preset *{0}* run is queued!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.no-included-playlists",
+    "value": "No included playlists!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.no-targeted-playlists",
+    "value": "No targeted playlists!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.included-playlists",
+    "value": "Preset *{0}* has the next included playlists:",
+    "lang": "en"
+  },
+  {
+    "key": "messages.excluded-playlists",
+    "value": "Preset *{0}* has the next excluded playlists:",
+    "lang": "en"
+  },
+  {
+    "key": "messages.targeted-playlists",
+    "value": "Preset *{0}* has the next targeted playlists:",
+    "lang": "en"
+  },
+  {
+    "key": "messages.preset-executed",
+    "value": "Preset *{0}* executed!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.running-preset",
+    "value": "Running preset...",
+    "lang": "en"
+  },
+  {
+    "key": "messages.not-authorized",
+    "value": "You are not authorized to music platform!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.no-included-tracks",
+    "value": "Your preset has 0 included tracks!",
+    "lang": "en"
+  },
+  {
+    "key": "messages.no-potential-tracks",
+    "value": "Playlists combination in your preset produced 0 potential tracks",
+    "lang": "en"
+  },
+  {
+    "key": "messages.your-presets",
+    "value": "Your presets",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.run-preset",
+    "value": "🚀 Run preset",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.login",
+    "value": "Login",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.settings",
+    "value": "⚙ Settings",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.set-preset-size",
+    "value": "#️⃣ Set preset size",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.include-liked-tracks",
+    "value": "➕ Include liked",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.exclude-liked-tracks",
+    "value": "➖ Exclude liked",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.ignore-liked-tracks",
+    "value": "❌ Ignore liked",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.include-playlist",
+    "value": "➕ Include playlist",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.exclude-playlist",
+    "value": "➖ Exclude playlist",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.target-playlist",
+    "value": "📩 Target playlist",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.my-presets",
+    "value": "🗄️ My presets",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.create-preset",
+    "value": "➕ Create preset",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.artists-albums-recommendations",
+    "value": "💽 Albums",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.recco-beats-recommendations",
+    "value": "🎛️ ReccoBeats",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.disable-recommendations",
+    "value": "➖ Disable recommendations",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.enable-unique-artists",
+    "value": "👤 Unique artists",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.disable-unique-artists",
+    "value": "👥 Non-unique artists",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.back",
+    "value": "\uFE0F Back",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.prev-page",
+    "value": "\uFE0F Prev",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.next-page",
+    "value": "\uFE0F Next",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.remove",
+    "value": "\uD83D\uDDD1\uFE0F Remove",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.append",
+    "value": "Append",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.overwrite",
+    "value": "Overwrite",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.included-playlists",
+    "value": "Included playlists",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.excluded-playlists",
+    "value": "Excluded playlists",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.targeted-playlists",
+    "value": "Target playlists",
+    "lang": "en"
+  },
+  {
+    "key": "buttons.set-current-preset",
+    "value": "Set as current",
+    "lang": "en"
+  },
+  {
+    "key": "notifications.unknown-command",
+    "value": "Unknown command!",
+    "lang": "en"
+  },
+  {
+    "key": "notifications.updated",
+    "value": "Updated!",
+    "lang": "en"
+  },
+  {
+    "key": "notifications.preset-queued",
+    "value": "Preset *{0}* run is queued!",
+    "lang": "en"
+  },
+  {
+    "key": "notifications.current-preset-set",
+    "value": "Current preset is successfully set!",
+    "lang": "en"
+  },
+  {
+    "key": "notifications.preset-removed",
+    "value": "Preset successfully removed!",
+    "lang": "en"
+  },
+  {
+    "key": "notifications.preset-not-found",
+    "value": "Preset not found!",
+    "lang": "en"
+  }
 ]

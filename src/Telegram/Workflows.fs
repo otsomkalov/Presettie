@@ -429,7 +429,11 @@ module Chat =
     fun chatId lang -> task {
       let! newUser = userService.CreateUser()
 
-      let newChat: Chat = { Id = chatId; UserId = newUser.Id; Lang = lang |> Option.defaultValue resourceSettings.DefaultLang }
+      let newChat: Chat =
+        { Id = chatId
+          UserId = newUser.Id
+          Lang = lang |> Option.defaultValue resourceSettings.DefaultLang }
+
       do! chatRepo.SaveChat newChat
 
       return newChat
@@ -444,4 +448,5 @@ module Resources =
 
 type ChatService(chatRepo: IChatRepo, userService: IUserService, resourceOptions: IOptions<ResourcesSettings>) =
   interface IChatService with
-    member this.CreateChat(chatId, lang) = Chat.create chatRepo userService resourceOptions.Value chatId lang
+    member this.CreateChat(chatId, lang) =
+      Chat.create chatRepo userService resourceOptions.Value chatId lang
