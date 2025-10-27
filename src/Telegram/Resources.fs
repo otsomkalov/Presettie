@@ -246,6 +246,12 @@ module Buttons =
   [<Literal>]
   let SetCurrentPreset = "buttons.set-current-preset"
 
+  [<Literal>]
+  let IncludedPlaylistAll = "buttons.included-playlist-all"
+
+  [<Literal>]
+  let IncludedPlaylistLikedOnly = "buttons.included-playlist-liked-only"
+
 [<RequireQualifiedAccess>]
 module Notifications =
   [<Literal>]

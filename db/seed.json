@@ -393,7 +393,16 @@
     "key": "buttons.set-current-preset",
     "value": "Set as current",
     "lang": "en"
+  },{
+    "key": "buttons.included-playlist-all",
+    "value": "All",
+    "lang": "en"
+  },{
+    "key": "buttons.included-playlist-liked-only",
+    "value": "Liked only",
+    "lang": "en"
   },
+
   {
     "key": "notifications.unknown-command",
     "value": "Unknown command!",

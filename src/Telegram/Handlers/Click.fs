@@ -252,7 +252,7 @@ let showExcludedPlaylistClickHandler
         )
 
       let messageText =
-        resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name, playlistTracksCount |]]
+        resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name; playlistTracksCount |]]
 
       let buttons = getPlaylistButtons resp presetId playlistId "ep" Seq.empty
 

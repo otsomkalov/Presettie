@@ -181,9 +181,9 @@ module IncludedPlaylist =
 
       let buttonText, buttonDataBuilder =
         if includedPlaylist.LikedOnly then
-          ("All", sprintf "p|%s|ip|%s|a")
+          (resp[Buttons.IncludedPlaylistAll], sprintf "p|%s|ip|%s|a")
         else
-          ("Only liked", sprintf "p|%s|ip|%s|o")
+          (resp[Buttons.IncludedPlaylistLikedOnly], sprintf "p|%s|ip|%s|o")
 
       let buttonData = buttonDataBuilder presetId.Value playlistId.Value
 
