@@ -39,10 +39,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="9.0.303" />
-    <PackageReference Include="otsom.fs.Auth" Version="0.0.24" />
-    <PackageReference Include="otsom.fs.Bot.Telegram" Version="0.0.55" />
-  <PackageReference Include="otsom.fs.Resources" Version="0.0.34" />
     <ProjectReference Include="..\Infrastructure.Telegram\Infrastructure.Telegram.fsproj"/>
     <ProjectReference Include="..\MusicPlatform.Cached\MusicPlatform.Cached.fsproj" />
   </ItemGroup>

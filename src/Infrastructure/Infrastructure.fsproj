@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="otsom.fs.Auth" Version="0.0.24" />
     <ProjectReference Include="..\Database\Database.csproj"/>
     <ProjectReference Include="..\Domain\Domain.fsproj"/>
     <ProjectReference Include="..\MusicPlatform.Cached\MusicPlatform.Cached.fsproj" />
