@@ -9,7 +9,10 @@ open otsom.fs.Resources
 
 type Page = Page of int
 
-type Chat = { Id: ChatId; UserId: UserId }
+type Chat =
+  { Id: ChatId
+    UserId: UserId
+    Lang: string }
 
 type Click =
   { Id: ButtonClickId
@@ -37,7 +40,7 @@ type UserId with
   member this.ToAccountId() = this.Value |> AccountId
 
 type ICreateChat =
-  abstract CreateChat: ChatId -> Task<Chat>
+  abstract CreateChat: ChatId * string option -> Task<Chat>
 
 type IChatService =
   inherit ICreateChat

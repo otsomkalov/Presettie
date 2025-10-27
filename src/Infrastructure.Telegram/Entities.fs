@@ -12,9 +12,13 @@ type Chat() =
   [<BsonElement>]
   member val UserId: ObjectId = ObjectId.Empty with get, set
 
+  [<BsonElement>]
+  member val Lang: string = "" with get, set
+
   static member FromDomain(chat: Core.Chat) =
     Chat(Id = chat.Id.Value, UserId = (chat.UserId.Value |> ObjectId))
 
   member this.ToDomain() : Core.Chat =
     { Id = otsom.fs.Bot.ChatId this.Id
-      UserId = UserId(this.UserId.ToString()) }
+      UserId = UserId(this.UserId.ToString())
+      Lang = this.Lang }
