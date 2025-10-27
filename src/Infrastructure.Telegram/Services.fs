@@ -1,6 +1,5 @@
 ﻿module Infrastructure.Telegram.Services
 
-open Resources
 open System
 open FSharp
 open Microsoft.Extensions.Logging
@@ -38,7 +37,7 @@ type MessageService
     task {
       let! chat =
         chatRepo.LoadChat chatId
-        |> Task.bind (Option.defaultWithTask (fun () -> chatService.CreateChat chatId))
+        |> Task.bind (Option.defaultWithTask (fun () -> chatService.CreateChat(chatId, lang)))
 
       let message' =
         { Id = ChatMessageId message.MessageId
@@ -98,7 +97,7 @@ type CallbackQueryService
     task {
       let! chat =
         chatRepo.LoadChat chatId
-        |> Task.bind (Option.defaultWithTask (fun () -> chatService.CreateChat chatId))
+        |> Task.bind (Option.defaultWithTask (fun () -> chatService.CreateChat(chatId, lang)))
 
       let click: Click =
         { Id = clickId

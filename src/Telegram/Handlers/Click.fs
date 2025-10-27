@@ -27,7 +27,7 @@ let listPresetsClickHandler userRepo (resp: IResourceProvider) botService : Clic
   fun click -> task {
     match click.Data with
     | [ "p" ] ->
-      do! User.listPresets botService userRepo click.MessageId click.Chat.UserId
+      do! User.listPresets resp botService userRepo click.MessageId click.Chat.UserId
 
       return Some()
     | _ -> return None
@@ -213,7 +213,7 @@ let removeIncludedPlaylistClickHandler (presetService: #IRemoveIncludedPlaylist)
       let playlistId = PlaylistId playlistId
 
       let! preset = presetService.RemoveIncludedPlaylist(presetId, (ReadablePlaylistId playlistId))
-      do! IncludedPlaylist.list botService click.MessageId preset (Page 0)
+      do! IncludedPlaylist.list resp botService click.MessageId preset (Page 0)
 
       return Some()
     | _ -> return None
@@ -254,7 +254,7 @@ let showExcludedPlaylistClickHandler
       let messageText =
         resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name, playlistTracksCount |]]
 
-      let buttons = getPlaylistButtons presetId playlistId "ep" Seq.empty
+      let buttons = getPlaylistButtons resp presetId playlistId "ep" Seq.empty
 
       do! botService.EditMessageButtons(click.MessageId, messageText, buttons)
 
@@ -271,7 +271,7 @@ let removeExcludedPlaylistClickHandler (presetService: #IRemoveExcludedPlaylist)
       let playlistId = PlaylistId playlistId
 
       let! preset = presetService.RemoveExcludedPlaylist(presetId, (ReadablePlaylistId playlistId))
-      do! ExcludedPlaylist.list botService click.MessageId preset (Page 0)
+      do! ExcludedPlaylist.list resp botService click.MessageId preset (Page 0)
 
       return Some()
     | _ -> return None
@@ -305,7 +305,7 @@ let removeTargetedPlaylistClickHandler (presetService: #IRemoveTargetedPlaylist)
       let playlistId = PlaylistId playlistId
 
       let! preset = presetService.RemoveTargetedPlaylist(presetId, (WritablePlaylistId playlistId))
-      do! TargetedPlaylist.list botService click.MessageId preset (Page 0)
+      do! TargetedPlaylist.list resp botService click.MessageId preset (Page 0)
 
       return Some()
     | _ -> return None
@@ -363,10 +363,11 @@ let runPresetClickHandler
   : ClickHandler =
   let onSuccess clickId =
     fun (preset: Preset) -> task {
-      let notificationMessage = $"Preset *{preset.Name}* run is queued!"
+      do! botService.SendNotification(clickId, resp[Messages.PresetQueued, [| preset.Name |]])
 
-      do! botService.SendNotification(clickId, notificationMessage)
-      do! botService.SendMessage(notificationMessage) &|> ignore
+      do!
+        botService.SendMessage(resp[Messages.PresetQueued, [| preset.Name |]])
+        &|> ignore
     }
 
   let onError =
@@ -374,8 +375,8 @@ let runPresetClickHandler
       let errorsText =
         errors
         |> Seq.map (function
-          | Preset.ValidationError.NoIncludedPlaylists -> "No included playlists!"
-          | Preset.ValidationError.NoTargetedPlaylists -> "No targeted playlists!")
+          | Preset.ValidationError.NoIncludedPlaylists -> resp[Messages.NoIncludedPlaylists]
+          | Preset.ValidationError.NoTargetedPlaylists -> resp[Messages.NoTargetedPlaylists])
         |> String.concat Environment.NewLine
 
       botService.SendMessage(errorsText) |> Task.ignore
@@ -405,7 +406,7 @@ let setCurrentPresetClickHandler
 
       do! userService.SetCurrentPreset(click.Chat.UserId, presetId)
 
-      do! chatService.SendNotification(click.Id, "Current preset is successfully set!")
+      do! chatService.SendNotification(click.Id, resp[Messages.CurrentPresetSet])
 
       return Some()
     | _ -> return None
@@ -419,7 +420,7 @@ let listIncludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
       let page = Page(int page)
 
       let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
-      do! IncludedPlaylist.list botService click.MessageId preset page
+      do! IncludedPlaylist.list resp botService click.MessageId preset page
 
       return Some()
     | _ -> return None
@@ -433,7 +434,7 @@ let listExcludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
       let page = Page(int page)
 
       let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
-      do! ExcludedPlaylist.list botService click.MessageId preset page
+      do! ExcludedPlaylist.list resp botService click.MessageId preset page
 
       return Some()
     | _ -> return None
@@ -447,7 +448,7 @@ let listTargetedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
       let page = Page(int page)
 
       let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
-      do! TargetedPlaylist.list botService click.MessageId preset page
+      do! TargetedPlaylist.list resp botService click.MessageId preset page
 
       return Some()
     | _ -> return None
@@ -513,7 +514,7 @@ let removePresetClickHandler
       match! userService.RemoveUserPreset(click.Chat.UserId, presetId) with
       | Ok _ ->
         do! botService.SendNotification(click.Id, resp[Messages.PresetRemoved])
-        do! User.listPresets botService presetRepo click.MessageId click.Chat.UserId
+        do! User.listPresets resp botService presetRepo click.MessageId click.Chat.UserId
 
         return Some()
       | Error Preset.GetPresetError.NotFound ->

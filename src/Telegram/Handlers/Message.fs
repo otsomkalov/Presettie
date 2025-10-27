@@ -2,6 +2,7 @@
 
 open Domain.Repos
 open MusicPlatform
+open Telegram.Constants
 open otsom.fs.Auth
 open otsom.fs.Bot
 open otsom.fs.Extensions.String
@@ -24,21 +25,20 @@ let startMessageHandler
   : MessageHandler =
   fun message -> task {
     match message with
-    | { Text = Equals "/start" } ->
+    | { Text = Equals Commands.start } ->
       do! User.sendCurrentPreset resp userRepo presetRepo chatCtx message.Chat.UserId
 
       return Some()
-    | { Text = CommandWithData "/start" state } ->
+    | { Text = CommandWithData Commands.start state } ->
       let! user = userRepo.LoadUser message.Chat.UserId
 
       let processSuccessfulLogin =
-        fun () -> chatCtx.SendMessage "Successful login!" &|> ignore
+        fun () -> chatCtx.SendMessage resp[Messages.SuccessfulLogin] &|> ignore
 
       let sendErrorMessage =
         function
-        | CompleteError.StateNotFound -> chatCtx.SendMessage "State not found. Try to login via fresh link."
-        | CompleteError.StateDoesntBelongToUser ->
-          chatCtx.SendMessage("State provided does not belong to your login request. Try to login via fresh link.")
+        | CompleteError.StateNotFound -> chatCtx.SendMessage resp[Messages.StateNotFound]
+        | CompleteError.StateDoesntBelongToUser -> chatCtx.SendMessage resp[Messages.OtherUserState]
 
       do!
         authService.CompleteAuth(user.Id.ToAccountId(), State.Parse state)
@@ -51,7 +51,7 @@ let startMessageHandler
 let faqMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals "/faq" ->
+    | Equals Commands.faq ->
       do! chatCtx.SendMessage(resp[Messages.FAQ]) &|> ignore
 
       return Some()
@@ -61,7 +61,7 @@ let faqMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Messa
 let privacyMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals "/privacy" ->
+    | Equals Commands.privacy ->
       do! chatCtx.SendMessage(resp[Messages.Privacy]) &|> ignore
 
       return Some()
@@ -71,7 +71,7 @@ let privacyMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : M
 let guideMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals "/guide" ->
+    | Equals Commands.guide ->
       do! chatCtx.SendMessage(resp[Messages.Guide]) &|> ignore
 
       return Some()
@@ -81,7 +81,7 @@ let guideMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Mes
 let helpMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
   fun message -> task {
     match message.Text with
-    | Equals "/help" ->
+    | Equals Commands.help ->
       do! chatCtx.SendMessage(resp[Messages.Help]) &|> ignore
 
       return Some()
@@ -89,14 +89,14 @@ let helpMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Mess
   }
 
 let myPresetsMessageHandler presetRepo (resp: IResourceProvider) (chatCtx: #ISendMessageButtons) : MessageHandler =
-  let sendUserPresets = User.sendPresets chatCtx presetRepo
+  let sendUserPresets = User.sendPresets resp chatCtx presetRepo
 
   fun message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.MyPresets)) ->
       do! sendUserPresets message.Chat.UserId
       return Some()
-    | Equals "/presets" ->
+    | Equals Commands.presets ->
       do! sendUserPresets message.Chat.UserId
       return Some()
     | _ -> return None
@@ -159,7 +159,7 @@ let setPresetSizeMessageHandler
         |> TaskResult.taskEither (onSuccess message.Chat.UserId) (onError >> Task.ignore)
 
       return Some()
-    | { Text = CommandWithData "/size" text } ->
+    | { Text = CommandWithData Commands.size text } ->
       do!
         (userService.SetCurrentPresetSize(message.Chat.UserId, (PresetSettings.RawPresetSize text))
          |> TaskResult.taskEither (onSuccess message.Chat.UserId) (onError >> Task.ignore))
@@ -188,7 +188,7 @@ let createPresetMessageHandler (presetService: IPresetService) (resp: IResourceP
       do! Preset.send resp chatCtx preset
 
       return Some()
-    | { Text = CommandWithData "/new" text } ->
+    | { Text = CommandWithData Commands.newPreset text } ->
       let! preset = presetService.CreatePreset(message.Chat.UserId, text)
 
       do! Preset.send resp chatCtx preset
@@ -281,8 +281,7 @@ let includePlaylistMessageHandler
       let includePlaylistResult =
         presetService.IncludePlaylist(userId, currentPresetId, rawPlaylistId)
 
-      let onSuccess (playlist: IncludedPlaylist) =
-        chatCtx.SendMessage($"*{playlist.Name}* successfully included into current preset!")
+      let onSuccess (playlist: IncludedPlaylist) = chatCtx.SendMessage resp[Messages.PlaylistIncluded, [| playlist.Name |]]
 
       let onError =
         function
@@ -304,7 +303,7 @@ let includePlaylistMessageHandler
       do! includePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
-    | { Text = CommandWithData "/include" text } ->
+    | { Text = CommandWithData Commands.includePlaylist text } ->
       do! includePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
@@ -326,7 +325,7 @@ let excludePlaylistMessageHandler
         presetService.ExcludePlaylist(userId, currentPresetId, rawPlaylistId)
 
       let onSuccess (playlist: ExcludedPlaylist) =
-        chatCtx.SendMessage $"*{playlist.Name}* successfully excluded from current preset!"
+        chatCtx.SendMessage resp[Messages.PlaylistExcluded, [| playlist.Name |]]
 
       let onError =
         function
@@ -347,7 +346,7 @@ let excludePlaylistMessageHandler
       do! excludePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
-    | { Text = CommandWithData "/exclude" text } ->
+    | { Text = CommandWithData Commands.excludePlaylist text } ->
       do! excludePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
@@ -369,7 +368,7 @@ let targetPlaylistMessageHandler
         presetService.TargetPlaylist(userId, currentPresetId, rawPlaylistId)
 
       let onSuccess (playlist: TargetedPlaylist) =
-        chatCtx.SendMessage $"*{playlist.Name}* successfully targeted for current preset!"
+        chatCtx.SendMessage resp[Messages.PlaylistTargeted, [| playlist.Name |]]
 
       let onError =
         function
@@ -391,7 +390,7 @@ let targetPlaylistMessageHandler
       do! targetPlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
-    | { Text = CommandWithData "/target" text } ->
+    | { Text = CommandWithData Commands.targetPlaylist text } ->
       do! targetPlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
@@ -399,14 +398,15 @@ let targetPlaylistMessageHandler
   }
 
 let queuePresetRunMessageHandler userRepo presetService (resp: IResourceProvider) chatCtx : MessageHandler =
-  fun message -> task {
+  let queueRun = User.queueCurrentPresetRun resp userRepo chatCtx presetService
 
+  fun message -> task {
     match message.Text with
-    | Equals "/run" ->
-      do! User.queueCurrentPresetRun userRepo chatCtx presetService message.Chat.UserId
+    | Equals Commands.runPreset ->
+      do! queueRun message.Chat.UserId
       return Some()
     | Equals(resp.Item(Buttons.RunPreset)) ->
-      do! User.queueCurrentPresetRun userRepo chatCtx presetService message.Chat.UserId
+      do! queueRun message.Chat.UserId
       return Some()
     | _ -> return None
   }

@@ -118,6 +118,63 @@ module Messages =
   [<Literal>]
   let PresetNotFound = "messages.preset-not-found"
 
+  [<Literal>]
+  let SuccessfulLogin = "messages.successful-login"
+
+  [<Literal>]
+  let StateNotFound = "messages.state-not-found"
+
+  [<Literal>]
+  let OtherUserState = "messages.other-user-state"
+
+  [<Literal>]
+  let PlaylistIncluded = "messages.playlist-included"
+
+  [<Literal>]
+  let PlaylistExcluded = "messages.playlist-excluded"
+
+  [<Literal>]
+  let PlaylistTargeted = "messages.playlist-targeted"
+
+  [<Literal>]
+  let PresetQueued = "messages.preset-queued"
+
+  [<Literal>]
+  let NoIncludedPlaylists = "messages.no-included-playlists"
+
+  [<Literal>]
+  let NoTargetedPlaylists = "messages.no-targeted-playlists"
+
+  [<Literal>]
+  let CurrentPresetSet = "messages.current-preset-set"
+
+  [<Literal>]
+  let IncludedPlaylists = "messages.included-playlists"
+
+  [<Literal>]
+  let ExcludedPlaylists = "messages.excluded-playlists"
+
+  [<Literal>]
+  let TargetedPlaylists = "messages.targeted-playlists"
+
+  [<Literal>]
+  let PresetExecuted = "messages.preset-executed"
+
+  [<Literal>]
+  let RunningPreset = "messages.running-preset"
+
+  [<Literal>]
+  let NotAuthorized = "messages.not-authorized"
+
+  [<Literal>]
+  let NoIncludedTracks = "messages.no-included-tracks"
+
+  [<Literal>]
+  let NoPotentialTracks = "messages.no-potential-tracks"
+
+  [<Literal>]
+  let YourPresets = "messages.your-presets"
+
 [<RequireQualifiedAccess>]
 module Buttons =
   [<Literal>]
@@ -173,3 +230,30 @@ module Buttons =
 
   [<Literal>]
   let Back = "buttons.back"
+
+  [<Literal>]
+  let PrevPage = "buttons.prev-page"
+
+  [<Literal>]
+  let NextPage = "buttons.next-page"
+
+  [<Literal>]
+  let Remove = "buttons.remove"
+
+  [<Literal>]
+  let Append = "buttons.append"
+
+  [<Literal>]
+  let Overwrite = "buttons.overwrite"
+
+  [<Literal>]
+  let IncludedPlaylists = "buttons.included-playlists"
+
+  [<Literal>]
+  let ExcludedPlaylists = "buttons.excluded-playlists"
+
+  [<Literal>]
+  let TargetedPlaylists = "buttons.targeted-playlists"
+
+  [<Literal>]
+  let SetCurrentPreset = "buttons.set-current-preset"
