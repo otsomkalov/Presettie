@@ -39,11 +39,15 @@ let getPresetMessage =
       match preset.Settings.RecommendationsEngine with
       | Some RecommendationsEngine.ArtistAlbums ->
         Messages.ArtistsAlbumsRecommendation,
+        Buttons.ReccoBeatsRecommendations,
+        sprintf "p|%s|%s" presetId CallbackQueryConstants.reccoBeatsRecommendations
+      | Some RecommendationsEngine.ReccoBeats ->
+        Messages.ReccoBeatsRecommendation,
         Buttons.DisableRecommendations,
         sprintf "p|%s|%s" presetId CallbackQueryConstants.disableRecommendations
       | None ->
         Messages.RecommendationsDisabled,
-        Buttons.EnableRecommendations,
+        Buttons.ArtistsAlbumsRecommendations,
         sprintf "p|%s|%s" presetId CallbackQueryConstants.artistsAlbumsRecommendations
 
     let uniqueArtistsText, uniqueArtistsButtonText, uniqueArtistsButtonData =
