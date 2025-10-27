@@ -9,7 +9,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10"/>
     <PackageReference Include="otsom.fs.Extensions" Version="0.0.49"/>
     <PackageReference Include="otsom.fs.Core" Version="0.0.4"/>
-    <PackageReference Include="otsom.fs.Extensions.DependencyInjection" Version="0.0.16"/>
+    <PackageReference Include="otsom.fs.Extensions.DependencyInjection" Version="0.0.18"/>
   </ItemGroup>
 
   <ItemGroup>

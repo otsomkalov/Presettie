@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="otsom.fs.Extensions.DependencyInjection" Version="0.0.18" />
     <ProjectReference Include="..\MusicPlatform\MusicPlatform.fsproj"/>
   </ItemGroup>
 
