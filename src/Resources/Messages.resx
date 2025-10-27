@@ -83,6 +83,9 @@ Preset settings:
     <data name="ArtistsAlbumsRecommendation" xml:space="preserve">
         <value>💽 Artists albums</value>
     </data>
+    <data name="ReccoBeatsRecommendation" xml:space="preserve">
+        <value>🎛️ ReccoBeats</value>
+    </data>
     <data name="RecommendationsDisabled" xml:space="preserve">
         <value>➖ Recommendations are disabled</value>
     </data>
