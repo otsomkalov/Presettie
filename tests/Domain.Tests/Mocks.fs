@@ -1,4 +1,5 @@
-﻿module Domain.Tests.Mocks
+﻿[<RequireQualifiedAccess>]
+module Domain.Tests.Mocks
 
 open Domain.Core
 open MusicPlatform
