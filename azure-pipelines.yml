@@ -13,6 +13,7 @@ pool:
 
 variables:
   Runtime: 'linux-x64'
+  BuildConfiguration: 'Release'
 
 stages:
   - stage: build
@@ -33,31 +34,30 @@ stages:
             name: Build_Bot
             inputs:
               command: 'build'
-              configuration: 'Release'
               projects: 'src/**/Generator.fsproj'
-              arguments: '-r $(Runtime) -c Release'
+              arguments: '-r $(Runtime)'
               publishWebProjects: false
           - task: DotNetCoreCLI@2
             name: Build_API
             inputs:
               command: 'build'
-              configuration: 'Release'
               projects: 'src/**/API.fsproj'
-              arguments: '-r $(Runtime) -c Release'
+              arguments: '-r $(Runtime)'
               publishWebProjects: false
           - task: DotNetCoreCLI@2
             name: Build_Web
             inputs:
               command: 'build'
-              configuration: 'Release'
               projects: 'src/**/Web.fsproj'
-              arguments: '-c Release'
               publishWebProjects: false
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'test'
+              projects: 'tests/**'
           - task: DotNetCoreCLI@2
             name: Publish_Bot
             inputs:
               command: 'publish'
-              configuration: 'Release'
               projects: 'src/**/Generator.fsproj'
               arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/Generator /p:InformationalVersion=$(Build.BuildNumber)'
               publishWebProjects: false
@@ -65,7 +65,6 @@ stages:
             name: Publish_API
             inputs:
               command: 'publish'
-              configuration: 'Release'
               projects: 'src/**/API.fsproj'
               arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/API /p:InformationalVersion=$(Build.BuildNumber)'
               publishWebProjects: false
@@ -73,7 +72,6 @@ stages:
             name: Publish_Web
             inputs:
               command: 'publish'
-              configuration: 'Release'
               projects: 'src/**/Web.fsproj'
               arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory) /p:InformationalVersion=$(Build.BuildNumber)'
               publishWebProjects: false
