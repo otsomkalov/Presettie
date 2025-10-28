@@ -23,7 +23,8 @@ type TargetedPlaylist() =
   let presetService = Mock<IPresetService>()
 
   do
-    presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some Mocks.preset) |> ignore
+    presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some Mocks.preset)
+    |> ignore
 
   let createClick data : Click =
     { Id = Mocks.clickId
@@ -33,7 +34,8 @@ type TargetedPlaylist() =
 
   [<Fact>]
   member _.``list click should list targeted playlists if data match``() = task {
-    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(()) |> ignore
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
+    |> ignore
 
     let click = createClick [ "p"; Mocks.preset.Id.Value; "tp"; "0" ]
 
@@ -53,17 +55,20 @@ type TargetedPlaylist() =
 
     result |> should equal None
 
-    presetRepo.VerifyAll()
-    botService.VerifyAll()
+    presetRepo.VerifyNoOtherCalls()
+    botService.VerifyNoOtherCalls()
   }
 
   [<Fact>]
   member _.``show click should send targeted playlist details``() = task {
-    musicPlatform.Setup(_.LoadPlaylist(Mocks.targetedPlaylistId)).ReturnsAsync(Ok Mocks.writablePlatformPlaylist) |> ignore
+    musicPlatform.Setup(_.LoadPlaylist(Mocks.targetedPlaylistId)).ReturnsAsync(Ok Mocks.writablePlatformPlaylist)
+    |> ignore
 
-    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(()) |> ignore
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
+    |> ignore
 
-    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object) |> ignore
+    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
+    |> ignore
 
     let click =
       createClick [ "p"; Mocks.preset.Id.Value; "tp"; Mocks.targetedPlaylistId.Value; "i" ]
@@ -80,7 +85,8 @@ type TargetedPlaylist() =
 
   [<Fact>]
   member _.``show click should not send playlist details if data does not match``() = task {
-    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object) |> ignore
+    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
+    |> ignore
 
     let click = createClick []
 
@@ -89,9 +95,9 @@ type TargetedPlaylist() =
 
     result |> should equal None
 
-    presetRepo.VerifyAll()
-    botService.VerifyAll()
-    musicPlatform.VerifyAll()
+    presetRepo.VerifyNoOtherCalls()
+    botService.VerifyNoOtherCalls()
+    musicPlatform.VerifyNoOtherCalls()
   }
 
   [<Fact>]
@@ -104,7 +110,8 @@ type TargetedPlaylist() =
       )
     |> ignore
 
-    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(()) |> ignore
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
+    |> ignore
 
     let click =
       createClick [ "p"; Mocks.preset.Id.Value; "tp"; Mocks.targetedPlaylistId.Value; "rm" ]

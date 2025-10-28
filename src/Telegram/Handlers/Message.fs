@@ -281,7 +281,8 @@ let includePlaylistMessageHandler
       let includePlaylistResult =
         presetService.IncludePlaylist(userId, currentPresetId, rawPlaylistId)
 
-      let onSuccess (playlist: IncludedPlaylist) = chatCtx.SendMessage resp[Messages.PlaylistIncluded, [| playlist.Name |]]
+      let onSuccess (playlist: IncludedPlaylist) =
+        chatCtx.SendMessage resp[Messages.PlaylistIncluded, [| playlist.Name |]]
 
       let onError =
         function

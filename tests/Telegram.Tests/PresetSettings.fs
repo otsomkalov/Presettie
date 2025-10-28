@@ -1,4 +1,4 @@
-﻿module Telegram.Tests.PresetSettings
+﻿namespace Telegram.Tests
 
 #nowarn "20"
 
@@ -14,116 +14,84 @@ open Xunit
 open otsom.fs.Bot
 open otsom.fs.Resources
 
-let private createClick data : Click =
-  { Id = Mocks.clickId
-    Chat = Mocks.chat
-    MessageId = Mocks.botMessageId
-    Data = data }
-
-[<Fact>]
-let ``enableUniqueArtists should update preset and show updated if data matched`` () =
-  let presetRepo = Mock<IPresetRepo>()
-
-  presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
-
-  let presetService = Mock<IPresetService>()
-
-  presetService.Setup(_.EnableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
-
-  let botService = Mock<IBotService>()
-
-  botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
-
-  let resourceProvider = Mock<IResourceProvider>()
-
-  let sut =
-    enableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
-
-  let click =
-    createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.enableUniqueArtists ]
-
-  task {
-    let! result = sut click
-
-    result |> should equal (Some())
-
-    presetRepo.VerifyAll()
-    botService.VerifyAll()
-    presetService.VerifyAll()
-  }
-
-[<Fact>]
-let ``enableUniqueArtists should not update preset if data does not match`` () =
+type PresetSettings() =
   let presetRepo = Mock<IPresetRepo>()
   let presetService = Mock<IPresetService>()
   let botService = Mock<IBotService>()
   let resourceProvider = Mock<IResourceProvider>()
 
-  let sut =
-    enableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
+  let createClick data : Click =
+    { Id = Mocks.clickId
+      Chat = Mocks.chat
+      MessageId = Mocks.botMessageId
+      Data = data }
 
-  let click = createClick []
+  [<Fact>]
+  member this.``enableUniqueArtists should update preset and show updated if data matched``() =
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    presetService.Setup(_.EnableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
-  task {
-    let! result = sut click
+    let sut =
+      enableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
 
-    result |> should equal None
+    let click =
+      createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.enableUniqueArtists ]
 
-    presetRepo.VerifyAll()
-    botService.VerifyAll()
-    presetService.VerifyAll()
-  }
+    task {
+      let! result = sut click
+      result |> should equal (Some())
+      presetRepo.VerifyAll()
+      botService.VerifyAll()
+      presetService.VerifyAll()
+    }
 
-[<Fact>]
-let ``disableUniqueArtists should update preset and show updated if data matched`` () =
-  let presetRepo = Mock<IPresetRepo>()
+  [<Fact>]
+  member this.``enableUniqueArtists should not update preset if data does not match``() =
+    let sut =
+      enableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
 
-  presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    let click = createClick []
 
-  let presetService = Mock<IPresetService>()
+    task {
+      let! result = sut click
+      result |> should equal None
+      presetRepo.VerifyAll()
+      botService.VerifyAll()
+      presetService.VerifyAll()
+    }
 
-  presetService.Setup(_.DisableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
+  [<Fact>]
+  member this.``disableUniqueArtists should update preset and show updated if data matched``() =
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    presetService.Setup(_.DisableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
-  let botService = Mock<IBotService>()
+    let sut =
+      disableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
 
-  botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
+    let click =
+      createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.disableUniqueArtists ]
 
-  let resourceProvider = Mock<IResourceProvider>()
+    task {
+      let! result = sut click
+      result |> should equal (Some())
+      presetRepo.VerifyAll()
+      botService.VerifyAll()
+      presetService.VerifyAll()
+    }
 
-  let sut =
-    disableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
+  [<Fact>]
+  member this.``disableUniqueArtists should not update preset if data does not match``() =
+    let sut =
+      disableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
 
-  let click =
-    createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.disableUniqueArtists ]
+    let click = createClick []
 
-  task {
-    let! result = sut click
-
-    result |> should equal (Some())
-
-    presetRepo.VerifyAll()
-    botService.VerifyAll()
-    presetService.VerifyAll()
-  }
-
-[<Fact>]
-let ``disableUniqueArtists should not update preset if data does not match`` () =
-  let presetRepo = Mock<IPresetRepo>()
-  let presetService = Mock<IPresetService>()
-  let botService = Mock<IBotService>()
-  let resourceProvider = Mock<IResourceProvider>()
-
-  let sut =
-    disableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
-
-  let click = createClick []
-
-  task {
-    let! result = sut click
-
-    result |> should equal None
-
-    presetRepo.VerifyAll()
-    botService.VerifyAll()
-    presetService.VerifyAll()
-  }
+    task {
+      let! result = sut click
+      result |> should equal None
+      presetRepo.VerifyAll()
+      botService.VerifyAll()
+      presetService.VerifyAll()
+    }

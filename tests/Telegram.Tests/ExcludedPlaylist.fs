@@ -23,7 +23,8 @@ type ExcludedPlaylist() =
   let presetService = Mock<IPresetService>()
 
   do
-    presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some Mocks.preset) |> ignore
+    presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some Mocks.preset)
+    |> ignore
 
   let createClick data : Click =
     { Id = Mocks.clickId
@@ -33,7 +34,8 @@ type ExcludedPlaylist() =
 
   [<Fact>]
   member _.``list click should list excluded playlists if data match``() = task {
-    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(()) |> ignore
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
+    |> ignore
 
     let click = createClick [ "p"; Mocks.preset.Id.Value; "ep"; "0" ]
 
@@ -53,15 +55,20 @@ type ExcludedPlaylist() =
 
     result |> should equal None
 
-    presetRepo.VerifyAll()
-    botService.VerifyAll()
+    presetRepo.VerifyNoOtherCalls()
+    botService.VerifyNoOtherCalls()
   }
 
   [<Fact>]
   member _.``show click should send excluded playlist details``() = task {
-    musicPlatform.Setup(_.LoadPlaylist(Mocks.excludedPlaylistId)).ReturnsAsync(Ok Mocks.readablePlatformPlaylist) |> ignore
-    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(()) |> ignore
-    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object) |> ignore
+    musicPlatform.Setup(_.LoadPlaylist(Mocks.excludedPlaylistId)).ReturnsAsync(Ok Mocks.readablePlatformPlaylist)
+    |> ignore
+
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
+    |> ignore
+
+    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
+    |> ignore
 
     let click =
       createClick [ "p"; Mocks.preset.Id.Value; "ep"; Mocks.excludedPlaylistId.Value; "i" ]
@@ -78,7 +85,8 @@ type ExcludedPlaylist() =
 
   [<Fact>]
   member _.``show click should not send playlist details if data does not match``() = task {
-    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object) |> ignore
+    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
+    |> ignore
 
     let click = createClick []
 
@@ -87,9 +95,9 @@ type ExcludedPlaylist() =
 
     result |> should equal None
 
-    presetRepo.VerifyAll()
-    botService.VerifyAll()
-    musicPlatform.VerifyAll()
+    presetRepo.VerifyNoOtherCalls()
+    botService.VerifyNoOtherCalls()
+    musicPlatform.VerifyNoOtherCalls()
   }
 
   [<Fact>]
@@ -102,7 +110,8 @@ type ExcludedPlaylist() =
       )
     |> ignore
 
-    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(()) |> ignore
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
+    |> ignore
 
     let click =
       createClick [ "p"; Mocks.preset.Id.Value; "ep"; Mocks.excludedPlaylistId.Value; "rm" ]

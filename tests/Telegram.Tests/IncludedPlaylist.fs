@@ -1,4 +1,4 @@
-﻿namespace Telegram.Facts
+﻿namespace Telegram.Tests
 
 open Domain.Core
 open Domain.Repos
@@ -54,8 +54,8 @@ type IncludedPlaylist() =
 
     result |> should equal None
 
-    presetRepo.VerifyAll()
-    botService.VerifyAll()
+    presetRepo.VerifyNoOtherCalls()
+    botService.VerifyNoOtherCalls()
   }
 
   [<Fact>]
@@ -94,9 +94,9 @@ type IncludedPlaylist() =
 
     result |> should equal None
 
-    presetRepo.VerifyAll()
-    botService.VerifyAll()
-    musicPlatform.VerifyAll()
+    presetRepo.VerifyNoOtherCalls()
+    botService.VerifyNoOtherCalls()
+    musicPlatform.VerifyNoOtherCalls()
   }
 
   [<Fact>]
