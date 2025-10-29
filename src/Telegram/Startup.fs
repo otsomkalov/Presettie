@@ -25,6 +25,7 @@ let private addClickHandlers (services: IServiceCollection) =
 
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(artistsAlbumsRecommendationsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(reccoBeatsRecommendationsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(spotifyRecommendationsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(disableRecommendationsClickHandler)
 
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(enableUniqueArtistsClickHandler)

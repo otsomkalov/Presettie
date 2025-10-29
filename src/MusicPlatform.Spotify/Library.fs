@@ -126,26 +126,10 @@ module User =
 
     fun () -> loadTracks' listLikedTracks' |> Async.StartAsTask
 
-[<RequireQualifiedAccess>]
-module Track =
-  let getRecommendations (client: ISpotifyClient) : Track.GetRecommendations =
-    let recommendationsLimit = 100
-
-    fun tracks ->
-      let request = RecommendationsRequest()
-
-      for trackId in tracks |> List.takeSafe 5 do
-        request.SeedTracks.Add(trackId.Value)
-
-      request.Limit <- recommendationsLimit
-
-      client.Browse.GetRecommendations(request)
-      |> Task.map _.Tracks
-      |> Task.map (Seq.map Track.fromFull >> Seq.toList)
-
 type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPlatform>) =
   let playlistTracksLimit = 100
-
+  let seedsLimit = 5
+  let recommendationsLimit = 100
 
   interface IMusicPlatform with
     member this.AddTracks(PlaylistId playlistId, tracks) =
@@ -196,6 +180,18 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
 
         return albums.Albums |> Seq.map Album.fromFull |> Seq.collect _.Tracks |> List.ofSeq
     }
+
+    member this.Recommend(tracks) =
+      let request = RecommendationsRequest()
+
+      for track in tracks |> List.takeSafe seedsLimit do
+        request.SeedTracks.Add(track.Id.Value)
+
+      request.Limit <- recommendationsLimit
+
+      client.Browse.GetRecommendations(request)
+      |> Task.map _.Tracks
+      |> Task.map (Seq.map Track.fromFull >> Seq.toList)
 
 module Library =
 

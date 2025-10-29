@@ -100,6 +100,11 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.spotify-recommendation",
+    "Value": "🎵 Spotify",
+    "Lang": "en"
+  },
+  {
     "Key": "messages.recommendations-disabled",
     "Value": "➖ Recommendations are disabled",
     "Lang": "en"
@@ -330,6 +335,11 @@
     "Lang": "en"
   },
   {
+    "Key": "buttons.spotify-recommendations",
+    "Value": "🎵 Spotify",
+    "Lang": "en"
+  },
+  {
     "Key": "buttons.disable-recommendations",
     "Value": "➖ Disable recommendations",
     "Lang": "en"
@@ -393,11 +403,13 @@
     "Key": "buttons.set-current-preset",
     "Value": "✅ Set as current",
     "Lang": "en"
-  },{
+  },
+  {
     "Key": "buttons.included-playlist-all",
     "Value": "All",
     "Lang": "en"
-  },{
+  },
+  {
     "Key": "buttons.included-playlist-liked-only",
     "Value": "Liked only",
     "Lang": "en"

@@ -45,6 +45,10 @@ let getPresetMessage (resp: IResourceProvider) =
         sprintf "p|%s|%s" presetId CallbackQueryConstants.reccoBeatsRecommendations
       | Some RecommendationsEngine.ReccoBeats ->
         resp[Messages.ReccoBeatsRecommendation],
+        resp[Buttons.SpotifyRecommendations],
+        sprintf "p|%s|%s" presetId CallbackQueryConstants.spotifyRecommendations
+      | Some RecommendationsEngine.Spotify ->
+        resp[Messages.SpotifyRecommendation],
         resp[Buttons.DisableRecommendations],
         sprintf "p|%s|%s" presetId CallbackQueryConstants.disableRecommendations
       | None ->

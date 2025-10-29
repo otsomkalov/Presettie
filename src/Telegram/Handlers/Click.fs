@@ -71,6 +71,25 @@ let reccoBeatsRecommendationsClickHandler
     | _ -> return None
   }
 
+let spotifyRecommendationsClickHandler
+  presetRepo
+  (presetService: #ISetRecommendationsEngine)
+  (resp: IResourceProvider)
+  (botService: #ISendNotification)
+  : ClickHandler =
+  fun click -> task {
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.spotifyRecommendations ] ->
+      let presetId = PresetId presetId
+
+      do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.Spotify)
+      do! botService.SendNotification(click.Id, resp[Notifications.Updated])
+      do! Preset.show presetRepo botService resp click.MessageId presetId
+
+      return Some()
+    | _ -> return None
+  }
+
 let disableRecommendationsClickHandler
   presetRepo
   (presetService: #ISetRecommendationsEngine)

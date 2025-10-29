@@ -500,10 +500,11 @@ type ArtistAlbumsRecommender(musicPlatform: IMusicPlatform) =
     member this.Recommend(tracks: Track list) =
       tracks
       |> List.takeSafe seedTracksCount
-      |> List.collect (fun t -> t.Artists |> List.ofSeq)
-      |> List.map (fun a -> musicPlatform.ListArtistTracks a.Id)
+      |> Seq.collect _.Artists
+      |> Seq.distinct
+      |> Seq.map (fun a -> musicPlatform.ListArtistTracks a.Id)
       |> Task.WhenAll
-      |> Task.map (List.concat >> List.prepend tracks)
+      |> Task.map (List.concat >> List.distinct)
 
 type RecommenderFactory(musicPlatform: IMusicPlatform, reccoBeatsRecommender: IRecommender) =
   interface IRecommenderFactory with
@@ -511,6 +512,7 @@ type RecommenderFactory(musicPlatform: IMusicPlatform, reccoBeatsRecommender: IR
       match recommenderType with
       | RecommendationsEngine.ArtistAlbums -> ArtistAlbumsRecommender(musicPlatform)
       | RecommendationsEngine.ReccoBeats -> reccoBeatsRecommender
+      | RecommendationsEngine.Spotify -> musicPlatform
 
 type Shuffler<'a> = 'a list -> 'a list
 
