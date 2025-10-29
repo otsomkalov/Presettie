@@ -145,7 +145,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Copy Web to Blob Storage'
             inputs:
-              azureSubscription: $(subscription)'
+              azureSubscription: '$(subscription)'
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
