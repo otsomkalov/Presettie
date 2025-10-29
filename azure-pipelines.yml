@@ -8,9 +8,6 @@ pr:
     include:
       - main
 
-pool:
-  vmImage: 'windows-latest'
-
 variables:
   Runtime: 'linux-x64'
   BuildConfiguration: 'Release'
@@ -145,6 +142,14 @@ stages:
               buildType: 'current'
               artifactName: 'Web'
               targetPath: '$(Build.ArtifactStagingDirectory)/Web'
+          - task: AzureCLI@2
+            displayName: 'Copy Web to Blob Storage'
+            inputs:
+              azureSubscription: $(subscription)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az storage blob upload-batch -d $(web) -s $(Build.ArtifactStagingDirectory)/Web/
           - task: AzureFileCopy@6
             displayName: 'Copy Web to Blob Storage'
             inputs:
@@ -152,7 +157,7 @@ stages:
               azureSubscription: '$(subscription)'
               Destination: 'AzureBlob'
               storage: '$(web-storage-account)'
-              ContainerName: '$web'
+              ContainerName: '$(web)'
   - stage: deploy_prd
     displayName: 'Deploy PRD'
     variables:
