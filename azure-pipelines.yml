@@ -8,9 +8,6 @@ pr:
     include:
       - main
 
-pool:
-  vmImage: 'windows-latest'
-
 variables:
   Runtime: 'linux-x64'
   BuildConfiguration: 'Release'
