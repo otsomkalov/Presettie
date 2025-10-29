@@ -149,7 +149,11 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                az storage blob upload-batch --account-name $(web-storage-account) -d "$web" -s $(Build.ArtifactStagingDirectory)/Web/
+                az storage blob upload-batch \
+                  --account-name $(web-storage-account) \
+                  -d '$web' \
+                  -s $(Build.ArtifactStagingDirectory)/Web/ \
+                  --overwrite
   - stage: deploy_prd
     displayName: 'Deploy PRD'
     variables:
