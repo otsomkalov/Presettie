@@ -1,36 +1,38 @@
-﻿module Domain.Tests.User
+﻿namespace Domain.Tests.User
 
 open Domain.Repos
+open Domain.Tests
 open Moq
 open Xunit
 open Domain.Core
 open Domain.Workflows
 open FsUnit.Xunit
 
-[<Fact>]
-let ``setCurrentPreset updates User.CurrentPresetId`` () =
+type SetCurrentPreset() =
   let repo = Mock<IUserRepo>()
 
-  repo
-    .Setup(_.LoadUser(Mocks.userId))
-    .ReturnsAsync(
+  [<Fact>]
+  member _.``updates User.CurrentPresetId``() =
+    repo
+      .Setup(_.LoadUser(Mocks.userId))
+      .ReturnsAsync(
+        { Mocks.user with
+            CurrentPresetId = None }
+      )
+
+    let expectedUser =
       { Mocks.user with
-          CurrentPresetId = None }
-    )
+          CurrentPresetId = Some Mocks.presetId }
 
-  let expectedUser =
-    { Mocks.user with
-        CurrentPresetId = Some Mocks.presetId }
+    repo.Setup(_.SaveUser(expectedUser)).ReturnsAsync(())
 
-  repo.Setup(_.SaveUser(expectedUser)).ReturnsAsync(())
+    let sut = User.setCurrentPreset repo.Object
 
-  let sut = User.setCurrentPreset repo.Object
+    task {
+      do! sut Mocks.userId Mocks.presetId
 
-  task {
-    do! sut Mocks.userId Mocks.presetId
-
-    repo.VerifyAll()
-  }
+      repo.VerifyAll()
+    }
 
 type RemovePreset() =
   let userRepo = Mock<IUserRepo>()
@@ -39,7 +41,7 @@ type RemovePreset() =
   let sut = UserService(userRepo.Object, presetService.Object) :> IRemoveUserPreset
 
   [<Fact>]
-  let ``keeps current Preset untouched if other was removed`` () =
+  member _.``keeps current Preset untouched if other was removed``() =
     let expectedUser =
       { Mocks.user with
           CurrentPresetId = Some Mocks.otherPresetId }
@@ -58,7 +60,7 @@ type RemovePreset() =
     }
 
   [<Fact>]
-  let ``unsets current Preset if successfully removed`` () =
+  member _.``unsets current Preset if successfully removed``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     let expectedUser =
@@ -79,7 +81,7 @@ type RemovePreset() =
     }
 
   [<Fact>]
-  let ``returns error if Preset not found`` () =
+  member _.``returns error if Preset not found``() =
     presetService.Setup(_.RemovePreset(Mocks.userId, Mocks.rawPresetId)).ReturnsAsync(Error Preset.GetPresetError.NotFound)
 
     task {
