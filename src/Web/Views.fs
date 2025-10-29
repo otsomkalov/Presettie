@@ -3,12 +3,13 @@
 open Bolero
 open Bolero.Html
 open Elmish
+open Domain.Core
 open Web.Models
 open Web.Repos
 open Web.Router
 open Web.Util
 open Web.Messages
-open Domain.Core
+open System
 
 [<RequireQualifiedAccess>]
 module Preset =
@@ -211,3 +212,70 @@ module Preset =
             }
           }
         }
+
+  [<RequireQualifiedAccess>]
+  module Create =
+    let update (env: #ICreatePreset) (message: Preset.Create'.Message) (model: Preset.Create.Model) =
+      match message with
+      | Preset.Create'.Message.NameChanged name -> { model with Name = name }, Cmd.none
+      | Preset.Create'.Message.CreatePreset when model.Name |> String.IsNullOrEmpty |> not ->
+        model,
+        Cmd.OfTask.either
+          env.CreatePreset
+          model.Name
+          (fun (PresetId presetId) -> Page.Preset(presetId, { Model = { Preset = AsyncOp.Loading } }) |> PageChanged)
+          (Preset.Create'.Message.CreatePresetError
+           >> Preset.Message.Create
+           >> Message.Preset)
+      | _ -> model, Cmd.none
+
+    let view (model: Preset.Create.Model) dispatch = div {
+      attr.``class`` "container"
+
+      h1 { text "Create New Preset" }
+
+      form {
+        attrs {
+          "onsubmit" => "return false"
+        }
+
+        attr.``class`` "form"
+
+        on.submit (fun _ -> Preset.Create'.Message.CreatePreset |> Preset.Message.Create |> Message.Preset |> dispatch)
+
+        div {
+          attr.``class`` "mb-3"
+
+          label {
+            attr.``for`` "presetName"
+            attr.``class`` "form-label"
+            text "Preset Name"
+          }
+
+          input {
+            attr.``type`` "text"
+            attr.id "presetName"
+            attr.value model.Name
+            attr.required true
+
+            on.input (
+              _.Value
+              >> string
+              >> Preset.Create'.Message.NameChanged
+              >> Preset.Message.Create
+              >> Message.Preset
+              >> dispatch
+            )
+
+            attr.``class`` "form-control"
+          }
+        }
+
+        button {
+          attr.``type`` "button"
+          attr.``class`` "btn btn-primary"
+          on.click (fun _ -> Preset.Create'.Message.CreatePreset |> Preset.Message.Create |> Message.Preset |> dispatch)
+          text "Create Preset"
+        }
+      }
+    }

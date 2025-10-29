@@ -41,6 +41,19 @@ type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
         logger.LogError(e, "Error while removing preset")
     }
 
+    member this.CreatePreset(name) = task {
+      try
+        use! response = httpClient.PostAsJsonAsync("api/presets", {| Name = name |})
+
+        return!
+          response.Content.ReadFromJsonAsync<{| Id: string |}>()
+          |> Task.map (_.Id >> PresetId)
+      with e ->
+        logger.LogError(e, "Error while creating preset")
+
+        return Unchecked.defaultof<PresetId>
+    }
+
 type APIAuthorizationMessageHandler(accessTokenProvider: IAccessTokenProvider, navigationManager: NavigationManager, cfg: IConfiguration) =
   inherit AuthorizationMessageHandler(accessTokenProvider, navigationManager)
 
