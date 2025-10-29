@@ -150,10 +150,12 @@ stages:
               scriptLocation: inlineScript
               inlineScript: |
                 az storage blob upload-batch \
+                  --auth-mode login \
                   --account-name $(web-storage-account) \
                   -d '$web' \
                   -s $(Build.ArtifactStagingDirectory)/Web/ \
-                  --overwrite
+                  --overwrite \
+                  --no-progress
   - stage: deploy_prd
     displayName: 'Deploy PRD'
     variables:
@@ -200,11 +202,17 @@ stages:
               buildType: 'current'
               artifactName: 'Web'
               targetPath: '$(Build.ArtifactStagingDirectory)/Web'
-          - task: AzureFileCopy@6
+          - task: AzureCLI@2
             displayName: 'Copy Web to Blob Storage'
             inputs:
-              SourcePath: '$(Build.ArtifactStagingDirectory)/Web/**'
               azureSubscription: '$(subscription)'
-              Destination: 'AzureBlob'
-              storage: '$(web-storage-account)'
-              ContainerName: '$web'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az storage blob upload-batch \
+                  --auth-mode login \
+                  --account-name $(web-storage-account) \
+                  -d '$web' \
+                  -s $(Build.ArtifactStagingDirectory)/Web/ \
+                  --overwrite \
+                  --no-progress
