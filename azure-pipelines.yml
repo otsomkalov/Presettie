@@ -41,6 +41,7 @@ stages:
             name: Build_API
             inputs:
               command: 'build'
+              configuration: 'Release'
               projects: 'src/**/API.fsproj'
               arguments: '-r $(Runtime)'
               publishWebProjects: false
