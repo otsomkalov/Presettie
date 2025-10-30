@@ -235,13 +235,15 @@ module Preset =
       h1 { text "Create New Preset" }
 
       form {
-        attrs {
-          "onsubmit" => "return false"
-        }
+        attrs { "onsubmit" => "return false" }
 
         attr.``class`` "form"
 
-        on.submit (fun _ -> Preset.Create'.Message.CreatePreset |> Preset.Message.Create |> Message.Preset |> dispatch)
+        on.submit (fun _ ->
+          Preset.Create'.Message.CreatePreset
+          |> Preset.Message.Create
+          |> Message.Preset
+          |> dispatch)
 
         div {
           attr.``class`` "mb-3"
@@ -274,7 +276,13 @@ module Preset =
         button {
           attr.``type`` "button"
           attr.``class`` "btn btn-primary"
-          on.click (fun _ -> Preset.Create'.Message.CreatePreset |> Preset.Message.Create |> Message.Preset |> dispatch)
+
+          on.click (fun _ ->
+            Preset.Create'.Message.CreatePreset
+            |> Preset.Message.Create
+            |> Message.Preset
+            |> dispatch)
+
           text "Create Preset"
         }
       }
