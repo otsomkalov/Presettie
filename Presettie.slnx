@@ -1,8 +1,8 @@
 ﻿<Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Bot/">
-    <Project Path="src\Infrastructure.Telegram\Infrastructure.Telegram.fsproj" Type="Classic F#" />
-    <Project Path="src\Telegram\Telegram.fsproj" Type="Classic F#" />
+    <Project Path="src\Bot.Telegram\Bot.Telegram.fsproj" Type="Classic F#" />
+    <Project Path="src\Bot\Bot.fsproj" Type="Classic F#" />
   </Folder>
   <Folder Name="/src/Domain/">
     <Project Path="src\Database\Database.csproj" Type="Classic C#" />
@@ -17,11 +17,11 @@
   </Folder>
   <Folder Name="/src/Runners/">
     <Project Path="src\API\API.fsproj" Type="Classic F#" />
-    <Project Path="src\Generator\Generator.fsproj" Type="Classic F#" />
+    <Project Path="src\Functions.Bot\Functions.Bot.fsproj" Type="Classic F#" />
     <Project Path="src\Web\Web.fsproj" Type="Classic F#" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Domain.Tests\Domain.Tests.fsproj" Type="Classic F#" />
-    <Project Path="tests/Telegram.Tests\Telegram.Tests.fsproj" Type="Classic F#" />
+    <Project Path="tests\Bot.Tests\Bot.Tests.fsproj" Type="Classic F#" />
   </Folder>
 </Solution>

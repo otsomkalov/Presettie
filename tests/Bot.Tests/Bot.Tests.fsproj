@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <NoWarn>20</NoWarn>
+    <IsPackable>false</IsPackable>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Mocks.fs" />
+    <Compile Include="IncludedPlaylist.fs" />
+    <Compile Include="ExcludedPlaylist.fs" />
+    <Compile Include="TargetedPlaylist.fs" />
+    <Compile Include="User.fs" />
+    <Compile Include="PresetSettings.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FsUnit.xUnit" Version="7.1.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+    <PackageReference Include="xunit.v3" Version="3.1.0"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain.Tests\Domain.Tests.fsproj" />
+    <ProjectReference Include="..\..\src\Bot\Bot.fsproj" />
+  </ItemGroup>
+
+</Project>

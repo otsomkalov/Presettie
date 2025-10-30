@@ -31,7 +31,7 @@ stages:
             name: Build_Bot
             inputs:
               command: 'build'
-              projects: 'src/**/Generator.fsproj'
+              projects: 'src/**/Functions.Bot.fsproj'
               arguments: '-r $(Runtime) --configuration $(BuildConfiguration)'
               publishWebProjects: false
           - task: DotNetCoreCLI@2
@@ -62,7 +62,7 @@ stages:
             name: Publish_Bot
             inputs:
               command: 'publish'
-              projects: 'src/**/Generator.fsproj'
+              projects: 'src/**/Functions.Bot.fsproj'
               arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/Generator /p:InformationalVersion=$(Build.BuildNumber)'
               publishWebProjects: false
           - task: DotNetCoreCLI@2
