@@ -1,4 +1,4 @@
-﻿namespace Functions.Bot.Functions
+﻿namespace Functions.Bot.Telegram
 
 open System.Threading.Tasks
 open Bot.Telegram.Services

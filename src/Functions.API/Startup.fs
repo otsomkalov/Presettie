@@ -1,4 +1,4 @@
-﻿module Generator.Startup
+﻿module Functions.API.Startup
 
 #nowarn "20"
 

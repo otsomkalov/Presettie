@@ -1,4 +1,4 @@
-﻿namespace Functions.Bot.Extensions
+﻿namespace Functions.Bot.Telegram.Extensions
 
 open Microsoft.Extensions.Primitives
 

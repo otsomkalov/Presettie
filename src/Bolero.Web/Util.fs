@@ -1,4 +1,4 @@
-module Web.Util
+module Bolero.Web.Util
 
 open System.Text.Json
 open System.Text.Json.Serialization

@@ -1,10 +1,10 @@
-﻿module Web.Router
+﻿module Bolero.Web.Router
 
 open Bolero
 open Microsoft.AspNetCore.Components.Authorization
-open Web.Messages
-open Web.Models
-open Web.Util
+open Bolero.Web.Messages
+open Bolero.Web.Models
+open Bolero.Web.Util
 open System
 
 let defaultModel =

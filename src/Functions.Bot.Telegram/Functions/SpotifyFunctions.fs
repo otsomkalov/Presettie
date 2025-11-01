@@ -1,4 +1,4 @@
-﻿namespace Functions.Bot.Functions
+﻿namespace Functions.Bot.Telegram
 
 open System.Threading.Tasks
 open Bot.Telegram.Settings
@@ -6,7 +6,7 @@ open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Extensions.Options
-open Functions.Bot.Extensions.IQueryCollection
+open Functions.Bot.Telegram.Extensions.IQueryCollection
 open StackExchange.Redis
 open otsom.fs.Auth
 open otsom.fs.Extensions

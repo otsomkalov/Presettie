@@ -1,14 +1,14 @@
-﻿module Web.Views
+﻿module Bolero.Web.Views
 
 open Bolero
 open Bolero.Html
 open Elmish
 open Domain.Core
-open Web.Models
-open Web.Repos
-open Web.Router
-open Web.Util
-open Web.Messages
+open Bolero.Web.Models
+open Bolero.Web.Repos
+open Bolero.Web.Router
+open Bolero.Web.Util
+open Bolero.Web.Messages
 open System
 
 [<RequireQualifiedAccess>]

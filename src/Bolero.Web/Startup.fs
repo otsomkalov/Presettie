@@ -1,4 +1,4 @@
-﻿module Web.Startup
+﻿module Bolero.Web.Startup
 
 open System
 open System.Net.Http
@@ -9,9 +9,9 @@ open Microsoft.AspNetCore.Components.WebAssembly.Hosting
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Configuration
-open Web.Repos
+open Bolero.Web.Repos
 open System.Net.Http.Json
-open Web.Util
+open Bolero.Web.Util
 open otsom.fs.Extensions
 
 type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =

@@ -16,9 +16,9 @@
     <Project Path="src\MusicPlatform.Spotify\MusicPlatform.Spotify.fsproj" Type="Classic F#" />
   </Folder>
   <Folder Name="/src/Runners/">
-    <Project Path="src\API\API.fsproj" Type="Classic F#" />
-    <Project Path="src\Functions.Bot\Functions.Bot.fsproj" Type="Classic F#" />
-    <Project Path="src\Web\Web.fsproj" Type="Classic F#" />
+    <Project Path="src\Bolero.Web\Bolero.Web.fsproj" Type="Classic F#" />
+    <Project Path="src\Functions.API\Functions.API.fsproj" Type="Classic F#" />
+    <Project Path="src\Functions.Bot.Telegram\Functions.Bot.Telegram.fsproj" Type="Classic F#" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Domain.Tests\Domain.Tests.fsproj" Type="Classic F#" />

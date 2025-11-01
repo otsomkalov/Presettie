@@ -1,8 +1,8 @@
-﻿module Web.Messages
+﻿module Bolero.Web.Messages
 
 open Domain.Core
 open Microsoft.AspNetCore.Components.Authorization
-open Web.Models
+open Bolero.Web.Models
 
 [<RequireQualifiedAccess>]
 module Preset =

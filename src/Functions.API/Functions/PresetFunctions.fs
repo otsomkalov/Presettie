@@ -1,9 +1,9 @@
-﻿namespace API.Functions
+﻿namespace Functions.API.Functions
 
 open System.Collections.Generic
 open System.ComponentModel.DataAnnotations
 open System.Threading.Tasks
-open API.Shared
+open Functions.API.Shared
 open Domain.Core
 open Domain.Repos
 open Microsoft.AspNetCore.Authentication

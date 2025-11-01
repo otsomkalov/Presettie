@@ -28,28 +28,28 @@ stages:
               projects: 'src/**/**.fsproj'
               arguments: '-r $(Runtime) --configuration $(BuildConfiguration)'
           - task: DotNetCoreCLI@2
-            name: Build_Bot
+            displayName: 'Build Telegram Bot in Azure Functions'
             inputs:
               command: 'build'
-              projects: 'src/**/Functions.Bot.fsproj'
+              projects: 'src/**/Functions.Bot.Telegram.fsproj'
               arguments: '-r $(Runtime) --configuration $(BuildConfiguration)'
               publishWebProjects: false
           - task: DotNetCoreCLI@2
-            name: Build_API
+            displayName: 'Build Azure Functions Web API'
             inputs:
               command: 'build'
-              projects: 'src/**/API.fsproj'
+              projects: 'src/**/Functions.API.fsproj'
               arguments: '-r $(Runtime) --configuration $(BuildConfiguration)'
               publishWebProjects: false
           - task: DotNetCoreCLI@2
-            name: Build_Web
+            displayName: 'Build Bolero Web'
             inputs:
               command: 'build'
-              projects: 'src/**/Web.fsproj'
+              projects: 'src/**/Bolero.Web.fsproj'
               arguments: '--configuration $(BuildConfiguration)'
               publishWebProjects: false
           - task: DotNetCoreCLI@2
-            name: Test
+            displayName: 'Run all tests'
             inputs:
               command: 'test'
               projects: 'tests/**/**.fsproj'
@@ -59,42 +59,42 @@ stages:
             inputs:
               summaryFileLocation: '$(Agent.TempDirectory)/*/coverage.cobertura.xml'
           - task: DotNetCoreCLI@2
-            name: Publish_Bot
+            displayName: 'Publish Telegram Bot'
             inputs:
               command: 'publish'
-              projects: 'src/**/Functions.Bot.fsproj'
+              projects: 'src/**/Functions.Bot.Telegram.fsproj'
               arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/Generator /p:InformationalVersion=$(Build.BuildNumber)'
               publishWebProjects: false
           - task: DotNetCoreCLI@2
-            name: Publish_API
+            displayName: 'Publish Azure Functions Web API'
             inputs:
               command: 'publish'
-              projects: 'src/**/API.fsproj'
-              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/API /p:InformationalVersion=$(Build.BuildNumber)'
+              projects: 'src/**/Functions.API.fsproj'
+              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/Functions.API /p:InformationalVersion=$(Build.BuildNumber)'
               publishWebProjects: false
           - task: DotNetCoreCLI@2
-            name: Publish_Web
+            displayName: 'Publish Bolero Web'
             inputs:
               command: 'publish'
-              projects: 'src/**/Web.fsproj'
+              projects: 'src/**/Bolero.Web.fsproj'
               arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory) /p:InformationalVersion=$(Build.BuildNumber)'
               publishWebProjects: false
               zipAfterPublish: false
           - task: PublishBuildArtifacts@1
-            name: Pack_Bot
+            displayName: 'Pack Telegram Bot'
             inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Generator'
-              ArtifactName: 'Bot'
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions.Bot.Telegram'
+              ArtifactName: 'Functions.Telegram.Bot'
           - task: PublishBuildArtifacts@1
-            name: Pack_API
+            displayName: 'Pack Azure Functions Web API'
             inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/API'
-              ArtifactName: 'API'
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions.API'
+              ArtifactName: 'Functions.API'
           - task: PublishBuildArtifacts@1
-            name: Pack_Web
+            displayName: 'Pack Bolero Web'
             inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Web/wwwroot'
-              ArtifactName: 'Web'
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Bolero.Web/wwwroot'
+              ArtifactName: 'Bolero.Web'
   - stage: deploy_dev
     displayName: 'Deploy DEV'
     trigger: manual
@@ -102,15 +102,14 @@ stages:
       - group: dev
     jobs:
       - deployment: deploy_bot
-        displayName: Deploy Bot
+        displayName: 'Deploy Telegram Bot on Azure Functions'
         environment: 'dev'
         strategy:
           runOnce:
             deploy:
               steps:
                 - download: current
-                  artifact: Bot
-
+                  artifact: Functions.Telegram.Bot
                 - task: AzureFunctionApp@2
                   inputs:
                     azureSubscription: '$(subscription)'
@@ -118,14 +117,14 @@ stages:
                     appName: '$(bot-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
       - deployment: deploy_api
-        displayName: Deploy API
+        displayName: 'Deploy Azure Functions Web API'
         environment: 'dev'
         strategy:
           runOnce:
             deploy:
               steps:
                 - download: current
-                  artifact: API
+                  artifact: Functions.API
 
                 - task: AzureFunctionApp@2
                   inputs:
@@ -134,16 +133,16 @@ stages:
                     appName: '$(api-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
       - job: deploy_web
-        displayName: 'Deploy Web'
+        displayName: 'Deploy Bolero Web'
         steps:
           - checkout: none
           - task: DownloadPipelineArtifact@2
             inputs:
               buildType: 'current'
-              artifactName: 'Web'
-              targetPath: '$(Build.ArtifactStagingDirectory)/Web'
+              artifactName: 'Bolero.Web'
+              targetPath: '$(Build.ArtifactStagingDirectory)/Bolero.Web'
           - task: AzureCLI@2
-            displayName: 'Copy Web to Blob Storage'
+            displayName: 'Copy Bolero Web to Blob Storage'
             inputs:
               azureSubscription: '$(subscription)'
               scriptType: bash
@@ -153,7 +152,7 @@ stages:
                   --auth-mode login \
                   --account-name $(web-storage-account) \
                   -d '$web' \
-                  -s $(Build.ArtifactStagingDirectory)/Web/ \
+                  -s $(Build.ArtifactStagingDirectory)/Bolero.Web/ \
                   --overwrite \
                   --no-progress
   - stage: deploy_prd
@@ -162,14 +161,14 @@ stages:
       - group: prd
     jobs:
       - deployment: deploy_bot
-        displayName: Deploy Bot
+        displayName: 'Deploy Telegram Bot on Azure Functions'
         environment: 'prd'
         strategy:
           runOnce:
             deploy:
               steps:
                 - download: current
-                  artifact: Bot
+                  artifact: Functions.Telegram.Bot
 
                 - task: AzureFunctionApp@2
                   inputs:
@@ -178,14 +177,14 @@ stages:
                     appName: '$(bot-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
       - deployment: deploy_api
-        displayName: Deploy API
+        displayName: 'Deploy Azure Functions Web API'
         environment: 'prd'
         strategy:
           runOnce:
             deploy:
               steps:
                 - download: current
-                  artifact: API
+                  artifact: Functions.API
 
                 - task: AzureFunctionApp@2
                   inputs:
@@ -194,16 +193,16 @@ stages:
                     appName: '$(api-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
       - job: deploy_web
-        displayName: 'Deploy Web'
+        displayName: 'Deploy Bolero Web'
         steps:
           - checkout: none
           - task: DownloadPipelineArtifact@2
             inputs:
               buildType: 'current'
-              artifactName: 'Web'
-              targetPath: '$(Build.ArtifactStagingDirectory)/Web'
+              artifactName: 'Bolero.Web'
+              targetPath: '$(Build.ArtifactStagingDirectory)/Bolero.Web'
           - task: AzureCLI@2
-            displayName: 'Copy Web to Blob Storage'
+            displayName: 'Copy Bolero Web to Blob Storage'
             inputs:
               azureSubscription: '$(subscription)'
               scriptType: bash
@@ -213,6 +212,6 @@ stages:
                   --auth-mode login \
                   --account-name $(web-storage-account) \
                   -d '$web' \
-                  -s $(Build.ArtifactStagingDirectory)/Web/ \
+                  -s $(Build.ArtifactStagingDirectory)/Bolero.Web/ \
                   --overwrite \
                   --no-progress

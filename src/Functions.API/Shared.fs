@@ -1,4 +1,4 @@
-﻿module API.Shared
+﻿module Functions.API.Shared
 
 open MusicPlatform
 

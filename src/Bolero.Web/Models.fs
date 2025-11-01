@@ -1,8 +1,8 @@
-﻿module Web.Models
+﻿module Bolero.Web.Models
 
 open Bolero
 open Domain.Core
-open Web.Util
+open Bolero.Web.Util
 
 [<RequireQualifiedAccess>]
 module Preset =

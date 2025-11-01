@@ -1,13 +1,13 @@
 ﻿[<RequireQualifiedAccess>]
-module Web.Layout
+module Bolero.Web.Layout
 
 open Bolero
 open Bolero.Html
 open Microsoft.AspNetCore.Components.Authorization
 open Microsoft.AspNetCore.Components.Routing
-open Web.Models
-open Web.Router
-open Web.Util
+open Bolero.Web.Models
+open Bolero.Web.Router
+open Bolero.Web.Util
 
 [<RequireQualifiedAccess>]
 module internal HeaderLinks =

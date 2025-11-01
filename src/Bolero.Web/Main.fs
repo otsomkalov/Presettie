@@ -1,4 +1,4 @@
-﻿module Web.Main
+﻿module Bolero.Web.Main
 
 open System
 open Domain.Core
@@ -8,12 +8,12 @@ open Bolero.Html
 open Microsoft.AspNetCore.Components
 open Microsoft.AspNetCore.Components.Authorization
 open Microsoft.AspNetCore.Components.WebAssembly.Authentication
-open Web.Messages
-open Web.Models
-open Web.Repos
-open Web.Router
-open Web.Util
-open Web.Views
+open Bolero.Web.Messages
+open Bolero.Web.Models
+open Bolero.Web.Repos
+open Bolero.Web.Router
+open Bolero.Web.Util
+open Bolero.Web.Views
 
 [<RequireQualifiedAccess>]
 module Loading =
