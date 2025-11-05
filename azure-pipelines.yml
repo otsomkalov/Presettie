@@ -63,7 +63,7 @@ stages:
             inputs:
               command: 'publish'
               projects: 'src/**/Functions.Bot.Telegram.fsproj'
-              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/Generator /p:InformationalVersion=$(Build.BuildNumber)'
+              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/Functions.Bot.Telegram /p:InformationalVersion=$(Build.BuildNumber)'
               publishWebProjects: false
           - task: DotNetCoreCLI@2
             displayName: 'Publish Azure Functions Web API'
@@ -84,7 +84,7 @@ stages:
             displayName: 'Pack Telegram Bot'
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions.Bot.Telegram'
-              ArtifactName: 'Functions.Telegram.Bot'
+              ArtifactName: 'Functions.Bot.Telegram'
           - task: PublishBuildArtifacts@1
             displayName: 'Pack Azure Functions Web API'
             inputs:
@@ -97,7 +97,8 @@ stages:
               ArtifactName: 'Bolero.Web'
   - stage: deploy_dev
     displayName: 'Deploy DEV'
-    trigger: manual
+    dependsOn: build
+    condition: succeeded('build')
     variables:
       - group: dev
     jobs:
@@ -109,7 +110,7 @@ stages:
             deploy:
               steps:
                 - download: current
-                  artifact: Functions.Telegram.Bot
+                  artifact: Functions.Bot.Telegram
                 - task: AzureFunctionApp@2
                   inputs:
                     azureSubscription: '$(subscription)'
@@ -157,6 +158,9 @@ stages:
                   --no-progress
   - stage: deploy_prd
     displayName: 'Deploy PRD'
+    trigger: manual
+    dependsOn: deploy_dev
+    condition: succeeded('deploy_dev')
     variables:
       - group: prd
     jobs:
@@ -168,7 +172,7 @@ stages:
             deploy:
               steps:
                 - download: current
-                  artifact: Functions.Telegram.Bot
+                  artifact: Functions.Bot.Telegram
 
                 - task: AzureFunctionApp@2
                   inputs:
