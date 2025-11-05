@@ -158,7 +158,7 @@ stages:
                   --no-progress
   - stage: deploy_prd
     displayName: 'Deploy PRD'
-    trigger: manual
+    dependsOn: deploy_dev
     condition: succeeded('deploy_dev')
     variables:
       - group: prd
