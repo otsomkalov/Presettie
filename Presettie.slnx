@@ -1,4 +1,4 @@
-﻿<Solution>
+<Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Bot/">
     <Project Path="src\Bot.Telegram\Bot.Telegram.fsproj" Type="Classic F#" />
