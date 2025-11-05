@@ -408,6 +408,31 @@ let setCurrentPresetClickHandler
     | _ -> return None
   }
 
+let presetSettingsClickHandler
+  (presetRepo: #ILoadPreset)
+  (resp: IResourceProvider)
+  (botService: #IEditMessageButtons)
+  : ClickHandler =
+  fun click -> task {
+    match click.Data with
+    | [ "p"; presetId; "s" ] ->
+      let presetId = PresetId presetId
+
+      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+
+      let text, _ = getPresetMessage resp preset
+
+      let buttons = seq {
+        seq { MessageButton(resp[Buttons.SetPresetSize], sprintf "p|%s|%s" presetId.Value CallbackQueryConstants.setPresetSize) }
+        seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId.Value) }
+      }
+
+      do! botService.EditMessageButtons(click.MessageId, text, buttons)
+
+      return Some()
+    | _ -> return None
+  }
+
 let listIncludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) botService : ClickHandler =
   fun click -> task {
     match click.Data with

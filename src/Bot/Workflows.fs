@@ -305,18 +305,15 @@ module Preset =
 
       let keyboardMarkup = seq {
         seq {
-          MessageButton(resp[Buttons.IncludedPlaylists], $"p|%s{preset.Id.Value}|ip|0")
-          MessageButton(resp[Buttons.ExcludedPlaylists], $"p|%s{preset.Id.Value}|ep|0")
-          MessageButton(resp[Buttons.TargetedPlaylists], $"p|%s{preset.Id.Value}|tp|0")
+          MessageButton(resp[Buttons.IncludedPlaylists], sprintf "p|%s|ip|0" preset.Id.Value)
+          MessageButton(resp[Buttons.ExcludedPlaylists], sprintf "p|%s|ep|0" preset.Id.Value)
+          MessageButton(resp[Buttons.TargetedPlaylists], sprintf "p|%s|tp|0" preset.Id.Value)
         }
 
-        keyboard
+        // Show a single "Settings" button which opens a nested settings menu when clicked
+        seq { MessageButton(resp[Buttons.Settings], sprintf "p|%s|s" preset.Id.Value) }
 
-        seq { MessageButton(resp[Buttons.RunPreset], $"p|%s{preset.Id.Value}|r") }
-
-        seq { MessageButton(resp[Buttons.SetCurrentPreset], $"p|%s{preset.Id.Value}|c") }
-
-        seq { MessageButton(resp[Buttons.Remove], sprintf "p|%s|rm" preset.Id.Value) }
+        seq { MessageButton(resp[Buttons.RunPreset], sprintf "p|%s|r" preset.Id.Value) }
 
         seq { MessageButton(resp[Buttons.Back], "p") }
       }
