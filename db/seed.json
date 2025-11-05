@@ -5,7 +5,7 @@
     "Lang": "en"
   },
   {
-    "Ket": "messages.preset-settings-info",
+    "Key": "messages.preset-settings-info",
     "Value":"*{0}*\nSettings:\n*Include liked tracks* - {1}\n*Recommendations* - {2}\n*Unique artists* - {3}\n*Playlist size* - {4}",
     "Lang": "en"
   },

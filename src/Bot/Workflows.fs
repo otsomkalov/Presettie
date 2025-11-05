@@ -73,13 +73,6 @@ let getPresetSettingsMessage (resp: IResourceProvider) =
         resp[Buttons.EnableUniqueArtists],
         sprintf "p|%s|%s" presetId CallbackQueryConstants.enableUniqueArtists
 
-    let keyboard = seq {
-      seq { MessageButton(likedTracksButtonText, likedTracksButtonData) }
-      seq { MessageButton(uniqueArtistsButtonText, uniqueArtistsButtonData) }
-      seq { MessageButton(recommendationsButtonText, recommendationsButtonData) }
-      seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId) }
-    }
-
     let text =
       resp[Messages.PresetSettingsInfo,
            [| preset.Name
@@ -87,6 +80,14 @@ let getPresetSettingsMessage (resp: IResourceProvider) =
               recommendationsText
               uniqueArtistsText
               preset.Settings.Size.Value |]]
+
+    let keyboard = seq {
+      seq { MessageButton(likedTracksButtonText, likedTracksButtonData) }
+      seq { MessageButton(uniqueArtistsButtonText, uniqueArtistsButtonData) }
+      seq { MessageButton(recommendationsButtonText, recommendationsButtonData) }
+      seq { MessageButton(resp[Buttons.Remove], sprintf "p|%s|rm" presetId) }
+      seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId) }
+    }
 
     (text, keyboard)
 
