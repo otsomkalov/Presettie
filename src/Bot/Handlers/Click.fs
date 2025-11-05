@@ -408,11 +408,7 @@ let setCurrentPresetClickHandler
     | _ -> return None
   }
 
-let presetSettingsClickHandler
-  (presetRepo: #ILoadPreset)
-  (resp: IResourceProvider)
-  (botService: #IEditMessageButtons)
-  : ClickHandler =
+let presetSettingsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) (botService: #IEditMessageButtons) : ClickHandler =
   fun click -> task {
     match click.Data with
     | [ "p"; presetId; "s" ] ->
