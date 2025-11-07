@@ -46,7 +46,7 @@ let artistsAlbumsRecommendationsClickHandler
 
       do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ArtistAlbums)
       do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-      do! Preset.show presetRepo botService resp click.MessageId presetId
+      do! PresetSettings.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -65,7 +65,7 @@ let reccoBeatsRecommendationsClickHandler
 
       do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ReccoBeats)
       do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-      do! Preset.show presetRepo botService resp click.MessageId presetId
+      do! PresetSettings.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -84,7 +84,7 @@ let spotifyRecommendationsClickHandler
 
       do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.Spotify)
       do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-      do! Preset.show presetRepo botService resp click.MessageId presetId
+      do! PresetSettings.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -103,7 +103,7 @@ let disableRecommendationsClickHandler
 
       do! presetService.SetRecommendationsEngine(presetId, None)
       do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-      do! Preset.show presetRepo botService resp click.MessageId presetId
+      do! PresetSettings.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -122,7 +122,7 @@ let enableUniqueArtistsClickHandler
 
       do! presetService.EnableUniqueArtists presetId
       do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-      do! Preset.show presetRepo botService resp click.MessageId presetId
+      do! PresetSettings.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -141,7 +141,7 @@ let disableUniqueArtistsClickHandler
 
       do! presetService.DisableUniqueArtists presetId
       do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-      do! Preset.show presetRepo botService resp click.MessageId presetId
+      do! PresetSettings.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -160,7 +160,7 @@ let includeLikedTracksClickHandler
 
       do! presetService.IncludeLikedTracks presetId
       do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-      do! Preset.show presetRepo botService resp click.MessageId presetId
+      do! PresetSettings.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -179,7 +179,7 @@ let excludeLikedTracksClickHandler
 
       do! presetService.ExcludeLikedTracks presetId
       do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-      do! Preset.show presetRepo botService resp click.MessageId presetId
+      do! PresetSettings.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -198,7 +198,7 @@ let ignoreLikedTracksClickHandler
 
       do! presetService.IgnoreLikedTracks presetId
       do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-      do! Preset.show presetRepo botService resp click.MessageId presetId
+      do! PresetSettings.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None
@@ -403,6 +403,18 @@ let setCurrentPresetClickHandler
       do! userService.SetCurrentPreset(click.Chat.UserId, presetId)
 
       do! chatService.SendNotification(click.Id, resp[Notifications.CurrentPresetSet])
+
+      return Some()
+    | _ -> return None
+  }
+
+let presetSettingsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) (botService: #IEditMessageButtons) : ClickHandler =
+  fun click -> task {
+    match click.Data with
+    | [ "p"; presetId; "s" ] ->
+      let presetId = PresetId presetId
+
+      do! PresetSettings.show presetRepo botService resp click.MessageId presetId
 
       return Some()
     | _ -> return None

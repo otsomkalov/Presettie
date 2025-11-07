@@ -19,6 +19,7 @@ let private addClickHandlers (services: IServiceCollection) =
   services
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listPresetsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(presetInfoClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(presetSettingsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetService>(runPresetClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IUserService>(removePresetClickHandler)
     .BuildSingleton<ClickHandlerFactory, IUserService>(setCurrentPresetClickHandler)

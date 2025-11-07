@@ -24,18 +24,24 @@ let keyboardColumns = 4
 [<Literal>]
 let buttonsPerPage = 20
 
-let getPresetMessage (resp: IResourceProvider) =
+let getPresetSettingsMessage (resp: IResourceProvider) =
   fun (preset: Preset) ->
     let presetId = preset.Id.Value
 
     let likedTracksHandlingText, likedTracksButtonText, likedTracksButtonData =
       match preset.Settings.LikedTracksHandling with
       | LikedTracksHandling.Include ->
-        resp[Messages.LikedTracksIncluded], resp[Buttons.ExcludeLikedTracks], $"p|{presetId}|{CallbackQueryConstants.excludeLikedTracks}"
+        resp[Messages.LikedTracksIncluded],
+        resp[Buttons.ExcludeLikedTracks],
+        sprintf "p|%s|%s" presetId CallbackQueryConstants.excludeLikedTracks
       | LikedTracksHandling.Exclude ->
-        resp[Messages.LikedTracksExcluded], resp[Buttons.IgnoreLikedTracks], $"p|{presetId}|{CallbackQueryConstants.ignoreLikedTracks}"
+        resp[Messages.LikedTracksExcluded],
+        resp[Buttons.IgnoreLikedTracks],
+        sprintf "p|%s|%s" presetId CallbackQueryConstants.ignoreLikedTracks
       | LikedTracksHandling.Ignore ->
-        resp[Messages.LikedTracksIgnored], resp[Buttons.IncludeLikedTracks], $"p|{presetId}|{CallbackQueryConstants.includeLikedTracks}"
+        resp[Messages.LikedTracksIgnored],
+        resp[Buttons.IncludeLikedTracks],
+        sprintf "p|%s|%s" presetId CallbackQueryConstants.includeLikedTracks
 
     let recommendationsText, recommendationsButtonText, recommendationsButtonData =
       match preset.Settings.RecommendationsEngine with
@@ -68,7 +74,7 @@ let getPresetMessage (resp: IResourceProvider) =
         sprintf "p|%s|%s" presetId CallbackQueryConstants.enableUniqueArtists
 
     let text =
-      resp[Messages.PresetInfo,
+      resp[Messages.PresetSettingsInfo,
            [| preset.Name
               likedTracksHandlingText
               recommendationsText
@@ -76,9 +82,11 @@ let getPresetMessage (resp: IResourceProvider) =
               preset.Settings.Size.Value |]]
 
     let keyboard = seq {
-      MessageButton(likedTracksButtonText, likedTracksButtonData)
-      MessageButton(uniqueArtistsButtonText, uniqueArtistsButtonData)
-      MessageButton(recommendationsButtonText, recommendationsButtonData)
+      seq { MessageButton(likedTracksButtonText, likedTracksButtonData) }
+      seq { MessageButton(uniqueArtistsButtonText, uniqueArtistsButtonData) }
+      seq { MessageButton(recommendationsButtonText, recommendationsButtonData) }
+      seq { MessageButton(resp[Buttons.Remove], sprintf "p|%s|rm" presetId) }
+      seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId) }
     }
 
     (text, keyboard)
@@ -87,7 +95,7 @@ let private sendPresetsMessage sendOrEditButtons =
   fun (presets: SimplePreset list) message -> task {
     let keyboardMarkup =
       presets
-      |> Seq.map (fun p -> MessageButton(p.Name, $"p|{p.Id.Value}|i"))
+      |> Seq.map (fun p -> MessageButton(p.Name, sprintf "p|%s|i" p.Id.Value))
       |> Seq.singleton
 
     do! sendOrEditButtons message keyboardMarkup &|> ignore
@@ -104,17 +112,17 @@ let createPlaylistsPage (resp: IResourceProvider) =
       |> List.map (fun idx -> playlistsForPage |> List.skip idx |> List.takeSafe keyboardColumns)
       |> List.map (Seq.map playlistToButton)
 
-    let backButton = MessageButton(resp[Buttons.Back], $"p|{presetId.Value}|i")
+    let backButton = MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId.Value)
 
     let prevButton =
       if page > 0 then
-        Some(MessageButton(resp[Buttons.PrevPage], $"p|{presetId.Value}|ip|{page - 1}"))
+        Some(MessageButton(resp[Buttons.PrevPage], sprintf "p|%s|ip|%i" presetId.Value (page - 1)))
       else
         None
 
     let nextButton =
       if remainingPlaylists.Length > buttonsPerPage then
-        Some(MessageButton(resp[Buttons.NextPage], $"p|{presetId.Value}|ip|{page + 1}"))
+        Some(MessageButton(resp[Buttons.NextPage], sprintf "p|%s|ip|%i" presetId.Value (page + 1)))
       else
         None
 
@@ -298,25 +306,31 @@ module TargetedPlaylist =
     }
 
 [<RequireQualifiedAccess>]
+module PresetSettings =
+  let show (presetRepo: #ILoadPreset) (botService: #IEditMessageButtons) (resp: IResourceProvider) =
+    fun messageId ->
+      presetRepo.LoadPreset
+      >> Task.map Option.get
+      >> Task.bind (fun preset ->
+        let text, keyboard = getPresetSettingsMessage resp preset
+
+        botService.EditMessageButtons(messageId, text, keyboard))
+
+[<RequireQualifiedAccess>]
 module Preset =
   let show' showButtons (resp: IResourceProvider) =
     fun preset -> task {
-      let text, keyboard = getPresetMessage resp preset
+      let text = resp[Messages.PresetInfo, [| preset.Name |]]
 
       let keyboardMarkup = seq {
         seq {
-          MessageButton(resp[Buttons.IncludedPlaylists], $"p|%s{preset.Id.Value}|ip|0")
-          MessageButton(resp[Buttons.ExcludedPlaylists], $"p|%s{preset.Id.Value}|ep|0")
-          MessageButton(resp[Buttons.TargetedPlaylists], $"p|%s{preset.Id.Value}|tp|0")
+          MessageButton(resp[Buttons.IncludedPlaylists], sprintf "p|%s|ip|0" preset.Id.Value)
+          MessageButton(resp[Buttons.ExcludedPlaylists], sprintf "p|%s|ep|0" preset.Id.Value)
+          MessageButton(resp[Buttons.TargetedPlaylists], sprintf "p|%s|tp|0" preset.Id.Value)
         }
 
-        keyboard
-
-        seq { MessageButton(resp[Buttons.RunPreset], $"p|%s{preset.Id.Value}|r") }
-
-        seq { MessageButton(resp[Buttons.SetCurrentPreset], $"p|%s{preset.Id.Value}|c") }
-
-        seq { MessageButton(resp[Buttons.Remove], sprintf "p|%s|rm" preset.Id.Value) }
+        seq { MessageButton(resp[Buttons.Settings], sprintf "p|%s|s" preset.Id.Value) }
+        seq { MessageButton(resp[Buttons.RunPreset], sprintf "p|%s|r" preset.Id.Value) }
 
         seq { MessageButton(resp[Buttons.Back], "p") }
       }
@@ -354,7 +368,7 @@ module Preset =
 
   let send (resp: IResourceProvider) (chatCtx: #ISendKeyboard) =
     fun preset ->
-      let text, _ = getPresetMessage resp preset
+      let text = resp[Messages.PresetInfo, [| preset.Name |]]
 
       let keyboard: Keyboard =
         [ [ KeyboardButton(resp[Buttons.RunPreset]) ]
@@ -365,7 +379,7 @@ module Preset =
             KeyboardButton(resp[Buttons.ExcludePlaylist])
             KeyboardButton(resp[Buttons.TargetPlaylist]) ]
 
-          [ resp[Buttons.Settings] ] ]
+          [ KeyboardButton(resp[Buttons.Settings]) ] ]
 
       chatCtx.SendKeyboard(text, keyboard) &|> ignore
 
@@ -418,7 +432,7 @@ module User =
       | Some presetId ->
         let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
-        let text, _ = getPresetMessage resp preset
+        let text, _ = getPresetSettingsMessage resp preset
 
         let buttons: Keyboard =
           [| [| KeyboardButton(resp[Buttons.SetPresetSize]) |]
