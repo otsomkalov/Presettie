@@ -683,3 +683,39 @@ type runPresetClickHandler() =
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
+
+type presetSettingsClickHandler() =
+  let presetRepo = Mock<IPresetRepo>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let botService = Mock<IEditMessageButtons>()
+
+  let handler =
+    Click.presetSettingsClickHandler presetRepo.Object resourceProvider.Object botService.Object
+
+  [<Fact>]
+  member _.``should handle valid click data``() =
+    let presetId = Mocks.presetId.Value
+    let click = createClick [ "p"; presetId; "s" ]
+
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
+
+    // PresetSettings.show is called, but we don't need to mock its internals for this test
+
+    task {
+      let! result = handler click
+      result |> should equal (Some())
+      presetRepo.VerifyAll()
+      botService.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
+    task {
+      let! result = handler click
+      result |> should equal None
+      presetRepo.VerifyNoOtherCalls()
+      botService.VerifyNoOtherCalls()
+    }
