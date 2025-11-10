@@ -120,14 +120,21 @@ type artistsAlbumsRecommendationsClickHandler() =
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
-    let click = createClick [ "p"; presetId; CallbackQueryConstants.artistsAlbumsRecommendations ]
-    presetService.Setup(fun x -> x.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.ArtistAlbums)).ReturnsAsync(())
-    botService.Setup(fun x -> x.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    presetRepo.Setup(fun x -> x.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
+
+    let click =
+      createClick [ "p"; presetId; CallbackQueryConstants.artistsAlbumsRecommendations ]
+
+    presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.ArtistAlbums)).ReturnsAsync(())
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    presetRepo.Setup(_.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
     resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns("Updated")
+
+    // PresetSettings.show is called, but we don't need to mock its internals for this test
+
     task {
       let! result = handler click
       result |> should equal (Some())
+
       presetService.VerifyAll()
       botService.VerifyAll()
       presetRepo.VerifyAll()
@@ -136,9 +143,11 @@ type artistsAlbumsRecommendationsClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
     task {
       let! result = handler click
       result |> should equal None
+
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -156,11 +165,15 @@ type reccoBeatsRecommendationsClickHandler() =
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
-    let click = createClick [ "p"; presetId; CallbackQueryConstants.reccoBeatsRecommendations ]
-    presetService.Setup(fun x -> x.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.ReccoBeats)).ReturnsAsync(())
-    botService.Setup(fun x -> x.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    presetRepo.Setup(fun x -> x.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
-    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns("Updated")
+
+    let click =
+      createClick [ "p"; presetId; CallbackQueryConstants.reccoBeatsRecommendations ]
+
+    presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.ReccoBeats)).ReturnsAsync(())
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    presetRepo.Setup(_.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
+    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
+
     task {
       let! result = handler click
       result |> should equal (Some())
@@ -172,6 +185,7 @@ type reccoBeatsRecommendationsClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
     task {
       let! result = handler click
       result |> should equal None
@@ -192,11 +206,15 @@ type spotifyRecommendationsClickHandler() =
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
-    let click = createClick [ "p"; presetId; CallbackQueryConstants.spotifyRecommendations ]
-    presetService.Setup(fun x -> x.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.Spotify)).ReturnsAsync(())
-    botService.Setup(fun x -> x.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    presetRepo.Setup(fun x -> x.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
-    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns("Updated")
+
+    let click =
+      createClick [ "p"; presetId; CallbackQueryConstants.spotifyRecommendations ]
+
+    presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.Spotify)).ReturnsAsync(())
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    presetRepo.Setup(_.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
+    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
+
     task {
       let! result = handler click
       result |> should equal (Some())
@@ -208,6 +226,7 @@ type spotifyRecommendationsClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
     task {
       let! result = handler click
       result |> should equal None
@@ -228,11 +247,15 @@ type disableRecommendationsClickHandler() =
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
-    let click = createClick [ "p"; presetId; CallbackQueryConstants.disableRecommendations ]
-    presetService.Setup(fun x -> x.SetRecommendationsEngine(Mocks.presetId, None)).ReturnsAsync(())
-    botService.Setup(fun x -> x.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    presetRepo.Setup(fun x -> x.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
-    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns("Updated")
+
+    let click =
+      createClick [ "p"; presetId; CallbackQueryConstants.disableRecommendations ]
+
+    presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, None)).ReturnsAsync(())
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    presetRepo.Setup(_.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
+    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
+
     task {
       let! result = handler click
       result |> should equal (Some())
@@ -244,6 +267,7 @@ type disableRecommendationsClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
     task {
       let! result = handler click
       result |> should equal None
@@ -264,11 +288,15 @@ type enableUniqueArtistsClickHandler() =
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
-    let click = createClick [ "p"; presetId; CallbackQueryConstants.enableUniqueArtists ]
-    presetService.Setup(fun x -> x.EnableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
-    botService.Setup(fun x -> x.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    presetRepo.Setup(fun x -> x.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
-    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns("Updated")
+
+    let click =
+      createClick [ "p"; presetId; CallbackQueryConstants.enableUniqueArtists ]
+
+    presetService.Setup(_.EnableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    presetRepo.Setup(_.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
+    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
+
     task {
       let! result = handler click
       result |> should equal (Some())
@@ -280,6 +308,7 @@ type enableUniqueArtistsClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
     task {
       let! result = handler click
       result |> should equal None
@@ -300,11 +329,15 @@ type disableUniqueArtistsClickHandler() =
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
-    let click = createClick [ "p"; presetId; CallbackQueryConstants.disableUniqueArtists ]
-    presetService.Setup(fun x -> x.DisableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
-    botService.Setup(fun x -> x.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    presetRepo.Setup(fun x -> x.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
-    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns("Updated")
+
+    let click =
+      createClick [ "p"; presetId; CallbackQueryConstants.disableUniqueArtists ]
+
+    presetService.Setup(_.DisableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    presetRepo.Setup(_.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
+    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
+
     task {
       let! result = handler click
       result |> should equal (Some())
@@ -316,6 +349,7 @@ type disableUniqueArtistsClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
     task {
       let! result = handler click
       result |> should equal None
@@ -337,10 +371,12 @@ type includeLikedTracksClickHandler() =
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
     let click = createClick [ "p"; presetId; CallbackQueryConstants.includeLikedTracks ]
-    presetService.Setup(fun x -> x.IncludeLikedTracks(Mocks.presetId)).ReturnsAsync(())
-    botService.Setup(fun x -> x.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    presetRepo.Setup(fun x -> x.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
+
+    presetService.Setup(_.IncludeLikedTracks(Mocks.presetId)).ReturnsAsync(())
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    presetRepo.Setup(_.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
     resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns("Updated")
+
     task {
       let! result = handler click
       result |> should equal (Some())
@@ -352,6 +388,7 @@ type includeLikedTracksClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
     task {
       let! result = handler click
       result |> should equal None
@@ -373,10 +410,12 @@ type excludeLikedTracksClickHandler() =
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
     let click = createClick [ "p"; presetId; CallbackQueryConstants.excludeLikedTracks ]
-    presetService.Setup(fun x -> x.ExcludeLikedTracks(Mocks.presetId)).ReturnsAsync(())
-    botService.Setup(fun x -> x.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    presetRepo.Setup(fun x -> x.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
-    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns("Updated")
+
+    presetService.Setup(_.ExcludeLikedTracks(Mocks.presetId)).ReturnsAsync(())
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    presetRepo.Setup(_.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
+    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
+
     task {
       let! result = handler click
       result |> should equal (Some())
@@ -388,6 +427,7 @@ type excludeLikedTracksClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
     task {
       let! result = handler click
       result |> should equal None
@@ -395,6 +435,9 @@ type excludeLikedTracksClickHandler() =
       botService.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
     }
+
+
+open MusicPlatform
 
 type ignoreLikedTracksClickHandler() =
   let presetRepo = Mock<IPresetRepo>()
@@ -409,10 +452,12 @@ type ignoreLikedTracksClickHandler() =
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
     let click = createClick [ "p"; presetId; CallbackQueryConstants.ignoreLikedTracks ]
-    presetService.Setup(fun x -> x.IgnoreLikedTracks(Mocks.presetId)).ReturnsAsync(())
-    botService.Setup(fun x -> x.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    presetRepo.Setup(fun x -> x.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
-    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns("Updated")
+
+    presetService.Setup(_.IgnoreLikedTracks(Mocks.presetId)).ReturnsAsync(())
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    presetRepo.Setup(_.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
+    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
+
     task {
       let! result = handler click
       result |> should equal (Some())
@@ -424,10 +469,56 @@ type ignoreLikedTracksClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
     task {
       let! result = handler click
       result |> should equal None
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
+    }
+
+type overwriteTargetedPlaylistClickHandler() =
+  let presetRepo = Mock<IPresetRepo>()
+  let presetService = Mock<IPresetService>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let botService = Mock<IBotService>()
+
+  let handler =
+    Click.overwriteTargetedPlaylistClickHandler presetRepo.Object presetService.Object musicPlatformFactory.Object resourceProvider.Object botService.Object
+
+  [<Fact>]
+  member _.``should handle valid click data``() =
+    let presetId = Mocks.presetId.Value
+    let playlistId = Mocks.targetedPlaylistId.Value
+    let click = createClick [ "p"; presetId; "tp"; playlistId; "o" ]
+
+    presetService.Setup(_.OverwriteTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId))).ReturnsAsync(())
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
+
+    // TargetedPlaylist.show is called, but we don't need to mock its internals for this test
+
+    task {
+      let! result = handler click
+      result |> should equal (Some())
+      presetService.VerifyAll()
+      musicPlatformFactory.VerifyAll()
+      presetRepo.VerifyAll()
+      botService.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "p"; Mocks.presetId.Value; "tp"; Mocks.targetedPlaylistId.Value; "invalid" ]
+
+    task {
+      let! result = handler click
+      result |> should equal None
+      presetService.VerifyNoOtherCalls()
+      musicPlatformFactory.VerifyNoOtherCalls()
+      presetRepo.VerifyNoOtherCalls()
+      botService.VerifyNoOtherCalls()
     }
