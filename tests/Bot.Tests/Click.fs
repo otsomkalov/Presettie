@@ -522,3 +522,38 @@ type overwriteTargetedPlaylistClickHandler() =
       presetRepo.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
+
+type setCurrentPresetClickHandler() =
+  let userService = Mock<ISetCurrentPreset>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let botService = Mock<ISendNotification>()
+
+  let handler =
+    Click.setCurrentPresetClickHandler userService.Object resourceProvider.Object botService.Object
+
+  [<Fact>]
+  member _.``should handle valid click data``() =
+    let presetId = Mocks.presetId.Value
+    let click = createClick [ "p"; presetId; "c" ]
+
+    userService.Setup(_.SetCurrentPreset(Mocks.chat.UserId, Mocks.presetId)).ReturnsAsync(())
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    resourceProvider.Setup(fun x -> x[Notifications.CurrentPresetSet]).Returns(Notifications.CurrentPresetSet)
+
+    task {
+      let! result = handler click
+      result |> should equal (Some())
+      userService.VerifyAll()
+      botService.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
+    task {
+      let! result = handler click
+      result |> should equal None
+      userService.VerifyNoOtherCalls()
+      botService.VerifyNoOtherCalls()
+    }
