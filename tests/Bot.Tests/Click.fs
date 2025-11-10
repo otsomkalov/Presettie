@@ -719,3 +719,53 @@ type presetSettingsClickHandler() =
       presetRepo.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
+
+type setOnlyLikedIncludedPlaylistClickHandler() =
+  let presetRepo = Mock<IPresetRepo>()
+  let presetService = Mock<ISetOnlyLiked>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let botService = Mock<IBotService>()
+
+  let handler =
+    Click.setOnlyLikedIncludedPlaylistClickHandler
+      presetRepo.Object
+      presetService.Object
+      musicPlatformFactory.Object
+      resourceProvider.Object
+      botService.Object
+
+  [<Fact>]
+  member _.``should handle valid click data``() =
+    let presetId = Mocks.presetId.Value
+    let playlistId = Mocks.includedPlaylistId.Value
+    let click = createClick [ "p"; presetId; "ip"; playlistId; "o" ]
+
+    presetService.Setup(_.SetOnlyLiked(Mocks.presetId, ReadablePlaylistId(Mocks.includedPlaylistId))).ReturnsAsync(())
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
+
+    // IncludedPlaylist.show is called, but we don't need to mock its internals for this test
+
+    task {
+      let! result = handler click
+      result |> should equal (Some())
+      presetService.VerifyAll()
+      musicPlatformFactory.VerifyAll()
+      presetRepo.VerifyAll()
+      botService.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "p"; Mocks.presetId.Value; "ip"; Mocks.includedPlaylistId.Value; "invalid" ]
+
+    task {
+      let! result = handler click
+      result |> should equal None
+      presetService.VerifyNoOtherCalls()
+      musicPlatformFactory.VerifyNoOtherCalls()
+      presetRepo.VerifyNoOtherCalls()
+      botService.VerifyNoOtherCalls()
+    }
