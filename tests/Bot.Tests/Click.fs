@@ -486,7 +486,12 @@ type overwriteTargetedPlaylistClickHandler() =
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.overwriteTargetedPlaylistClickHandler presetRepo.Object presetService.Object musicPlatformFactory.Object resourceProvider.Object botService.Object
+    Click.overwriteTargetedPlaylistClickHandler
+      presetRepo.Object
+      presetService.Object
+      musicPlatformFactory.Object
+      resourceProvider.Object
+      botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -512,7 +517,8 @@ type overwriteTargetedPlaylistClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ "p"; Mocks.presetId.Value; "tp"; Mocks.targetedPlaylistId.Value; "invalid" ]
+    let click =
+      createClick [ "p"; Mocks.presetId.Value; "tp"; Mocks.targetedPlaylistId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -555,5 +561,125 @@ type setCurrentPresetClickHandler() =
       let! result = handler click
       result |> should equal None
       userService.VerifyNoOtherCalls()
+      botService.VerifyNoOtherCalls()
+    }
+
+type appendToTargetedPlaylistClickHandler() =
+  let presetRepo = Mock<IPresetRepo>()
+  let presetService = Mock<IAppendToTargetedPlaylist>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let botService = Mock<IBotService>()
+
+  let handler =
+    Click.appendToTargetedPlaylistClickHandler
+      presetRepo.Object
+      presetService.Object
+      musicPlatformFactory.Object
+      resourceProvider.Object
+      botService.Object
+
+  [<Fact>]
+  member _.``should handle valid click data``() =
+    let presetId = Mocks.presetId.Value
+    let playlistId = Mocks.targetedPlaylistId.Value
+    let click = createClick [ "p"; presetId; "tp"; playlistId; "a" ]
+
+    presetService.Setup(_.AppendToTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId))).ReturnsAsync(())
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
+
+    // TargetedPlaylist.show is called, but we don't need to mock its internals for this test
+
+    task {
+      let! result = handler click
+      result |> should equal (Some())
+      presetService.VerifyAll()
+      musicPlatformFactory.VerifyAll()
+      presetRepo.VerifyAll()
+      botService.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click =
+      createClick [ "p"; Mocks.presetId.Value; "tp"; Mocks.targetedPlaylistId.Value; "invalid" ]
+
+    task {
+      let! result = handler click
+      result |> should equal None
+      presetService.VerifyNoOtherCalls()
+      musicPlatformFactory.VerifyNoOtherCalls()
+      presetRepo.VerifyNoOtherCalls()
+      botService.VerifyNoOtherCalls()
+    }
+
+type runPresetClickHandler() =
+  let presetService = Mock<Domain.Core.IQueueRun>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let botService = Mock<IBotService>()
+
+  let handler =
+    Click.runPresetClickHandler presetService.Object resourceProvider.Object botService.Object
+
+  [<Fact>]
+  member _.``should handle valid click data and queue preset successfully``() =
+    let presetId = Mocks.presetId.Value
+    let click = createClick [ "p"; presetId; "r" ]
+
+    presetService.Setup(_.QueueRun(Mocks.chat.UserId, Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    botService.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
+    resourceProvider.Setup(fun x -> x[Notifications.PresetQueued, It.IsAny<obj array>()]).Returns(Notifications.PresetQueued)
+    resourceProvider.Setup(fun x -> x[Messages.PresetQueued, It.IsAny<obj array>()]).Returns(Messages.NoIncludedPlaylists)
+
+    task {
+      let! result = handler click
+      result |> should equal (Some())
+      presetService.VerifyAll()
+      botService.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should handle validation error NoIncludedPlaylists``() =
+    let presetId = Mocks.presetId.Value
+    let click = createClick [ "p"; presetId; "r" ]
+
+    presetService.Setup(_.QueueRun(Mocks.chat.UserId, Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoIncludedPlaylists ])
+    botService.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
+    resourceProvider.Setup(fun x -> x[Messages.NoIncludedPlaylists]).Returns(Messages.NoIncludedPlaylists)
+
+    task {
+      let! result = handler click
+      result |> should equal (Some())
+      presetService.VerifyAll()
+      botService.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should handle validation error NoTargetedPlaylists``() =
+    let presetId = Mocks.presetId.Value
+    let click = createClick [ "p"; presetId; "r" ]
+
+    presetService.Setup(_.QueueRun(Mocks.chat.UserId, Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoTargetedPlaylists ])
+    botService.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
+    resourceProvider.Setup(fun x -> x[Messages.NoTargetedPlaylists]).Returns(Messages.NoTargetedPlaylists)
+
+    task {
+      let! result = handler click
+      result |> should equal (Some())
+      presetService.VerifyAll()
+      botService.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
+    task {
+      let! result = handler click
+      result |> should equal None
+      presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
