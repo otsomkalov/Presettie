@@ -759,7 +759,8 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ "p"; Mocks.presetId.Value; "ip"; Mocks.includedPlaylistId.Value; "invalid" ]
+    let click =
+      createClick [ "p"; Mocks.presetId.Value; "ip"; Mocks.includedPlaylistId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -809,7 +810,8 @@ type setAllTracksIncludedPlaylistClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ "p"; Mocks.presetId.Value; "ip"; Mocks.includedPlaylistId.Value; "invalid" ]
+    let click =
+      createClick [ "p"; Mocks.presetId.Value; "ip"; Mocks.includedPlaylistId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -818,4 +820,66 @@ type setAllTracksIncludedPlaylistClickHandler() =
       musicPlatformFactory.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
+    }
+
+type removePresetClickHandler() =
+  let presetRepo = Mock<IPresetRepo>()
+  let userService = Mock<IRemoveUserPreset>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let botService = Mock<IBotService>()
+
+  let handler =
+    Click.removePresetClickHandler presetRepo.Object userService.Object resourceProvider.Object botService.Object
+
+  [<Fact>]
+  member _.``should handle successful remove and list presets``() =
+    let presetId = Mocks.presetId.Value
+    let click = createClick [ "p"; presetId; "rm" ]
+
+    // RemoveUserPreset is called with RawPresetId constructed from the click data; match any RawPresetId
+    userService.Setup(_.RemoveUserPreset(Mocks.chat.UserId, It.IsAny<RawPresetId>())).ReturnsAsync(Ok())
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    presetRepo.Setup(_.ListUserPresets(Mocks.chat.UserId)).ReturnsAsync([ Mocks.simplePreset ])
+    resourceProvider.Setup(fun x -> x[Notifications.PresetRemoved]).Returns(Notifications.PresetRemoved)
+    resourceProvider.Setup(fun x -> x[Messages.YourPresets]).Returns(Messages.YourPresets)
+    // When listing presets, the handler will call EditMessageButtons via the bot service - mock it
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
+
+    task {
+      let! result = handler click
+      result |> should equal (Some())
+
+      userService.VerifyAll()
+      botService.VerifyAll()
+      presetRepo.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should notify when preset not found``() =
+    let presetId = Mocks.presetId.Value
+    let click = createClick [ "p"; presetId; "rm" ]
+
+    userService.Setup(_.RemoveUserPreset(Mocks.chat.UserId, It.IsAny<RawPresetId>())).ReturnsAsync(Error Preset.GetPresetError.NotFound)
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    resourceProvider.Setup(fun x -> x[Notifications.PresetNotFound]).Returns(Notifications.PresetNotFound)
+
+    task {
+      let! result = handler click
+      result |> should equal (Some())
+
+      userService.VerifyAll()
+      botService.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "p"; Mocks.presetId.Value; "invalid" ]
+
+    task {
+      let! result = handler click
+      result |> should equal None
+
+      userService.VerifyNoOtherCalls()
+      botService.VerifyNoOtherCalls()
+      presetRepo.VerifyNoOtherCalls()
     }
