@@ -22,7 +22,20 @@ stages:
             inputs:
               version: '9.x'
           - task: DotNetCoreCLI@2
-            name: Restore
+            displayName: 'Install Fantomas formatter'
+            inputs:
+              command: 'custom'
+              custom: 'tool'
+              arguments: 'install -g fantomas'
+          - task: Bash@3
+            displayName: 'Run Fantomas'
+            inputs:
+              targetType: 'inline'
+              script: |
+                fantomas './src' './tests' --check
+              workingDirectory: '$(Build.SourcesDirectory)'
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore packages'
             inputs:
               command: 'restore'
               projects: 'src/**/**.fsproj'

@@ -5,6 +5,7 @@ open Bot.Core
 open otsom.fs.Bot
 
 let botMessageId = BotMessageId 1
+let chatMessageId = ChatMessageId 1
 let clickId = ButtonClickId "click-id"
 
 let chat: Chat =

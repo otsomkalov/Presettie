@@ -82,9 +82,13 @@ let getPresetSettingsMessage (resp: IResourceProvider) =
               preset.Settings.Size.Value |]]
 
     let keyboard = seq {
-      seq { MessageButton(likedTracksButtonText, likedTracksButtonData) }
-      seq { MessageButton(uniqueArtistsButtonText, uniqueArtistsButtonData) }
-      seq { MessageButton(recommendationsButtonText, recommendationsButtonData) }
+      seq {
+        MessageButton(likedTracksButtonText, likedTracksButtonData)
+        MessageButton(uniqueArtistsButtonText, uniqueArtistsButtonData)
+        MessageButton(recommendationsButtonText, recommendationsButtonData)
+      }
+
+      seq { MessageButton(resp[Buttons.SetCurrentPreset], sprintf "p|%s|c" presetId) }
       seq { MessageButton(resp[Buttons.Remove], sprintf "p|%s|rm" presetId) }
       seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId) }
     }

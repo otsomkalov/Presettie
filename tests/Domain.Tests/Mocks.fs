@@ -69,13 +69,16 @@ let presetSettingsMock: PresetSettings.PresetSettings =
 
 let rawPresetId = RawPresetId "raw-preset-id"
 let presetId = PresetId("preset-id")
+let presetName = "test-preset-name"
 let otherPresetId = PresetId("other-preset-id")
 let userId = otsom.fs.Core.UserId("user-id")
 let otherUserId = otsom.fs.Core.UserId("other-user-id")
 
+let simplePreset: SimplePreset = { Id = presetId; Name = presetName }
+
 let preset =
   { Id = presetId
-    Name = "test-preset-name"
+    Name = presetName
     OwnerId = userId
     IncludedPlaylists = [ includedPlaylist ]
     ExcludedPlaylists = [ excludedPlaylist ]
