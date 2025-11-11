@@ -15,6 +15,7 @@
     <Compile Include="User.fs" />
     <Compile Include="PresetSettings.fs" />
     <Compile Include="Click.fs" />
+    <Compile Include="Message.fs" />
   </ItemGroup>
 
   <ItemGroup>
