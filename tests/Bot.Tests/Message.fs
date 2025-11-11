@@ -4,6 +4,7 @@ open Bot.Constants
 open Bot.Core
 open Bot.Handlers
 open Bot.Resources
+open MusicPlatform
 open Domain.Core
 open Domain.Tests
 open FsUnit.Xunit
@@ -947,7 +948,9 @@ type CreatePresetMessageHandler() =
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
-  do resourceProvider.Setup(_.Item(Messages.SendPresetName)).Returns("Send preset name") |> ignore
+  do
+    resourceProvider.Setup(_.Item(Messages.SendPresetName)).Returns("Send preset name")
+    |> ignore
 
   let handler =
     Message.createPresetMessageHandler presetService.Object resourceProvider.Object chatCtx.Object
@@ -957,7 +960,9 @@ type CreatePresetMessageHandler() =
     presetService.Setup(_.CreatePreset(Mocks.userId, "MyPreset")).ReturnsAsync(Mocks.preset)
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
-    let message = { createMessage "MyPreset" with ReplyMessage = Some { Text = resourceProvider.Object.Item(Messages.SendPresetName) } }
+    let message =
+      { createMessage "MyPreset" with
+          ReplyMessage = Some { Text = resourceProvider.Object.Item(Messages.SendPresetName) } }
 
     task {
       let! result = handler message
@@ -994,5 +999,59 @@ type CreatePresetMessageHandler() =
       result |> should equal None
 
       presetService.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+type IncludePlaylistButtonMessageHandler() =
+  let musicPlatform = Mock<IMusicPlatform>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+
+  let authService = Mock<IInitAuth>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do
+    resourceProvider.Setup(_.Item(Buttons.IncludePlaylist)).Returns(Buttons.IncludePlaylist)
+    |> ignore
+
+  do
+    resourceProvider.Setup(_.Item(Messages.SendIncludedPlaylist)).Returns("Send included playlist")
+    |> ignore
+
+  let handler =
+    Message.includePlaylistButtonMessageHandler musicPlatformFactory.Object authService.Object resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should ask for included playlist when platform present``() =
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some musicPlatform.Object)
+    |> ignore
+
+    chatCtx.Setup(_.AskForReply(It.IsAny())).ReturnsAsync(()) |> ignore
+
+    let message = createMessage Buttons.IncludePlaylist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.Verify(_.AskForReply(resourceProvider.Object.Item(Messages.SendIncludedPlaylist)))
+    }
+
+  [<Fact>]
+  member _.``should send login when platform missing``() =
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(None)
+    |> ignore
+
+    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessage Buttons.IncludePlaylist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
     }
