@@ -74,10 +74,7 @@ let otherPresetId = PresetId("other-preset-id")
 let userId = otsom.fs.Core.UserId("user-id")
 let otherUserId = otsom.fs.Core.UserId("other-user-id")
 
-let simplePreset : SimplePreset = {
-  Id = presetId
-  Name = presetName
-}
+let simplePreset: SimplePreset = { Id = presetId; Name = presetName }
 
 let preset =
   { Id = presetId
