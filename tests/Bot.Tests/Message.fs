@@ -145,7 +145,7 @@ type StartMessageHandler() =
 
 type FaqMessageHandler() =
   let resourceProvider = Mock<IResourceProvider>()
-  let chatCtx = Mock<ISendMessage>()
+  let chatCtx = Mock<IBotService>()
 
   let handler = Message.faqMessageHandler resourceProvider.Object chatCtx.Object
 
@@ -219,7 +219,7 @@ type FaqMessageHandler() =
 
 type PrivacyMessageHandler() =
   let resourceProvider = Mock<IResourceProvider>()
-  let chatCtx = Mock<ISendMessage>()
+  let chatCtx = Mock<IBotService>()
 
   let handler = Message.privacyMessageHandler resourceProvider.Object chatCtx.Object
 
@@ -293,7 +293,7 @@ type PrivacyMessageHandler() =
 
 type GuideMessageHandler() =
   let resourceProvider = Mock<IResourceProvider>()
-  let chatCtx = Mock<ISendMessage>()
+  let chatCtx = Mock<IBotService>()
 
   let handler = Message.guideMessageHandler resourceProvider.Object chatCtx.Object
 
@@ -367,7 +367,7 @@ type GuideMessageHandler() =
 
 type HelpMessageHandler() =
   let resourceProvider = Mock<IResourceProvider>()
-  let chatCtx = Mock<ISendMessage>()
+  let chatCtx = Mock<IBotService>()
 
   let handler = Message.helpMessageHandler resourceProvider.Object chatCtx.Object
 
@@ -1162,4 +1162,102 @@ type TargetPlaylistButtonMessageHandler() =
 
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
+    }
+
+type IncludePlaylistMessageHandler() =
+  let userRepo = Mock<ILoadUser>()
+  let presetService = Mock<IIncludePlaylist>()
+  let authService = Mock<IInitAuth>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do resourceProvider.Setup(_.Item(Messages.SendIncludedPlaylist)).Returns("Send included playlist") |> ignore
+
+  let handler =
+    Message.includePlaylistMessageHandler userRepo.Object presetService.Object authService.Object resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should handle reply with included playlist and send message``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    presetService.Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.includedPlaylist) |> ignore
+    chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId) |> ignore
+
+    let message = { createMessage "raw-id" with ReplyMessage = Some { Text = resourceProvider.Object.Item(Messages.SendIncludedPlaylist) } }
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      userRepo.Verify(_.LoadUser(Mocks.userId))
+      presetService.Verify(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
+      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+    }
+
+  [<Fact>]
+  member _.``should handle /includeplaylist command and send message``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    presetService.Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.includedPlaylist) |> ignore
+    chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId) |> ignore
+
+    let message = createMessage $"{Commands.includePlaylist} raw-id"
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      userRepo.Verify(_.LoadUser(Mocks.userId))
+      presetService.Verify(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
+      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+    }
+
+  [<Fact>]
+  member _.``should send IdCannotBeParsed on id parsing error``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    presetService.Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Error (Preset.IncludePlaylistError.IdParsing(Playlist.IdParsingError "bad"))) |> ignore
+    resourceProvider.Setup(_.Item(Messages.PlaylistIdCannotBeParsed, It.IsAny())).Returns("Id cannot be parsed") |> ignore
+    chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId) |> ignore
+
+    let message = createMessage $"{Commands.includePlaylist} bad-id"
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+    }
+
+  [<Fact>]
+  member _.``should send NotFound when playlist not found``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    presetService.Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Error (Preset.IncludePlaylistError.Load(Playlist.LoadError.NotFound))) |> ignore
+    resourceProvider.Setup(_.Item(Messages.PlaylistNotFoundInSpotify, It.IsAny())).Returns("Not found") |> ignore
+    chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId) |> ignore
+
+    let message = createMessage $"{Commands.includePlaylist} nf-id"
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+    }
+
+  [<Fact>]
+  member _.``should trigger login when unauthorized``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    presetService.Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Error Preset.IncludePlaylistError.Unauthorized) |> ignore
+    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId) |> ignore
+
+    let message = createMessage $"{Commands.includePlaylist} some-id"
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.Verify(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny()))
     }
