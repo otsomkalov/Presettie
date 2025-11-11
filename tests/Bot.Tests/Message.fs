@@ -4,6 +4,7 @@ open Bot.Constants
 open Bot.Core
 open Bot.Handlers
 open Bot.Resources
+open Domain.Core
 open Domain.Tests
 open FsUnit.Xunit
 open Moq
@@ -34,12 +35,7 @@ type StartMessageHandler() =
   let chatCtx = Mock<IBotService>()
 
   let handler =
-    Message.startMessageHandler
-      userRepo.Object
-      presetRepo.Object
-      authService.Object
-      resourceProvider.Object
-      chatCtx.Object
+    Message.startMessageHandler userRepo.Object presetRepo.Object authService.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle /start command and send current preset``() =
@@ -116,9 +112,7 @@ type StartMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
     chatCtx.Setup(_.SendMessage(It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
-    authService
-      .Setup(_.CompleteAuth(It.IsAny<AccountId>(), It.IsAny<State>()))
-      .ReturnsAsync(Error CompleteError.StateDoesntBelongToUser)
+    authService.Setup(_.CompleteAuth(It.IsAny<AccountId>(), It.IsAny<State>())).ReturnsAsync(Error CompleteError.StateDoesntBelongToUser)
 
     let testState = "other-user-state"
     let message = createMessage $"{Commands.start} {testState}"
@@ -152,8 +146,7 @@ type FaqMessageHandler() =
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<ISendMessage>()
 
-  let handler =
-    Message.faqMessageHandler resourceProvider.Object chatCtx.Object
+  let handler = Message.faqMessageHandler resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle /faq command and send FAQ message``() =
@@ -227,8 +220,7 @@ type PrivacyMessageHandler() =
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<ISendMessage>()
 
-  let handler =
-    Message.privacyMessageHandler resourceProvider.Object chatCtx.Object
+  let handler = Message.privacyMessageHandler resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle /privacy command and send privacy message``() =
@@ -302,8 +294,7 @@ type GuideMessageHandler() =
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<ISendMessage>()
 
-  let handler =
-    Message.guideMessageHandler resourceProvider.Object chatCtx.Object
+  let handler = Message.guideMessageHandler resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle /guide command and send guide message``() =
@@ -377,8 +368,7 @@ type HelpMessageHandler() =
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<ISendMessage>()
 
-  let handler =
-    Message.helpMessageHandler resourceProvider.Object chatCtx.Object
+  let handler = Message.helpMessageHandler resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle /help command and send help message``() =
@@ -453,7 +443,9 @@ type MyPresetsMessageHandler() =
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<ISendMessageButtons>()
 
-  do resourceProvider.Setup(_.Item(Buttons.MyPresets)).Returns(Buttons.MyPresets) |> ignore
+  do
+    resourceProvider.Setup(_.Item(Buttons.MyPresets)).Returns(Buttons.MyPresets)
+    |> ignore
 
   let handler =
     Message.myPresetsMessageHandler presetRepo.Object resourceProvider.Object chatCtx.Object
@@ -624,7 +616,9 @@ type PresetSettingsMessageHandler() =
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
-  do resourceProvider.Setup(_.Item(Buttons.Settings)).Returns(Buttons.Settings) |> ignore
+  do
+    resourceProvider.Setup(_.Item(Buttons.Settings)).Returns(Buttons.Settings)
+    |> ignore
 
   let handler =
     Message.presetSettingsMessageHandler userRepo.Object presetRepo.Object resourceProvider.Object chatCtx.Object
@@ -693,4 +687,257 @@ type PresetSettingsMessageHandler() =
       chatCtx.VerifyNoOtherCalls()
       userRepo.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
+    }
+
+type SetPresetSizeMessageButtonHandler() =
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do
+    resourceProvider.Setup(_.Item(Buttons.SetPresetSize)).Returns(Buttons.SetPresetSize)
+    |> ignore
+
+  do chatCtx.Setup(_.AskForReply(It.IsAny())).ReturnsAsync(()) |> ignore
+
+  let handler =
+    Message.setPresetSizeMessageButtonHandler resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should handle SetPresetSize button and ask for reply``() =
+    let message = createMessage Buttons.SetPresetSize
+
+    task {
+      let! result = handler message
+      result |> should equal (Some())
+      resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
+      chatCtx.Verify(_.AskForReply(It.IsAny()))
+    }
+
+  [<Fact>]
+  member _.``should return None for non-setPresetSize message``() =
+    let message = createMessage "some random text"
+
+    task {
+      let! result = handler message
+      result |> should equal None
+      resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should return None for empty message``() =
+    let message = createMessage ""
+
+    task {
+      let! result = handler message
+      result |> should equal None
+      resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should return None when SetPresetSize button has extra data``() =
+    let message = createMessage $"{Buttons.SetPresetSize} extra data"
+
+    task {
+      let! result = handler message
+      result |> should equal None
+      resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+type SetPresetSizeMessageHandler() =
+  let userService = Mock<IUserService>()
+  let userRepo = Mock<ILoadUser>()
+  let presetRepo = Mock<IPresetRepo>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do
+    resourceProvider.Setup(_.Item(Buttons.SetPresetSize)).Returns(Buttons.SetPresetSize)
+    |> ignore
+
+  do
+    resourceProvider.Setup(_.Item(Messages.SendPresetSize)).Returns("Send preset size")
+    |> ignore
+
+  do
+    resourceProvider.Setup(_.Item(Messages.PresetSizeTooSmall)).Returns("Too small")
+    |> ignore
+
+  do
+    resourceProvider.Setup(_.Item(Messages.PresetSizeTooBig)).Returns("Too big")
+    |> ignore
+
+  do
+    resourceProvider.Setup(_.Item(Messages.PresetSizeNotANumber)).Returns("Not a number")
+    |> ignore
+
+  let handler =
+    Message.setPresetSizeMessageHandler userService.Object userRepo.Object presetRepo.Object resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should handle reply with valid size and call onSuccess``() =
+    userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Ok())
+    chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+
+    let message =
+      { createMessage "42" with
+          ReplyMessage = Some { Text = resourceProvider.Object.Item(Buttons.SetPresetSize) } }
+
+    task {
+      let! result = handler message
+      result |> should equal (Some())
+      userService.VerifyAll()
+      chatCtx.VerifyAll()
+      userRepo.VerifyAll()
+      presetRepo.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should handle /size command and call onSuccess``() =
+    userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Ok())
+    chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+
+    let message = createMessage $"{Commands.size} 42"
+
+    task {
+      let! result = handler message
+      result |> should equal (Some())
+      userService.VerifyAll()
+      chatCtx.VerifyAll()
+      userRepo.VerifyAll()
+      presetRepo.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should handle reply with too small size and call onError``() =
+    userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Error PresetSettings.ParsingError.TooSmall)
+    chatCtx.Setup(_.SendMessage(resourceProvider.Object.Item(Messages.PresetSizeTooSmall))).ReturnsAsync(Mocks.botMessageId)
+
+    let message =
+      { createMessage "1" with
+          ReplyMessage = Some { Text = resourceProvider.Object.Item(Buttons.SetPresetSize) } }
+
+    task {
+      let! result = handler message
+      result |> should equal (Some())
+      userService.VerifyAll()
+      chatCtx.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should handle reply with too big size and call onError``() =
+    userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Error PresetSettings.ParsingError.TooBig)
+    chatCtx.Setup(_.SendMessage(resourceProvider.Object.Item(Messages.PresetSizeTooBig))).ReturnsAsync(Mocks.botMessageId)
+
+    let message =
+      { createMessage "1000" with
+          ReplyMessage = Some { Text = resourceProvider.Object.Item(Buttons.SetPresetSize) } }
+
+    task {
+      let! result = handler message
+      result |> should equal (Some())
+      userService.VerifyAll()
+      chatCtx.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should handle reply with not a number and call onError``() =
+    userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Error PresetSettings.ParsingError.NotANumber)
+    chatCtx.Setup(_.SendMessage(resourceProvider.Object.Item(Messages.PresetSizeNotANumber))).ReturnsAsync(Mocks.botMessageId)
+
+    let message =
+      { createMessage "abc" with
+          ReplyMessage = Some { Text = resourceProvider.Object.Item(Buttons.SetPresetSize) } }
+
+    task {
+      let! result = handler message
+      result |> should equal (Some())
+      userService.VerifyAll()
+      chatCtx.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for unmatched message``() =
+    let message = createMessage "some random text"
+
+    task {
+      let! result = handler message
+      result |> should equal None
+      userService.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+      userRepo.VerifyNoOtherCalls()
+      presetRepo.VerifyNoOtherCalls()
+    }
+
+type CreatePresetButtonMessageHandler() =
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do
+    resourceProvider.Setup(_.Item(Buttons.CreatePreset)).Returns(Buttons.CreatePreset)
+    |> ignore
+
+  do
+    resourceProvider.Setup(_.Item(Messages.SendPresetName)).Returns("Send preset name")
+    |> ignore
+
+  do chatCtx.Setup(_.AskForReply("Send preset name")).ReturnsAsync(()) |> ignore
+
+  let handler =
+    Message.createPresetButtonMessageHandler resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should handle CreatePreset button and ask for reply``() =
+    let message = createMessage Buttons.CreatePreset
+
+    task {
+      let! result = handler message
+      result |> should equal (Some())
+      resourceProvider.Verify(_.Item(Buttons.CreatePreset))
+      chatCtx.Verify(_.AskForReply("Send preset name"))
+    }
+
+  [<Fact>]
+  member _.``should return None for non-createPreset message``() =
+    let message = createMessage "some random text"
+
+    task {
+      let! result = handler message
+      result |> should equal None
+      resourceProvider.Verify(_.Item(Buttons.CreatePreset))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should return None for empty message``() =
+    let message = createMessage ""
+
+    task {
+      let! result = handler message
+      result |> should equal None
+      resourceProvider.Verify(_.Item(Buttons.CreatePreset))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should return None when CreatePreset button has extra data``() =
+    let message = createMessage $"{Buttons.CreatePreset} extra data"
+
+    task {
+      let! result = handler message
+      result |> should equal None
+      resourceProvider.Verify(_.Item(Buttons.CreatePreset))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
     }
