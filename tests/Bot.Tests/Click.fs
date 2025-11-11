@@ -31,15 +31,13 @@ type presetInfoClickHandler() =
 
   [<Fact>]
   member _.``should handle valid click data``() =
+    // Arrange
+
     presetRepoMock.Setup(_.LoadPreset(It.IsAny<PresetId>())).ReturnsAsync(Some Mocks.preset)
 
     let click = createClick [ "p"; Mocks.presetId.Value; "i" ]
 
     task {
-      // Arrange
-
-
-
       // Act
       let! result = handler click
 
@@ -127,7 +125,7 @@ type artistsAlbumsRecommendationsClickHandler() =
     presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.ArtistAlbums)).ReturnsAsync(())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
     presetRepo.Setup(_.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
-    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns("Updated")
+    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
 
     // PresetSettings.show is called, but we don't need to mock its internals for this test
 
@@ -375,7 +373,7 @@ type includeLikedTracksClickHandler() =
     presetService.Setup(_.IncludeLikedTracks(Mocks.presetId)).ReturnsAsync(())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
     presetRepo.Setup(_.LoadPreset(PresetId presetId)).ReturnsAsync(Some Mocks.preset)
-    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns("Updated")
+    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
 
     task {
       let! result = handler click

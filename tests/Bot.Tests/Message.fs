@@ -762,19 +762,19 @@ type SetPresetSizeMessageHandler() =
     |> ignore
 
   do
-    resourceProvider.Setup(_.Item(Messages.SendPresetSize)).Returns("Send preset size")
+    resourceProvider.Setup(_.Item(Messages.SendPresetSize)).Returns(Messages.SendPresetSize)
     |> ignore
 
   do
-    resourceProvider.Setup(_.Item(Messages.PresetSizeTooSmall)).Returns("Too small")
+    resourceProvider.Setup(_.Item(Messages.PresetSizeTooSmall)).Returns(Messages.PresetSizeTooSmall)
     |> ignore
 
   do
-    resourceProvider.Setup(_.Item(Messages.PresetSizeTooBig)).Returns("Too big")
+    resourceProvider.Setup(_.Item(Messages.PresetSizeTooBig)).Returns(Messages.PresetSizeTooBig)
     |> ignore
 
   do
-    resourceProvider.Setup(_.Item(Messages.PresetSizeNotANumber)).Returns("Not a number")
+    resourceProvider.Setup(_.Item(Messages.PresetSizeNotANumber)).Returns(Messages.PresetSizeNotANumber)
     |> ignore
 
   let handler =
@@ -789,7 +789,7 @@ type SetPresetSizeMessageHandler() =
 
     let message =
       { createMessage "42" with
-          ReplyMessage = Some { Text = resourceProvider.Object.Item(Buttons.SetPresetSize) } }
+          ReplyMessage = Some { Text = Buttons.SetPresetSize } }
 
     task {
       let! result = handler message
@@ -888,10 +888,10 @@ type CreatePresetButtonMessageHandler() =
     |> ignore
 
   do
-    resourceProvider.Setup(_.Item(Messages.SendPresetName)).Returns("Send preset name")
+    resourceProvider.Setup(_.Item(Messages.SendPresetName)).Returns(Messages.SendPresetName)
     |> ignore
 
-  do chatCtx.Setup(_.AskForReply("Send preset name")).ReturnsAsync(()) |> ignore
+  do chatCtx.Setup(_.AskForReply(Messages.SendPresetName)).ReturnsAsync(()) |> ignore
 
   let handler =
     Message.createPresetButtonMessageHandler resourceProvider.Object chatCtx.Object
@@ -904,7 +904,7 @@ type CreatePresetButtonMessageHandler() =
       let! result = handler message
       result |> should equal (Some())
       resourceProvider.Verify(_.Item(Buttons.CreatePreset))
-      chatCtx.Verify(_.AskForReply("Send preset name"))
+      chatCtx.Verify(_.AskForReply(Messages.SendPresetName))
     }
 
   [<Fact>]
@@ -949,7 +949,7 @@ type CreatePresetMessageHandler() =
   let chatCtx = Mock<IBotService>()
 
   do
-    resourceProvider.Setup(_.Item(Messages.SendPresetName)).Returns("Send preset name")
+    resourceProvider.Setup(_.Item(Messages.SendPresetName)).Returns(Messages.SendPresetName)
     |> ignore
 
   let handler =
@@ -1015,7 +1015,7 @@ type IncludePlaylistButtonMessageHandler() =
     |> ignore
 
   do
-    resourceProvider.Setup(_.Item(Messages.SendIncludedPlaylist)).Returns("Send included playlist")
+    resourceProvider.Setup(_.Item(Messages.SendIncludedPlaylist)).Returns(Messages.SendIncludedPlaylist)
     |> ignore
 
   let handler =
@@ -1069,7 +1069,7 @@ type ExcludePlaylistButtonMessageHandler() =
     |> ignore
 
   do
-    resourceProvider.Setup(_.Item(Messages.SendExcludedPlaylist)).Returns("Send excluded playlist")
+    resourceProvider.Setup(_.Item(Messages.SendExcludedPlaylist)).Returns(Messages.SendExcludedPlaylist)
     |> ignore
 
   let handler =
@@ -1123,7 +1123,7 @@ type TargetPlaylistButtonMessageHandler() =
     |> ignore
 
   do
-    resourceProvider.Setup(_.Item(Messages.SendTargetedPlaylist)).Returns("Send targeted playlist")
+    resourceProvider.Setup(_.Item(Messages.SendTargetedPlaylist)).Returns(Messages.SendTargetedPlaylist)
     |> ignore
 
   let handler =
@@ -1172,7 +1172,7 @@ type IncludePlaylistMessageHandler() =
   let chatCtx = Mock<IBotService>()
 
   do
-    resourceProvider.Setup(_.Item(Messages.SendIncludedPlaylist)).Returns("Send included playlist")
+    resourceProvider.Setup(_.Item(Messages.SendIncludedPlaylist)).Returns(Messages.SendIncludedPlaylist)
     |> ignore
 
   let handler =
@@ -1233,7 +1233,7 @@ type IncludePlaylistMessageHandler() =
       .ReturnsAsync(Error(Preset.IncludePlaylistError.IdParsing(Playlist.IdParsingError "bad")))
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.PlaylistIdCannotBeParsed, It.IsAny())).Returns("Id cannot be parsed")
+    resourceProvider.Setup(_.Item(Messages.PlaylistIdCannotBeParsed, It.IsAny())).Returns(Messages.PlaylistIdCannotBeParsed)
     |> ignore
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
@@ -1258,7 +1258,7 @@ type IncludePlaylistMessageHandler() =
       .ReturnsAsync(Error(Preset.IncludePlaylistError.Load(Playlist.LoadError.NotFound)))
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.PlaylistNotFoundInSpotify, It.IsAny())).Returns("Not found")
+    resourceProvider.Setup(_.Item(Messages.PlaylistNotFoundInSpotify, It.IsAny())).Returns(Messages.PlaylistNotFoundInSpotify)
     |> ignore
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
@@ -1304,7 +1304,7 @@ type ExcludePlaylistMessageHandler() =
   let chatCtx = Mock<IBotService>()
 
   do
-    resourceProvider.Setup(_.Item(Messages.SendExcludedPlaylist)).Returns("Send excluded playlist")
+    resourceProvider.Setup(_.Item(Messages.SendExcludedPlaylist)).Returns(Messages.SendExcludedPlaylist)
     |> ignore
 
   let handler =
@@ -1365,7 +1365,7 @@ type ExcludePlaylistMessageHandler() =
       .ReturnsAsync(Error(Preset.ExcludePlaylistError.IdParsing(Playlist.IdParsingError "bad")))
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.PlaylistIdCannotBeParsed, It.IsAny())).Returns("Id cannot be parsed")
+    resourceProvider.Setup(_.Item(Messages.PlaylistIdCannotBeParsed, It.IsAny())).Returns(Messages.PlaylistIdCannotBeParsed)
     |> ignore
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
@@ -1390,7 +1390,7 @@ type ExcludePlaylistMessageHandler() =
       .ReturnsAsync(Error(Preset.ExcludePlaylistError.Load(Playlist.LoadError.NotFound)))
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.PlaylistNotFoundInSpotify, It.IsAny())).Returns("Not found")
+    resourceProvider.Setup(_.Item(Messages.PlaylistNotFoundInSpotify, It.IsAny())).Returns(Messages.PlaylistNotFoundInSpotify)
     |> ignore
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
@@ -1436,7 +1436,7 @@ type TargetPlaylistMessageHandler() =
   let chatCtx = Mock<IBotService>()
 
   do
-    resourceProvider.Setup(_.Item(Messages.SendTargetedPlaylist)).Returns("Send targeted playlist")
+    resourceProvider.Setup(_.Item(Messages.SendTargetedPlaylist)).Returns(Messages.SendTargetedPlaylist)
     |> ignore
 
   let handler =
@@ -1449,13 +1449,13 @@ type TargetPlaylistMessageHandler() =
     presetService.Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.targetedPlaylist)
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.PlaylistTargeted, It.IsAny())).Returns("Playlist targeted")
+    resourceProvider.Setup(_.Item(Messages.PlaylistTargeted, It.IsAny())).Returns(Messages.PlaylistTargeted)
     |> ignore
 
-    chatCtx.Setup(_.SendMessage("Playlist targeted")).ReturnsAsync(Mocks.botMessageId)
+    chatCtx.Setup(_.SendMessage(Messages.PlaylistTargeted)).ReturnsAsync(Mocks.botMessageId)
     |> ignore
 
-    let message = createMessageWithReply "playlist-url" "Send targeted playlist"
+    let message = createMessageWithReply "playlist-url" Messages.SendTargetedPlaylist
 
     task {
       let! result = handler message
@@ -1472,10 +1472,10 @@ type TargetPlaylistMessageHandler() =
     presetService.Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.targetedPlaylist)
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.PlaylistTargeted, It.IsAny())).Returns("Playlist targeted")
+    resourceProvider.Setup(_.Item(Messages.PlaylistTargeted, It.IsAny())).Returns(Messages.PlaylistTargeted)
     |> ignore
 
-    chatCtx.Setup(_.SendMessage("Playlist targeted")).ReturnsAsync(Mocks.botMessageId)
+    chatCtx.Setup(_.SendMessage(Messages.PlaylistTargeted)).ReturnsAsync(Mocks.botMessageId)
     |> ignore
 
     let message = createMessage $"{Commands.targetPlaylist} playlist-url"
@@ -1497,13 +1497,13 @@ type TargetPlaylistMessageHandler() =
       .ReturnsAsync(Error(Preset.TargetPlaylistError.IdParsing(Playlist.IdParsingError "invalid-id")))
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.PlaylistIdCannotBeParsed, It.IsAny())).Returns("Invalid ID")
+    resourceProvider.Setup(_.Item(Messages.PlaylistIdCannotBeParsed, It.IsAny())).Returns(Messages.PlaylistIdCannotBeParsed)
     |> ignore
 
-    chatCtx.Setup(_.SendMessage("Invalid ID")).ReturnsAsync(Mocks.botMessageId)
+    chatCtx.Setup(_.SendMessage(Messages.PlaylistIdCannotBeParsed)).ReturnsAsync(Mocks.botMessageId)
     |> ignore
 
-    let message = createMessageWithReply "invalid-id" "Send targeted playlist"
+    let message = createMessageWithReply "invalid-id" Messages.SendTargetedPlaylist
 
     task {
       let! result = handler message
@@ -1528,7 +1528,7 @@ type TargetPlaylistMessageHandler() =
     chatCtx.Setup(_.SendMessage("Not found")).ReturnsAsync(Mocks.botMessageId)
     |> ignore
 
-    let message = createMessageWithReply "playlist-url" "Send targeted playlist"
+    let message = createMessageWithReply "playlist-url" Messages.SendTargetedPlaylist
 
     task {
       let! result = handler message
@@ -1547,13 +1547,13 @@ type TargetPlaylistMessageHandler() =
       .ReturnsAsync(Error(Preset.TargetPlaylistError.AccessError(Preset.AccessError())))
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.PlaylistIsReadonly)).Returns("Playlist is readonly")
+    resourceProvider.Setup(_.Item(Messages.PlaylistIsReadonly)).Returns(Messages.PlaylistIsReadonly)
     |> ignore
 
-    chatCtx.Setup(_.SendMessage("Playlist is readonly")).ReturnsAsync(Mocks.botMessageId)
+    chatCtx.Setup(_.SendMessage(Messages.PlaylistIsReadonly)).ReturnsAsync(Mocks.botMessageId)
     |> ignore
 
-    let message = createMessageWithReply "playlist-url" "Send targeted playlist"
+    let message = createMessageWithReply "playlist-url" Messages.SendTargetedPlaylist
 
     task {
       let! result = handler message
@@ -1573,7 +1573,7 @@ type TargetPlaylistMessageHandler() =
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
     |> ignore
 
-    let message = createMessageWithReply "playlist-url" "Send targeted playlist"
+    let message = createMessageWithReply "playlist-url" Messages.SendTargetedPlaylist
 
     task {
       let! result = handler message
@@ -1613,15 +1613,13 @@ type QueuePresetRunMessageHandler() =
   member _.``should handle /runpreset command and queue preset run``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.QueueRun(Mocks.userId, Mocks.presetId))
-      .ReturnsAsync(Ok Mocks.preset)
+    presetService.Setup(_.QueueRun(Mocks.userId, Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.PresetQueued, It.IsAny())).Returns("Preset queued")
+    resourceProvider.Setup(_.Item(Messages.PresetQueued, It.IsAny())).Returns(Messages.PresetQueued)
     |> ignore
 
-    chatCtx.Setup(_.SendMessage("Preset queued")).ReturnsAsync(Mocks.botMessageId)
+    chatCtx.Setup(_.SendMessage(Messages.PresetQueued)).ReturnsAsync(Mocks.botMessageId)
     |> ignore
 
     let message = createMessage Commands.runPreset
@@ -1638,15 +1636,13 @@ type QueuePresetRunMessageHandler() =
   member _.``should handle RunPreset button and queue preset run``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.QueueRun(Mocks.userId, Mocks.presetId))
-      .ReturnsAsync(Ok Mocks.preset)
+    presetService.Setup(_.QueueRun(Mocks.userId, Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.PresetQueued, It.IsAny())).Returns("Preset queued")
+    resourceProvider.Setup(_.Item(Messages.PresetQueued, It.IsAny())).Returns(Messages.PresetQueued)
     |> ignore
 
-    chatCtx.Setup(_.SendMessage("Preset queued")).ReturnsAsync(Mocks.botMessageId)
+    chatCtx.Setup(_.SendMessage(Messages.PresetQueued)).ReturnsAsync(Mocks.botMessageId)
     |> ignore
 
     let message = createMessage Buttons.RunPreset
@@ -1663,15 +1659,13 @@ type QueuePresetRunMessageHandler() =
   member _.``should send error message when no included playlists``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.QueueRun(Mocks.userId, Mocks.presetId))
-      .ReturnsAsync(Error [ Preset.ValidationError.NoIncludedPlaylists ])
+    presetService.Setup(_.QueueRun(Mocks.userId, Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoIncludedPlaylists ])
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.NoIncludedPlaylists)).Returns("No included playlists")
+    resourceProvider.Setup(_.Item(Messages.NoIncludedPlaylists)).Returns(Messages.NoIncludedPlaylists)
     |> ignore
 
-    chatCtx.Setup(_.SendMessage("No included playlists")).ReturnsAsync(Mocks.botMessageId)
+    chatCtx.Setup(_.SendMessage(Messages.NoIncludedPlaylists)).ReturnsAsync(Mocks.botMessageId)
     |> ignore
 
     let message = createMessage Commands.runPreset
@@ -1688,15 +1682,13 @@ type QueuePresetRunMessageHandler() =
   member _.``should send error message when no targeted playlists``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.QueueRun(Mocks.userId, Mocks.presetId))
-      .ReturnsAsync(Error [ Preset.ValidationError.NoTargetedPlaylists ])
+    presetService.Setup(_.QueueRun(Mocks.userId, Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoTargetedPlaylists ])
     |> ignore
 
-    resourceProvider.Setup(_.Item(Messages.NoTargetedPlaylists)).Returns("No targeted playlists")
+    resourceProvider.Setup(_.Item(Messages.NoTargetedPlaylists)).Returns(Messages.NoTargetedPlaylists)
     |> ignore
 
-    chatCtx.Setup(_.SendMessage("No targeted playlists")).ReturnsAsync(Mocks.botMessageId)
+    chatCtx.Setup(_.SendMessage(Messages.NoTargetedPlaylists)).ReturnsAsync(Mocks.botMessageId)
     |> ignore
 
     let message = createMessage Commands.runPreset
