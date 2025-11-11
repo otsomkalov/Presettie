@@ -941,3 +941,58 @@ type CreatePresetButtonMessageHandler() =
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
     }
+
+type CreatePresetMessageHandler() =
+  let presetService = Mock<IPresetService>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do resourceProvider.Setup(_.Item(Messages.SendPresetName)).Returns("Send preset name") |> ignore
+
+  let handler =
+    Message.createPresetMessageHandler presetService.Object resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should handle reply with preset name and create preset``() =
+    presetService.Setup(_.CreatePreset(Mocks.userId, "MyPreset")).ReturnsAsync(Mocks.preset)
+    chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+
+    let message = { createMessage "MyPreset" with ReplyMessage = Some { Text = resourceProvider.Object.Item(Messages.SendPresetName) } }
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should handle /newpreset command and create preset``() =
+    presetService.Setup(_.CreatePreset(Mocks.userId, "Another")).ReturnsAsync(Mocks.preset)
+    chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessage $"{Commands.newPreset} Another"
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for unmatched message``() =
+    let message = createMessage "some random text"
+
+    task {
+      let! result = handler message
+
+      result |> should equal None
+
+      presetService.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+    }
