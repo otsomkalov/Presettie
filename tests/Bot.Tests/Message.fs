@@ -1055,3 +1055,57 @@ type IncludePlaylistButtonMessageHandler() =
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
     }
+
+type ExcludePlaylistButtonMessageHandler() =
+  let musicPlatform = Mock<IMusicPlatform>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+
+  let authService = Mock<IInitAuth>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do
+    resourceProvider.Setup(_.Item(Buttons.ExcludePlaylist)).Returns(Buttons.ExcludePlaylist)
+    |> ignore
+
+  do
+    resourceProvider.Setup(_.Item(Messages.SendExcludedPlaylist)).Returns("Send excluded playlist")
+    |> ignore
+
+  let handler =
+    Message.excludePlaylistButtonMessageHandler musicPlatformFactory.Object authService.Object resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should ask for excluded playlist when platform present``() =
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some musicPlatform.Object)
+    |> ignore
+
+    chatCtx.Setup(_.AskForReply(It.IsAny())).ReturnsAsync(()) |> ignore
+
+    let message = createMessage Buttons.ExcludePlaylist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.Verify(_.AskForReply(resourceProvider.Object.Item(Messages.SendExcludedPlaylist)))
+    }
+
+  [<Fact>]
+  member _.``should send login when platform missing``() =
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(None)
+    |> ignore
+
+    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessage Buttons.ExcludePlaylist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
