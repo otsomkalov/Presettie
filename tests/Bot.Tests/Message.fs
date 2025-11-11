@@ -1595,3 +1595,129 @@ type TargetPlaylistMessageHandler() =
       presetService.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
     }
+
+type QueuePresetRunMessageHandler() =
+  let userRepo = Mock<ILoadUser>()
+  let presetService = Mock<Domain.Core.IQueueRun>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do
+    resourceProvider.Setup(_.Item(Buttons.RunPreset)).Returns(Buttons.RunPreset)
+    |> ignore
+
+  let handler =
+    Message.queuePresetRunMessageHandler userRepo.Object presetService.Object resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should handle /runpreset command and queue preset run``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService
+      .Setup(_.QueueRun(Mocks.userId, Mocks.presetId))
+      .ReturnsAsync(Ok Mocks.preset)
+    |> ignore
+
+    resourceProvider.Setup(_.Item(Messages.PresetQueued, It.IsAny())).Returns("Preset queued")
+    |> ignore
+
+    chatCtx.Setup(_.SendMessage("Preset queued")).ReturnsAsync(Mocks.botMessageId)
+    |> ignore
+
+    let message = createMessage Commands.runPreset
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+    }
+
+  [<Fact>]
+  member _.``should handle RunPreset button and queue preset run``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService
+      .Setup(_.QueueRun(Mocks.userId, Mocks.presetId))
+      .ReturnsAsync(Ok Mocks.preset)
+    |> ignore
+
+    resourceProvider.Setup(_.Item(Messages.PresetQueued, It.IsAny())).Returns("Preset queued")
+    |> ignore
+
+    chatCtx.Setup(_.SendMessage("Preset queued")).ReturnsAsync(Mocks.botMessageId)
+    |> ignore
+
+    let message = createMessage Buttons.RunPreset
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+    }
+
+  [<Fact>]
+  member _.``should send error message when no included playlists``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService
+      .Setup(_.QueueRun(Mocks.userId, Mocks.presetId))
+      .ReturnsAsync(Error [ Preset.ValidationError.NoIncludedPlaylists ])
+    |> ignore
+
+    resourceProvider.Setup(_.Item(Messages.NoIncludedPlaylists)).Returns("No included playlists")
+    |> ignore
+
+    chatCtx.Setup(_.SendMessage("No included playlists")).ReturnsAsync(Mocks.botMessageId)
+    |> ignore
+
+    let message = createMessage Commands.runPreset
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+    }
+
+  [<Fact>]
+  member _.``should send error message when no targeted playlists``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService
+      .Setup(_.QueueRun(Mocks.userId, Mocks.presetId))
+      .ReturnsAsync(Error [ Preset.ValidationError.NoTargetedPlaylists ])
+    |> ignore
+
+    resourceProvider.Setup(_.Item(Messages.NoTargetedPlaylists)).Returns("No targeted playlists")
+    |> ignore
+
+    chatCtx.Setup(_.SendMessage("No targeted playlists")).ReturnsAsync(Mocks.botMessageId)
+    |> ignore
+
+    let message = createMessage Commands.runPreset
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+    }
+
+  [<Fact>]
+  member _.``should return None for unmatched message``() =
+    let message = createMessage "some random text"
+
+    task {
+      let! result = handler message
+
+      result |> should equal None
+      userRepo.VerifyNoOtherCalls()
+      presetService.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+    }
