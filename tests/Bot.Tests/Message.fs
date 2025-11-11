@@ -539,3 +539,158 @@ type MyPresetsMessageHandler() =
       chatCtx.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
     }
+
+type BackMessageButtonHandler() =
+  let userRepo = Mock<ILoadUser>()
+  let presetRepo = Mock<ILoadPreset>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<ISendKeyboard>()
+
+  do resourceProvider.Setup(_.Item(Buttons.Back)).Returns(Buttons.Back) |> ignore
+
+  let handler =
+    Message.backMessageButtonHandler userRepo.Object presetRepo.Object resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should handle Back button and send current preset``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessage Buttons.Back
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      userRepo.VerifyAll()
+      presetRepo.VerifyAll()
+      chatCtx.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for non-back message``() =
+    let message = createMessage "some random text"
+
+    task {
+      let! result = handler message
+
+      result |> should equal None
+
+      resourceProvider.Verify(_.Item(Buttons.Back))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+      userRepo.VerifyNoOtherCalls()
+      presetRepo.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should return None for empty message``() =
+    let message = createMessage ""
+
+    task {
+      let! result = handler message
+
+      result |> should equal None
+
+      resourceProvider.Verify(_.Item(Buttons.Back))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+      userRepo.VerifyNoOtherCalls()
+      presetRepo.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should return None when Back button has extra data``() =
+    let message = createMessage $"{Buttons.Back} extra data"
+
+    task {
+      let! result = handler message
+
+      result |> should equal None
+
+      resourceProvider.Verify(_.Item(Buttons.Back))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+      userRepo.VerifyNoOtherCalls()
+      presetRepo.VerifyNoOtherCalls()
+    }
+
+
+type PresetSettingsMessageHandler() =
+  let userRepo = Mock<ILoadUser>()
+  let presetRepo = Mock<IPresetRepo>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do resourceProvider.Setup(_.Item(Buttons.Settings)).Returns(Buttons.Settings) |> ignore
+
+  let handler =
+    Message.presetSettingsMessageHandler userRepo.Object presetRepo.Object resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should handle Settings button and send preset settings``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessage Buttons.Settings
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      userRepo.VerifyAll()
+      presetRepo.VerifyAll()
+      chatCtx.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for non-settings message``() =
+    let message = createMessage "some random text"
+
+    task {
+      let! result = handler message
+
+      result |> should equal None
+
+      resourceProvider.Verify(_.Item(Buttons.Settings))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+      userRepo.VerifyNoOtherCalls()
+      presetRepo.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should return None for empty message``() =
+    let message = createMessage ""
+
+    task {
+      let! result = handler message
+
+      result |> should equal None
+
+      resourceProvider.Verify(_.Item(Buttons.Settings))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+      userRepo.VerifyNoOtherCalls()
+      presetRepo.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should return None when Settings button has extra data``() =
+    let message = createMessage $"{Buttons.Settings} extra data"
+
+    task {
+      let! result = handler message
+
+      result |> should equal None
+
+      resourceProvider.Verify(_.Item(Buttons.Settings))
+      resourceProvider.VerifyNoOtherCalls()
+      chatCtx.VerifyNoOtherCalls()
+      userRepo.VerifyNoOtherCalls()
+      presetRepo.VerifyNoOtherCalls()
+    }
