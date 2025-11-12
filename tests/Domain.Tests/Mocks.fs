@@ -4,10 +4,21 @@ module Domain.Tests.Mocks
 open Domain.Core
 open MusicPlatform
 
-let artist1 = { Id = ArtistId "artist-1" }
-let artist2 = { Id = ArtistId "artist-2" }
-let artist3 = { Id = ArtistId "artist-3" }
-let artist4 = { Id = ArtistId "artist-4" }
+let artist1 =
+  { Id = ArtistId "artist-1"
+    Name = "artist-1" }
+
+let artist2 =
+  { Id = ArtistId "artist-2"
+    Name = "artist-2" }
+
+let artist3 =
+  { Id = ArtistId "artist-3"
+    Name = "artist-3" }
+
+let artist4 =
+  { Id = ArtistId "artist-4"
+    Name = "artist-4" }
 
 let includedTrack =
   { Id = TrackId "included-track-id"
@@ -82,6 +93,7 @@ let preset =
     OwnerId = userId
     IncludedPlaylists = [ includedPlaylist ]
     ExcludedPlaylists = [ excludedPlaylist ]
+    ExcludedArtists = [ artist2 ]
     TargetedPlaylists = [ targetedPlaylist ]
     Settings = presetSettingsMock }
 

@@ -34,6 +34,9 @@ module Commands =
   let excludePlaylist = "/exclude"
 
   [<Literal>]
+  let excludeArtist = "/ea"
+
+  [<Literal>]
   let targetPlaylist = "/target"
 
   [<Literal>]

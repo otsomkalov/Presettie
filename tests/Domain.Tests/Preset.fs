@@ -12,7 +12,8 @@ open Domain.Tests
 
 type Run() =
   let shuffler: Shuffler<Track> = id
-  let parseId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
+  let parsePlaylistId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
+  let parseArtistId: Artist.ParseId = fun p -> Ok(ArtistId p.Value)
   let platform = Mock<IMusicPlatform>()
   let presetRepo = Mock<IPresetRepo>()
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
@@ -46,7 +47,7 @@ type Run() =
     |> ignore
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -79,7 +80,7 @@ type Run() =
     |> ignore
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -102,7 +103,7 @@ type Run() =
     |> ignore
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -128,7 +129,7 @@ type Run() =
     |> ignore
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -166,7 +167,7 @@ type Run() =
     |> ignore
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -200,7 +201,7 @@ type Run() =
     |> ignore
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -235,7 +236,7 @@ type Run() =
     |> ignore
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -265,7 +266,7 @@ type Run() =
     |> ignore
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -300,7 +301,7 @@ type Run() =
     |> ignore
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -338,7 +339,7 @@ type Run() =
     |> ignore
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -382,7 +383,7 @@ type Run() =
     |> ignore
 
     let sut: IPresetService =
-      PresetService(parseId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)

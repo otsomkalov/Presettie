@@ -105,28 +105,28 @@ let private sendPresetsMessage sendOrEditButtons =
     do! sendOrEditButtons message keyboardMarkup &|> ignore
   }
 
-let createPlaylistsPage (resp: IResourceProvider) =
-  fun page (playlists: 'a list) playlistToButton (presetId: PresetId) ->
+let createEntitiesPage (resp: IResourceProvider) =
+  fun page (entities: 'a list) entityToButton (presetId: PresetId) entityType ->
     let (Page page) = page
-    let remainingPlaylists = playlists[page * buttonsPerPage ..]
+    let remainingPlaylists = entities[page * buttonsPerPage ..]
     let playlistsForPage = remainingPlaylists[.. buttonsPerPage - 1]
 
     let playlistsButtons =
       [ 0..keyboardColumns .. playlistsForPage.Length ]
       |> List.map (fun idx -> playlistsForPage |> List.skip idx |> List.takeSafe keyboardColumns)
-      |> List.map (Seq.map playlistToButton)
+      |> List.map (Seq.map entityToButton)
 
     let backButton = MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId.Value)
 
     let prevButton =
       if page > 0 then
-        Some(MessageButton(resp[Buttons.PrevPage], sprintf "p|%s|ip|%i" presetId.Value (page - 1)))
+        Some(MessageButton(resp[Buttons.PrevPage], sprintf "p|%s|%s|%i" presetId.Value entityType (page - 1)))
       else
         None
 
     let nextButton =
       if remainingPlaylists.Length > buttonsPerPage then
-        Some(MessageButton(resp[Buttons.NextPage], sprintf "p|%s|ip|%i" presetId.Value (page + 1)))
+        Some(MessageButton(resp[Buttons.NextPage], sprintf "p|%s|%s|%i" presetId.Value entityType (page + 1)))
       else
         None
 
@@ -152,6 +152,20 @@ let getPlaylistButtons (resp: IResourceProvider) =
       yield seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|%s|%i" presetId.Value playlistType 0) }
     }
 
+let getArtistButtons (resp: IResourceProvider) =
+  fun (presetId: PresetId) (artistId: ArtistId) artistType specificButtons ->
+    let buttonDataTemplate =
+      sprintf "p|%s|%s|%s|%s" presetId.Value artistType artistId.Value
+
+    seq {
+      yield specificButtons
+
+      yield seq { MessageButton(resp[Buttons.Remove], buttonDataTemplate "rm") }
+
+      yield seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|%s|%i" presetId.Value artistType 0) }
+    }
+
+
 let sendLoginMessage (authService: #IInitAuth) (resp: IResourceProvider) (chatCtx: #ISendLink) =
   fun (userId: UserId) ->
     authService.InitAuth(userId.ToAccountId())
@@ -167,7 +181,7 @@ module IncludedPlaylist =
       let createButtonFromPlaylist = createButtonFromPlaylist preset.Id
 
       let replyMarkup =
-        createPlaylistsPage resp page preset.IncludedPlaylists createButtonFromPlaylist preset.Id
+        createEntitiesPage resp page preset.IncludedPlaylists createButtonFromPlaylist preset.Id "ip"
 
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.IncludedPlaylists, [| preset.Name |]], replyMarkup)
     }
@@ -221,7 +235,7 @@ module ExcludedPlaylist =
       let createButtonFromPlaylist = createButtonFromPlaylist preset.Id
 
       let replyMarkup =
-        createPlaylistsPage resp page preset.ExcludedPlaylists createButtonFromPlaylist preset.Id
+        createEntitiesPage resp page preset.ExcludedPlaylists createButtonFromPlaylist preset.Id "ep"
 
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.ExcludedPlaylists, [| preset.Name |]], replyMarkup)
     }
@@ -256,6 +270,34 @@ module ExcludedPlaylist =
     }
 
 [<RequireQualifiedAccess>]
+module ExcludedArtist =
+  let list resp (botMessageCtx: #IEditMessageButtons) =
+    let createButtonFromArtist (presetId: PresetId) =
+      fun (artist: ExcludedArtist) -> MessageButton(artist.Name, sprintf "p|%s|ea|%s|i" presetId.Value artist.Id.Value)
+
+    fun messageId (preset: Preset) page -> task {
+      let createButtonFromArtist = createButtonFromArtist preset.Id
+
+      let replyMarkup =
+        createEntitiesPage resp page preset.ExcludedArtists createButtonFromArtist preset.Id "ea"
+
+      do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.ExcludedArtists, [| preset.Name |]], replyMarkup)
+    }
+
+  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (presetRepo: #ILoadPreset) (mp: #ILoadArtist option) =
+    fun messageId presetId artistId -> task {
+      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+
+      let excludedArtist = preset.ExcludedArtists |> List.find (fun p -> p.Id = artistId)
+
+      let messageText = resp[Messages.ExcludedArtistDetails, [| excludedArtist.Name |]]
+
+      let buttons = getArtistButtons resp presetId artistId "ea" Seq.empty
+
+      do! botService.EditMessageButtons(messageId, messageText, buttons)
+    }
+
+[<RequireQualifiedAccess>]
 module TargetedPlaylist =
   let list resp (botMessageCtx: #IEditMessageButtons) =
     let createButtonFromPlaylist (presetId: PresetId) =
@@ -265,7 +307,7 @@ module TargetedPlaylist =
       let createButtonFromPlaylist = createButtonFromPlaylist preset.Id
 
       let replyMarkup =
-        createPlaylistsPage resp page preset.TargetedPlaylists createButtonFromPlaylist preset.Id
+        createEntitiesPage resp page preset.TargetedPlaylists createButtonFromPlaylist preset.Id "tp"
 
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.TargetedPlaylists, [| preset.Name |]], replyMarkup)
     }
@@ -328,8 +370,8 @@ module Preset =
 
       let keyboardMarkup = seq {
         seq {
-          MessageButton(resp[Buttons.IncludedPlaylists], sprintf "p|%s|ip|0" preset.Id.Value)
-          MessageButton(resp[Buttons.ExcludedPlaylists], sprintf "p|%s|ep|0" preset.Id.Value)
+          MessageButton(resp[Buttons.IncludedContent], sprintf "p|%s|i" preset.Id.Value)
+          MessageButton(resp[Buttons.ExcludedContent], sprintf "p|%s|e" preset.Id.Value)
           MessageButton(resp[Buttons.TargetedPlaylists], sprintf "p|%s|tp|0" preset.Id.Value)
         }
 
@@ -498,6 +540,10 @@ module Resources =
     function
     | Some l -> createResp l
     | None -> createDefaultResp ()
+
+[<RequireQualifiedAccess>]
+module IncludedContent =
+  let show
 
 type ChatService(chatRepo: IChatRepo, userService: IUserService, resourceOptions: IOptions<ResourcesSettings>) =
   interface IChatService with

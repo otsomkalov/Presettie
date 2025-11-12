@@ -52,6 +52,15 @@ module ExcludedPlaylist =
     Entities.ExcludedPlaylist(Id = playlist.Id.Value.Value, Name = playlist.Name)
 
 [<RequireQualifiedAccess>]
+module ExcludedArtist =
+  let fromDb (artist: Entities.ExcludedArtist) : ExcludedArtist =
+    { Id = artist.Id |> ArtistId
+      Name = artist.Name }
+
+  let toDb (artist: ExcludedArtist) : Entities.ExcludedArtist =
+    Entities.ExcludedArtist(Id = artist.Id.Value, Name = artist.Name)
+
+[<RequireQualifiedAccess>]
 module TargetedPlaylist =
   let private fromDb (playlist: Entities.TargetedPlaylist) : TargetedPlaylist =
     { Id = playlist.Id |> PlaylistId |> WritablePlaylistId
@@ -107,11 +116,15 @@ module Preset =
     let mapExcludedPlaylist playlists =
       playlists |> Seq.map ExcludedPlaylist.fromDb |> Seq.toList
 
+    let mapExcludedArtist artists =
+      artists |> Seq.map ExcludedArtist.fromDb |> Seq.toList
+
     { Id = preset.Id |> string |> PresetId
       Name = preset.Name
       OwnerId = preset.OwnerId |> string |> UserId
       IncludedPlaylists = mapIncludedPlaylist preset.IncludedPlaylists
       ExcludedPlaylists = mapExcludedPlaylist preset.ExcludedPlaylists
+      ExcludedArtists = mapExcludedArtist preset.ExcludedArtists
       TargetedPlaylists = TargetedPlaylist.mapPlaylists preset.TargetedPlaylists
       Settings = PresetSettings.fromDb preset.Settings }
 
@@ -123,5 +136,6 @@ module Preset =
       OwnerId = (preset.OwnerId.Value |> ObjectId.Parse),
       IncludedPlaylists = (preset.IncludedPlaylists |> Seq.map IncludedPlaylist.toDb),
       ExcludedPlaylists = (preset.ExcludedPlaylists |> Seq.map ExcludedPlaylist.toDb),
+      ExcludedArtists = (preset.ExcludedArtists |> Seq.map ExcludedArtist.toDb),
       TargetedPlaylists = (preset.TargetedPlaylists |> Seq.map TargetedPlaylist.toDb)
     )

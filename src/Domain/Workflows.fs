@@ -177,6 +177,24 @@ module ExcludedPlaylist =
     }
 
 [<RequireQualifiedAccess>]
+module ExcludedArtist =
+  let remove (presetRepo: #ILoadPreset & #ISavePreset) =
+    fun presetId excludedArtistId -> task {
+      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+
+      let excludedArtists =
+        preset.ExcludedArtists |> List.filter (fun a -> a.Id <> excludedArtistId)
+
+      let updatedPreset =
+        { preset with
+            ExcludedArtists = excludedArtists }
+
+      do! presetRepo.SavePreset updatedPreset
+
+      return updatedPreset
+    }
+
+[<RequireQualifiedAccess>]
 module Preset =
   type UpdateSettings = PresetId -> PresetSettings.PresetSettings -> Task<unit>
 
@@ -207,6 +225,7 @@ module Preset =
           OwnerId = userId
           IncludedPlaylists = []
           ExcludedPlaylists = []
+          ExcludedArtists = []
           TargetedPlaylists = []
           Settings =
             { Size = Size.Size 20
@@ -351,6 +370,39 @@ module Preset =
       |> Task.bind (function
         | Some mp -> excludePlaylist' mp presetId rawPlaylistId
         | None -> Preset.ExcludePlaylistError.Unauthorized |> Error |> Task.FromResult)
+
+  let excludeArtist (parseId: Artist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
+    let parseId = parseId >> Result.mapError Preset.ExcludeArtistError.IdParsing
+
+    let loadArtist (mp: #ILoadArtist) =
+      mp.LoadArtist >> TaskResult.mapError Preset.ExcludeArtistError.Load
+
+    let excludeArtist' mp =
+      fun presetId rawArtistId ->
+        let updatePreset artist = task {
+          let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+
+          let updatedExcludedArtists = preset.ExcludedArtists |> List.append [ artist ]
+
+          let updatedPreset =
+            { preset with
+                ExcludedArtists = updatedExcludedArtists }
+
+          do! presetRepo.SavePreset updatedPreset
+
+          return artist
+        }
+
+        rawArtistId
+        |> parseId
+        |> Result.taskBind (loadArtist mp)
+        |> TaskResult.taskMap updatePreset
+
+    fun (userId: UserId) presetId rawArtistId ->
+      musicPlatformFactory.GetMusicPlatform(userId.ToMusicPlatformId())
+      |> Task.bind (function
+        | Some mp -> excludeArtist' mp presetId rawArtistId
+        | None -> Preset.ExcludeArtistError.Unauthorized |> Error |> Task.FromResult)
 
   let targetPlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
     let parseId = parseId >> Result.mapError Preset.TargetPlaylistError.IdParsing
@@ -518,7 +570,8 @@ type Shuffler<'a> = 'a list -> 'a list
 
 type PresetService
   (
-    parseId: Playlist.ParseId,
+    parsePlaylistId: Playlist.ParseId,
+    parseArtistId: Artist.ParseId,
     presetRepo: IPresetRepo,
     musicPlatformFactory: IMusicPlatformFactory,
     shuffler: Shuffler<Track>,
@@ -535,13 +588,16 @@ type PresetService
       PresetSettings.setRecommendationsEngine presetRepo engine presetId
 
     member this.IncludePlaylist(userId, presetId, rawPlaylistId) =
-      Preset.includePlaylist parseId presetRepo musicPlatformFactory userId presetId rawPlaylistId
+      Preset.includePlaylist parsePlaylistId presetRepo musicPlatformFactory userId presetId rawPlaylistId
 
     member this.ExcludePlaylist(userId, presetId, rawPlaylistId) =
-      Preset.excludePlaylist parseId presetRepo musicPlatformFactory userId presetId rawPlaylistId
+      Preset.excludePlaylist parsePlaylistId presetRepo musicPlatformFactory userId presetId rawPlaylistId
+
+    member this.ExcludeArtist(userId, presetId, artistId) =
+      Preset.excludeArtist parseArtistId presetRepo musicPlatformFactory userId presetId artistId
 
     member this.TargetPlaylist(userId, presetId, rawPlaylistId) =
-      Preset.targetPlaylist parseId presetRepo musicPlatformFactory userId presetId rawPlaylistId
+      Preset.targetPlaylist parsePlaylistId presetRepo musicPlatformFactory userId presetId rawPlaylistId
 
     member this.EnableUniqueArtists(presetId) =
       PresetSettings.enableUniqueArtists presetRepo presetId
@@ -566,6 +622,9 @@ type PresetService
 
     member this.RemoveExcludedPlaylist(presetId, playlistId) =
       ExcludedPlaylist.remove presetRepo presetId playlistId
+
+    member this.RemoveExcludedArtist(presetId, artistId) =
+      ExcludedArtist.remove presetRepo presetId artistId
 
     member this.RemoveIncludedPlaylist(presetId, playlistId) =
       IncludedPlaylist.remove presetRepo presetId playlistId

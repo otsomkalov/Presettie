@@ -1110,6 +1110,59 @@ type ExcludePlaylistButtonMessageHandler() =
       chatCtx.VerifyNoOtherCalls()
     }
 
+type ExcludeArtistButtonMessageHandler() =
+  let musicPlatform = Mock<IMusicPlatform>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+
+  let authService = Mock<IInitAuth>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do
+    resourceProvider.Setup(_.Item(Buttons.ExcludeArtist)).Returns(Buttons.ExcludeArtist)
+    |> ignore
+
+  do
+    resourceProvider.Setup(_.Item(Messages.SendExcludedArtist)).Returns(Messages.SendExcludedArtist)
+    |> ignore
+
+  let handler =
+    Message.excludeArtistButtonMessageHandler musicPlatformFactory.Object authService.Object resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should ask for excluded artist when platform present``() =
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some musicPlatform.Object)
+    chatCtx.Setup(_.AskForReply(Messages.SendExcludedArtist)).ReturnsAsync(())
+
+    let message = createMessage Buttons.ExcludeArtist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+      musicPlatformFactory.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should send login when platform missing``() =
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(None)
+    |> ignore
+
+    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessage Buttons.ExcludeArtist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
 type TargetPlaylistButtonMessageHandler() =
   let musicPlatform = Mock<IMusicPlatform>()
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
@@ -1426,6 +1479,135 @@ type ExcludePlaylistMessageHandler() =
       result |> should equal (Some())
 
       chatCtx.Verify(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny()))
+    }
+
+type ExcludeArtistMessageHandler() =
+  let userRepo = Mock<ILoadUser>()
+  let presetService = Mock<IExcludeArtist>()
+  let authService = Mock<IInitAuth>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do
+    resourceProvider.Setup(_.Item(Messages.SendExcludedArtist)).Returns(Messages.SendExcludedArtist)
+    |> ignore
+
+  let handler =
+    Message.excludeArtistMessageHandler userRepo.Object presetService.Object authService.Object resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should handle reply with excluded artist and send message``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService.Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist2))
+
+    resourceProvider.Setup(_.Item(Messages.ArtistExcluded, It.IsAny())).Returns("Artist excluded message")
+
+    chatCtx.Setup(_.SendMessage("Artist excluded message")).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessageWithReply "artist123" Messages.SendExcludedArtist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should handle /excludeartist command and send message``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService.Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist2))
+
+    resourceProvider.Setup(_.Item(Messages.ArtistExcluded, It.IsAny())).Returns(Messages.ArtistExcluded)
+
+    chatCtx.Setup(_.SendMessage(Messages.ArtistExcluded)).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessage $"{Commands.excludeArtist} artist456"
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should send IdCannotBeParsed on id parsing error``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService
+      .Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
+      .ReturnsAsync(Error(Preset.ExcludeArtistError.IdParsing(Artist.IdParsingError "invalid-id")))
+
+    resourceProvider.Setup(_.Item(Messages.ArtistIdCannotBeParsed, It.IsAny())).Returns("Cannot parse artist ID")
+
+    chatCtx.Setup(_.SendMessage("Cannot parse artist ID")).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessageWithReply "invalid-id" Messages.SendExcludedArtist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should send NotFound when artist not found``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService
+      .Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
+      .ReturnsAsync(Error(Preset.ExcludeArtistError.Load(Artist.LoadError.NotFound)))
+
+    resourceProvider.Setup(_.Item(Messages.ArtistNotFoundInSpotify, It.IsAny())).Returns("Artist not found")
+
+    chatCtx.Setup(_.SendMessage("Artist not found")).ReturnsAsync(Mocks.botMessageId)
+
+    let message =
+      createMessageWithReply "nonexistent-artist" Messages.SendExcludedArtist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should trigger login when unauthorized``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService
+      .Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
+      .ReturnsAsync(Error(Preset.ExcludeArtistError.Unauthorized))
+
+    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessageWithReply "artist789" Messages.SendExcludedArtist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
     }
 
 type TargetPlaylistMessageHandler() =

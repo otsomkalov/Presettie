@@ -37,5 +37,7 @@ public class Preset
 
     public IEnumerable<ExcludedPlaylist> ExcludedPlaylists { get; set; } = [];
 
+    public IEnumerable<ExcludedArtist> ExcludedArtists { get; set; } = [];
+
     public IEnumerable<TargetedPlaylist> TargetedPlaylists { get; set; } = [];
 }
