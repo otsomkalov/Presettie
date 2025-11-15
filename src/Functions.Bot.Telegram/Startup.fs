@@ -6,6 +6,9 @@ open System
 open System.Text.Json
 open System.Text.Json.Serialization
 open System.Reflection
+open Azure.Core
+open Azure.Identity
+open Microsoft.Azure.Functions.Worker.Builder
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
@@ -14,12 +17,17 @@ open Microsoft.Extensions.Logging.ApplicationInsights
 open Microsoft.Azure.Functions.Worker
 open Telegram.Bot.AspNetCore
 
-let private configureServices (builderContext: HostBuilderContext) (services: IServiceCollection) : unit =
+[<RequireQualifiedAccess>]
+module KeyVault =
+  [<Literal>]
+  let KeyVaultName = "KeyVaultName"
+
+let private configureServices (builder: FunctionsApplicationBuilder) =
+
+  let (services, cfg) = (builder.Services, builder.Configuration)
 
   services.AddApplicationInsightsTelemetryWorkerService()
   services.ConfigureFunctionsApplicationInsights()
-
-  let cfg = builderContext.Configuration
 
   services
   |> Domain.Startup.addDomain cfg
@@ -33,30 +41,38 @@ let private configureServices (builderContext: HostBuilderContext) (services: IS
 
   services.ConfigureTelegramBotMvc()
 
-  ()
+  builder
 
-let private configureAppConfiguration _ (configBuilder: IConfigurationBuilder) =
+let private configureAppConfiguration (builder: FunctionsApplicationBuilder) =
+  let credential: TokenCredential =
+    if builder.Environment.IsDevelopment() then
+      DefaultAzureCredential()
+    else
+      ManagedIdentityCredential()
 
-  configBuilder.AddUserSecrets(Assembly.GetExecutingAssembly())
+  builder.Configuration.AddAzureKeyVault(Uri($"https://{builder.Configuration[KeyVault.KeyVaultName]}.vault.azure.net/"), credential)
 
-  ()
+  builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly())
 
-let private configureWebApp (builder: IFunctionsWorkerApplicationBuilder) =
+  builder
+
+let private configureFunctionsWebApp (builder: FunctionsApplicationBuilder) =
   builder.Services.Configure<JsonSerializerOptions>(fun opts -> JsonFSharpOptions.Default().AddToJsonSerializerOptions(opts))
 
-  ()
+  builder
 
-let private configureLogging (builder: ILoggingBuilder) =
-  builder.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Information)
+let private configureLogging (builder: FunctionsApplicationBuilder) =
+  builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Information)
 
-  ()
+  builder
 
-let host =
-  HostBuilder()
-    .ConfigureFunctionsWebApplication(configureWebApp)
-    .ConfigureAppConfiguration(configureAppConfiguration)
-    .ConfigureLogging(configureLogging)
-    .ConfigureServices(configureServices)
-    .Build()
+let builder =
+  FunctionsApplication.CreateBuilder(Environment.GetCommandLineArgs() |> Array.tail).ConfigureFunctionsWebApplication()
+  |> configureAppConfiguration
+  |> configureFunctionsWebApp
+  |> configureLogging
+  |> configureServices
 
-host.Run()
+let host = builder.Build()
+
+host.RunAsync() |> Async.AwaitTask |> Async.RunSynchronously
