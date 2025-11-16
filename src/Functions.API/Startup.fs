@@ -23,13 +23,6 @@ open Microsoft.Extensions.Logging.ApplicationInsights
 open otsom.fs.Auth
 open otsom.fs.Auth.Spotify
 
-[<RequireQualifiedAccess>]
-module internal Settings =
-  [<RequireQualifiedAccess>]
-  module Auth =
-    [<Literal>]
-    let SectionName = "Auth"
-
 let private configureServices (builderContext: HostBuilderContext) (services: IServiceCollection) : unit =
 
   services.AddApplicationInsightsTelemetryWorkerService()
@@ -45,10 +38,9 @@ let private configureServices (builderContext: HostBuilderContext) (services: IS
   |> Startup.addSpotifyAuth
 
   services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication()
     .AddJwtBearer(fun opts ->
-      cfg.GetSection(Settings.Auth.SectionName).Bind(opts)
-      opts.TokenValidationParameters <- TokenValidationParameters(NameClaimType = ClaimTypes.NameIdentifier)
+      opts.TokenValidationParameters.NameClaimType <- ClaimTypes.NameIdentifier
 
       ())
 
