@@ -23,13 +23,6 @@ open Microsoft.Extensions.Logging.ApplicationInsights
 open otsom.fs.Auth
 open otsom.fs.Auth.Spotify
 
-[<RequireQualifiedAccess>]
-module internal Settings =
-  [<RequireQualifiedAccess>]
-  module Auth =
-    [<Literal>]
-    let SectionName = "Auth"
-
 let private configureServices (builderContext: HostBuilderContext) (services: IServiceCollection) : unit =
 
   services.AddApplicationInsightsTelemetryWorkerService()
