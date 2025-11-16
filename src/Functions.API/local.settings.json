@@ -16,6 +16,11 @@
     "Auth__Audience": "<Audience>",
     "Auth__Authority": "<Authority>",
 
+    "Authentication__DefaultScheme": "Bearer",
+    "Authentication__Schemes__Bearer__Authority": "<Authority>",
+    "Authentication__Schemes__Bearer__ValidIssuers__0": "<Valid Issuers>",
+    "Authentication__Schemes__Bearer__ValidAudiences__0": "<Valid Audiences>",
+
     "Logging__LogLevel__Microsoft.IdentityModel": "Critical"
   },
   "Host": {

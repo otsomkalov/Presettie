@@ -105,7 +105,7 @@ resource "azurerm_linux_function_app" "func-presettie-bot" {
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
-    })
+  })
 
   tags = local.tags
 }
@@ -140,11 +140,13 @@ resource "azurerm_linux_function_app" "func-presettie-api" {
       Database__Name             = var.database-name
       Redis__ConnectionString    = var.redis-connection-string
       Resources__DefaultLang     = var.resources-default-lang
-      Auth__Audience             = var.jwt-audience
-      Auth__Authority            = var.jwt-authority
       Storage__ConnectionString  = azurerm_storage_account.st-presettie.primary_connection_string
       Storage__QueueName         = azurerm_storage_queue.stq-requests-presettie.name
-    })
+
+      Authentication__Schemes__Bearer__Authority         = var.jwt-authority
+      Authentication__Schemes__Bearer__ValidIssuers__0   = var.jwt-issuer
+      Authentication__Schemes__Bearer__ValidAudiences__0 = var.jwt-audience
+  })
 
   tags = local.tags
 }

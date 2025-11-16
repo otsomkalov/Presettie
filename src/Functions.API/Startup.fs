@@ -45,10 +45,9 @@ let private configureServices (builderContext: HostBuilderContext) (services: IS
   |> Startup.addSpotifyAuth
 
   services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication()
     .AddJwtBearer(fun opts ->
-      cfg.GetSection(Settings.Auth.SectionName).Bind(opts)
-      opts.TokenValidationParameters <- TokenValidationParameters(NameClaimType = ClaimTypes.NameIdentifier)
+      opts.TokenValidationParameters.NameClaimType <- ClaimTypes.NameIdentifier
 
       ())
 
