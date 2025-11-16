@@ -8,7 +8,7 @@ applyTo: '**/*.Tests/*.fs'
 - Use `Moq` library to mock interfaces
 - Declare and initialize mocks as `type` fields
 - Use assertion checks from `FsUnit` and `FsUnit.xUnit` libraries
-- Setup mocks out of `task` computational expression
+- Setup mocks before entering `task` computational expression
 - Prefer `VerifyAll` and `VerifyNoOtherCalls` methods call on `IMock` instead of `Verify` method
 - Do not add `Mock` suffix to mock variable names
 - Prefer `ReturnsAsync` method for setting up mock returns
