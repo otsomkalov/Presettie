@@ -38,10 +38,6 @@ variable "database-connection-string" {
   type = string
 }
 
-variable "database-name" {
-  type = string
-}
-
 variable "generator-schedule" {
   type = string
 }
@@ -51,10 +47,6 @@ variable "redis-connection-string" {
 }
 
 variable "storage-queue-name" {
-  type = string
-}
-
-variable "reccobeats-url" {
   type = string
 }
 

@@ -11,10 +11,8 @@ open Azure.Core
 open Azure.Identity
 open Domain
 open Infrastructure
-open Microsoft.AspNetCore.Authentication.JwtBearer
 open Microsoft.Azure.Functions.Worker.Builder
 open Microsoft.Azure.Functions.Worker.Middleware
-open Microsoft.IdentityModel.Tokens
 open MusicPlatform.Spotify
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -27,11 +25,6 @@ open otsom.fs.Auth.Spotify
 
 [<RequireQualifiedAccess>]
 module internal Settings =
-  [<RequireQualifiedAccess>]
-  module Auth =
-    [<Literal>]
-    let SectionName = "Auth"
-
   [<RequireQualifiedAccess>]
   module KeyVault =
     [<Literal>]
@@ -52,7 +45,10 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
 
   services
     .AddAuthentication()
-    .AddJwtBearer()
+    .AddJwtBearer(fun opts ->
+      opts.TokenValidationParameters.NameClaimType <- ClaimTypes.NameIdentifier
+
+      ())
 
   services.AddLocalization()
 

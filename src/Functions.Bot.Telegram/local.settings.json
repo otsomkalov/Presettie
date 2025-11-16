@@ -4,15 +4,17 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=True",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
 
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "<Application Insights Instrumentation Key>",
+
     "Telegram__Token": "<Telegram bot token>",
     "Telegram__BotUrl": "<Telegram bot url, e.g. https://t.me/*bot_name*>",
 
-    "Spotify__ClientId": "<Spotify app Client Id>",
-    "Spotify__ClientSecret": "<Spotify app ClientSecret>",
-    "Spotify__CallbackUrl": "<Spotify login callback url>",
+    "ReccoBeats__Url": "https://api.reccobeats.com/v1/",
 
     "Database__ConnectionString": "<MongoDB connection string>",
     "Database__Name": "presettie",
+
+    "Resources__DefaultLang": "en",
 
     "GeneratorSchedule": "0 * * * * *",
 

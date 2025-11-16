@@ -24,7 +24,7 @@ module KeyVault =
 
 let private configureServices (builder: FunctionsApplicationBuilder) =
 
-  let (services, cfg) = (builder.Services, builder.Configuration)
+  let services, cfg = (builder.Services, builder.Configuration)
 
   services.AddApplicationInsightsTelemetryWorkerService()
   services.ConfigureFunctionsApplicationInsights()

@@ -93,17 +93,15 @@ resource "azurerm_linux_function_app" "func-presettie-bot" {
 
   app_settings = merge(
     {
-      Database__Name            = var.database-name
-      GeneratorSchedule         = var.generator-schedule
-      Storage__ConnectionString = azurerm_storage_account.st-presettie.primary_connection_string
-      Storage__QueueName        = azurerm_storage_queue.stq-requests-presettie.name
-      Reccobeats__Url           = var.reccobeats-url
-      Resources__DefaultLang    = var.resources-default-lang
-      KeyVault__Uri             = azurerm_key_vault.kv-presettie.vault_uri
+      GeneratorSchedule = var.generator-schedule
+      KeyVaultName      = azurerm_key_vault.kv-presettie.name
+
+      Auth__CallbackUrl = var.auth-callback-url,
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
-  })
+    }
+  )
 
   tags = local.tags
 }
@@ -136,12 +134,11 @@ resource "azurerm_linux_function_app" "func-presettie-api" {
 
   app_settings = merge(
     {
-      Database__Name         = var.database-name
-      Resources__DefaultLang = var.resources-default-lang
-      Auth__Audience         = var.jwt-audience
-      Storage__QueueName     = azurerm_storage_queue.stq-requests-presettie.name
-      KeyVaultName           = azurerm_key_vault.kv-presettie.name
-  })
+      KeyVaultName = azurerm_key_vault.kv-presettie.name,
+
+      Auth__CallbackUrl = var.auth-callback-url,
+    }
+  )
 
   tags = local.tags
 }
