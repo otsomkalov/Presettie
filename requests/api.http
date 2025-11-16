@@ -17,4 +17,4 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost:7071/api/presets/{{presetId}}
-Authorization: Bearer {{apiToken}}2
+Authorization: Bearer {{apiToken}}
