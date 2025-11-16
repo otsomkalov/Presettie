@@ -16,6 +16,8 @@
     "Storage__ConnectionString": "<Azure storage account connection string>",
     "Storage__QueueName": "requests",
 
+    "ReccoBeats__Url": "https://api.reccobeats.com/v1/",
+
     "Resources__DefaultLang": "en",
 
     "Auth__ClientId": "<Spotify Client ID>",

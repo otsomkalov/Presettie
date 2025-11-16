@@ -1,4 +1,4 @@
-﻿data "azurerm_client_config" "current" {}
+data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "kv-presettie" {
   resource_group_name = azurerm_resource_group.rg-presettie.name

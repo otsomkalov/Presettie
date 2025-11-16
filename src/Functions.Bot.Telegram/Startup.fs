@@ -44,20 +44,18 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   builder
 
 let private configureAppConfiguration (builder: FunctionsApplicationBuilder) =
-  let credential: TokenCredential =
-    if builder.Environment.IsDevelopment() then
-      DefaultAzureCredential()
-    else
-      ManagedIdentityCredential()
+  builder.Configuration.AddAzureKeyVault(
+    Uri($"https://{builder.Configuration[KeyVault.KeyVaultName]}.vault.azure.net/"),
+    DefaultAzureCredential()
+  )
 
-  builder.Configuration.AddAzureKeyVault(Uri($"https://{builder.Configuration[KeyVault.KeyVaultName]}.vault.azure.net/"), credential)
-
-  builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly())
+  if builder.Environment.IsDevelopment() then
+    do builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly())
 
   builder
 
 let private configureFunctionsWebApp (builder: FunctionsApplicationBuilder) =
-  builder.Services.Configure<JsonSerializerOptions>(fun opts -> JsonFSharpOptions.Default().AddToJsonSerializerOptions(opts))
+  builder.Services.Configure<JsonSerializerOptions>(fun opts -> JsonFSharpOptions.Default().AddToJsonSerializerOptions opts)
 
   builder
 

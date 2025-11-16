@@ -87,18 +87,13 @@ let private configureFunctionsWebApp (builder: FunctionsApplicationBuilder) =
 
 let private configureAppConfiguration (builder: FunctionsApplicationBuilder) =
 
-  builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly())
-
-  let credential: TokenCredential =
-    if builder.Environment.IsDevelopment() then
-      DefaultAzureCredential()
-    else
-      ManagedIdentityCredential()
-
   builder.Configuration.AddAzureKeyVault(
     Uri($"https://{builder.Configuration[Settings.KeyVault.KeyVaultName]}.vault.azure.net/"),
-    credential
+    DefaultAzureCredential()
   )
+
+  if builder.Environment.IsDevelopment() then
+    do builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly())
 
   builder
 
