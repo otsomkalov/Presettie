@@ -93,10 +93,13 @@ resource "azurerm_linux_function_app" "func-presettie-bot" {
 
   app_settings = merge(
     {
-      GeneratorSchedule = var.generator-schedule
-      KeyVaultName      = azurerm_key_vault.kv-presettie.name
+      GeneratorSchedule      = var.generator-schedule
+      KeyVaultName           = azurerm_key_vault.kv-presettie.name
+      Resources__DefaultLang = var.resources-default-lang
 
-      Auth__CallbackUrl = var.auth-callback-url,
+      Auth__CallbackUrl  = var.auth-callback-url
+      Database__Name     = var.database-name
+      Storage__QueueName = var.storage-queue-name
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
@@ -136,7 +139,13 @@ resource "azurerm_linux_function_app" "func-presettie-api" {
     {
       KeyVaultName = azurerm_key_vault.kv-presettie.name,
 
-      Auth__CallbackUrl = var.auth-callback-url,
+      Auth__CallbackUrl      = var.auth-callback-url
+      Resources__DefaultLang = var.resources-default-lang
+      Database__Name         = var.database-name,
+      Storage__QueueName     = var.storage-queue-name
+    },
+    {
+      for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
     }
   )
 

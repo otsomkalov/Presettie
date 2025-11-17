@@ -38,6 +38,10 @@ variable "database-connection-string" {
   type = string
 }
 
+variable "database-name" {
+  type = string
+}
+
 variable "generator-schedule" {
   type = string
 }
