@@ -26,6 +26,10 @@ variable "jwt-authority" {
   type = string
 }
 
+variable "jwt-issuer" {
+  type = string
+}
+
 variable "auth-scopes" {
   type = list(string)
 }
@@ -47,10 +51,6 @@ variable "redis-connection-string" {
 }
 
 variable "storage-queue-name" {
-  type = string
-}
-
-variable "reccobeats-url" {
   type = string
 }
 

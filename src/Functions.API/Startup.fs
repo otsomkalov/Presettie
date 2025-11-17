@@ -7,12 +7,12 @@ open System.Reflection
 open System.Security.Claims
 open System.Text.Json
 open System.Text.Json.Serialization
+open Azure.Core
+open Azure.Identity
 open Domain
 open Infrastructure
-open Microsoft.AspNetCore.Authentication.JwtBearer
+open Microsoft.Azure.Functions.Worker.Builder
 open Microsoft.Azure.Functions.Worker.Middleware
-open Microsoft.Extensions.Logging.Console
-open Microsoft.IdentityModel.Tokens
 open MusicPlatform.Spotify
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -26,16 +26,15 @@ open otsom.fs.Auth.Spotify
 [<RequireQualifiedAccess>]
 module internal Settings =
   [<RequireQualifiedAccess>]
-  module Auth =
+  module KeyVault =
     [<Literal>]
-    let SectionName = "Auth"
+    let KeyVaultName = "KeyVaultName"
 
-let private configureServices (builderContext: HostBuilderContext) (services: IServiceCollection) : unit =
+let private configureServices (builder: FunctionsApplicationBuilder) =
+  let services, cfg = (builder.Services, builder.Configuration)
 
   services.AddApplicationInsightsTelemetryWorkerService()
   services.ConfigureFunctionsApplicationInsights()
-
-  let cfg = builderContext.Configuration
 
   services
   |> Startup.addSpotifyMusicPlatform cfg
@@ -45,10 +44,9 @@ let private configureServices (builderContext: HostBuilderContext) (services: IS
   |> Startup.addSpotifyAuth
 
   services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication()
     .AddJwtBearer(fun opts ->
-      cfg.GetSection(Settings.Auth.SectionName).Bind(opts)
-      opts.TokenValidationParameters <- TokenValidationParameters(NameClaimType = ClaimTypes.NameIdentifier)
+      opts.TokenValidationParameters.NameClaimType <- ClaimTypes.NameIdentifier
 
       ())
 
@@ -59,7 +57,7 @@ let private configureServices (builderContext: HostBuilderContext) (services: IS
     .AddJsonOptions(fun opts ->
       JsonFSharpOptions.Default().WithUnionUnwrapFieldlessTags().AddToJsonSerializerOptions(opts.JsonSerializerOptions))
 
-  ()
+  builder
 
 type BindingErrorHandlerMiddleware(logger: ILogger<BindingErrorHandlerMiddleware>) =
   interface IFunctionsWorkerMiddleware with
@@ -82,16 +80,22 @@ type BindingErrorHandlerMiddleware(logger: ILogger<BindingErrorHandlerMiddleware
       | e -> logger.LogError(e, "Error")
     }
 
-let private configureFunctionsWebApp (builder: IFunctionsWorkerApplicationBuilder) =
+let private configureFunctionsWebApp (builder: FunctionsApplicationBuilder) =
   builder.UseMiddleware<BindingErrorHandlerMiddleware>()
 
-  ()
+  builder
 
-let private configureAppConfiguration _ (configBuilder: IConfigurationBuilder) =
+let private configureAppConfiguration (builder: FunctionsApplicationBuilder) =
 
-  configBuilder.AddUserSecrets(Assembly.GetExecutingAssembly())
+  builder.Configuration.AddAzureKeyVault(
+    Uri($"https://{builder.Configuration[Settings.KeyVault.KeyVaultName]}.vault.azure.net/"),
+    DefaultAzureCredential()
+  )
 
-  ()
+  if builder.Environment.IsDevelopment() then
+    do builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly())
+
+  builder
 
 let private configureWebApp (builder: IFunctionsWorkerApplicationBuilder) =
   builder.Services.Configure<JsonSerializerOptions>(fun opts ->
@@ -101,17 +105,18 @@ let private configureWebApp (builder: IFunctionsWorkerApplicationBuilder) =
 
   ()
 
-let private configureLogging (builder: ILoggingBuilder) =
-  builder.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Information)
+let private configureLogging (builder: FunctionsApplicationBuilder) =
+  builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Information)
 
-  ()
+  builder
 
-let host =
-  HostBuilder()
-    .ConfigureFunctionsWebApplication(configureFunctionsWebApp)
-    .ConfigureAppConfiguration(configureAppConfiguration)
-    .ConfigureLogging(configureLogging)
-    .ConfigureServices(configureServices)
-    .Build()
+let builder =
+  FunctionsApplication.CreateBuilder(Environment.GetCommandLineArgs() |> Array.tail).ConfigureFunctionsWebApplication()
+  |> configureAppConfiguration
+  |> configureFunctionsWebApp
+  |> configureLogging
+  |> configureServices
 
-host.Run()
+let host = builder.Build()
+
+host.RunAsync() |> Async.AwaitTask |> Async.RunSynchronously

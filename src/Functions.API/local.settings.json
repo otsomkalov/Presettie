@@ -3,18 +3,34 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=True",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-    "Telegram__Token": "<Telegram bot token>",
-    "Telegram__BotUrl": "<Telegram bot url, e.g. https://t.me/*bot_name*>",
-    "Spotify__ClientId": "<Spotify app Client Id>",
-    "Spotify__ClientSecret": "<Spotify app ClientSecret>",
-    "Spotify__CallbackUrl": "<Spotify login callback url>",
+
+    "KeyVaultName": "<Name of Azure Key Vault>",
+
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "<Application Insights Instrumentation Key>",
+
     "Database__ConnectionString": "<MongoDB connection string>",
-    "GeneratorSchedule": "0 * * * * *",
+    "Database__Name": "presettie",
+
     "Redis__ConnectionString": "<Redis connection string>",
+
     "Storage__ConnectionString": "<Azure storage account connection string>",
     "Storage__QueueName": "requests",
-    "Auth__Audience": "<Audience>",
-    "Auth__Authority": "<Authority>",
+
+    "ReccoBeats__Url": "https://api.reccobeats.com/v1/",
+
+    "Resources__DefaultLang": "en",
+
+    "Auth__ClientId": "<Spotify Client ID>",
+    "Auth__ClientSecret": "<Spotify Client Secret>",
+    "Auth__CallbackUrl": "http://localhost:7071/api/spotify/callback",
+    "Auth__Scopes__0": "playlist-modify-private",
+    "Auth__Scopes__1": "playlist-modify-public",
+    "Auth__Scopes__2": "user-library-read",
+
+    "Authentication__DefaultScheme": "Bearer",
+    "Authentication__Schemes__Bearer__Authority": "<Authority>",
+    "Authentication__Schemes__Bearer__ValidAudience": "<ValidAudience>",
+    "Authentication__Schemes__Bearer__ValidIssuer": "<ValidIssuer>",
 
     "Logging__LogLevel__Microsoft.IdentityModel": "Critical"
   },
