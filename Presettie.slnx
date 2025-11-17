@@ -1,27 +1,27 @@
 <Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Bot/">
-    <Project Path="src\Bot.Telegram\Bot.Telegram.fsproj" Type="Classic F#" />
-    <Project Path="src\Bot\Bot.fsproj" Type="Classic F#" />
+    <Project Path="src\Bot.Telegram\Bot.Telegram.fsproj" />
+    <Project Path="src\Bot\Bot.fsproj" />
   </Folder>
   <Folder Name="/src/Domain/">
-    <Project Path="src\Database\Database.csproj" Type="Classic C#" />
-    <Project Path="src\Domain\Domain.fsproj" Type="Classic F#" />
-    <Project Path="src\Infrastructure\Infrastructure.fsproj" Type="Classic F#" />
-    <Project Path="src\MusicPlatform\MusicPlatform.fsproj" Type="Classic F#" />
+    <Project Path="src\Database\Database.csproj" />
+    <Project Path="src\Domain\Domain.fsproj" />
+    <Project Path="src\Infrastructure\Infrastructure.fsproj" />
+    <Project Path="src\MusicPlatform\MusicPlatform.fsproj" />
   </Folder>
   <Folder Name="/src/Integrations/">
-    <Project Path="src\MusicPlatform.Cached\MusicPlatform.Cached.fsproj" Type="Classic F#" />
-    <Project Path="src\MusicPlatform.ReccoBeats\MusicPlatform.ReccoBeats.fsproj" Type="Classic F#" />
-    <Project Path="src\MusicPlatform.Spotify\MusicPlatform.Spotify.fsproj" Type="Classic F#" />
+    <Project Path="src\MusicPlatform.Cached\MusicPlatform.Cached.fsproj" />
+    <Project Path="src\MusicPlatform.ReccoBeats\MusicPlatform.ReccoBeats.fsproj" />
+    <Project Path="src\MusicPlatform.Spotify\MusicPlatform.Spotify.fsproj" />
   </Folder>
   <Folder Name="/src/Runners/">
-    <Project Path="src\Bolero.Web\Bolero.Web.fsproj" Type="Classic F#" />
-    <Project Path="src\Functions.API\Functions.API.fsproj" Type="Classic F#" />
-    <Project Path="src\Functions.Bot.Telegram\Functions.Bot.Telegram.fsproj" Type="Classic F#" />
+    <Project Path="src\Bolero.Web\Bolero.Web.fsproj" />
+    <Project Path="src\Functions.API\Functions.API.fsproj" />
+    <Project Path="src\Functions.Bot.Telegram\Functions.Bot.Telegram.fsproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/Domain.Tests\Domain.Tests.fsproj" Type="Classic F#" />
-    <Project Path="tests\Bot.Tests\Bot.Tests.fsproj" Type="Classic F#" />
+    <Project Path="tests/Domain.Tests\Domain.Tests.fsproj" />
+    <Project Path="tests\Bot.Tests\Bot.Tests.fsproj" />
   </Folder>
 </Solution>

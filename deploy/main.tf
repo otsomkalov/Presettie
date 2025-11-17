@@ -77,6 +77,10 @@ resource "azurerm_linux_function_app" "func-presettie-bot" {
 
   functions_extension_version = "~4"
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   site_config {
     application_insights_key = azurerm_application_insights.appi-presettie.instrumentation_key
     app_scale_limit          = 10
@@ -89,23 +93,18 @@ resource "azurerm_linux_function_app" "func-presettie-bot" {
 
   app_settings = merge(
     {
-      Telegram__Token            = var.telegram-token
-      Telegram__BotUrl           = var.telegram-bot-url
-      Auth__ClientId             = var.auth-client-id
-      Auth__ClientSecret         = var.auth-client-secret
-      Auth__CallbackUrl          = var.auth-callback-url
-      Database__ConnectionString = var.database-connection-string
-      Database__Name             = var.database-name
-      GeneratorSchedule          = var.generator-schedule
-      Redis__ConnectionString    = var.redis-connection-string
-      Storage__ConnectionString  = azurerm_storage_account.st-presettie.primary_connection_string
-      Storage__QueueName         = azurerm_storage_queue.stq-requests-presettie.name
-      Reccobeats__Url            = var.reccobeats-url
-      Resources__DefaultLang     = var.resources-default-lang
+      GeneratorSchedule      = var.generator-schedule
+      KeyVaultName           = azurerm_key_vault.kv-presettie.name
+      Resources__DefaultLang = var.resources-default-lang
+
+      Auth__CallbackUrl  = var.auth-callback-url
+      Database__Name     = var.database-name
+      Storage__QueueName = var.storage-queue-name
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
-  })
+    }
+  )
 
   tags = local.tags
 }
@@ -122,6 +121,10 @@ resource "azurerm_linux_function_app" "func-presettie-api" {
 
   functions_extension_version = "~4"
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   site_config {
     application_insights_key = azurerm_application_insights.appi-presettie.instrumentation_key
     app_scale_limit          = 10
@@ -134,19 +137,17 @@ resource "azurerm_linux_function_app" "func-presettie-api" {
 
   app_settings = merge(
     {
-      Telegram__Token            = var.telegram-token
-      Telegram__BotUrl           = var.telegram-bot-url
-      Database__ConnectionString = var.database-connection-string
-      Database__Name             = var.database-name
-      Redis__ConnectionString    = var.redis-connection-string
-      Resources__DefaultLang     = var.resources-default-lang
-      Storage__ConnectionString  = azurerm_storage_account.st-presettie.primary_connection_string
-      Storage__QueueName         = azurerm_storage_queue.stq-requests-presettie.name
+      KeyVaultName = azurerm_key_vault.kv-presettie.name,
 
-      Authentication__Schemes__Bearer__Authority         = var.jwt-authority
-      Authentication__Schemes__Bearer__ValidIssuers__0   = var.jwt-issuer
-      Authentication__Schemes__Bearer__ValidAudiences__0 = var.jwt-audience
-  })
+      Auth__CallbackUrl      = var.auth-callback-url
+      Resources__DefaultLang = var.resources-default-lang
+      Database__Name         = var.database-name,
+      Storage__QueueName     = var.storage-queue-name
+    },
+    {
+      for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
+    }
+  )
 
   tags = local.tags
 }
