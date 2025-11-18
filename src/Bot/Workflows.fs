@@ -368,8 +368,8 @@ module Preset =
 
       let keyboardMarkup = seq {
         seq {
-          MessageButton(resp[Buttons.IncludedContent], sprintf "p|%s|%s|0" preset.Id.Value CallbackQueryConstants.includedContent)
-          MessageButton(resp[Buttons.ExcludedContent], sprintf "p|%s|%s|0" preset.Id.Value CallbackQueryConstants.excludedContent)
+          MessageButton(resp[Buttons.IncludedContent], sprintf "p|%s|%s" preset.Id.Value CallbackQueryConstants.includedContent)
+          MessageButton(resp[Buttons.ExcludedContent], sprintf "p|%s|%s" preset.Id.Value CallbackQueryConstants.excludedContent)
           MessageButton(resp[Buttons.TargetedPlaylists], sprintf "p|%s|tp|0" preset.Id.Value)
         }
 
