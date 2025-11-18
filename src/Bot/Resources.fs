@@ -187,6 +187,12 @@ module Messages =
   [<Literal>]
   let YourPresets = "messages.your-presets"
 
+  [<Literal>]
+  let IncludedContent = "messages.included-content"
+
+  [<Literal>]
+  let ExcludedContent = "messages.excluded-content"
+
 [<RequireQualifiedAccess>]
 module Buttons =
   [<Literal>]
@@ -287,6 +293,12 @@ module Buttons =
 
   [<Literal>]
   let IncludedPlaylistLikedOnly = "buttons.included-playlist-liked-only"
+
+  [<Literal>]
+  let IncludedContent = "buttons.included-content"
+
+  [<Literal>]
+  let ExcludedContent = "buttons.excluded-content"
 
 [<RequireQualifiedAccess>]
 module Notifications =

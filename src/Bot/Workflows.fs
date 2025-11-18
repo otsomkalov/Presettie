@@ -172,6 +172,44 @@ let sendLoginMessage (authService: #IInitAuth) (resp: IResourceProvider) (chatCt
     |> Task.bind (fun uri -> chatCtx.SendLink(resp[Messages.LoginToSpotify], resp[Buttons.Login], uri))
 
 [<RequireQualifiedAccess>]
+module IncludedContent =
+  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) =
+    fun messageId (preset: Preset) -> task {
+
+      let buttons = seq {
+        seq { MessageButton(resp[Buttons.IncludedPlaylists], sprintf "p|%s|%s|0" preset.Id.Value CallbackQueryConstants.includedPlaylists) }
+
+        seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" preset.Id.Value) }
+      }
+
+      do!
+        botMessageCtx.EditMessageButtons(
+          messageId,
+          resp[Messages.IncludedContent, [| preset.Name; preset.IncludedPlaylists.Length |]],
+          buttons
+        )
+    }
+
+[<RequireQualifiedAccess>]
+module ExcludedContent =
+  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) =
+    fun messageId (preset: Preset) -> task {
+
+      let buttons = seq {
+        seq { MessageButton(resp[Buttons.ExcludedPlaylists], sprintf "p|%s|%s|0" preset.Id.Value CallbackQueryConstants.excludedPlaylists) }
+
+        seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" preset.Id.Value) }
+      }
+
+      do!
+        botMessageCtx.EditMessageButtons(
+          messageId,
+          resp[Messages.ExcludedContent, [| preset.Name; preset.ExcludedPlaylists.Length |]],
+          buttons
+        )
+    }
+
+[<RequireQualifiedAccess>]
 module IncludedPlaylist =
   let list resp (botMessageCtx: #IEditMessageButtons) =
     let createButtonFromPlaylist (presetId: PresetId) =
@@ -220,7 +258,8 @@ module IncludedPlaylist =
 
       let additionalButtons = Seq.singleton (MessageButton(buttonText, buttonData))
 
-      let buttons = getPlaylistButtons resp presetId playlistId "ip" additionalButtons
+      let buttons =
+        getPlaylistButtons resp presetId playlistId CallbackQueryConstants.includedPlaylists additionalButtons
 
       do! botMessageCtx.EditMessageButtons(messageId, messageText, buttons)
     }
@@ -264,7 +303,8 @@ module ExcludedPlaylist =
       let messageText =
         resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name; playlistTracksCount |]]
 
-      let buttons = getPlaylistButtons resp presetId playlistId "ep" Seq.empty
+      let buttons =
+        getPlaylistButtons resp presetId playlistId CallbackQueryConstants.excludedPlaylists Seq.empty
 
       do! botService.EditMessageButtons(messageId, messageText, buttons)
     }
@@ -370,8 +410,8 @@ module Preset =
 
       let keyboardMarkup = seq {
         seq {
-          MessageButton(resp[Buttons.IncludedContent], sprintf "p|%s|i" preset.Id.Value)
-          MessageButton(resp[Buttons.ExcludedContent], sprintf "p|%s|e" preset.Id.Value)
+          MessageButton(resp[Buttons.IncludedContent], sprintf "p|%s|%s" preset.Id.Value CallbackQueryConstants.includedContent)
+          MessageButton(resp[Buttons.ExcludedContent], sprintf "p|%s|%s" preset.Id.Value CallbackQueryConstants.excludedContent)
           MessageButton(resp[Buttons.TargetedPlaylists], sprintf "p|%s|tp|0" preset.Id.Value)
         }
 

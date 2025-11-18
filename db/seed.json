@@ -300,6 +300,16 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.included-content",
+    "Value": "Preset *{0}* has the next included content:\n*{1}* included playlists",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.excluded-content",
+    "Value": "Preset *{0}* has the next excluded content:\n*{1}* excluded playlists",
+    "Lang": "en"
+  },
+  {
     "Key": "buttons.run-preset",
     "Value": "🚀 Run preset",
     "Lang": "en"
@@ -452,6 +462,16 @@
   {
     "Key": "buttons.included-playlist-liked-only",
     "Value": "Liked only",
+    "Lang": "en"
+  },
+  {
+    "Key": "buttons.included-content",
+    "Value": "➕ Included content",
+    "Lang": "en"
+  },
+  {
+    "Key": "buttons.excluded-content",
+    "Value": "➖ Excluded content",
     "Lang": "en"
   },
   {

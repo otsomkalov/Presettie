@@ -36,6 +36,8 @@ let private addClickHandlers (services: IServiceCollection) =
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(excludeLikedTracksClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(ignoreLikedTracksClickHandler)
 
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(showIncludedContentClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(showExcludedContentClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listIncludedPlaylistsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listExcludedPlaylistsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listExcludedArtistsClickHandler)
