@@ -244,7 +244,8 @@ module IncludedPlaylist =
 
       let additionalButtons = Seq.singleton (MessageButton(buttonText, buttonData))
 
-      let buttons = getPlaylistButtons resp presetId playlistId CallbackQueryConstants.includedPlaylists additionalButtons
+      let buttons =
+        getPlaylistButtons resp presetId playlistId CallbackQueryConstants.includedPlaylists additionalButtons
 
       do! botMessageCtx.EditMessageButtons(messageId, messageText, buttons)
     }
@@ -288,7 +289,8 @@ module ExcludedPlaylist =
       let messageText =
         resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name; playlistTracksCount |]]
 
-      let buttons = getPlaylistButtons resp presetId playlistId CallbackQueryConstants.excludedPlaylists Seq.empty
+      let buttons =
+        getPlaylistButtons resp presetId playlistId CallbackQueryConstants.excludedPlaylists Seq.empty
 
       do! botService.EditMessageButtons(messageId, messageText, buttons)
     }

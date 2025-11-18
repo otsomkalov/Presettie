@@ -737,7 +737,9 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
     let playlistId = Mocks.includedPlaylistId.Value
-    let click = createClick [ "p"; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "o" ]
+
+    let click =
+      createClick [ "p"; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "o" ]
 
     presetService.Setup(_.SetOnlyLiked(Mocks.presetId, ReadablePlaylistId(Mocks.includedPlaylistId))).ReturnsAsync(())
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
@@ -758,7 +760,12 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click =
-      createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.includedPlaylists; Mocks.includedPlaylistId.Value; "invalid" ]
+      createClick
+        [ "p"
+          Mocks.presetId.Value
+          CallbackQueryConstants.includedPlaylists
+          Mocks.includedPlaylistId.Value
+          "invalid" ]
 
     task {
       let! result = handler click
@@ -788,7 +795,9 @@ type setAllTracksIncludedPlaylistClickHandler() =
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
     let playlistId = Mocks.includedPlaylistId.Value
-    let click = createClick [ "p"; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "a" ]
+
+    let click =
+      createClick [ "p"; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "a" ]
 
     presetService.Setup(_.SetAll(Mocks.presetId, ReadablePlaylistId(Mocks.includedPlaylistId))).ReturnsAsync(())
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
@@ -809,7 +818,12 @@ type setAllTracksIncludedPlaylistClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click =
-      createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.includedPlaylists; Mocks.includedPlaylistId.Value; "invalid" ]
+      createClick
+        [ "p"
+          Mocks.presetId.Value
+          CallbackQueryConstants.includedPlaylists
+          Mocks.includedPlaylistId.Value
+          "invalid" ]
 
     task {
       let! result = handler click
