@@ -69,3 +69,15 @@ module CallbackQueryConstants =
 
   [<Literal>]
   let disableUniqueArtists = "dua"
+
+  [<Literal>]
+  let includedContent = "ic"
+
+  [<Literal>]
+  let excludedContent = "ec"
+
+  [<Literal>]
+  let includedPlaylists = "ip"
+
+  [<Literal>]
+  let excludedPlaylists = "ep"
