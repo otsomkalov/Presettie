@@ -91,12 +91,12 @@
   },
   {
     "Key": "messages.playlist-not-found-in-spotify",
-    "Value": "Playlist with id {0} not found is Spotify!",
+    "Value": "Playlist with id {0} not found in Spotify!",
     "Lang": "en"
   },
   {
     "Key": "messages.artist-not-found-in-spotify",
-    "Value": "Artist with id {0} not found is Spotify!",
+    "Value": "Artist with id {0} not found in Spotify!",
     "Lang": "en"
   },
   {
