@@ -93,6 +93,7 @@ let preset =
     OwnerId = userId
     IncludedPlaylists = [ includedPlaylist ]
     ExcludedPlaylists = [ excludedPlaylist ]
+    IncludedArtists = []
     ExcludedArtists = [ artist2 ]
     TargetedPlaylists = [ targetedPlaylist ]
     Settings = presetSettingsMock }

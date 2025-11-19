@@ -36,7 +36,7 @@ type PresetSettings() =
       enableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
 
     let click =
-      createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.enableUniqueArtists ]
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; CallbackQueryConstants.enableUniqueArtists ]
 
     task {
       let! result = sut click
@@ -71,7 +71,7 @@ type PresetSettings() =
       disableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
 
     let click =
-      createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.disableUniqueArtists ]
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; CallbackQueryConstants.disableUniqueArtists ]
 
     task {
       let! result = sut click

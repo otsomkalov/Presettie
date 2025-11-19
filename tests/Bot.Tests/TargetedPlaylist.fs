@@ -2,6 +2,7 @@
 
 #nowarn "20"
 
+open Bot.Constants
 open Domain.Core
 open Domain.Repos
 open Moq
@@ -36,7 +37,7 @@ type TargetedPlaylist() =
   member _.``list click should list targeted playlists if data match``() = task {
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
-    let click = createClick [ "p"; Mocks.preset.Id.Value; "tp"; "0" ]
+    let click = createClick [ CallbackQueryConstants.preset; Mocks.preset.Id.Value; "tp"; "0" ]
 
     let! result = listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object click
 
@@ -67,7 +68,7 @@ type TargetedPlaylist() =
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
 
     let click =
-      createClick [ "p"; Mocks.preset.Id.Value; "tp"; Mocks.targetedPlaylistId.Value; "i" ]
+      createClick [ CallbackQueryConstants.preset; Mocks.preset.Id.Value; "tp"; Mocks.targetedPlaylistId.Value; "i" ]
 
     let! result =
       showTargetedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
@@ -107,7 +108,7 @@ type TargetedPlaylist() =
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
     let click =
-      createClick [ "p"; Mocks.preset.Id.Value; "tp"; Mocks.targetedPlaylistId.Value; "rm" ]
+      createClick [ CallbackQueryConstants.preset; Mocks.preset.Id.Value; "tp"; Mocks.targetedPlaylistId.Value; "rm" ]
 
     let! result = removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object click
 

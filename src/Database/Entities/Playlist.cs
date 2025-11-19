@@ -22,6 +22,14 @@ public class ExcludedPlaylist : Playlist
 }
 
 [BsonIgnoreExtraElements]
+public class IncludedArtist
+{
+    public string Id { get; init; } = "";
+
+    public string Name { get; set; } = "";
+}
+
+[BsonIgnoreExtraElements]
 public class ExcludedArtist
 {
     public string Id { get; init; } = "";
