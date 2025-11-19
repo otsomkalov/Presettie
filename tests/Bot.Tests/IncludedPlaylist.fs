@@ -35,7 +35,6 @@ type IncludedPlaylist() =
   [<Fact>]
   member this.``list click should list included playlists if data match``() = task {
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
-    |> ignore
 
     let click =
       createClick [ "p"; Mocks.preset.Id.Value; CallbackQueryConstants.includedPlaylists; "0" ]
@@ -63,13 +62,10 @@ type IncludedPlaylist() =
   [<Fact>]
   member this.``show click should send included playlist details``() = task {
     musicPlatform.Setup(_.LoadPlaylist(Mocks.includedPlaylistId)).ReturnsAsync(Ok Mocks.readablePlatformPlaylist)
-    |> ignore
 
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
-    |> ignore
 
     let click =
       createClick
@@ -92,7 +88,6 @@ type IncludedPlaylist() =
   [<Fact>]
   member this.``show click should not send included playlist details if data does not match``() = task {
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
-    |> ignore
 
     let click = createClick []
 
@@ -114,10 +109,8 @@ type IncludedPlaylist() =
         { Mocks.preset with
             IncludedPlaylists = [] }
       )
-    |> ignore
 
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
-    |> ignore
 
     let click =
       createClick

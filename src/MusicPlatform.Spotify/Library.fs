@@ -94,7 +94,7 @@ module Playlist =
 module Artist =
   let parseId: Artist.ParseId =
     fun (Artist.RawArtistId rawPlaylistId) ->
-      let getPlaylistIdFromUri (uri: Uri) = uri.Segments |> Array.last
+      let getArtistIdFromUri (uri: Uri) = uri.Segments |> Array.last
 
       let (|SpotifyUri|_|) (text: string) =
         match text.Split(":") with
@@ -103,7 +103,7 @@ module Artist =
 
       match rawPlaylistId with
       | SpotifyUri id -> id |> ArtistId |> Ok
-      | Uri uri -> uri |> getPlaylistIdFromUri |> ArtistId |> Ok
+      | Uri uri -> uri |> getArtistIdFromUri |> ArtistId |> Ok
       | SpotifyId id -> id |> ArtistId |> Ok
       | id -> Artist.IdParsingError(id) |> Error
 
