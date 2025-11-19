@@ -310,6 +310,12 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.successful-login",
+    "Value": "You've successfully logged in into music platform!",
+    "Lang": "en"
+  },
+
+  {
     "Key": "buttons.run-preset",
     "Value": "🚀 Run preset",
     "Lang": "en"
