@@ -82,8 +82,9 @@ let private addMessageHandlers (services: IServiceCollection) =
 
     .BuildSingleton<MessageHandlerFactory, _, IAuthService>(includePlaylistButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, IAuthService>(excludePlaylistButtonMessageHandler)
-    .BuildSingleton<MessageHandlerFactory, _, IAuthService>(excludeArtistButtonMessageHandler)
     .BuildSingleton<MessageHandlerFactory, _, IAuthService>(targetPlaylistButtonMessageHandler)
+
+    .BuildSingleton<MessageHandlerFactory, _, IAuthService>(excludeArtistButtonMessageHandler)
 
     .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService, IAuthService>(includePlaylistMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService, IAuthService>(excludePlaylistMessageHandler)
