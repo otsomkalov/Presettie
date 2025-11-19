@@ -84,3 +84,6 @@ module CallbackQueryConstants =
 
   [<Literal>]
   let excludedPlaylists = "ep"
+
+  [<Literal>]
+  let excludedArtists = "ea"

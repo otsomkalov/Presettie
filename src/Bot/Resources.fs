@@ -271,13 +271,7 @@ module Buttons =
   let Overwrite = "buttons.overwrite"
 
   [<Literal>]
-  let IncludedContent = "buttons.included-content"
-
-  [<Literal>]
   let IncludedPlaylists = "buttons.included-playlists"
-
-  [<Literal>]
-  let ExcludedContent = "buttons.excluded-content"
 
   [<Literal>]
   let ExcludedPlaylists = "buttons.excluded-playlists"

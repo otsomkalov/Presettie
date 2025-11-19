@@ -25,26 +25,23 @@ type Run() =
       { Mocks.includedPlaylist with
           LikedOnly = true }
 
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
+
     let preset =
       { Mocks.preset with
           IncludedPlaylists = [ includedPlaylist ] }
 
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([ Mocks.includedTrack; Mocks.likedTrack ])
-    |> ignore
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([ Mocks.excludedTrack ])
-    |> ignore
 
-    platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ]) |> ignore
+    platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ])
 
     platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.likedTrack ])).ReturnsAsync(())
-    |> ignore
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
-    |> ignore
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -63,21 +60,18 @@ type Run() =
     platform
       .Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId))
       .ReturnsAsync([ Mocks.includedTrack; Mocks.likedTrack; Mocks.recommendedTrack ])
-    |> ignore
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
-    |> ignore
 
     platform
       .Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.includedTrack; Mocks.likedTrack; Mocks.recommendedTrack ]))
       .ReturnsAsync(())
-    |> ignore
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
-    |> ignore
+
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -94,13 +88,10 @@ type Run() =
   [<Fact>]
   member _.``returns error if no tracks in included playlists and liked tracks are not included``() =
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([])
-    |> ignore
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
-    |> ignore
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -117,16 +108,14 @@ type Run() =
   [<Fact>]
   member _.``returns error if all potential tracks has been excluded``() =
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([ Mocks.includedTrack ])
-    |> ignore
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([ Mocks.includedTrack ])
-    |> ignore
+
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
-    |> ignore
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -143,28 +132,22 @@ type Run() =
   [<Fact>]
   member _.``excludes recommended tracks if in excluded playlist``() =
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([ Mocks.includedTrack ])
-    |> ignore
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([ Mocks.recommendedTrack ])
-    |> ignore
 
     platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([ Mocks.recommendedTrack ])
-    |> ignore
 
-    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([]) |> ignore
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.includedTrack ])).ReturnsAsync(())
-    |> ignore
 
     let preset =
       { Mocks.preset with
           Settings.RecommendationsEngine = Some RecommendationsEngine.ArtistAlbums }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
-    |> ignore
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -180,25 +163,22 @@ type Run() =
   [<Fact>]
   member _.``excludes liked tracks if in excluded playlist``() =
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([ Mocks.includedTrack ])
-    |> ignore
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([ Mocks.likedTrack ])
-    |> ignore
 
-    platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ]) |> ignore
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
+
+    platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ])
 
     platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.includedTrack ])).ReturnsAsync(())
-    |> ignore
 
     let preset =
       { Mocks.preset with
           Settings.LikedTracksHandling = LikedTracksHandling.Include }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
-    |> ignore
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -215,25 +195,22 @@ type Run() =
   [<Fact>]
   member _.``excludes liked tracks if configured``() =
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([ Mocks.includedTrack; Mocks.likedTrack ])
-    |> ignore
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
-    |> ignore
 
-    platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ]) |> ignore
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
+
+    platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ])
 
     platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.includedTrack ])).ReturnsAsync(())
-    |> ignore
 
     let preset =
       { Mocks.preset with
           Settings.LikedTracksHandling = LikedTracksHandling.Exclude }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
-    |> ignore
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -251,19 +228,16 @@ type Run() =
   [<Fact>]
   member _.``excludes included tracks if in excluded playlist``() =
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([ Mocks.includedTrack; Mocks.recommendedTrack ])
-    |> ignore
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([ Mocks.recommendedTrack ])
-    |> ignore
+
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.includedTrack ])).ReturnsAsync(())
-    |> ignore
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
-    |> ignore
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -284,21 +258,18 @@ type Run() =
           Settings.LikedTracksHandling = LikedTracksHandling.Include }
 
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([])
-    |> ignore
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
-    |> ignore
 
-    platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ]) |> ignore
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
+
+    platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ])
 
     platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.likedTrack ])).ReturnsAsync(())
-    |> ignore
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
-    |> ignore
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -319,24 +290,18 @@ type Run() =
           Settings.RecommendationsEngine = Some RecommendationsEngine.ArtistAlbums }
 
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([ Mocks.includedTrack ])
-    |> ignore
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
-    |> ignore
 
     platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([ Mocks.recommendedTrack ])
-    |> ignore
 
-    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([]) |> ignore
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.recommendedTrack; Mocks.includedTrack ])).ReturnsAsync(())
-    |> ignore
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
-    |> ignore
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -361,26 +326,22 @@ type Run() =
                 LikedTracksHandling = LikedTracksHandling.Include } }
 
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([])
-    |> ignore
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
-    |> ignore
 
-    platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ]) |> ignore
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
+
+    platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ])
 
     platform.Setup(_.ListArtistTracks(Mocks.artist3.Id)).ReturnsAsync([ Mocks.recommendedTrack ])
-    |> ignore
 
-    platform.Setup(_.ListArtistTracks(Mocks.artist4.Id)).ReturnsAsync([]) |> ignore
+    platform.Setup(_.ListArtistTracks(Mocks.artist4.Id)).ReturnsAsync([])
 
     platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.recommendedTrack; Mocks.likedTrack ])).ReturnsAsync(())
-    |> ignore
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
-    |> ignore
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -389,6 +350,30 @@ type Run() =
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
       result |> should equal (Result<_, Preset.RunError>.Ok(preset))
+
+      platform.VerifyAll()
+      presetRepo.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``excludes tracks of artist``() =
+    platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([ Mocks.includedTrack ])
+
+    platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
+
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([ Mocks.includedTrack ])
+
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+
+    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
+
+    let sut: IPresetService =
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+
+    task {
+      let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
+
+      result |> should equal (Result<Preset, _>.Error(Preset.NoPotentialTracks))
 
       platform.VerifyAll()
       presetRepo.VerifyAll()

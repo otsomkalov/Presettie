@@ -149,16 +149,15 @@ module IncludedPlaylist =
 
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
-  let private listPlaylistTracks (env: #IListPlaylistTracks & #IListLikedTracks) =
-    fun (playlist: ExcludedPlaylist) -> playlist.Id.Value |> env.ListPlaylistTracks |> Task.map Set.ofSeq
+  let private listPlaylistTracks (env: #IListPlaylistTracks) =
+    fun (playlist: ExcludedPlaylist) -> playlist.Id.Value |> env.ListPlaylistTracks
 
-  let internal listTracks env =
+  let internal listTracks platform =
     fun (playlists: ExcludedPlaylist list) ->
       playlists
-      |> List.map (listPlaylistTracks env)
+      |> List.map (listPlaylistTracks platform)
       |> Task.WhenAll
-      |> Task.map Seq.concat
-      |> Task.map List.ofSeq
+      |> Task.map List.concat
 
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId excludedPlaylistId -> task {
@@ -178,6 +177,13 @@ module ExcludedPlaylist =
 
 [<RequireQualifiedAccess>]
 module ExcludedArtist =
+  let internal listTracks (platform: #IListArtistTracks) =
+    fun (artists: ExcludedArtist list) ->
+      artists
+      |> List.map (fun artist -> platform.ListArtistTracks artist.Id)
+      |> Task.WhenAll
+      |> Task.map List.concat
+
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId excludedArtistId -> task {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
@@ -238,6 +244,20 @@ module Preset =
       return newPreset
     }
 
+  let private listExcludedTracks (platform: #IListLikedTracks) =
+    fun preset -> task {
+      let! excludedByPlaylists = preset.ExcludedPlaylists |> ExcludedPlaylist.listTracks platform
+
+      let! excludedByArtists = preset.ExcludedArtists |> ExcludedArtist.listTracks platform
+
+      let! excludedLiked =
+        match preset.Settings.LikedTracksHandling with
+        | LikedTracksHandling.Exclude -> platform.ListLikedTracks()
+        | _ -> Task.FromResult []
+
+      return List.concat [ excludedByPlaylists; excludedByArtists; excludedLiked ]
+    }
+
   let run (presetRepo: #ILoadPreset) shuffler platform (recommenderFactory: IRecommenderFactory) =
 
     let saveTracks (platform: #IAddTracks & #IReplaceTracks) =
@@ -254,12 +274,6 @@ module Preset =
       fun (preset: Preset) tracks ->
         match preset.Settings.LikedTracksHandling with
         | LikedTracksHandling.Include -> platform.ListLikedTracks() |> Task.map (List.append tracks)
-        | _ -> Task.FromResult tracks
-
-    let excludeLiked (platform: #IListLikedTracks) =
-      fun (preset: Preset) tracks ->
-        match preset.Settings.LikedTracksHandling with
-        | LikedTracksHandling.Exclude -> platform.ListLikedTracks() |> Task.map (List.append tracks)
         | _ -> Task.FromResult tracks
 
     let getRecommendations =
@@ -284,8 +298,7 @@ module Preset =
       &=|&> getRecommendations preset
       &=|> shuffler
       &=|&> (fun includedTracks ->
-        preset.ExcludedPlaylists |> ExcludedPlaylist.listTracks platform
-        &|&> (excludeLiked platform preset)
+        listExcludedTracks platform preset
         &|> (fun excludedTracks -> List.except excludedTracks includedTracks))
       &|> (Result.bind (Result.errorIf List.isEmpty Preset.RunError.NoPotentialTracks))
       &=|> (fun (tracks: Track list) ->

@@ -984,7 +984,8 @@ type listExcludedArtistsClickHandler() =
     presetRepo.Setup(_.LoadPreset(It.IsAny<PresetId>())).ReturnsAsync(Some Mocks.preset)
     resourceProviderMock.Setup(fun x -> x[Messages.ExcludedArtists]).Returns(Messages.ExcludedArtists)
 
-    let click = createClick [ "p"; Mocks.presetId.Value; "ea"; string 0 ]
+    let click =
+      createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.excludedArtists; string 0 ]
 
     task {
       // Act
@@ -1014,18 +1015,12 @@ type listExcludedArtistsClickHandler() =
 
 type showExcludedArtistClickHandler() =
   let presetRepo = Mock<ILoadPreset>()
-  let musicPlatform = Mock<IMusicPlatform>()
-  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
-
-  do
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some musicPlatform.Object)
-    |> ignore
 
   let resourceProviderMock = Mock<IResourceProvider>()
   let botServiceMock = Mock<IEditMessageButtons>()
 
   let handler =
-    Click.showExcludedArtistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProviderMock.Object botServiceMock.Object
+    Click.showExcludedArtistClickHandler presetRepo.Object resourceProviderMock.Object botServiceMock.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -1033,7 +1028,12 @@ type showExcludedArtistClickHandler() =
     resourceProviderMock.Setup(fun x -> x[Messages.ExcludedArtists]).Returns(Messages.ExcludedArtists)
 
     let click =
-      createClick [ "p"; Mocks.presetId.Value; "ea"; Mocks.artist2.Id.Value; "i" ]
+      createClick
+        [ "p"
+          Mocks.presetId.Value
+          CallbackQueryConstants.excludedArtists
+          Mocks.artist2.Id.Value
+          "i" ]
 
     task {
       // Act
@@ -1043,7 +1043,6 @@ type showExcludedArtistClickHandler() =
       result |> should equal (Some())
 
       presetRepo.VerifyAll()
-      musicPlatformFactory.VerifyAll()
       botServiceMock.VerifyAll()
     }
 
@@ -1059,7 +1058,6 @@ type showExcludedArtistClickHandler() =
       result |> should equal None
 
       presetRepo.VerifyNoOtherCalls()
-      musicPlatformFactory.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
     }
 
@@ -1077,7 +1075,12 @@ type removeExcludedArtistClickHandler() =
     resourceProviderMock.Setup(fun x -> x[Notifications.ExcludedArtistRemoved]).Returns(Notifications.ExcludedArtistRemoved)
 
     let click =
-      createClick [ "p"; Mocks.presetId.Value; "ea"; Mocks.artist2.Id.Value; "rm" ]
+      createClick
+        [ "p"
+          Mocks.presetId.Value
+          CallbackQueryConstants.excludedArtists
+          Mocks.artist2.Id.Value
+          "rm" ]
 
     task {
       // Act
