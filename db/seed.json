@@ -306,7 +306,7 @@
   },
   {
     "Key": "messages.excluded-content",
-    "Value": "Preset *{0}* has the next excluded content:\n*{1}* excluded playlists",
+    "Value": "Preset *{0}* has the next excluded content:\n*{1}* excluded playlists\n*{2}* excluded artists",
     "Lang": "en"
   },
   {

@@ -203,12 +203,13 @@ module ExcludedContent =
         seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId.Value) }
       }
 
-      do!
-        botMessageCtx.EditMessageButtons(
-          messageId,
-          resp[Messages.ExcludedContent, [| preset.Name; preset.ExcludedPlaylists.Length |]],
-          buttons
-        )
+      let text =
+        resp[Messages.ExcludedContent,
+             [| preset.Name
+                preset.ExcludedPlaylists.Length
+                preset.ExcludedArtists.Length |]]
+
+      do! botMessageCtx.EditMessageButtons(messageId, text, buttons)
     }
 
 [<RequireQualifiedAccess>]
