@@ -6,7 +6,13 @@ open SpotifyAPI.Web
 
 [<RequireQualifiedAccess>]
 module Artist =
-  let fromSimple (artist: SimpleArtist) : Artist = { Id = ArtistId artist.Id }
+  let fromFull (artist: FullArtist) : Artist =
+    { Id = ArtistId artist.Id
+      Name = artist.Name }
+
+  let fromSimple (artist: SimpleArtist) : Artist =
+    { Id = ArtistId artist.Id
+      Name = artist.Name }
 
 [<RequireQualifiedAccess>]
 module Track =

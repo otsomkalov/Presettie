@@ -243,6 +243,33 @@ let removeExcludedPlaylistClickHandler (presetService: #IRemoveExcludedPlaylist)
       }
     | _ -> Task.FromResult(None)
 
+let showExcludedArtistClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) (botService: #IEditMessageButtons) : ClickHandler =
+  fun click ->
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.excludedArtists; artistId; "i" ] -> task {
+        let presetId = PresetId presetId
+        let artistId = ArtistId artistId
+
+        do! ExcludedArtist.show resp botService presetRepo click.MessageId presetId artistId
+
+        return Some()
+      }
+    | _ -> Task.FromResult(None)
+
+let removeExcludedArtistClickHandler (presetService: #IRemoveExcludedArtist) (resp: IResourceProvider) botService : ClickHandler =
+  fun click ->
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.excludedArtists; artistId; "rm" ] -> task {
+        let presetId = PresetId presetId
+        let playlistId = ArtistId artistId
+        let! preset = presetService.RemoveExcludedArtist(presetId, playlistId)
+
+        do! ExcludedArtist.list resp botService click.MessageId preset (Page 0)
+
+        return Some()
+      }
+    | _ -> Task.FromResult(None)
+
 let showTargetedPlaylistClickHandler
   presetRepo
   (musicPlatformFactory: IMusicPlatformFactory)
@@ -397,6 +424,18 @@ let listExcludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
       }
     | _ -> Task.FromResult(None)
 
+let listExcludedArtistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) botService : ClickHandler =
+  fun click ->
+    match click.Data with
+    | [ "p"; presetId; CallbackQueryConstants.excludedArtists; page ] -> task {
+        let presetId = PresetId presetId
+        let page = Page(int page)
+        let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
+        do! ExcludedArtist.list resp botService click.MessageId preset page
+        return Some()
+      }
+    | _ -> Task.FromResult(None)
+
 let listTargetedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
@@ -414,8 +453,7 @@ let showIncludedContentClickHandler (presetRepo: #ILoadPreset) (resp: IResourceP
     match click.Data with
     | [ "p"; presetId; CallbackQueryConstants.includedContent ] -> task {
         let presetId = PresetId presetId
-        let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
-        do! IncludedContent.show resp botService click.MessageId preset
+        do! IncludedContent.show resp botService presetRepo click.MessageId presetId
 
         return Some()
       }
@@ -426,8 +464,7 @@ let showExcludedContentClickHandler (presetRepo: #ILoadPreset) (resp: IResourceP
     match click.Data with
     | [ "p"; presetId; CallbackQueryConstants.excludedContent ] -> task {
         let presetId = PresetId presetId
-        let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
-        do! ExcludedContent.show resp botService click.MessageId preset
+        do! ExcludedContent.show resp botService presetRepo click.MessageId presetId
 
         return Some()
       }

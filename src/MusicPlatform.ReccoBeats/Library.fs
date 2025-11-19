@@ -15,10 +15,12 @@ type Settings =
   static member SectionName = "ReccoBeats"
 
 type internal ArtistResponse =
-  { Href: string }
+  { Name: string
+    Href: string }
 
   member this.ToDomain() =
-    { Id = this.Href |> Helpers.extractId |> ArtistId }
+    { Id = this.Href |> Helpers.extractId |> ArtistId
+      Name = this.Name }
 
 type internal TrackResponse =
   { Href: string

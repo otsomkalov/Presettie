@@ -36,7 +36,6 @@ type ExcludedPlaylist() =
   [<Fact>]
   member _.``list click should list excluded playlists if data match``() = task {
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
-    |> ignore
 
     let click =
       createClick [ "p"; Mocks.preset.Id.Value; CallbackQueryConstants.excludedPlaylists; "0" ]
@@ -64,13 +63,10 @@ type ExcludedPlaylist() =
   [<Fact>]
   member _.``show click should send excluded playlist details``() = task {
     musicPlatform.Setup(_.LoadPlaylist(Mocks.excludedPlaylistId)).ReturnsAsync(Ok Mocks.readablePlatformPlaylist)
-    |> ignore
 
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
-    |> ignore
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
-    |> ignore
 
     let click =
       createClick
@@ -93,7 +89,6 @@ type ExcludedPlaylist() =
   [<Fact>]
   member _.``show click should not send playlist details if data does not match``() = task {
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
-    |> ignore
 
     let click = createClick []
 
@@ -115,10 +110,8 @@ type ExcludedPlaylist() =
         { Mocks.preset with
             ExcludedPlaylists = [] }
       )
-    |> ignore
 
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
-    |> ignore
 
     let click =
       createClick

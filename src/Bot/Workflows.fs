@@ -105,28 +105,28 @@ let private sendPresetsMessage sendOrEditButtons =
     do! sendOrEditButtons message keyboardMarkup &|> ignore
   }
 
-let createPlaylistsPage (resp: IResourceProvider) =
-  fun page (playlists: 'a list) playlistToButton (presetId: PresetId) ->
+let createEntitiesPage (resp: IResourceProvider) =
+  fun page (entities: 'a list) entityToButton (presetId: PresetId) entityType ->
     let (Page page) = page
-    let remainingPlaylists = playlists[page * buttonsPerPage ..]
+    let remainingPlaylists = entities[page * buttonsPerPage ..]
     let playlistsForPage = remainingPlaylists[.. buttonsPerPage - 1]
 
     let playlistsButtons =
       [ 0..keyboardColumns .. playlistsForPage.Length ]
       |> List.map (fun idx -> playlistsForPage |> List.skip idx |> List.takeSafe keyboardColumns)
-      |> List.map (Seq.map playlistToButton)
+      |> List.map (Seq.map entityToButton)
 
     let backButton = MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId.Value)
 
     let prevButton =
       if page > 0 then
-        Some(MessageButton(resp[Buttons.PrevPage], sprintf "p|%s|ip|%i" presetId.Value (page - 1)))
+        Some(MessageButton(resp[Buttons.PrevPage], sprintf "p|%s|%s|%i" presetId.Value entityType (page - 1)))
       else
         None
 
     let nextButton =
       if remainingPlaylists.Length > buttonsPerPage then
-        Some(MessageButton(resp[Buttons.NextPage], sprintf "p|%s|ip|%i" presetId.Value (page + 1)))
+        Some(MessageButton(resp[Buttons.NextPage], sprintf "p|%s|%s|%i" presetId.Value entityType (page + 1)))
       else
         None
 
@@ -152,6 +152,20 @@ let getPlaylistButtons (resp: IResourceProvider) =
       yield seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|%s|%i" presetId.Value playlistType 0) }
     }
 
+let getArtistButtons (resp: IResourceProvider) =
+  fun (presetId: PresetId) (artistId: ArtistId) artistType specificButtons ->
+    let buttonDataTemplate =
+      sprintf "p|%s|%s|%s|%s" presetId.Value artistType artistId.Value
+
+    seq {
+      yield specificButtons
+
+      yield seq { MessageButton(resp[Buttons.Remove], buttonDataTemplate "rm") }
+
+      yield seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|%s|%i" presetId.Value artistType 0) }
+    }
+
+
 let sendLoginMessage (authService: #IInitAuth) (resp: IResourceProvider) (chatCtx: #ISendLink) =
   fun (userId: UserId) ->
     authService.InitAuth(userId.ToAccountId())
@@ -159,8 +173,9 @@ let sendLoginMessage (authService: #IInitAuth) (resp: IResourceProvider) (chatCt
 
 [<RequireQualifiedAccess>]
 module IncludedContent =
-  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) =
-    fun messageId (preset: Preset) -> task {
+  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (presetRepo: #ILoadPreset) =
+    fun messageId presetId -> task {
+      let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
 
       let buttons = seq {
         seq { MessageButton(resp[Buttons.IncludedPlaylists], sprintf "p|%s|%s|0" preset.Id.Value CallbackQueryConstants.includedPlaylists) }
@@ -178,21 +193,23 @@ module IncludedContent =
 
 [<RequireQualifiedAccess>]
 module ExcludedContent =
-  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) =
-    fun messageId (preset: Preset) -> task {
+  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (presetRepo: #ILoadPreset) =
+    fun messageId presetId -> task {
+      let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
 
       let buttons = seq {
-        seq { MessageButton(resp[Buttons.ExcludedPlaylists], sprintf "p|%s|%s|0" preset.Id.Value CallbackQueryConstants.excludedPlaylists) }
-
-        seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" preset.Id.Value) }
+        seq { MessageButton(resp[Buttons.Playlists], sprintf "p|%s|%s|0" presetId.Value CallbackQueryConstants.excludedPlaylists) }
+        seq { MessageButton(resp[Buttons.Artists], sprintf "p|%s|%s|0" presetId.Value CallbackQueryConstants.excludedArtists) }
+        seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId.Value) }
       }
 
-      do!
-        botMessageCtx.EditMessageButtons(
-          messageId,
-          resp[Messages.ExcludedContent, [| preset.Name; preset.ExcludedPlaylists.Length |]],
-          buttons
-        )
+      let text =
+        resp[Messages.ExcludedContent,
+             [| preset.Name
+                preset.ExcludedPlaylists.Length
+                preset.ExcludedArtists.Length |]]
+
+      do! botMessageCtx.EditMessageButtons(messageId, text, buttons)
     }
 
 [<RequireQualifiedAccess>]
@@ -205,7 +222,7 @@ module IncludedPlaylist =
       let createButtonFromPlaylist = createButtonFromPlaylist preset.Id
 
       let replyMarkup =
-        createPlaylistsPage resp page preset.IncludedPlaylists createButtonFromPlaylist preset.Id
+        createEntitiesPage resp page preset.IncludedPlaylists createButtonFromPlaylist preset.Id CallbackQueryConstants.includedPlaylists
 
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.IncludedPlaylists, [| preset.Name |]], replyMarkup)
     }
@@ -260,7 +277,7 @@ module ExcludedPlaylist =
       let createButtonFromPlaylist = createButtonFromPlaylist preset.Id
 
       let replyMarkup =
-        createPlaylistsPage resp page preset.ExcludedPlaylists createButtonFromPlaylist preset.Id
+        createEntitiesPage resp page preset.ExcludedPlaylists createButtonFromPlaylist preset.Id "ep"
 
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.ExcludedPlaylists, [| preset.Name |]], replyMarkup)
     }
@@ -296,6 +313,35 @@ module ExcludedPlaylist =
     }
 
 [<RequireQualifiedAccess>]
+module ExcludedArtist =
+  let list resp (botMessageCtx: #IEditMessageButtons) =
+    let createButtonFromArtist (presetId: PresetId) =
+      fun (artist: ExcludedArtist) -> MessageButton(artist.Name, sprintf "p|%s|ea|%s|i" presetId.Value artist.Id.Value)
+
+    fun messageId (preset: Preset) page -> task {
+      let createButtonFromArtist = createButtonFromArtist preset.Id
+
+      let replyMarkup =
+        createEntitiesPage resp page preset.ExcludedArtists createButtonFromArtist preset.Id CallbackQueryConstants.excludedArtists
+
+      do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.ExcludedArtists, [| preset.Name |]], replyMarkup)
+    }
+
+  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (presetRepo: #ILoadPreset) =
+    fun messageId presetId artistId -> task {
+      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+
+      let excludedArtist = preset.ExcludedArtists |> List.find (fun p -> p.Id = artistId)
+
+      let messageText = resp[Messages.ExcludedArtistDetails, [| excludedArtist.Name |]]
+
+      let buttons =
+        getArtistButtons resp presetId artistId CallbackQueryConstants.excludedArtists Seq.empty
+
+      do! botService.EditMessageButtons(messageId, messageText, buttons)
+    }
+
+[<RequireQualifiedAccess>]
 module TargetedPlaylist =
   let list resp (botMessageCtx: #IEditMessageButtons) =
     let createButtonFromPlaylist (presetId: PresetId) =
@@ -305,7 +351,7 @@ module TargetedPlaylist =
       let createButtonFromPlaylist = createButtonFromPlaylist preset.Id
 
       let replyMarkup =
-        createPlaylistsPage resp page preset.TargetedPlaylists createButtonFromPlaylist preset.Id
+        createEntitiesPage resp page preset.TargetedPlaylists createButtonFromPlaylist preset.Id "tp"
 
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.TargetedPlaylists, [| preset.Name |]], replyMarkup)
     }

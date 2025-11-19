@@ -58,6 +58,7 @@ type RedisMusicPlatform
       }
 
     member this.Recommend(tracks) = musicPlatform.Recommend tracks
+    member this.LoadArtist(id) = musicPlatform.LoadArtist id
 
 type MemoryCachedMusicPlatform(musicPlatform: IMusicPlatform) =
   interface IMusicPlatform with
@@ -77,6 +78,7 @@ type MemoryCachedMusicPlatform(musicPlatform: IMusicPlatform) =
 
     member this.ListArtistTracks(artistId) = musicPlatform.ListArtistTracks artistId
     member this.Recommend(tracks) = musicPlatform.Recommend tracks
+    member this.LoadArtist(id) = musicPlatform.LoadArtist id
 
 type RedisMusicPlatformFactory
   (getMusicPlatform: IMusicPlatformFactory, telemetryClient: TelemetryClient, multiplexer: IConnectionMultiplexer) =

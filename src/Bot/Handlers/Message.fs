@@ -243,6 +243,29 @@ let excludePlaylistButtonMessageHandler
     | _ -> return None
   }
 
+let excludeArtistButtonMessageHandler
+  (musicPlatformFactory: IMusicPlatformFactory)
+  authService
+  (resp: IResourceProvider)
+  (chatCtx: #IAskForReply)
+  : MessageHandler =
+  fun message -> task {
+    match message.Text with
+    | Equals(resp.Item(Buttons.ExcludeArtist)) ->
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(message.Chat.UserId.ToMusicPlatformId())
+
+      match musicPlatform with
+      | Some _ ->
+        do! chatCtx.AskForReply resp[Messages.SendExcludedArtist]
+
+        return Some()
+      | _ ->
+        do! sendLoginMessage authService resp chatCtx message.Chat.UserId &|> ignore
+
+        return Some()
+    | _ -> return None
+  }
+
 let targetPlaylistButtonMessageHandler
   (musicPlatformFactory: IMusicPlatformFactory)
   authService
@@ -349,6 +372,49 @@ let excludePlaylistMessageHandler
       return Some()
     | { Text = CommandWithData Commands.excludePlaylist text } ->
       do! excludePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
+
+      return Some()
+    | _ -> return None
+  }
+
+let excludeArtistMessageHandler
+  (userRepo: #ILoadUser)
+  (presetService: #IExcludeArtist)
+  authService
+  (resp: IResourceProvider)
+  (chatCtx: #ISendMessage)
+  : MessageHandler =
+  let excludeArtist =
+    fun userId rawArtistId -> task {
+      let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+
+      let excludeArtistResult =
+        presetService.ExcludeArtist(userId, currentPresetId, rawArtistId)
+
+      let onSuccess (artist: ExcludedArtist) =
+        chatCtx.SendMessage resp[Messages.ArtistExcluded, [| artist.Name |]]
+
+      let onError =
+        function
+        | Preset.ExcludeArtistError.IdParsing(Artist.IdParsingError id) ->
+          chatCtx.SendMessage resp[Messages.ArtistIdCannotBeParsed, [| id |]]
+        | Preset.ExcludeArtistError.Load(Artist.LoadError.NotFound) ->
+          let (Artist.RawArtistId rawArtistId) = rawArtistId
+          chatCtx.SendMessage resp[Messages.ArtistNotFoundInSpotify, [| rawArtistId |]]
+        | Preset.ExcludeArtistError.Unauthorized -> sendLoginMessage authService resp chatCtx userId
+
+      return! excludeArtistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
+    }
+
+  fun message -> task {
+    match message with
+    | { Text = text
+        ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendExcludedArtist] ->
+      do! excludeArtist message.Chat.UserId (Artist.RawArtistId text)
+
+      return Some()
+    | { Text = CommandWithData Commands.excludeArtist text } ->
+      do! excludeArtist message.Chat.UserId (Artist.RawArtistId text)
 
       return Some()
     | _ -> return None

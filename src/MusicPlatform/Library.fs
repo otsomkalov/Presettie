@@ -27,7 +27,7 @@ type ArtistId =
 
   member this.Value = let (ArtistId id) = this in id
 
-type Artist = { Id: ArtistId }
+type Artist = { Id: ArtistId; Name: string }
 
 type Track = { Id: TrackId; Artists: Set<Artist> }
 
@@ -41,6 +41,19 @@ type PlaylistData =
 type Playlist =
   | Readable of PlaylistData
   | Writable of PlaylistData
+
+[<RequireQualifiedAccess>]
+module Artist =
+  type LoadError = | NotFound
+
+  type RawArtistId =
+    | RawArtistId of string
+
+    member this.Value = let (RawArtistId id) = this in id
+
+  type IdParsingError = IdParsingError of string
+
+  type ParseId = RawArtistId -> Result<ArtistId, IdParsingError>
 
 [<RequireQualifiedAccess>]
 module Playlist =
@@ -84,6 +97,9 @@ type IListArtistTracks =
 type IRecommender =
   abstract Recommend: Track list -> Task<Track list>
 
+type ILoadArtist =
+  abstract LoadArtist: ArtistId -> Task<Result<Artist, Artist.LoadError>>
+
 type IMusicPlatform =
   inherit ILoadPlaylist
   inherit IReplaceTracks
@@ -92,6 +108,7 @@ type IMusicPlatform =
   inherit IListLikedTracks
   inherit IListArtistTracks
   inherit IRecommender
+  inherit ILoadArtist
 
 type IMusicPlatformFactory =
   abstract GetMusicPlatform: UserId -> Task<IMusicPlatform option>

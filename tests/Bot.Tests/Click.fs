@@ -970,3 +970,140 @@ type showExcludedContentClickHandler() =
       presetRepo.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
+
+type listExcludedArtistsClickHandler() =
+  let presetRepo = Mock<ILoadPreset>()
+  let resourceProviderMock = Mock<IResourceProvider>()
+  let botServiceMock = Mock<IBotService>()
+
+  let handler =
+    Click.listExcludedArtistsClickHandler presetRepo.Object resourceProviderMock.Object botServiceMock.Object
+
+  [<Fact>]
+  member _.``should handle valid click data``() =
+    presetRepo.Setup(_.LoadPreset(It.IsAny<PresetId>())).ReturnsAsync(Some Mocks.preset)
+    resourceProviderMock.Setup(fun x -> x[Messages.ExcludedArtists]).Returns(Messages.ExcludedArtists)
+
+    let click =
+      createClick [ "p"; Mocks.presetId.Value; CallbackQueryConstants.excludedArtists; string 0 ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal (Some())
+
+      presetRepo.VerifyAll()
+      botServiceMock.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "invalid" ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal None
+
+      presetRepo.VerifyNoOtherCalls()
+      botServiceMock.VerifyNoOtherCalls()
+    }
+
+type showExcludedArtistClickHandler() =
+  let presetRepo = Mock<ILoadPreset>()
+
+  let resourceProviderMock = Mock<IResourceProvider>()
+  let botServiceMock = Mock<IEditMessageButtons>()
+
+  let handler =
+    Click.showExcludedArtistClickHandler presetRepo.Object resourceProviderMock.Object botServiceMock.Object
+
+  [<Fact>]
+  member _.``should handle valid click data``() =
+    presetRepo.Setup(_.LoadPreset(It.IsAny<PresetId>())).ReturnsAsync(Some Mocks.preset)
+    resourceProviderMock.Setup(fun x -> x[Messages.ExcludedArtists]).Returns(Messages.ExcludedArtists)
+
+    let click =
+      createClick
+        [ "p"
+          Mocks.presetId.Value
+          CallbackQueryConstants.excludedArtists
+          Mocks.artist2.Id.Value
+          "i" ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal (Some())
+
+      presetRepo.VerifyAll()
+      botServiceMock.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "invalid" ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal None
+
+      presetRepo.VerifyNoOtherCalls()
+      botServiceMock.VerifyNoOtherCalls()
+    }
+
+type removeExcludedArtistClickHandler() =
+  let presetService = Mock<IRemoveExcludedArtist>()
+  let resourceProviderMock = Mock<IResourceProvider>()
+  let botServiceMock = Mock<IEditMessageButtons>()
+
+  let handler =
+    Click.removeExcludedArtistClickHandler presetService.Object resourceProviderMock.Object botServiceMock.Object
+
+  [<Fact>]
+  member _.``should handle valid click data``() =
+    presetService.Setup(_.RemoveExcludedArtist(It.IsAny<PresetId>(), It.IsAny<ArtistId>())).ReturnsAsync(Mocks.preset)
+    resourceProviderMock.Setup(fun x -> x[Notifications.ExcludedArtistRemoved]).Returns(Notifications.ExcludedArtistRemoved)
+
+    let click =
+      createClick
+        [ "p"
+          Mocks.presetId.Value
+          CallbackQueryConstants.excludedArtists
+          Mocks.artist2.Id.Value
+          "rm" ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal (Some())
+
+      presetService.VerifyAll()
+      botServiceMock.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "invalid" ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal None
+
+      presetService.VerifyNoOtherCalls()
+      botServiceMock.VerifyNoOtherCalls()
+    }

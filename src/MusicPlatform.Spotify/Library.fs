@@ -2,7 +2,6 @@
 
 open System
 open System.Net
-open System.Text.RegularExpressions
 open FSharp
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Options
@@ -80,17 +79,6 @@ module Playlist =
     fun (Playlist.RawPlaylistId rawPlaylistId) ->
       let getPlaylistIdFromUri (uri: Uri) = uri.Segments |> Array.last
 
-      let (|Uri|_|) text =
-        match Uri.TryCreate(text, UriKind.Absolute) with
-        | true, uri -> Some uri
-        | _ -> None
-
-      let (|PlaylistId|_|) (text: string) =
-        if Regex.IsMatch(text, "^[A-z0-9]{22}$") then
-          Some text
-        else
-          None
-
       let (|SpotifyUri|_|) (text: string) =
         match text.Split(":") with
         | [| "spotify"; "playlist"; id |] -> Some(id)
@@ -99,8 +87,25 @@ module Playlist =
       match rawPlaylistId with
       | SpotifyUri id -> id |> PlaylistId |> Ok
       | Uri uri -> uri |> getPlaylistIdFromUri |> PlaylistId |> Ok
-      | PlaylistId id -> id |> PlaylistId |> Ok
+      | SpotifyId id -> id |> PlaylistId |> Ok
       | id -> Playlist.IdParsingError(id) |> Error
+
+[<RequireQualifiedAccess>]
+module Artist =
+  let parseId: Artist.ParseId =
+    fun (Artist.RawArtistId rawPlaylistId) ->
+      let getArtistIdFromUri (uri: Uri) = uri.Segments |> Array.last
+
+      let (|SpotifyUri|_|) (text: string) =
+        match text.Split(":") with
+        | [| "spotify"; "artist"; id |] -> Some(id)
+        | _ -> None
+
+      match rawPlaylistId with
+      | SpotifyUri id -> id |> ArtistId |> Ok
+      | Uri uri -> uri |> getArtistIdFromUri |> ArtistId |> Ok
+      | SpotifyId id -> id |> ArtistId |> Ok
+      | id -> Artist.IdParsingError(id) |> Error
 
 [<RequireQualifiedAccess>]
 module User =
@@ -192,6 +197,15 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
       client.Browse.GetRecommendations(request)
       |> Task.map _.Tracks
       |> Task.map (Seq.map Track.fromFull >> Seq.toList)
+
+    member this.LoadArtist(ArtistId id) = task {
+      try
+        let! artist = client.Artists.Get(id)
+
+        return artist |> Artist.fromFull |> Ok
+      with ApiException e when e.Response.StatusCode = HttpStatusCode.NotFound ->
+        return Artist.NotFound |> Error
+    }
 
 module Library =
 

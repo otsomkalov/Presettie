@@ -12,3 +12,4 @@ applyTo: '**/*.Tests/*.fs'
 - Prefer `VerifyAll` and `VerifyNoOtherCalls` method calls on `IMock` instead of `Verify` method
 - Do not add `Mock` suffix to mock variable names
 - Prefer `ReturnsAsync` method for setting up mock returns
+- Do not call `|> ignore` in case if mocks is set up inside type `member`

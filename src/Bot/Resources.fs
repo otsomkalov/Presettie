@@ -50,13 +50,22 @@ module Messages =
   let SendExcludedPlaylist = "messages.send-excluded-playlist"
 
   [<Literal>]
+  let SendExcludedArtist = "messages.send-excluded-artist"
+
+  [<Literal>]
   let SendTargetedPlaylist = "messages.send-targeted-playlist"
 
   [<Literal>]
   let PlaylistIdCannotBeParsed = "messages.playlist-id-cannot-be-parsed"
 
   [<Literal>]
+  let ArtistIdCannotBeParsed = "messages.artist-id-cannot-be-parsed"
+
+  [<Literal>]
   let PlaylistNotFoundInSpotify = "messages.playlist-not-found-in-spotify"
+
+  [<Literal>]
+  let ArtistNotFoundInSpotify = "messages.artist-not-found-in-spotify"
 
   [<Literal>]
   let PlaylistIsReadonly = "messages.playlist-is-readonly"
@@ -104,6 +113,9 @@ module Messages =
   let ExcludedPlaylistDetails = "messages.excluded-playlist-details"
 
   [<Literal>]
+  let ExcludedArtistDetails = "messages.excluded-artist-details"
+
+  [<Literal>]
   let TargetedPlaylistDetails = "messages.targeted-playlist-details"
 
   [<Literal>]
@@ -131,6 +143,9 @@ module Messages =
   let PlaylistExcluded = "messages.playlist-excluded"
 
   [<Literal>]
+  let ArtistExcluded = "messages.artist-excluded"
+
+  [<Literal>]
   let PlaylistTargeted = "messages.playlist-targeted"
 
   [<Literal>]
@@ -147,6 +162,9 @@ module Messages =
 
   [<Literal>]
   let ExcludedPlaylists = "messages.excluded-playlists"
+
+  [<Literal>]
+  let ExcludedArtists = "messages.excluded-artists"
 
   [<Literal>]
   let TargetedPlaylists = "messages.targeted-playlists"
@@ -205,6 +223,9 @@ module Buttons =
   let ExcludePlaylist = "buttons.exclude-playlist"
 
   [<Literal>]
+  let ExcludeArtist = "buttons.exclude-artist"
+
+  [<Literal>]
   let TargetPlaylist = "buttons.target-playlist"
 
   [<Literal>]
@@ -253,9 +274,6 @@ module Buttons =
   let IncludedPlaylists = "buttons.included-playlists"
 
   [<Literal>]
-  let ExcludedPlaylists = "buttons.excluded-playlists"
-
-  [<Literal>]
   let TargetedPlaylists = "buttons.targeted-playlists"
 
   [<Literal>]
@@ -272,6 +290,12 @@ module Buttons =
 
   [<Literal>]
   let ExcludedContent = "buttons.excluded-content"
+
+  [<Literal>]
+  let Artists = "buttons.artists"
+
+  [<Literal>]
+  let Playlists = "buttons.playlists"
 
 [<RequireQualifiedAccess>]
 module Notifications =
@@ -292,3 +316,6 @@ module Notifications =
 
   [<Literal>]
   let PresetNotFound = "notifications.preset-not-found"
+
+  [<Literal>]
+  let ExcludedArtistRemoved = "notifications.excluded-artist-removed"

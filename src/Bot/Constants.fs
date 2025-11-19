@@ -34,6 +34,9 @@ module Commands =
   let excludePlaylist = "/exclude"
 
   [<Literal>]
+  let excludeArtist = "/ea"
+
+  [<Literal>]
   let targetPlaylist = "/target"
 
   [<Literal>]
@@ -81,3 +84,6 @@ module CallbackQueryConstants =
 
   [<Literal>]
   let excludedPlaylists = "ep"
+
+  [<Literal>]
+  let excludedArtists = "ea"

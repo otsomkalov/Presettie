@@ -28,6 +28,8 @@ type IncludedPlaylist =
 type ExcludedPlaylist =
   { Id: ReadablePlaylistId; Name: string }
 
+type ExcludedArtist = Artist
+
 type TargetedPlaylistId = WritablePlaylistId
 
 type TargetedPlaylist =
@@ -92,6 +94,7 @@ type Preset =
     Settings: PresetSettings.PresetSettings
     IncludedPlaylists: IncludedPlaylist list
     ExcludedPlaylists: ExcludedPlaylist list
+    ExcludedArtists: ExcludedArtist list
     TargetedPlaylists: TargetedPlaylist list }
 
 type User =
@@ -121,6 +124,11 @@ module Preset =
   type ExcludePlaylistError =
     | IdParsing of Playlist.IdParsingError
     | Load of Playlist.LoadError
+    | Unauthorized
+
+  type ExcludeArtistError =
+    | Load of Artist.LoadError
+    | IdParsing of Artist.IdParsingError
     | Unauthorized
 
   type AccessError = AccessError of unit
@@ -185,6 +193,9 @@ type IIncludePlaylist =
 type IExcludePlaylist =
   abstract ExcludePlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<ExcludedPlaylist, Preset.ExcludePlaylistError>>
 
+type IExcludeArtist =
+  abstract ExcludeArtist: UserId * PresetId * Artist.RawArtistId -> Task<Result<ExcludedArtist, Preset.ExcludeArtistError>>
+
 type ITargetPlaylist =
   abstract TargetPlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, Preset.TargetPlaylistError>>
 
@@ -218,6 +229,9 @@ type IRemoveIncludedPlaylist =
 type IRemoveExcludedPlaylist =
   abstract RemoveExcludedPlaylist: PresetId * ReadablePlaylistId -> Task<Preset>
 
+type IRemoveExcludedArtist =
+  abstract RemoveExcludedArtist: PresetId * ArtistId -> Task<Preset>
+
 type IRemoveTargetedPlaylist =
   abstract RemoveTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<Preset>
 
@@ -247,6 +261,7 @@ type IPresetService =
 
   inherit IIncludePlaylist
   inherit IExcludePlaylist
+  inherit IExcludeArtist
   inherit ITargetPlaylist
 
   inherit ISetRecommendationsEngine
@@ -263,6 +278,7 @@ type IPresetService =
 
   inherit IRemoveIncludedPlaylist
   inherit IRemoveExcludedPlaylist
+  inherit IRemoveExcludedArtist
   inherit IRemoveTargetedPlaylist
 
   inherit ISetOnlyLiked

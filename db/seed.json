@@ -6,7 +6,7 @@
   },
   {
     "Key": "messages.preset-settings-info",
-    "Value":"*{0}*\nSettings:\n*Include liked tracks* - {1}\n*Recommendations* - {2}\n*Unique artists* - {3}\n*Playlist size* - {4}",
+    "Value": "*{0}*\nSettings:\n*Include liked tracks* - {1}\n*Recommendations* - {2}\n*Unique artists* - {3}\n*Playlist size* - {4}",
     "Lang": "en"
   },
   {
@@ -70,6 +70,11 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.send-excluded-artist",
+    "Value": "Send id/url of Spotify artist to exclude it tracks from generation",
+    "Lang": "en"
+  },
+  {
     "Key": "messages.send-targeted-playlist",
     "Value": "Send id/url of Spotify playlist to save generated tracks into",
     "Lang": "en"
@@ -80,8 +85,18 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.artist-id-cannot-be-parsed",
+    "Value": "Cannot parse provided artist id: {0}",
+    "Lang": "en"
+  },
+  {
     "Key": "messages.playlist-not-found-in-spotify",
-    "Value": "Playlist with id {0} not found is Spotify!",
+    "Value": "Playlist with id {0} not found in Spotify!",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.artist-not-found-in-spotify",
+    "Value": "Artist with id {0} not found in Spotify!",
     "Lang": "en"
   },
   {
@@ -160,6 +175,11 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.excluded-artist-details",
+    "Value": "*Name*: {0}",
+    "Lang": "en"
+  },
+  {
     "Key": "messages.targeted-playlist-details",
     "Value": "*Name*: {0}\n*Tracks*: {1}\n*Overwrite*: {2}",
     "Lang": "en"
@@ -205,6 +225,11 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.artist-excluded",
+    "Value": "*{0}* successfully excluded from current preset!",
+    "Lang": "en"
+  },
+  {
     "Key": "messages.playlist-targeted",
     "Value": "*{0}* successfully targeted for current preset!",
     "Lang": "en"
@@ -232,6 +257,11 @@
   {
     "Key": "messages.excluded-playlists",
     "Value": "Preset *{0}* has the next excluded playlists:",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.excluded-artists",
+    "Value": "Preset *{0}* has the next excluded artists:",
     "Lang": "en"
   },
   {
@@ -276,9 +306,15 @@
   },
   {
     "Key": "messages.excluded-content",
-    "Value": "Preset *{0}* has the next excluded content:\n*{1}* excluded playlists",
+    "Value": "Preset *{0}* has the next excluded content:\n*{1}* excluded playlists\n*{2}* excluded artists",
     "Lang": "en"
   },
+  {
+    "Key": "messages.successful-login",
+    "Value": "You've successfully logged in into music platform!",
+    "Lang": "en"
+  },
+
   {
     "Key": "buttons.run-preset",
     "Value": "🚀 Run preset",
@@ -322,6 +358,11 @@
   {
     "Key": "buttons.exclude-playlist",
     "Value": "➖ Exclude playlist",
+    "Lang": "en"
+  },
+  {
+    "Key": "buttons.exclude-artist",
+    "Value": "➖ Exclude artist",
     "Lang": "en"
   },
   {
@@ -440,6 +481,16 @@
     "Lang": "en"
   },
   {
+    "Key": "buttons.artists",
+    "Value": "Artists",
+    "Lang": "en"
+  },
+  {
+    "Key": "buttons.playlists",
+    "Value": "Playlists",
+    "Lang": "en"
+  },
+  {
     "Key": "notifications.unknown-command",
     "Value": "Unknown command!",
     "Lang": "en"
@@ -467,6 +518,11 @@
   {
     "Key": "notifications.preset-not-found",
     "Value": "Preset not found!",
+    "Lang": "en"
+  },
+  {
+    "Key": "notifications.excluded-artist-removed",
+    "Value": "Excluded artist successfully removed!",
     "Lang": "en"
   }
 ]
