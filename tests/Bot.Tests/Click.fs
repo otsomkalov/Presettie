@@ -120,7 +120,10 @@ type artistsAlbumsRecommendationsClickHandler() =
     let presetId = Mocks.presetId.Value
 
     let click =
-      createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.artistsAlbumsRecommendations ]
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.artistsAlbumsRecommendations ]
 
     presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.ArtistAlbums)).ReturnsAsync(())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
@@ -140,7 +143,8 @@ type artistsAlbumsRecommendationsClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -165,7 +169,10 @@ type reccoBeatsRecommendationsClickHandler() =
     let presetId = Mocks.presetId.Value
 
     let click =
-      createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.reccoBeatsRecommendations ]
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.reccoBeatsRecommendations ]
 
     presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.ReccoBeats)).ReturnsAsync(())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
@@ -182,7 +189,8 @@ type reccoBeatsRecommendationsClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -206,7 +214,10 @@ type spotifyRecommendationsClickHandler() =
     let presetId = Mocks.presetId.Value
 
     let click =
-      createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.spotifyRecommendations ]
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.spotifyRecommendations ]
 
     presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.Spotify)).ReturnsAsync(())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
@@ -223,7 +234,8 @@ type spotifyRecommendationsClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -247,7 +259,10 @@ type disableRecommendationsClickHandler() =
     let presetId = Mocks.presetId.Value
 
     let click =
-      createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.disableRecommendations ]
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.disableRecommendations ]
 
     presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, None)).ReturnsAsync(())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
@@ -264,7 +279,8 @@ type disableRecommendationsClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -288,7 +304,10 @@ type enableUniqueArtistsClickHandler() =
     let presetId = Mocks.presetId.Value
 
     let click =
-      createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.enableUniqueArtists ]
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.enableUniqueArtists ]
 
     presetService.Setup(_.EnableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
@@ -305,7 +324,8 @@ type enableUniqueArtistsClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -329,7 +349,10 @@ type disableUniqueArtistsClickHandler() =
     let presetId = Mocks.presetId.Value
 
     let click =
-      createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.disableUniqueArtists ]
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.disableUniqueArtists ]
 
     presetService.Setup(_.DisableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
@@ -346,7 +369,8 @@ type disableUniqueArtistsClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -368,7 +392,12 @@ type includeLikedTracksClickHandler() =
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
-    let click = createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includeLikedTracks ]
+
+    let click =
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.includeLikedTracks ]
 
     presetService.Setup(_.IncludeLikedTracks(Mocks.presetId)).ReturnsAsync(())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
@@ -385,7 +414,8 @@ type includeLikedTracksClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -407,7 +437,12 @@ type excludeLikedTracksClickHandler() =
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
-    let click = createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludeLikedTracks ]
+
+    let click =
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.excludeLikedTracks ]
 
     presetService.Setup(_.ExcludeLikedTracks(Mocks.presetId)).ReturnsAsync(())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
@@ -424,7 +459,8 @@ type excludeLikedTracksClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -449,7 +485,12 @@ type ignoreLikedTracksClickHandler() =
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
-    let click = createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.ignoreLikedTracks ]
+
+    let click =
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.ignoreLikedTracks ]
 
     presetService.Setup(_.IgnoreLikedTracks(Mocks.presetId)).ReturnsAsync(())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
@@ -466,7 +507,8 @@ type ignoreLikedTracksClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -495,7 +537,9 @@ type overwriteTargetedPlaylistClickHandler() =
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
     let playlistId = Mocks.targetedPlaylistId.Value
-    let click = createClick [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "o" ]
+
+    let click =
+      createClick [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "o" ]
 
     presetService.Setup(_.OverwriteTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId))).ReturnsAsync(())
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
@@ -516,7 +560,12 @@ type overwriteTargetedPlaylistClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click =
-      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "tp"; Mocks.targetedPlaylistId.Value; "invalid" ]
+      createClick
+        [ CallbackQueryConstants.preset
+          Mocks.presetId.Value
+          "tp"
+          Mocks.targetedPlaylistId.Value
+          "invalid" ]
 
     task {
       let! result = handler click
@@ -553,7 +602,8 @@ type setCurrentPresetClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -581,7 +631,9 @@ type appendToTargetedPlaylistClickHandler() =
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
     let playlistId = Mocks.targetedPlaylistId.Value
-    let click = createClick [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "a" ]
+
+    let click =
+      createClick [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "a" ]
 
     presetService.Setup(_.AppendToTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId))).ReturnsAsync(())
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
@@ -602,7 +654,12 @@ type appendToTargetedPlaylistClickHandler() =
   [<Fact>]
   member _.``should return None for invalid click data``() =
     let click =
-      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "tp"; Mocks.targetedPlaylistId.Value; "invalid" ]
+      createClick
+        [ CallbackQueryConstants.preset
+          Mocks.presetId.Value
+          "tp"
+          Mocks.targetedPlaylistId.Value
+          "invalid" ]
 
     task {
       let! result = handler click
@@ -673,7 +730,8 @@ type runPresetClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -709,7 +767,8 @@ type presetSettingsClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -739,7 +798,12 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
     let playlistId = Mocks.includedPlaylistId.Value
 
     let click =
-      createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "o" ]
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.includedPlaylists
+          playlistId
+          "o" ]
 
     presetService.Setup(_.SetOnlyLiked(Mocks.presetId, ReadablePlaylistId(Mocks.includedPlaylistId))).ReturnsAsync(())
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
@@ -797,7 +861,12 @@ type setAllTracksIncludedPlaylistClickHandler() =
     let playlistId = Mocks.includedPlaylistId.Value
 
     let click =
-      createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "a" ]
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.includedPlaylists
+          playlistId
+          "a" ]
 
     presetService.Setup(_.SetAll(Mocks.presetId, ReadablePlaylistId(Mocks.includedPlaylistId))).ReturnsAsync(())
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
@@ -885,7 +954,8 @@ type removePresetClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -907,7 +977,12 @@ type showIncludedContentClickHandler() =
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
-    let click = createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedContent ]
+
+    let click =
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.includedContent ]
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
@@ -925,7 +1000,8 @@ type showIncludedContentClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -946,7 +1022,12 @@ type showExcludedContentClickHandler() =
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
-    let click = createClick [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludedContent ]
+
+    let click =
+      createClick
+        [ CallbackQueryConstants.preset
+          presetId
+          CallbackQueryConstants.excludedContent ]
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
@@ -961,7 +1042,8 @@ type showExcludedContentClickHandler() =
 
   [<Fact>]
   member _.``should return None for invalid click data``() =
-    let click = createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; "invalid" ]
 
     task {
       let! result = handler click
@@ -985,7 +1067,11 @@ type listExcludedArtistsClickHandler() =
     resourceProviderMock.Setup(fun x -> x[Messages.ExcludedArtists]).Returns(Messages.ExcludedArtists)
 
     let click =
-      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; CallbackQueryConstants.excludedArtists; string 0 ]
+      createClick
+        [ CallbackQueryConstants.preset
+          Mocks.presetId.Value
+          CallbackQueryConstants.excludedArtists
+          string 0 ]
 
     task {
       // Act

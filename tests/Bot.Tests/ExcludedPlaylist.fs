@@ -38,7 +38,11 @@ type ExcludedPlaylist() =
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
     let click =
-      createClick [ CallbackQueryConstants.preset; Mocks.preset.Id.Value; CallbackQueryConstants.excludedPlaylists; "0" ]
+      createClick
+        [ CallbackQueryConstants.preset
+          Mocks.preset.Id.Value
+          CallbackQueryConstants.excludedPlaylists
+          "0" ]
 
     let! result = listExcludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object click
 
