@@ -274,9 +274,6 @@ module Buttons =
   let IncludedPlaylists = "buttons.included-playlists"
 
   [<Literal>]
-  let ExcludedPlaylists = "buttons.excluded-playlists"
-
-  [<Literal>]
   let TargetedPlaylists = "buttons.targeted-playlists"
 
   [<Literal>]
@@ -293,6 +290,12 @@ module Buttons =
 
   [<Literal>]
   let ExcludedContent = "buttons.excluded-content"
+
+  [<Literal>]
+  let Artists = "buttons.artists"
+
+  [<Literal>]
+  let Playlists = "buttons.playlists"
 
 [<RequireQualifiedAccess>]
 module Notifications =

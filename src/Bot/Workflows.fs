@@ -198,8 +198,8 @@ module ExcludedContent =
       let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
 
       let buttons = seq {
-        seq { MessageButton(resp[Buttons.ExcludedPlaylists], sprintf "p|%s|%s|0" presetId.Value CallbackQueryConstants.excludedPlaylists) }
-        seq { MessageButton(resp[Buttons.ExcludedArtists], sprintf "p|%s|%s|0" presetId.Value CallbackQueryConstants.excludedArtists) }
+        seq { MessageButton(resp[Buttons.Playlists], sprintf "p|%s|%s|0" presetId.Value CallbackQueryConstants.excludedPlaylists) }
+        seq { MessageButton(resp[Buttons.Artists], sprintf "p|%s|%s|0" presetId.Value CallbackQueryConstants.excludedArtists) }
         seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId.Value) }
       }
 

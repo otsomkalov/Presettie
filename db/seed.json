@@ -475,6 +475,16 @@
     "Lang": "en"
   },
   {
+    "Key": "buttons.artists",
+    "Value": "Artists",
+    "Lang": "en"
+  },
+  {
+    "Key": "buttons.playlists",
+    "Value": "Playlists",
+    "Lang": "en"
+  },
+  {
     "Key": "notifications.unknown-command",
     "Value": "Unknown command!",
     "Lang": "en"
