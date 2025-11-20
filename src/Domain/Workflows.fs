@@ -461,7 +461,7 @@ module Preset =
         let updatePreset artist = task {
           let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
-          let updatedIncludedArtists = preset.IncludedArtists |> List.append [ artist ]
+          let updatedIncludedArtists = preset.IncludedArtists @ [ artist ]
 
           let updatedPreset =
             { preset with

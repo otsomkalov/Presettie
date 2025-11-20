@@ -25,6 +25,7 @@ type Run() =
       { Mocks.includedPlaylist with
           LikedOnly = true }
 
+    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([])
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     let preset =
@@ -71,7 +72,36 @@ type Run() =
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
+    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([])
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
+
+    let sut: IPresetService =
+      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
+
+    task {
+      let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
+
+      result |> should equal (Result<Preset, Preset.RunError>.Ok(Mocks.preset))
+
+      platform.VerifyAll()
+      presetRepo.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``includes tracks from included artists``() =
+    platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([])
+
+    platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
+
+    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([ Mocks.includedTrack ])
+
+    platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
+
+    platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.includedTrack ])).ReturnsAsync(())
+
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+
+    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
     let sut: IPresetService =
       PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
@@ -90,6 +120,8 @@ type Run() =
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([])
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+
+    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([])
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
 
@@ -111,6 +143,7 @@ type Run() =
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([ Mocks.includedTrack ])
 
+    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([])
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
@@ -166,6 +199,7 @@ type Run() =
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([ Mocks.likedTrack ])
 
+    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([])
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ])
@@ -198,6 +232,7 @@ type Run() =
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
 
+    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([])
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ])
@@ -231,6 +266,7 @@ type Run() =
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([ Mocks.recommendedTrack ])
 
+    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([])
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.includedTrack ])).ReturnsAsync(())
@@ -261,6 +297,7 @@ type Run() =
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
 
+    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([])
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ])
@@ -297,7 +334,7 @@ type Run() =
 
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
-    platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.recommendedTrack; Mocks.includedTrack ])).ReturnsAsync(())
+    platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.includedTrack; Mocks.recommendedTrack ])).ReturnsAsync(())
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
@@ -329,6 +366,7 @@ type Run() =
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
 
+    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([])
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([])
 
     platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ])
@@ -361,6 +399,7 @@ type Run() =
 
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([])
 
+    platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).ReturnsAsync([])
     platform.Setup(_.ListArtistTracks(Mocks.artist2.Id)).ReturnsAsync([ Mocks.includedTrack ])
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
@@ -377,4 +416,103 @@ type Run() =
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
+    }
+
+type IncludeArtist() =
+  let parseArtistId: Artist.ParseId = fun p -> Ok(ArtistId p.Value)
+  let presetRepo = Mock<IPresetRepo>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+  let platform = Mock<IMusicPlatform>()
+
+  [<Fact>]
+  member _.``should include artist successfully``() =
+    let rawArtistId = Artist.RawArtistId "artist-raw-id"
+
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+
+    let updatedPreset =
+      { Mocks.preset with
+          IncludedArtists = Mocks.preset.IncludedArtists @ [ Mocks.artist3 ] }
+
+    presetRepo.Setup(_.SavePreset(updatedPreset)).ReturnsAsync(())
+
+    platform.Setup(_.LoadArtist(It.IsAny<ArtistId>())).ReturnsAsync(Ok Mocks.artist3)
+
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some platform.Object)
+
+    let sut =
+      Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
+
+    task {
+      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+
+      result |> should equal (Result<_, Preset.IncludeArtistError>.Ok Mocks.artist3)
+
+      platform.VerifyAll()
+      presetRepo.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return error when artist id parsing fails``() =
+    let invalidParseArtistId: Artist.ParseId =
+      fun _ -> Error(Artist.IdParsingError "invalid")
+
+    let rawArtistId = Artist.RawArtistId "invalid-id"
+
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some platform.Object)
+
+    let sut =
+      Preset.includeArtist invalidParseArtistId presetRepo.Object musicPlatformFactory.Object
+
+    task {
+      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+
+      match result with
+      | Error(Preset.IncludeArtistError.IdParsing(Artist.IdParsingError msg)) -> msg |> should equal "invalid"
+      | _ -> failwith "Expected IdParsing error"
+
+      presetRepo.VerifyNoOtherCalls()
+      platform.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should return error when artist not found``() =
+    let rawArtistId = Artist.RawArtistId "not-found-id"
+
+    platform.Setup(_.LoadArtist(It.IsAny<ArtistId>())).ReturnsAsync(Error Artist.LoadError.NotFound)
+
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some platform.Object)
+
+    let sut =
+      Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
+
+    task {
+      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+
+      match result with
+      | Error(Preset.IncludeArtistError.Load Artist.LoadError.NotFound) -> ()
+      | _ -> failwith "Expected Load NotFound error"
+
+      platform.VerifyAll()
+      presetRepo.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should return error when user unauthorized``() =
+    let rawArtistId = Artist.RawArtistId "some-id"
+
+    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(None)
+
+    let sut =
+      Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
+
+    task {
+      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+
+      match result with
+      | Error Preset.IncludeArtistError.Unauthorized -> ()
+      | _ -> failwith "Expected Unauthorized error"
+
+      presetRepo.VerifyNoOtherCalls()
+      platform.VerifyNoOtherCalls()
     }

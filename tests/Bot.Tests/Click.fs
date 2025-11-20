@@ -1193,3 +1193,140 @@ type removeExcludedArtistClickHandler() =
       presetService.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
     }
+
+type showIncludedArtistClickHandler() =
+  let presetRepo = Mock<ILoadPreset>()
+
+  let resourceProviderMock = Mock<IResourceProvider>()
+  let botServiceMock = Mock<IEditMessageButtons>()
+
+  let handler =
+    Click.showIncludedArtistClickHandler presetRepo.Object resourceProviderMock.Object botServiceMock.Object
+
+  [<Fact>]
+  member _.``should handle valid click data``() =
+    presetRepo.Setup(_.LoadPreset(It.IsAny<PresetId>())).ReturnsAsync(Some Mocks.preset)
+    resourceProviderMock.Setup(fun x -> x[Messages.IncludedArtists]).Returns(Messages.IncludedArtists)
+
+    let click =
+      createClick
+        [ CallbackQueryConstants.preset
+          Mocks.presetId.Value
+          CallbackQueryConstants.includedArtists
+          Mocks.artist1.Id.Value
+          "i" ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal (Some())
+
+      presetRepo.VerifyAll()
+      botServiceMock.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "invalid" ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal None
+
+      presetRepo.VerifyNoOtherCalls()
+      botServiceMock.VerifyNoOtherCalls()
+    }
+
+type removeIncludedArtistClickHandler() =
+  let presetService = Mock<IRemoveIncludedArtist>()
+  let resourceProviderMock = Mock<IResourceProvider>()
+  let botServiceMock = Mock<IEditMessageButtons>()
+
+  let handler =
+    Click.removeIncludedArtistClickHandler presetService.Object resourceProviderMock.Object botServiceMock.Object
+
+  [<Fact>]
+  member _.``should handle valid click data``() =
+    presetService.Setup(_.RemoveIncludedArtist(It.IsAny<PresetId>(), It.IsAny<ArtistId>())).ReturnsAsync(Mocks.preset)
+    resourceProviderMock.Setup(fun x -> x[Notifications.IncludedArtistRemoved]).Returns(Notifications.IncludedArtistRemoved)
+
+    let click =
+      createClick
+        [ CallbackQueryConstants.preset
+          Mocks.presetId.Value
+          CallbackQueryConstants.includedArtists
+          Mocks.artist1.Id.Value
+          "rm" ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal (Some())
+
+      presetService.VerifyAll()
+      botServiceMock.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "invalid" ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal None
+
+      presetService.VerifyNoOtherCalls()
+      botServiceMock.VerifyNoOtherCalls()
+    }
+
+type listIncludedArtistsClickHandler() =
+  let presetRepo = Mock<ILoadPreset>()
+  let resourceProviderMock = Mock<IResourceProvider>()
+  let botServiceMock = Mock<IEditMessageButtons>()
+
+  let handler =
+    Click.listIncludedArtistsClickHandler presetRepo.Object resourceProviderMock.Object botServiceMock.Object
+
+  [<Fact>]
+  member _.``should handle valid click data``() =
+    presetRepo.Setup(_.LoadPreset(It.IsAny<PresetId>())).ReturnsAsync(Some Mocks.preset)
+    resourceProviderMock.Setup(fun x -> x[Messages.IncludedArtists]).Returns(Messages.IncludedArtists)
+
+    let click =
+      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; CallbackQueryConstants.includedArtists; "0" ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal (Some())
+
+      presetRepo.VerifyAll()
+      botServiceMock.VerifyAll()
+    }
+
+  [<Fact>]
+  member _.``should return None for invalid click data``() =
+    let click = createClick [ "invalid" ]
+
+    task {
+      // Act
+      let! result = handler click
+
+      // Assert
+      result |> should equal None
+
+      presetRepo.VerifyNoOtherCalls()
+      botServiceMock.VerifyNoOtherCalls()
+    }
