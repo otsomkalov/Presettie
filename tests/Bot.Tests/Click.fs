@@ -1303,7 +1303,11 @@ type listIncludedArtistsClickHandler() =
     resourceProviderMock.Setup(fun x -> x[Messages.IncludedArtists]).Returns(Messages.IncludedArtists)
 
     let click =
-      createClick [ CallbackQueryConstants.preset; Mocks.presetId.Value; CallbackQueryConstants.includedArtists; "0" ]
+      createClick
+        [ CallbackQueryConstants.preset
+          Mocks.presetId.Value
+          CallbackQueryConstants.includedArtists
+          "0" ]
 
     task {
       // Act
