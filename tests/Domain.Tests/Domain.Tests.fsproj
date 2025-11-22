@@ -12,6 +12,7 @@
     <Compile Include="Mocks.fs"/>
     <Compile Include="IncludedPlaylist.fs"/>
     <Compile Include="ExcludedPlaylist.fs"/>
+    <Compile Include="IncludedArtist.fs"/>
     <Compile Include="ExcludedArtist.fs"/>
     <Compile Include="Recommenders.fs" />
     <Compile Include="TargetedPlaylist.fs"/>

@@ -1579,6 +1579,135 @@ type ExcludeArtistMessageHandler() =
       chatCtx.VerifyNoOtherCalls()
     }
 
+type IncludeArtistMessageHandler() =
+  let userRepo = Mock<ILoadUser>()
+  let presetService = Mock<IIncludeArtist>()
+  let authService = Mock<IInitAuth>()
+  let resourceProvider = Mock<IResourceProvider>()
+  let chatCtx = Mock<IBotService>()
+
+  do
+    resourceProvider.Setup(_.Item(Messages.SendIncludedArtist)).Returns(Messages.SendIncludedArtist)
+    |> ignore
+
+  let handler =
+    Message.includeArtistMessageHandler userRepo.Object presetService.Object authService.Object resourceProvider.Object chatCtx.Object
+
+  [<Fact>]
+  member _.``should handle reply with included artist and send message``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService.Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist1))
+
+    resourceProvider.Setup(_.Item(Messages.ArtistIncluded, It.IsAny())).Returns("Artist included message")
+
+    chatCtx.Setup(_.SendMessage("Artist included message")).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessageWithReply "artist123" Messages.SendIncludedArtist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should handle /includeartist command and send message``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService.Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist1))
+
+    resourceProvider.Setup(_.Item(Messages.ArtistIncluded, It.IsAny())).Returns(Messages.ArtistIncluded)
+
+    chatCtx.Setup(_.SendMessage(Messages.ArtistIncluded)).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessage $"{Commands.includeArtist} artist456"
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should send IdCannotBeParsed on id parsing error``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService
+      .Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
+      .ReturnsAsync(Error(Preset.IncludeArtistError.IdParsing(Artist.IdParsingError "invalid-id")))
+
+    resourceProvider.Setup(_.Item(Messages.ArtistIdCannotBeParsed, It.IsAny())).Returns("Cannot parse artist ID")
+
+    chatCtx.Setup(_.SendMessage("Cannot parse artist ID")).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessageWithReply "invalid-id" Messages.SendIncludedArtist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should send NotFound when artist not found``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService
+      .Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
+      .ReturnsAsync(Error(Preset.IncludeArtistError.Load(Artist.LoadError.NotFound)))
+
+    resourceProvider.Setup(_.Item(Messages.ArtistNotFoundInSpotify, It.IsAny())).Returns("Artist not found")
+
+    chatCtx.Setup(_.SendMessage("Artist not found")).ReturnsAsync(Mocks.botMessageId)
+
+    let message =
+      createMessageWithReply "nonexistent-artist" Messages.SendIncludedArtist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
+  member _.``should trigger login when unauthorized``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+
+    presetService
+      .Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
+      .ReturnsAsync(Error(Preset.IncludeArtistError.Unauthorized))
+
+    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+
+    let message = createMessageWithReply "artist789" Messages.SendIncludedArtist
+
+    task {
+      let! result = handler message
+
+      result |> should equal (Some())
+      userRepo.VerifyAll()
+      presetService.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
+    }
+
 type TargetPlaylistMessageHandler() =
   let userRepo = Mock<ILoadUser>()
   let presetService = Mock<ITargetPlaylist>()

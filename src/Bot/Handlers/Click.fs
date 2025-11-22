@@ -17,7 +17,7 @@ open Bot.Resources
 let presetInfoClickHandler presetRepo (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; id; "i" ] -> task {
+    | [ CallbackQueryConstants.preset; id; "i" ] -> task {
         do! Preset.show presetRepo botService resp click.MessageId (PresetId id)
         return Some()
       }
@@ -26,7 +26,7 @@ let presetInfoClickHandler presetRepo (resp: IResourceProvider) botService : Cli
 let listPresetsClickHandler userRepo (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p" ] -> task {
+    | [ CallbackQueryConstants.preset ] -> task {
         do! User.listPresets resp botService userRepo click.MessageId click.Chat.UserId
         return Some()
       }
@@ -40,7 +40,7 @@ let artistsAlbumsRecommendationsClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.artistsAlbumsRecommendations ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.artistsAlbumsRecommendations ] -> task {
         let presetId = PresetId presetId
         do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ArtistAlbums)
         do! botService.SendNotification(click.Id, resp[Notifications.Updated])
@@ -57,7 +57,7 @@ let reccoBeatsRecommendationsClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.reccoBeatsRecommendations ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.reccoBeatsRecommendations ] -> task {
         let presetId = PresetId presetId
         do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ReccoBeats)
         do! botService.SendNotification(click.Id, resp[Notifications.Updated])
@@ -74,7 +74,7 @@ let spotifyRecommendationsClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.spotifyRecommendations ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.spotifyRecommendations ] -> task {
         let presetId = PresetId presetId
         do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.Spotify)
         do! botService.SendNotification(click.Id, resp[Notifications.Updated])
@@ -91,7 +91,7 @@ let disableRecommendationsClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.disableRecommendations ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.disableRecommendations ] -> task {
         let presetId = PresetId presetId
         do! presetService.SetRecommendationsEngine(presetId, None)
         do! botService.SendNotification(click.Id, resp[Notifications.Updated])
@@ -108,7 +108,7 @@ let enableUniqueArtistsClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.enableUniqueArtists ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.enableUniqueArtists ] -> task {
         let presetId = PresetId presetId
         do! presetService.EnableUniqueArtists presetId
         do! botService.SendNotification(click.Id, resp[Notifications.Updated])
@@ -125,7 +125,7 @@ let disableUniqueArtistsClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.disableUniqueArtists ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.disableUniqueArtists ] -> task {
         let presetId = PresetId presetId
         do! presetService.DisableUniqueArtists presetId
         do! botService.SendNotification(click.Id, resp[Notifications.Updated])
@@ -142,7 +142,7 @@ let includeLikedTracksClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.includeLikedTracks ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includeLikedTracks ] -> task {
         let presetId = (PresetId presetId)
         do! presetService.IncludeLikedTracks presetId
         do! botService.SendNotification(click.Id, resp[Notifications.Updated])
@@ -159,7 +159,7 @@ let excludeLikedTracksClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.excludeLikedTracks ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludeLikedTracks ] -> task {
         let presetId = (PresetId presetId)
         do! presetService.ExcludeLikedTracks presetId
         do! botService.SendNotification(click.Id, resp[Notifications.Updated])
@@ -176,7 +176,7 @@ let ignoreLikedTracksClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.ignoreLikedTracks ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.ignoreLikedTracks ] -> task {
         let presetId = (PresetId presetId)
         do! presetService.IgnoreLikedTracks presetId
         do! botService.SendNotification(click.Id, resp[Notifications.Updated])
@@ -193,7 +193,7 @@ let showIncludedPlaylistClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "i" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "i" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
         let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
@@ -205,7 +205,7 @@ let showIncludedPlaylistClickHandler
 let removeIncludedPlaylistClickHandler (presetService: #IRemoveIncludedPlaylist) (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "rm" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "rm" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
         let! preset = presetService.RemoveIncludedPlaylist(presetId, (ReadablePlaylistId playlistId))
@@ -222,7 +222,7 @@ let showExcludedPlaylistClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.excludedPlaylists; playlistId; "i" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludedPlaylists; playlistId; "i" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
         let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
@@ -234,7 +234,7 @@ let showExcludedPlaylistClickHandler
 let removeExcludedPlaylistClickHandler (presetService: #IRemoveExcludedPlaylist) (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.excludedPlaylists; playlistId; "rm" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludedPlaylists; playlistId; "rm" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
         let! preset = presetService.RemoveExcludedPlaylist(presetId, (ReadablePlaylistId playlistId))
@@ -246,7 +246,7 @@ let removeExcludedPlaylistClickHandler (presetService: #IRemoveExcludedPlaylist)
 let showExcludedArtistClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) (botService: #IEditMessageButtons) : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.excludedArtists; artistId; "i" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludedArtists; artistId; "i" ] -> task {
         let presetId = PresetId presetId
         let artistId = ArtistId artistId
 
@@ -259,12 +259,39 @@ let showExcludedArtistClickHandler (presetRepo: #ILoadPreset) (resp: IResourcePr
 let removeExcludedArtistClickHandler (presetService: #IRemoveExcludedArtist) (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.excludedArtists; artistId; "rm" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludedArtists; artistId; "rm" ] -> task {
         let presetId = PresetId presetId
         let playlistId = ArtistId artistId
         let! preset = presetService.RemoveExcludedArtist(presetId, playlistId)
 
         do! ExcludedArtist.list resp botService click.MessageId preset (Page 0)
+
+        return Some()
+      }
+    | _ -> Task.FromResult(None)
+
+let showIncludedArtistClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) (botService: #IEditMessageButtons) : ClickHandler =
+  fun click ->
+    match click.Data with
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedArtists; artistId; "i" ] -> task {
+        let presetId = PresetId presetId
+        let artistId = ArtistId artistId
+
+        do! IncludedArtist.show resp botService presetRepo click.MessageId presetId artistId
+
+        return Some()
+      }
+    | _ -> Task.FromResult(None)
+
+let removeIncludedArtistClickHandler (presetService: #IRemoveIncludedArtist) (resp: IResourceProvider) botService : ClickHandler =
+  fun click ->
+    match click.Data with
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedArtists; artistId; "rm" ] -> task {
+        let presetId = PresetId presetId
+        let playlistId = ArtistId artistId
+        let! preset = presetService.RemoveIncludedArtist(presetId, playlistId)
+
+        do! IncludedArtist.list resp botService click.MessageId preset (Page 0)
 
         return Some()
       }
@@ -278,7 +305,7 @@ let showTargetedPlaylistClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId'; "tp"; playlistId'; "i" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId'; "tp"; playlistId'; "i" ] -> task {
         let presetId = PresetId presetId'
         let playlistId = PlaylistId playlistId'
         let! mp = musicPlatformFactory.GetMusicPlatform(click.Chat.UserId.ToMusicPlatformId())
@@ -290,7 +317,7 @@ let showTargetedPlaylistClickHandler
 let removeTargetedPlaylistClickHandler (presetService: #IRemoveTargetedPlaylist) (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; "tp"; playlistId; "rm" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "rm" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
         let! preset = presetService.RemoveTargetedPlaylist(presetId, (WritablePlaylistId playlistId))
@@ -308,7 +335,7 @@ let appendToTargetedPlaylistClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; "tp"; playlistId; "a" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "a" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId |> WritablePlaylistId
         do! presetService.AppendToTargetedPlaylist(presetId, playlistId)
@@ -327,7 +354,7 @@ let overwriteTargetedPlaylistClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; "tp"; playlistId; "o" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "o" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId |> WritablePlaylistId
         do! presetService.OverwriteTargetedPlaylist(presetId, playlistId)
@@ -364,7 +391,7 @@ let runPresetClickHandler
 
   fun click ->
     match click.Data with
-    | [ "p"; presetId; "r" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; "r" ] -> task {
         let presetId = PresetId presetId
 
         do!
@@ -382,7 +409,7 @@ let setCurrentPresetClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; id; "c" ] -> task {
+    | [ CallbackQueryConstants.preset; id; "c" ] -> task {
         let presetId = PresetId id
         do! userService.SetCurrentPreset(click.Chat.UserId, presetId)
         do! chatService.SendNotification(click.Id, resp[Notifications.CurrentPresetSet])
@@ -393,7 +420,7 @@ let setCurrentPresetClickHandler
 let presetSettingsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) (botService: #IEditMessageButtons) : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; "s" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; "s" ] -> task {
         let presetId = PresetId presetId
         do! PresetSettings.show presetRepo botService resp click.MessageId presetId
         return Some()
@@ -403,7 +430,7 @@ let presetSettingsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvid
 let listIncludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.includedPlaylists; page ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedPlaylists; page ] -> task {
         let presetId = PresetId presetId
         let page = Page(int page)
         let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
@@ -415,7 +442,7 @@ let listIncludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
 let listExcludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.excludedPlaylists; page ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludedPlaylists; page ] -> task {
         let presetId = PresetId presetId
         let page = Page(int page)
         let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
@@ -427,7 +454,7 @@ let listExcludedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
 let listExcludedArtistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.excludedArtists; page ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludedArtists; page ] -> task {
         let presetId = PresetId presetId
         let page = Page(int page)
         let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
@@ -436,10 +463,22 @@ let listExcludedArtistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceP
       }
     | _ -> Task.FromResult(None)
 
+let listIncludedArtistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) botService : ClickHandler =
+  fun click ->
+    match click.Data with
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedArtists; page ] -> task {
+        let presetId = PresetId presetId
+        let page = Page(int page)
+        let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
+        do! IncludedArtist.list resp botService click.MessageId preset page
+        return Some()
+      }
+    | _ -> Task.FromResult(None)
+
 let listTargetedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; "tp"; page ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; "tp"; page ] -> task {
         let presetId = PresetId presetId
         let page = Page(int page)
         let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
@@ -451,7 +490,7 @@ let listTargetedPlaylistsClickHandler (presetRepo: #ILoadPreset) (resp: IResourc
 let showIncludedContentClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.includedContent ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedContent ] -> task {
         let presetId = PresetId presetId
         do! IncludedContent.show resp botService presetRepo click.MessageId presetId
 
@@ -462,7 +501,7 @@ let showIncludedContentClickHandler (presetRepo: #ILoadPreset) (resp: IResourceP
 let showExcludedContentClickHandler (presetRepo: #ILoadPreset) (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.excludedContent ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludedContent ] -> task {
         let presetId = PresetId presetId
         do! ExcludedContent.show resp botService presetRepo click.MessageId presetId
 
@@ -479,7 +518,7 @@ let setOnlyLikedIncludedPlaylistClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "o" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "o" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
         do! presetService.SetOnlyLiked(presetId, (playlistId |> ReadablePlaylistId))
@@ -498,7 +537,7 @@ let setAllTracksIncludedPlaylistClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "a" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "a" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
         do! presetService.SetAll(presetId, (playlistId |> ReadablePlaylistId))
@@ -516,7 +555,7 @@ let removePresetClickHandler
   : ClickHandler =
   fun click ->
     match click.Data with
-    | [ "p"; presetId; "rm" ] -> task {
+    | [ CallbackQueryConstants.preset; presetId; "rm" ] -> task {
         let presetId = RawPresetId presetId
 
         match! userService.RemoveUserPreset(click.Chat.UserId, presetId) with

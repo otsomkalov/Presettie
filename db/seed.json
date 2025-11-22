@@ -75,6 +75,11 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.send-included-artist",
+    "Value": "Send id/url of Spotify artist to include it tracks in generation",
+    "Lang": "en"
+  },
+  {
     "Key": "messages.send-targeted-playlist",
     "Value": "Send id/url of Spotify playlist to save generated tracks into",
     "Lang": "en"
@@ -180,6 +185,11 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.included-artist-details",
+    "Value": "*Name*: {0}",
+    "Lang": "en"
+  },
+  {
     "Key": "messages.targeted-playlist-details",
     "Value": "*Name*: {0}\n*Tracks*: {1}\n*Overwrite*: {2}",
     "Lang": "en"
@@ -230,6 +240,11 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.artist-included",
+    "Value": "*{0}* successfully included in current preset!",
+    "Lang": "en"
+  },
+  {
     "Key": "messages.playlist-targeted",
     "Value": "*{0}* successfully targeted for current preset!",
     "Lang": "en"
@@ -262,6 +277,11 @@
   {
     "Key": "messages.excluded-artists",
     "Value": "Preset *{0}* has the next excluded artists:",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.included-artists",
+    "Value": "Preset *{0}* has the next included artists:",
     "Lang": "en"
   },
   {
@@ -301,14 +321,20 @@
   },
   {
     "Key": "messages.included-content",
-    "Value": "Preset *{0}* has the next included content:\n*{1}* included playlists",
+    "Value": "Preset *{0}* has the next included content:\n*{1}* included playlists\n*{2}* included artists",
     "Lang": "en"
   },
   {
     "Key": "messages.excluded-content",
-    "Value": "Preset *{0}* has the next excluded content:\n*{1}* excluded playlists",
+    "Value": "Preset *{0}* has the next excluded content:\n*{1}* excluded playlists\n*{2}* excluded artists",
     "Lang": "en"
   },
+  {
+    "Key": "messages.successful-login",
+    "Value": "You've successfully logged in into music platform!",
+    "Lang": "en"
+  },
+
   {
     "Key": "buttons.run-preset",
     "Value": "🚀 Run preset",
@@ -357,6 +383,11 @@
   {
     "Key": "buttons.exclude-artist",
     "Value": "➖ Exclude artist",
+    "Lang": "en"
+  },
+  {
+    "Key": "buttons.include-artist",
+    "Value": "➕ Include artist",
     "Lang": "en"
   },
   {
@@ -435,16 +466,6 @@
     "Lang": "en"
   },
   {
-    "Key": "buttons.included-playlists",
-    "Value": "Included playlists",
-    "Lang": "en"
-  },
-  {
-    "Key": "buttons.excluded-playlists",
-    "Value": "Excluded playlists",
-    "Lang": "en"
-  },
-  {
     "Key": "buttons.targeted-playlists",
     "Value": "Target playlists",
     "Lang": "en"
@@ -517,6 +538,11 @@
   {
     "Key": "notifications.excluded-artist-removed",
     "Value": "Excluded artist successfully removed!",
+    "Lang": "en"
+  },
+  {
+    "Key": "notifications.included-artist-removed",
+    "Value": "Included artist successfully removed!",
     "Lang": "en"
   }
 ]
