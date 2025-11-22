@@ -43,6 +43,9 @@ let private addClickHandlers (services: IServiceCollection) =
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listExcludedPlaylistsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listTargetedPlaylistsClickHandler)
 
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listIncludedArtistsClickHandler)
+    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(showIncludedArtistClickHandler)
+
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listExcludedArtistsClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetRepo>(showExcludedArtistClickHandler)
 
@@ -57,6 +60,7 @@ let private addClickHandlers (services: IServiceCollection) =
     .BuildSingleton<ClickHandlerFactory, IPresetService>(removeExcludedPlaylistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetService>(removeTargetedPlaylistClickHandler)
 
+    .BuildSingleton<ClickHandlerFactory, IPresetService>(removeIncludedArtistClickHandler)
     .BuildSingleton<ClickHandlerFactory, IPresetService>(removeExcludedArtistClickHandler)
 
     .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(setAllTracksIncludedPlaylistClickHandler)
@@ -87,6 +91,7 @@ let private addMessageHandlers (services: IServiceCollection) =
     .BuildSingleton<MessageHandlerFactory, _, IAuthService>(excludeArtistButtonMessageHandler)
 
     .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService, IAuthService>(includePlaylistMessageHandler)
+    .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService, IAuthService>(includeArtistMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService, IAuthService>(excludePlaylistMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService, IAuthService>(excludeArtistMessageHandler)
     .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetService, IAuthService>(targetPlaylistMessageHandler)

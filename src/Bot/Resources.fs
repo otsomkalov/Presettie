@@ -53,6 +53,9 @@ module Messages =
   let SendExcludedArtist = "messages.send-excluded-artist"
 
   [<Literal>]
+  let SendIncludedArtist = "messages.send-included-artist"
+
+  [<Literal>]
   let SendTargetedPlaylist = "messages.send-targeted-playlist"
 
   [<Literal>]
@@ -116,6 +119,9 @@ module Messages =
   let ExcludedArtistDetails = "messages.excluded-artist-details"
 
   [<Literal>]
+  let IncludedArtistDetails = "messages.included-artist-details"
+
+  [<Literal>]
   let TargetedPlaylistDetails = "messages.targeted-playlist-details"
 
   [<Literal>]
@@ -146,6 +152,9 @@ module Messages =
   let ArtistExcluded = "messages.artist-excluded"
 
   [<Literal>]
+  let ArtistIncluded = "messages.artist-included"
+
+  [<Literal>]
   let PlaylistTargeted = "messages.playlist-targeted"
 
   [<Literal>]
@@ -165,6 +174,9 @@ module Messages =
 
   [<Literal>]
   let ExcludedArtists = "messages.excluded-artists"
+
+  [<Literal>]
+  let IncludedArtists = "messages.included-artists"
 
   [<Literal>]
   let TargetedPlaylists = "messages.targeted-playlists"
@@ -226,6 +238,9 @@ module Buttons =
   let ExcludeArtist = "buttons.exclude-artist"
 
   [<Literal>]
+  let IncludeArtist = "buttons.include-artist"
+
+  [<Literal>]
   let TargetPlaylist = "buttons.target-playlist"
 
   [<Literal>]
@@ -269,9 +284,6 @@ module Buttons =
 
   [<Literal>]
   let Overwrite = "buttons.overwrite"
-
-  [<Literal>]
-  let IncludedPlaylists = "buttons.included-playlists"
 
   [<Literal>]
   let TargetedPlaylists = "buttons.targeted-playlists"
@@ -319,3 +331,6 @@ module Notifications =
 
   [<Literal>]
   let ExcludedArtistRemoved = "notifications.excluded-artist-removed"
+
+  [<Literal>]
+  let IncludedArtistRemoved = "notifications.included-artist-removed"

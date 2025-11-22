@@ -37,7 +37,10 @@ module Commands =
   let excludeArtist = "/ea"
 
   [<Literal>]
-  let targetPlaylist = "/target"
+  let includeArtist = "/ia"
+
+  [<Literal>]
+  let targetPlaylist = "/tp"
 
   [<Literal>]
   let runPreset = "/run"
@@ -86,4 +89,10 @@ module CallbackQueryConstants =
   let excludedPlaylists = "ep"
 
   [<Literal>]
+  let includedArtists = "ia"
+
+  [<Literal>]
   let excludedArtists = "ea"
+
+  [<Literal>]
+  let preset = "p"

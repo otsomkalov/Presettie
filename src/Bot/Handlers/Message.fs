@@ -420,6 +420,49 @@ let excludeArtistMessageHandler
     | _ -> return None
   }
 
+let includeArtistMessageHandler
+  (userRepo: #ILoadUser)
+  (presetService: #IIncludeArtist)
+  authService
+  (resp: IResourceProvider)
+  (chatCtx: #ISendMessage)
+  : MessageHandler =
+  let includeArtist =
+    fun userId rawArtistId -> task {
+      let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+
+      let includeArtistResult =
+        presetService.IncludeArtist(userId, currentPresetId, rawArtistId)
+
+      let onSuccess (artist: IncludedArtist) =
+        chatCtx.SendMessage resp[Messages.ArtistIncluded, [| artist.Name |]]
+
+      let onError =
+        function
+        | Preset.IncludeArtistError.IdParsing(Artist.IdParsingError id) ->
+          chatCtx.SendMessage resp[Messages.ArtistIdCannotBeParsed, [| id |]]
+        | Preset.IncludeArtistError.Load(Artist.LoadError.NotFound) ->
+          let (Artist.RawArtistId rawArtistId) = rawArtistId
+          chatCtx.SendMessage resp[Messages.ArtistNotFoundInSpotify, [| rawArtistId |]]
+        | Preset.IncludeArtistError.Unauthorized -> sendLoginMessage authService resp chatCtx userId
+
+      return! includeArtistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
+    }
+
+  fun message -> task {
+    match message with
+    | { Text = text
+        ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendIncludedArtist] ->
+      do! includeArtist message.Chat.UserId (Artist.RawArtistId text)
+
+      return Some()
+    | { Text = CommandWithData Commands.includeArtist text } ->
+      do! includeArtist message.Chat.UserId (Artist.RawArtistId text)
+
+      return Some()
+    | _ -> return None
+  }
+
 let targetPlaylistMessageHandler
   (userRepo: #ILoadUser)
   (presetService: #ITargetPlaylist)
