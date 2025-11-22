@@ -86,7 +86,7 @@ resource "azurerm_linux_function_app" "func-presettie-bot" {
     app_scale_limit          = 10
 
     application_stack {
-      dotnet_version              = "9.0"
+      dotnet_version              = "10.0"
       use_dotnet_isolated_runtime = true
     }
   }
@@ -130,7 +130,7 @@ resource "azurerm_linux_function_app" "func-presettie-api" {
     app_scale_limit          = 10
 
     application_stack {
-      dotnet_version              = "9.0"
+      dotnet_version              = "10.0"
       use_dotnet_isolated_runtime = true
     }
   }
