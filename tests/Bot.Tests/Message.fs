@@ -1348,7 +1348,11 @@ type ExcludePlaylistMessageHandler() =
   member _.``should handle reply with excluded playlist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.ExcludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok(Mocks.excludedPlaylist))
+    let expected: Preset.ExcludePlaylistResult =
+      { Preset = Mocks.preset
+        Playlist = Mocks.excludedPlaylist }
+
+    presetService.Setup(_.ExcludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok(expected))
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1370,7 +1374,11 @@ type ExcludePlaylistMessageHandler() =
   member _.``should handle /excludeplaylist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.ExcludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok(Mocks.excludedPlaylist))
+    let expected: Preset.ExcludePlaylistResult =
+      { Preset = Mocks.preset
+        Playlist = Mocks.excludedPlaylist }
+
+    presetService.Setup(_.ExcludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok(expected))
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
 

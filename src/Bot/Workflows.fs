@@ -106,8 +106,9 @@ let private sendPresetsMessage sendOrEditButtons =
   }
 
 let createEntitiesPage (resp: IResourceProvider) =
-  fun page (entities: 'a list) entityToButton (presetId: PresetId) entityType ->
+  fun page (entities: 'a seq) entityToButton (presetId: PresetId) entityType ->
     let (Page page) = page
+    let entities = entities |> Seq.toList
     let remainingPlaylists = entities[page * buttonsPerPage ..]
     let playlistsForPage = remainingPlaylists[.. buttonsPerPage - 1]
 
@@ -207,7 +208,7 @@ module ExcludedContent =
       let text =
         resp[Messages.ExcludedContent,
              [| preset.Name
-                preset.ExcludedPlaylists.Length
+                preset.ExcludedPlaylists.Count
                 preset.ExcludedArtists.Length |]]
 
       do! botMessageCtx.EditMessageButtons(messageId, text, buttons)
@@ -289,7 +290,7 @@ module ExcludedPlaylist =
 
       let excludedPlaylist =
         preset.ExcludedPlaylists
-        |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
+        |> Seq.find (fun p -> p.Id = ReadablePlaylistId playlistId)
 
       let! playlistTracksCount =
         mp

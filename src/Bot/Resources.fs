@@ -205,6 +205,9 @@ module Messages =
   [<Literal>]
   let ExcludedContent = "messages.excluded-content"
 
+  [<Literal>]
+  let PlaylistAlreadyExcluded = "messages.playlist-already-excluded"
+
 [<RequireQualifiedAccess>]
 module Buttons =
   [<Literal>]
@@ -334,3 +337,6 @@ module Notifications =
 
   [<Literal>]
   let IncludedArtistRemoved = "notifications.included-artist-removed"
+
+  [<Literal>]
+  let PlaylistNotExcluded = "notifications.playlist-not-excluded"

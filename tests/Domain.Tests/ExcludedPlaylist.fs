@@ -17,16 +17,16 @@ type ExcludedPlaylist() =
 
     let expected =
       { Mocks.preset with
-          ExcludedPlaylists = [] }
+          ExcludedPlaylists = Set.empty }
 
     mockPresetRepo.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
     let sut = ExcludedPlaylist.remove mockPresetRepo.Object
 
     task {
-      let! preset = sut Mocks.presetId Mocks.excludedPlaylist.Id
+      let! result = sut Mocks.presetId Mocks.excludedPlaylist.Id
+
+      result |> should equal (Result<Preset, Preset.RemoveExcludedPlaylistError>.Ok expected)
 
       mockPresetRepo.VerifyAll()
-
-      preset.ExcludedPlaylists |> should equivalent List.empty<ExcludedPlaylist>
     }

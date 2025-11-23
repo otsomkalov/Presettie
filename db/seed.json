@@ -333,6 +333,10 @@
     "Key": "messages.successful-login",
     "Value": "You've successfully logged in into music platform!",
     "Lang": "en"
+  },{
+    "Key": "messages.playlist-already-excluded",
+    "Value": "Playlist is already excluded in current preset!",
+    "Lang": "en"
   },
 
   {
@@ -543,6 +547,11 @@
   {
     "Key": "notifications.included-artist-removed",
     "Value": "Included artist successfully removed!",
+    "Lang": "en"
+  },
+  {
+    "Key": "notifications.playlist-not-excluded",
+    "Value": "Playlist not excluded and cannot be removed!",
     "Lang": "en"
   }
 ]

@@ -111,8 +111,9 @@ type ExcludedPlaylist() =
     presetService
       .Setup(_.RemoveExcludedPlaylist(Mocks.presetId, Mocks.excludedPlaylist.Id))
       .ReturnsAsync(
-        { Mocks.preset with
-            ExcludedPlaylists = [] }
+        Ok
+          { Mocks.preset with
+              ExcludedPlaylists = Set.empty }
       )
 
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())

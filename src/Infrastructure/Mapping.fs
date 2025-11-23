@@ -122,9 +122,6 @@ module Preset =
     let mapIncludedPlaylist playlists =
       playlists |> Seq.map IncludedPlaylist.fromDb |> Seq.toList
 
-    let mapExcludedPlaylist playlists =
-      playlists |> Seq.map ExcludedPlaylist.fromDb |> Seq.toList
-
     let mapIncludedArtist artists =
       artists |> Seq.map IncludedArtist.fromDb |> Seq.toList
 
@@ -135,7 +132,7 @@ module Preset =
       Name = preset.Name
       OwnerId = preset.OwnerId |> string |> UserId
       IncludedPlaylists = mapIncludedPlaylist preset.IncludedPlaylists
-      ExcludedPlaylists = mapExcludedPlaylist preset.ExcludedPlaylists
+      ExcludedPlaylists = preset.ExcludedPlaylists |> Seq.map ExcludedPlaylist.fromDb |> Set.ofSeq
       IncludedArtists = mapIncludedArtist preset.IncludedArtists
       ExcludedArtists = mapExcludedArtist preset.ExcludedArtists
       TargetedPlaylists = TargetedPlaylist.mapPlaylists preset.TargetedPlaylists

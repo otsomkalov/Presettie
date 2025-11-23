@@ -231,15 +231,20 @@ let showExcludedPlaylistClickHandler
       }
     | _ -> Task.FromResult(None)
 
-let removeExcludedPlaylistClickHandler (presetService: #IRemoveExcludedPlaylist) (resp: IResourceProvider) botService : ClickHandler =
+let removeExcludedPlaylistClickHandler (presetService: #IRemoveExcludedPlaylist) (resp: IResourceProvider) (botService: #ISendNotification)  : ClickHandler =
   fun click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludedPlaylists; playlistId; "rm" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
-        let! preset = presetService.RemoveExcludedPlaylist(presetId, (ReadablePlaylistId playlistId))
-        do! ExcludedPlaylist.list resp botService click.MessageId preset (Page 0)
-        return Some()
+        match! presetService.RemoveExcludedPlaylist(presetId, (ReadablePlaylistId playlistId)) with
+        | Ok preset ->
+          do! ExcludedPlaylist.list resp botService click.MessageId preset (Page 0)
+          return Some()
+        | Error Preset.RemoveExcludedPlaylistError.NotExcluded ->
+          do! botService.SendNotification(click.Id, resp[Notifications.PlaylistNotExcluded]) |> Task.ignore
+
+          return Some()
       }
     | _ -> Task.FromResult(None)
 

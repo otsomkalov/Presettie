@@ -42,6 +42,11 @@ type Playlist =
   | Readable of PlaylistData
   | Writable of PlaylistData
 
+  member this.Id =
+    match this with
+    | Readable data -> data.Id
+    | Writable data -> data.Id
+
 [<RequireQualifiedAccess>]
 module Artist =
   type LoadError = | NotFound

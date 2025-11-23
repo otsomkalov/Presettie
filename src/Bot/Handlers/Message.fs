@@ -11,7 +11,6 @@ open Bot.Workflows
 open Domain.Core
 open Bot.Helpers
 open Domain.Workflows
-open System
 open otsom.fs.Resources
 open Bot.Core
 open Bot.Resources
@@ -348,8 +347,8 @@ let excludePlaylistMessageHandler
       let excludePlaylistResult =
         presetService.ExcludePlaylist(userId, currentPresetId, rawPlaylistId)
 
-      let onSuccess (playlist: ExcludedPlaylist) =
-        chatCtx.SendMessage resp[Messages.PlaylistExcluded, [| playlist.Name |]]
+      let onSuccess (result: Preset.ExcludePlaylistResult) =
+        chatCtx.SendMessage resp[Messages.PlaylistExcluded, [| result.Playlist.Name |]]
 
       let onError =
         function
@@ -359,6 +358,7 @@ let excludePlaylistMessageHandler
           let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
           chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId |]]
         | Preset.ExcludePlaylistError.Unauthorized -> sendLoginMessage authService resp chatCtx userId
+        | Preset.ExcludePlaylistError.AlreadyExcluded -> chatCtx.SendMessage resp[Messages.PlaylistAlreadyExcluded]
 
       return! excludePlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
     }
