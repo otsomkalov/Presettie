@@ -341,11 +341,20 @@
     "Key": "messages.artist-already-excluded",
     "Value": "Artist is already excluded in current preset!",
     "Lang": "en"
+  },{
+    "Key": "messages.artist-already-included",
+    "Value": "Artist is already included in current preset!",
+    "Lang": "en"
   },
 
   {
     "Key": "buttons.run-preset",
     "Value": "🚀 Run preset",
+    "Lang": "en"
+  },
+  {
+    "Key": "notifications.artist-not-included",
+    "Value": "Artist not included and cannot be removed!",
     "Lang": "en"
   },
   {

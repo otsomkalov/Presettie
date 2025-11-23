@@ -96,7 +96,7 @@ type Preset =
     Settings: PresetSettings.PresetSettings
     IncludedPlaylists: IncludedPlaylist list
     ExcludedPlaylists: ExcludedPlaylist Set
-    IncludedArtists: IncludedArtist list
+    IncludedArtists: IncludedArtist Set
     ExcludedArtists: ExcludedArtist Set
     TargetedPlaylists: TargetedPlaylist list }
 
@@ -120,6 +120,12 @@ module ExcludedPlaylist =
 [<RequireQualifiedAccess>]
 module ExcludedArtist =
   let fromPlatform (artist: MusicPlatform.Artist) : ExcludedArtist =
+    { Id = artist.Id
+      Name = artist.Name }
+
+[<RequireQualifiedAccess>]
+module IncludedArtist =
+  let fromPlatform (artist: MusicPlatform.Artist) : IncludedArtist =
     { Id = artist.Id
       Name = artist.Name }
 
@@ -151,6 +157,7 @@ module Preset =
   type IncludeArtistError =
     | Load of Artist.LoadError
     | IdParsing of Artist.IdParsingError
+    | AlreadyIncluded
     | Unauthorized
 
   type ExcludeArtistError =
@@ -241,6 +248,42 @@ module Preset =
         { preset with
             ExcludedArtists = preset.ExcludedArtists |> Set.remove artist }
 
+  type IncludeArtistResult =
+    { Preset: Preset
+      Artist: IncludedArtist }
+
+  let includeArtist (preset: Preset) (artist: MusicPlatform.Artist) =
+    let existingArtist =
+      preset.IncludedArtists
+      |> Seq.tryFind (fun a -> a.Id = artist.Id)
+
+    match existingArtist with
+    | Some _ -> Error(IncludeArtistError.AlreadyIncluded)
+    | None ->
+      let includedArtist = IncludedArtist.fromPlatform artist
+
+      let updatedPreset =
+        { preset with
+            IncludedArtists = preset.IncludedArtists |> Set.add includedArtist }
+
+      Ok(
+        { Preset = updatedPreset
+          Artist = includedArtist }
+      )
+
+  type RemoveIncludedArtistError = | NotIncluded
+
+  let removeIncludedArtist (preset: Preset) (artistId: ArtistId) =
+    let existingArtist =
+      preset.IncludedArtists |> Seq.tryFind (fun a -> a.Id = artistId)
+
+    match existingArtist with
+    | None -> Error(NotIncluded)
+    | Some artist ->
+      Ok
+        { preset with
+            IncludedArtists = preset.IncludedArtists |> Set.remove artist }
+
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
   let fromSpotifyPlaylist =
@@ -283,7 +326,7 @@ type IExcludePlaylist =
     UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<Preset.ExcludePlaylistResult, Preset.ExcludePlaylistError>>
 
 type IIncludeArtist =
-  abstract IncludeArtist: UserId * PresetId * Artist.RawArtistId -> Task<Result<IncludedArtist, Preset.IncludeArtistError>>
+  abstract IncludeArtist: UserId * PresetId * Artist.RawArtistId -> Task<Result<Preset.IncludeArtistResult, Preset.IncludeArtistError>>
 
 type IExcludeArtist =
   abstract ExcludeArtist: UserId * PresetId * Artist.RawArtistId -> Task<Result<Preset.ExcludeArtistResult, Preset.ExcludeArtistError>>
@@ -322,7 +365,7 @@ type IRemoveExcludedPlaylist =
   abstract RemoveExcludedPlaylist: PresetId * ReadablePlaylistId -> Task<Result<Preset, Preset.RemoveExcludedPlaylistError>>
 
 type IRemoveIncludedArtist =
-  abstract RemoveIncludedArtist: PresetId * ArtistId -> Task<Preset>
+  abstract RemoveIncludedArtist: PresetId * ArtistId -> Task<Result<Preset, Preset.RemoveIncludedArtistError>>
 
 type IRemoveExcludedArtist =
   abstract RemoveExcludedArtist: PresetId * ArtistId -> Task<Result<Preset, Preset.RemoveExcludedArtistError>>

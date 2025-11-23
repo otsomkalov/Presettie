@@ -432,7 +432,7 @@ type IncludeArtist() =
 
     let updatedPreset =
       { Mocks.preset with
-          IncludedArtists = Mocks.preset.IncludedArtists @ [ Mocks.artist3 ] }
+          IncludedArtists = Mocks.preset.IncludedArtists |> Set.add Mocks.artist3 }
 
     presetRepo.Setup(_.SavePreset(updatedPreset)).ReturnsAsync(())
 
@@ -441,12 +441,14 @@ type IncludeArtist() =
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some platform.Object)
 
     let sut =
-      Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
+      Domain.Workflows.Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
       let! result = sut Mocks.userId Mocks.presetId rawArtistId
 
-      result |> should equal (Result<_, Preset.IncludeArtistError>.Ok Mocks.artist3)
+      match result with
+      | Ok r -> r.Artist |> should equal Mocks.artist3
+      | Error e -> failwithf "Expected success, got error %A" e
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -462,7 +464,7 @@ type IncludeArtist() =
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some platform.Object)
 
     let sut =
-      Preset.includeArtist invalidParseArtistId presetRepo.Object musicPlatformFactory.Object
+      Domain.Workflows.Preset.includeArtist invalidParseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
       let! result = sut Mocks.userId Mocks.presetId rawArtistId
@@ -484,7 +486,7 @@ type IncludeArtist() =
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some platform.Object)
 
     let sut =
-      Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
+      Domain.Workflows.Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
       let! result = sut Mocks.userId Mocks.presetId rawArtistId
@@ -504,7 +506,7 @@ type IncludeArtist() =
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(None)
 
     let sut =
-      Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
+      Domain.Workflows.Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
       let! result = sut Mocks.userId Mocks.presetId rawArtistId

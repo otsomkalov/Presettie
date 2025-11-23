@@ -1250,15 +1250,20 @@ type showIncludedArtistClickHandler() =
 type removeIncludedArtistClickHandler() =
   let presetService = Mock<IRemoveIncludedArtist>()
   let resourceProviderMock = Mock<IResourceProvider>()
-  let botServiceMock = Mock<IEditMessageButtons>()
+  let botServiceMock = Mock<IBotService>()
 
   let handler =
     Click.removeIncludedArtistClickHandler presetService.Object resourceProviderMock.Object botServiceMock.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
-    presetService.Setup(_.RemoveIncludedArtist(It.IsAny<PresetId>(), It.IsAny<ArtistId>())).ReturnsAsync(Mocks.preset)
-    resourceProviderMock.Setup(fun x -> x[Notifications.IncludedArtistRemoved]).Returns(Notifications.IncludedArtistRemoved)
+    presetService
+      .Setup(_.RemoveIncludedArtist(It.IsAny<PresetId>(), It.IsAny<ArtistId>()))
+      .ReturnsAsync(
+        Ok
+          { Mocks.preset with
+              IncludedArtists = Set.empty }
+      )
 
     let click =
       createClick

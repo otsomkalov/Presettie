@@ -211,6 +211,9 @@ module Messages =
   [<Literal>]
   let ArtistAlreadyExcluded = "messages.artist-already-excluded"
 
+  [<Literal>]
+  let ArtistAlreadyIncluded = "messages.artist-already-included"
+
 [<RequireQualifiedAccess>]
 module Buttons =
   [<Literal>]
@@ -346,3 +349,6 @@ module Notifications =
 
   [<Literal>]
   let ArtistNotExcluded = "notifications.artist-not-excluded"
+
+  [<Literal>]
+  let ArtistNotIncluded = "notifications.artist-not-included"

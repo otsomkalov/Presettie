@@ -291,17 +291,20 @@ let showIncludedArtistClickHandler (presetRepo: #ILoadPreset) (resp: IResourcePr
       }
     | _ -> Task.FromResult(None)
 
-let removeIncludedArtistClickHandler (presetService: #IRemoveIncludedArtist) (resp: IResourceProvider) botService : ClickHandler =
+let removeIncludedArtistClickHandler (presetService: #IRemoveIncludedArtist) (resp: IResourceProvider) (botService: #ISendNotification) : ClickHandler =
   fun click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedArtists; artistId; "rm" ] -> task {
         let presetId = PresetId presetId
         let playlistId = ArtistId artistId
-        let! preset = presetService.RemoveIncludedArtist(presetId, playlistId)
+        match! presetService.RemoveIncludedArtist(presetId, playlistId) with
+        | Ok preset ->
+          do! IncludedArtist.list resp botService click.MessageId preset (Page 0)
+          return Some()
+        | Error Preset.RemoveIncludedArtistError.NotIncluded ->
+          do! botService.SendNotification(click.Id, resp[Notifications.ArtistNotIncluded]) |> Task.ignore
 
-        do! IncludedArtist.list resp botService click.MessageId preset (Page 0)
-
-        return Some()
+          return Some()
       }
     | _ -> Task.FromResult(None)
 

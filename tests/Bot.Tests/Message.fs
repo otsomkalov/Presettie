@@ -1613,7 +1613,11 @@ type IncludeArtistMessageHandler() =
   member _.``should handle reply with included artist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist1))
+    let expected: Preset.IncludeArtistResult =
+      { Preset = Mocks.preset
+        Artist = Mocks.artist1 }
+
+    presetService.Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(expected))
 
     resourceProvider.Setup(_.Item(Messages.ArtistIncluded, It.IsAny())).Returns("Artist included message")
 
@@ -1635,7 +1639,11 @@ type IncludeArtistMessageHandler() =
   member _.``should handle /includeartist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist1))
+    let expected: Preset.IncludeArtistResult =
+      { Preset = Mocks.preset
+        Artist = Mocks.artist1 }
+
+    presetService.Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(expected))
 
     resourceProvider.Setup(_.Item(Messages.ArtistIncluded, It.IsAny())).Returns(Messages.ArtistIncluded)
 

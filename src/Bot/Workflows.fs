@@ -188,7 +188,7 @@ module IncludedContent =
         resp[Messages.IncludedContent,
              [| preset.Name
                 preset.IncludedPlaylists.Length
-                preset.IncludedArtists.Length |]]
+                preset.IncludedArtists.Count |]]
 
       do! botMessageCtx.EditMessageButtons(messageId, text, buttons)
     }
@@ -362,7 +362,7 @@ module IncludedArtist =
     fun messageId presetId artistId -> task {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
-      let includedArtist = preset.IncludedArtists |> List.find (fun p -> p.Id = artistId)
+      let includedArtist = preset.IncludedArtists |> Seq.find (fun p -> p.Id = artistId)
 
       let messageText = resp[Messages.IncludedArtistDetails, [| includedArtist.Name |]]
 

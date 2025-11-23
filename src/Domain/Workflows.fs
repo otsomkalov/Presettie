@@ -187,27 +187,19 @@ module ExcludedArtist =
 [<RequireQualifiedAccess>]
 module IncludedArtist =
   let internal listTracks (platform: #IListArtistTracks) =
-    fun (artists: IncludedArtist list) ->
+    fun (artists: IncludedArtist seq) ->
       artists
-      |> List.map (fun artist -> platform.ListArtistTracks artist.Id)
+      |> Seq.map (fun artist -> platform.ListArtistTracks artist.Id)
       |> Task.WhenAll
       |> Task.map List.concat
 
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
-    fun presetId includedArtistId -> task {
-      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
-
-      let includedArtists =
-        preset.IncludedArtists |> List.filter (fun a -> a.Id <> includedArtistId)
-
-      let updatedPreset =
-        { preset with
-            IncludedArtists = includedArtists }
-
-      do! presetRepo.SavePreset updatedPreset
-
-      return updatedPreset
-    }
+    fun presetId includedArtistId ->
+      presetId
+      |> presetRepo.LoadPreset
+      |> Task.map Option.get
+      |> Task.map (fun preset -> Preset.removeIncludedArtist preset includedArtistId)
+      |> TaskResult.taskTap presetRepo.SavePreset
 
 [<RequireQualifiedAccess>]
 module Preset =
@@ -240,7 +232,7 @@ module Preset =
           OwnerId = userId
           IncludedPlaylists = []
           ExcludedPlaylists = Set.empty
-          IncludedArtists = []
+          IncludedArtists = Set.empty
           ExcludedArtists = Set.empty
           TargetedPlaylists = []
           Settings =
@@ -427,24 +419,17 @@ module Preset =
 
     let includeArtist' mp =
       fun presetId rawArtistId ->
-        let updatePreset artist = task {
-          let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
-
-          let updatedIncludedArtists = preset.IncludedArtists @ [ artist ]
-
-          let updatedPreset =
-            { preset with
-                IncludedArtists = updatedIncludedArtists }
-
-          do! presetRepo.SavePreset updatedPreset
-
-          return artist
-        }
+        let updatePreset artist =
+          presetId
+          |> presetRepo.LoadPreset
+          |> Task.map Option.get
+          |> Task.map (fun preset -> Preset.includeArtist preset artist)
+          |> TaskResult.taskTap(fun {Preset = preset} -> presetRepo.SavePreset preset)
 
         rawArtistId
         |> parseId
         |> Result.taskBind (loadArtist mp)
-        |> TaskResult.taskMap updatePreset
+        |> TaskResult.bind updatePreset
 
     fun (userId: UserId) presetId rawArtistId ->
       musicPlatformFactory.GetMusicPlatform(userId.ToMusicPlatformId())
