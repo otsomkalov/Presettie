@@ -95,7 +95,7 @@ let preset =
     ExcludedPlaylists = Set.singleton excludedPlaylist
     IncludedArtists = Set.singleton artist1
     ExcludedArtists = Set.singleton artist2
-    TargetedPlaylists = [ targetedPlaylist ]
+    TargetedPlaylists = Set.singleton targetedPlaylist
     Settings = presetSettingsMock }
 
 let user: User =

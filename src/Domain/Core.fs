@@ -98,7 +98,7 @@ type Preset =
     ExcludedPlaylists: ExcludedPlaylist Set
     IncludedArtists: IncludedArtist Set
     ExcludedArtists: ExcludedArtist Set
-    TargetedPlaylists: TargetedPlaylist list }
+    TargetedPlaylists: TargetedPlaylist Set }
 
 type User =
   { Id: UserId
@@ -172,6 +172,7 @@ module Preset =
     | IdParsing of Playlist.IdParsingError
     | Load of Playlist.LoadError
     | AccessError of AccessError
+    | AlreadyTargeted
     | Unauthorized
 
   type GetPresetError = | NotFound
@@ -284,6 +285,35 @@ module Preset =
         { preset with
             IncludedArtists = preset.IncludedArtists |> Set.remove artist }
 
+  type TargetPlaylistResult =
+    { Preset: Preset
+      Playlist: TargetedPlaylist }
+
+  let targetPlaylist (preset: Preset) (playlist: TargetedPlaylist) =
+    let existing =
+      preset.TargetedPlaylists |> Seq.tryFind (fun p -> p.Id = playlist.Id)
+
+    match existing with
+    | Some _ -> Error(TargetPlaylistError.AlreadyTargeted)
+    | None ->
+      let updatedPreset =
+        { preset with
+            TargetedPlaylists = preset.TargetedPlaylists |> Set.add playlist }
+
+      Ok { Preset = updatedPreset; Playlist = playlist }
+
+  type RemoveTargetedPlaylistError = | NotTargeted
+
+  let removeTargetedPlaylist (preset: Preset) (playlistId: TargetedPlaylistId) =
+    let existing = preset.TargetedPlaylists |> Seq.tryFind (fun p -> p.Id = playlistId)
+
+    match existing with
+    | None -> Error(NotTargeted)
+    | Some playlist ->
+      Ok
+        { preset with
+            TargetedPlaylists = preset.TargetedPlaylists |> Set.remove playlist }
+
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
   let fromSpotifyPlaylist =
@@ -332,7 +362,7 @@ type IExcludeArtist =
   abstract ExcludeArtist: UserId * PresetId * Artist.RawArtistId -> Task<Result<Preset.ExcludeArtistResult, Preset.ExcludeArtistError>>
 
 type ITargetPlaylist =
-  abstract TargetPlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, Preset.TargetPlaylistError>>
+  abstract TargetPlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<Preset.TargetPlaylistResult, Preset.TargetPlaylistError>>
 
 type ISetRecommendationsEngine =
   abstract SetRecommendationsEngine: PresetId * PresetSettings.RecommendationsEngine option -> Task<unit>
@@ -371,7 +401,7 @@ type IRemoveExcludedArtist =
   abstract RemoveExcludedArtist: PresetId * ArtistId -> Task<Result<Preset, Preset.RemoveExcludedArtistError>>
 
 type IRemoveTargetedPlaylist =
-  abstract RemoveTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<Preset>
+  abstract RemoveTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<Result<Preset, Preset.RemoveTargetedPlaylistError>>
 
 type ISetOnlyLiked =
   abstract SetOnlyLiked: PresetId * IncludedPlaylistId -> Task<unit>

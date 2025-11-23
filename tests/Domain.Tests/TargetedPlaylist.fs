@@ -18,15 +18,17 @@ type TargetedPlaylist() =
         Some
           { Mocks.preset with
               TargetedPlaylists =
-                [ { Mocks.targetedPlaylist with
-                      Overwrite = true } ] }
+                Set.singleton
+                  { Mocks.targetedPlaylist with
+                      Overwrite = true } }
       )
 
     let expected =
       { Mocks.preset with
           TargetedPlaylists =
-            [ { Mocks.targetedPlaylist with
-                  Overwrite = false } ] }
+            Set.singleton
+              { Mocks.targetedPlaylist with
+                  Overwrite = false } }
 
     mock.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
@@ -47,15 +49,17 @@ type TargetedPlaylist() =
         Some
           { Mocks.preset with
               TargetedPlaylists =
-                [ { Mocks.targetedPlaylist with
-                      Overwrite = false } ] }
+                Set.singleton
+                  { Mocks.targetedPlaylist with
+                      Overwrite = false } }
       )
 
     let expected =
       { Mocks.preset with
           TargetedPlaylists =
-            [ { Mocks.targetedPlaylist with
-                  Overwrite = true } ] }
+            Set.singleton
+              { Mocks.targetedPlaylist with
+                  Overwrite = true } }
 
     mock.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
@@ -74,16 +78,17 @@ type TargetedPlaylist() =
 
     let expected =
       { Mocks.preset with
-          TargetedPlaylists = [] }
+          TargetedPlaylists = Set.empty }
 
     mock.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
     let sut = TargetedPlaylist.remove mock.Object
 
     task {
-      let! preset = sut Mocks.presetId Mocks.targetedPlaylist.Id
+      let! result = sut Mocks.presetId Mocks.targetedPlaylist.Id
 
-      preset.TargetedPlaylists |> should equivalent List.empty<TargetedPlaylist>
+      result
+      |> should equal (Result<_, Preset.RemoveTargetedPlaylistError>.Ok(expected))
 
       mock.VerifyAll()
     }

@@ -1750,7 +1750,8 @@ type TargetPlaylistMessageHandler() =
   member _.``should handle reply with targeted playlist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.targetedPlaylist)
+    let targetedResult: Preset.TargetPlaylistResult = { Preset = Mocks.preset; Playlist = Mocks.targetedPlaylist }
+    presetService.Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok targetedResult)
 
     resourceProvider.Setup(_.Item(Messages.PlaylistTargeted, It.IsAny())).Returns(Messages.PlaylistTargeted)
 
@@ -1770,7 +1771,8 @@ type TargetPlaylistMessageHandler() =
   member _.``should handle /targetplaylist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.targetedPlaylist)
+    let targetedResult: Preset.TargetPlaylistResult = { Preset = Mocks.preset; Playlist = Mocks.targetedPlaylist }
+    presetService.Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok targetedResult)
 
     resourceProvider.Setup(_.Item(Messages.PlaylistTargeted, It.IsAny())).Returns(Messages.PlaylistTargeted)
 

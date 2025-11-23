@@ -107,8 +107,9 @@ type TargetedPlaylist() =
     presetService
       .Setup(_.RemoveTargetedPlaylist(Mocks.presetId, Mocks.targetedPlaylist.Id))
       .ReturnsAsync(
-        { Mocks.preset with
-            TargetedPlaylists = [] }
+        Ok
+          { Mocks.preset with
+              TargetedPlaylists = Set.empty }
       )
 
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())

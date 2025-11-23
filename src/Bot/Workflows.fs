@@ -392,7 +392,7 @@ module TargetedPlaylist =
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
       let targetedPlaylist =
-        preset.TargetedPlaylists |> List.find (fun p -> p.Id = playlistId)
+        preset.TargetedPlaylists |> Seq.find (fun p -> p.Id = playlistId)
 
       let! playlistTracksCount =
         mp

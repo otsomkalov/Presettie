@@ -345,6 +345,10 @@
     "Key": "messages.artist-already-included",
     "Value": "Artist is already included in current preset!",
     "Lang": "en"
+  },{
+    "Key": "messages.playlist-already-targeted",
+    "Value": "Playlist is already targeted in current preset!",
+    "Lang": "en"
   },
 
   {
@@ -570,6 +574,11 @@
   {
     "Key": "notifications.artist-not-excluded",
     "Value": "Artist not excluded and cannot be removed!",
+    "Lang": "en"
+  },
+  {
+    "Key": "notifications.playlist-not-targeted",
+    "Value": "Playlist not targeted and cannot be removed!",
     "Lang": "en"
   }
 ]

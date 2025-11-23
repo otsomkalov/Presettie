@@ -80,7 +80,7 @@ module TargetedPlaylist =
     Entities.TargetedPlaylist(Id = playlist.Id.Value.Value, Name = playlist.Name, Overwrite = playlist.Overwrite)
 
   let mapPlaylists (playlists: Entities.TargetedPlaylist seq) =
-    playlists |> Seq.map fromDb |> Seq.toList
+    playlists |> Seq.map fromDb |> Set.ofSeq
 
 module PresetSettings =
   let fromDb (settings: Entities.Settings) : PresetSettings.PresetSettings =

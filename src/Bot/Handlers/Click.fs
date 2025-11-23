@@ -325,15 +325,19 @@ let showTargetedPlaylistClickHandler
       }
     | _ -> Task.FromResult(None)
 
-let removeTargetedPlaylistClickHandler (presetService: #IRemoveTargetedPlaylist) (resp: IResourceProvider) botService : ClickHandler =
+let removeTargetedPlaylistClickHandler (presetService: #IRemoveTargetedPlaylist) (resp: IResourceProvider) (botService: #ISendNotification & #IEditMessageButtons) : ClickHandler =
   fun click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "rm" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
-        let! preset = presetService.RemoveTargetedPlaylist(presetId, (WritablePlaylistId playlistId))
-        do! TargetedPlaylist.list resp botService click.MessageId preset (Page 0)
-        return Some()
+        match! presetService.RemoveTargetedPlaylist(presetId, (WritablePlaylistId playlistId)) with
+        | Ok preset ->
+          do! TargetedPlaylist.list resp botService click.MessageId preset (Page 0)
+          return Some()
+        | Error Preset.RemoveTargetedPlaylistError.NotTargeted ->
+          do! botService.SendNotification(click.Id, resp[Notifications.TargetedPlaylistNotTargeted]) |> Task.ignore
+          return Some()
       }
     | _ -> Task.FromResult(None)
 
