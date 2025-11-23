@@ -209,7 +209,7 @@ module ExcludedContent =
         resp[Messages.ExcludedContent,
              [| preset.Name
                 preset.ExcludedPlaylists.Count
-                preset.ExcludedArtists.Length |]]
+                preset.ExcludedArtists.Count |]]
 
       do! botMessageCtx.EditMessageButtons(messageId, text, buttons)
     }
@@ -333,7 +333,7 @@ module ExcludedArtist =
     fun messageId presetId artistId -> task {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
-      let excludedArtist = preset.ExcludedArtists |> List.find (fun p -> p.Id = artistId)
+      let excludedArtist = preset.ExcludedArtists |> Seq.find (fun p -> p.Id = artistId)
 
       let messageText = resp[Messages.ExcludedArtistDetails, [| excludedArtist.Name |]]
 

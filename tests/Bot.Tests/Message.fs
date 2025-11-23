@@ -1476,7 +1476,11 @@ type ExcludeArtistMessageHandler() =
   member _.``should handle reply with excluded artist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist2))
+    let expected: Preset.ExcludeArtistResult =
+      { Preset = Mocks.preset
+        Artist = Mocks.artist2 }
+
+    presetService.Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(expected))
 
     resourceProvider.Setup(_.Item(Messages.ArtistExcluded, It.IsAny())).Returns("Artist excluded message")
 
@@ -1498,7 +1502,11 @@ type ExcludeArtistMessageHandler() =
   member _.``should handle /excludeartist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist2))
+    let expected: Preset.ExcludeArtistResult =
+      { Preset = Mocks.preset
+        Artist = Mocks.artist2 }
+
+    presetService.Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(expected))
 
     resourceProvider.Setup(_.Item(Messages.ArtistExcluded, It.IsAny())).Returns(Messages.ArtistExcluded)
 

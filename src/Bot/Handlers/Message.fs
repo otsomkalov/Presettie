@@ -391,8 +391,8 @@ let excludeArtistMessageHandler
       let excludeArtistResult =
         presetService.ExcludeArtist(userId, currentPresetId, rawArtistId)
 
-      let onSuccess (artist: ExcludedArtist) =
-        chatCtx.SendMessage resp[Messages.ArtistExcluded, [| artist.Name |]]
+      let onSuccess (result: Preset.ExcludeArtistResult) =
+        chatCtx.SendMessage resp[Messages.ArtistExcluded, [| result.Artist.Name |]]
 
       let onError =
         function
@@ -402,6 +402,7 @@ let excludeArtistMessageHandler
           let (Artist.RawArtistId rawArtistId) = rawArtistId
           chatCtx.SendMessage resp[Messages.ArtistNotFoundInSpotify, [| rawArtistId |]]
         | Preset.ExcludeArtistError.Unauthorized -> sendLoginMessage authService resp chatCtx userId
+        | Preset.ExcludeArtistError.AlreadyExcluded -> chatCtx.SendMessage resp[Messages.ArtistAlreadyExcluded]
 
       return! excludeArtistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
     }
