@@ -215,6 +215,9 @@ module Messages =
   let ArtistAlreadyIncluded = "messages.artist-already-included"
 
   [<Literal>]
+  let PlaylistAlreadyIncluded = "messages.playlist-already-included"
+
+  [<Literal>]
   let PlaylistAlreadyTargeted = "messages.playlist-already-targeted"
 
 [<RequireQualifiedAccess>]
@@ -355,6 +358,9 @@ module Notifications =
 
   [<Literal>]
   let ArtistNotIncluded = "notifications.artist-not-included"
+
+  [<Literal>]
+  let IncludedPlaylistNotIncluded = "notifications.playlist-not-included"
 
   [<Literal>]
   let TargetedPlaylistNotTargeted = "notifications.playlist-not-targeted"

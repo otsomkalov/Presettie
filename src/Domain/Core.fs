@@ -94,7 +94,7 @@ type Preset =
     Name: string
     OwnerId: UserId
     Settings: PresetSettings.PresetSettings
-    IncludedPlaylists: IncludedPlaylist list
+    IncludedPlaylists: IncludedPlaylist Set
     ExcludedPlaylists: ExcludedPlaylist Set
     IncludedArtists: IncludedArtist Set
     ExcludedArtists: ExcludedArtist Set
@@ -146,6 +146,7 @@ module Preset =
   type IncludePlaylistError =
     | IdParsing of Playlist.IdParsingError
     | Load of Playlist.LoadError
+    | AlreadyIncluded
     | Unauthorized
 
   type ExcludePlaylistError =
@@ -212,6 +213,35 @@ module Preset =
       Ok
         { preset with
             ExcludedPlaylists = preset.ExcludedPlaylists |> Set.remove playlist }
+
+  type IncludePlaylistResult =
+    { Preset: Preset
+      Playlist: IncludedPlaylist }
+
+  let includePlaylist (preset: Preset) (playlist: IncludedPlaylist) =
+    let existing =
+      preset.IncludedPlaylists |> Seq.tryFind (fun p -> p.Id = playlist.Id)
+
+    match existing with
+    | Some _ -> Error(IncludePlaylistError.AlreadyIncluded)
+    | None ->
+      let updatedPreset =
+        { preset with
+            IncludedPlaylists = preset.IncludedPlaylists |> Set.add playlist }
+
+      Ok { Preset = updatedPreset; Playlist = playlist }
+
+  type RemoveIncludedPlaylistError = | NotIncluded
+
+  let removeIncludedPlaylist (preset: Preset) (playlistId: IncludedPlaylistId) =
+    let existing = preset.IncludedPlaylists |> Seq.tryFind (fun p -> p.Id = playlistId)
+
+    match existing with
+    | None -> Error(NotIncluded)
+    | Some playlist ->
+      Ok
+        { preset with
+            IncludedPlaylists = preset.IncludedPlaylists |> Set.remove playlist }
 
   type ExcludeArtistResult =
     { Preset: Preset
@@ -349,7 +379,7 @@ type ICreatePreset =
   abstract CreatePreset: UserId * string -> Task<Preset>
 
 type IIncludePlaylist =
-  abstract IncludePlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<IncludedPlaylist, Preset.IncludePlaylistError>>
+  abstract IncludePlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<Preset.IncludePlaylistResult, Preset.IncludePlaylistError>>
 
 type IExcludePlaylist =
   abstract ExcludePlaylist:
@@ -389,7 +419,7 @@ type IOverwriteTargetedPlaylist =
   abstract OverwriteTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<unit>
 
 type IRemoveIncludedPlaylist =
-  abstract RemoveIncludedPlaylist: PresetId * IncludedPlaylistId -> Task<Preset>
+  abstract RemoveIncludedPlaylist: PresetId * IncludedPlaylistId -> Task<Result<Preset, Preset.RemoveIncludedPlaylistError>>
 
 type IRemoveExcludedPlaylist =
   abstract RemoveExcludedPlaylist: PresetId * ReadablePlaylistId -> Task<Result<Preset, Preset.RemoveExcludedPlaylistError>>

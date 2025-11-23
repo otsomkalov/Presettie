@@ -120,7 +120,7 @@ module PresetSettings =
 module Preset =
   let fromDb (preset: Entities.Preset) : Preset =
     let mapIncludedPlaylist playlists =
-      playlists |> Seq.map IncludedPlaylist.fromDb |> Seq.toList
+      playlists |> Seq.map IncludedPlaylist.fromDb |> Set.ofSeq
 
     { Id = preset.Id |> string |> PresetId
       Name = preset.Name

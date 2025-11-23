@@ -16,18 +16,19 @@ type IncludedPlaylist() =
 
     let expected =
       { Mocks.preset with
-          IncludedPlaylists = [] }
+          IncludedPlaylists = Set.empty }
 
     mockPresetRepo.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
     let sut = IncludedPlaylist.remove mockPresetRepo.Object
 
     task {
-      let! preset = sut Mocks.presetId Mocks.includedPlaylist.Id
+      let! result = sut Mocks.presetId Mocks.includedPlaylist.Id
 
       mockPresetRepo.VerifyAll()
 
-      preset.IncludedPlaylists |> should equivalent List.empty<IncludedPlaylist>
+      result
+      |> should equal (Result<_, Preset.RemoveIncludedPlaylistError>.Ok(expected))
     }
 
   [<Fact>]
@@ -40,7 +41,7 @@ type IncludedPlaylist() =
 
     let inputPreset =
       { Mocks.preset with
-          IncludedPlaylists = [ inputPlaylist ] }
+          IncludedPlaylists = Set.singleton inputPlaylist }
 
     mockPresetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some inputPreset)
 
@@ -50,7 +51,7 @@ type IncludedPlaylist() =
 
     let expectedPreset =
       { Mocks.preset with
-          IncludedPlaylists = [ expectedPlaylist ] }
+          IncludedPlaylists = Set.singleton expectedPlaylist }
 
     mockPresetRepo.Setup(_.SavePreset(expectedPreset)).ReturnsAsync(())
 
@@ -75,7 +76,7 @@ type IncludedPlaylist() =
 
     let expectedPreset =
       { Mocks.preset with
-          IncludedPlaylists = [ expectedPlaylist ] }
+          IncludedPlaylists = Set.singleton expectedPlaylist }
 
     mockPresetRepo.Setup(_.SavePreset(expectedPreset)).ReturnsAsync(())
 

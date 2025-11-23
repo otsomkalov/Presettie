@@ -303,8 +303,8 @@ let includePlaylistMessageHandler
       let includePlaylistResult =
         presetService.IncludePlaylist(userId, currentPresetId, rawPlaylistId)
 
-      let onSuccess (playlist: IncludedPlaylist) =
-        chatCtx.SendMessage resp[Messages.PlaylistIncluded, [| playlist.Name |]]
+      let onSuccess (result: Preset.IncludePlaylistResult) =
+        chatCtx.SendMessage resp[Messages.PlaylistIncluded, [| result.Playlist.Name |]]
 
       let onError =
         function
@@ -314,6 +314,7 @@ let includePlaylistMessageHandler
           let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
 
           chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId |]]
+        | Preset.IncludePlaylistError.AlreadyIncluded -> chatCtx.SendMessage resp[Messages.PlaylistAlreadyIncluded]
         | Preset.IncludePlaylistError.Unauthorized -> sendLoginMessage authService resp chatCtx userId
 
       return! includePlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore

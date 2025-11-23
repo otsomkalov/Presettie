@@ -78,48 +78,38 @@ module IncludedPlaylist =
     }
 
   let internal listTracks env =
-    fun (playlists: IncludedPlaylist list) ->
+    fun (playlists: IncludedPlaylist seq) ->
       playlists
-      |> List.map (listPlaylistTracks env)
+      |> Seq.map (listPlaylistTracks env)
       |> Task.WhenAll
       |> Task.map Seq.concat
       |> Task.map List.ofSeq
 
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
-    fun presetId includedPlaylistId -> task {
-      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
-
-      let includedPlaylists =
-        preset.IncludedPlaylists |> List.filter (fun p -> p.Id <> includedPlaylistId)
-
-      let updatedPreset =
-        { preset with
-            IncludedPlaylists = includedPlaylists }
-
-      do! presetRepo.SavePreset updatedPreset
-
-      return updatedPreset
-    }
+    fun presetId includedPlaylistId ->
+      presetId
+      |> presetRepo.LoadPreset
+      |> Task.map Option.get
+      |> Task.map (fun preset -> Preset.removeIncludedPlaylist preset includedPlaylistId)
+      |> TaskResult.taskTap presetRepo.SavePreset
 
   let setAll (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId playlistId -> task {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
       let includedPlaylist =
-        preset.IncludedPlaylists |> List.find (fun p -> p.Id = playlistId)
+        preset.IncludedPlaylists |> Seq.find (fun p -> p.Id = playlistId)
 
       let updatedPlaylist =
         { includedPlaylist with
             LikedOnly = false }
 
-      let includedPlaylists =
-        preset.IncludedPlaylists
-        |> List.filter (fun p -> p.Id <> playlistId)
-        |> List.append [ updatedPlaylist ]
-
       let updatedPreset =
         { preset with
-            IncludedPlaylists = includedPlaylists }
+            IncludedPlaylists =
+              preset.IncludedPlaylists
+              |> Set.remove includedPlaylist
+              |> Set.add updatedPlaylist }
 
       return! presetRepo.SavePreset updatedPreset
     }
@@ -129,20 +119,18 @@ module IncludedPlaylist =
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
       let includedPlaylist =
-        preset.IncludedPlaylists |> List.find (fun p -> p.Id = playlistId)
+        preset.IncludedPlaylists |> Seq.find (fun p -> p.Id = playlistId)
 
       let updatedPlaylist =
         { includedPlaylist with
             LikedOnly = true }
 
-      let includedPlaylists =
-        preset.IncludedPlaylists
-        |> List.filter (fun p -> p.Id <> playlistId)
-        |> List.append [ updatedPlaylist ]
-
       let updatedPreset =
         { preset with
-            IncludedPlaylists = includedPlaylists }
+            IncludedPlaylists =
+              preset.IncludedPlaylists
+              |> Set.remove includedPlaylist
+              |> Set.add updatedPlaylist }
 
       return! presetRepo.SavePreset updatedPreset
     }
@@ -207,7 +195,7 @@ module Preset =
 
   let validate: Preset.Validate =
     fun preset ->
-      let noIncluded = preset.IncludedPlaylists |> List.isEmpty
+      let noIncluded = preset.IncludedPlaylists |> Set.isEmpty
       let noTargeted = preset.TargetedPlaylists |> Set.isEmpty
 
       match noIncluded, preset.Settings.LikedTracksHandling, noTargeted with
@@ -229,7 +217,7 @@ module Preset =
         { Id = PresetId(presetRepo.GenerateId())
           Name = name
           OwnerId = userId
-          IncludedPlaylists = []
+          IncludedPlaylists = Set.empty
           ExcludedPlaylists = Set.empty
           IncludedArtists = Set.empty
           ExcludedArtists = Set.empty
@@ -332,25 +320,18 @@ module Preset =
 
     let includePlaylist' mp =
       fun presetId rawPlaylistId ->
-        let updatePreset playlist = task {
-          let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
-
-          let updatedIncludedPlaylists = preset.IncludedPlaylists |> List.append [ playlist ]
-
-          let updatedPreset =
-            { preset with
-                IncludedPlaylists = updatedIncludedPlaylists }
-
-          do! presetRepo.SavePreset updatedPreset
-
-          return playlist
-        }
+        let updatePreset (playlist: IncludedPlaylist) =
+          presetId
+          |> presetRepo.LoadPreset
+          |> Task.map Option.get
+          |> Task.map (fun preset -> Preset.includePlaylist preset playlist)
+          |> TaskResult.taskTap(fun {Preset = preset} -> presetRepo.SavePreset preset)
 
         rawPlaylistId
         |> parseId
         |> Result.taskBind (loadPlaylist mp)
         |> TaskResult.map IncludedPlaylist.fromSpotifyPlaylist
-        |> TaskResult.taskMap updatePreset
+        |> TaskResult.bind updatePreset
 
     fun (userId: UserId) presetId rawPlaylistId ->
       musicPlatformFactory.GetMusicPlatform(userId.ToMusicPlatformId())

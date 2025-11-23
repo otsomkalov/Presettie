@@ -187,7 +187,7 @@ module IncludedContent =
       let text =
         resp[Messages.IncludedContent,
              [| preset.Name
-                preset.IncludedPlaylists.Length
+                preset.IncludedPlaylists.Count
                 preset.IncludedArtists.Count |]]
 
       do! botMessageCtx.EditMessageButtons(messageId, text, buttons)
@@ -235,7 +235,7 @@ module IncludedPlaylist =
 
       let includedPlaylist =
         preset.IncludedPlaylists
-        |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
+        |> Seq.find (fun p -> p.Id = ReadablePlaylistId playlistId)
 
       let! playlistTracksCount =
         mp

@@ -30,7 +30,7 @@ type Run() =
 
     let preset =
       { Mocks.preset with
-          IncludedPlaylists = [ includedPlaylist ] }
+          IncludedPlaylists = Set.singleton includedPlaylist }
 
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([ Mocks.includedTrack; Mocks.likedTrack ])
 

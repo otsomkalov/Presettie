@@ -1228,7 +1228,8 @@ type IncludePlaylistMessageHandler() =
   member _.``should handle reply with included playlist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.includedPlaylist)
+    let includeResult: Preset.IncludePlaylistResult = { Preset = Mocks.preset; Playlist = Mocks.includedPlaylist }
+    presetService.Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok includeResult)
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1250,7 +1251,8 @@ type IncludePlaylistMessageHandler() =
   member _.``should handle /includeplaylist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.includedPlaylist)
+    let includeResult: Preset.IncludePlaylistResult = { Preset = Mocks.preset; Playlist = Mocks.includedPlaylist }
+    presetService.Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok includeResult)
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
 

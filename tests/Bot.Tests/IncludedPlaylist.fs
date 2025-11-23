@@ -110,8 +110,9 @@ type IncludedPlaylist() =
     presetService
       .Setup(_.RemoveIncludedPlaylist(Mocks.presetId, Mocks.includedPlaylist.Id))
       .ReturnsAsync(
-        { Mocks.preset with
-            IncludedPlaylists = [] }
+        Ok
+          { Mocks.preset with
+              IncludedPlaylists = Set.empty }
       )
 
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
