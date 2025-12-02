@@ -13,6 +13,7 @@ open Bolero.Web.Repos
 open System.Net.Http.Json
 open Bolero.Web.Util
 open otsom.fs.Extensions
+open FsToolkit.ErrorHandling
 
 type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
   let httpClient = httpClientFactory.CreateClient(nameof Env)

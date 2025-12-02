@@ -7,7 +7,7 @@ open MusicPlatform
 open MusicPlatform.Cached.Helpers
 open StackExchange.Redis
 open System.Threading.Tasks
-open otsom.fs.Extensions
+open FsToolkit.ErrorHandling
 
 let private prependList (telemetryClient: TelemetryClient) (cache: IDatabase) =
   fun (key: string) values -> task {

@@ -139,7 +139,7 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
   interface IMusicPlatform with
     member this.AddTracks(PlaylistId playlistId, tracks) =
       client.Playlists.AddItems(playlistId, tracks |> mapToSpotifyTracksIds |> PlaylistAddItemsRequest)
-      &|> ignore
+      |> Task.map ignore
 
     member this.ListLikedTracks() = User.listLikedTracks' client ()
 
@@ -161,7 +161,7 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
 
     member this.ReplaceTracks(PlaylistId playlistId, tracks) =
       client.Playlists.ReplaceItems(playlistId, tracks |> mapToSpotifyTracksIds |> PlaylistReplaceItemsRequest)
-      &|> ignore
+      |> Task.map ignore
 
     member this.ListArtistTracks(ArtistId artistId) = task {
       let request =
@@ -241,4 +241,4 @@ type SpotifyMusicPlatformFactory(authService: IAuthRepo, authOptions, logger) =
   interface IMusicPlatformFactory with
     member this.GetMusicPlatform(userId) =
       Library.getClient authService authOptions userId
-      &|> Option.map (fun client -> SpotifyMusicPlatform(client, logger))
+      |> Task.map (Option.map (fun client -> SpotifyMusicPlatform(client, logger)))

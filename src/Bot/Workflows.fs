@@ -17,6 +17,7 @@ open otsom.fs.Core
 open otsom.fs.Extensions
 open System
 open otsom.fs.Resources
+open FsToolkit.ErrorHandling
 
 [<Literal>]
 let keyboardColumns = 4
@@ -102,7 +103,7 @@ let private sendPresetsMessage sendOrEditButtons =
       |> Seq.map (fun p -> MessageButton(p.Name, sprintf "p|%s|i" p.Id.Value))
       |> Seq.singleton
 
-    do! sendOrEditButtons message keyboardMarkup &|> ignore
+    do! sendOrEditButtons message keyboardMarkup |> Task.map ignore
   }
 
 let createEntitiesPage (resp: IResourceProvider) =
@@ -501,7 +502,7 @@ module Preset =
 
           [ KeyboardButton(resp[Buttons.Settings]) ] ]
 
-      chatCtx.SendKeyboard(text, keyboard) &|> ignore
+      chatCtx.SendKeyboard(text, keyboard) |> Task.map ignore
 
 [<RequireQualifiedAccess>]
 module User =
@@ -514,7 +515,7 @@ module User =
 
   let sendPresets resp (chatCtx: #ISendMessageButtons) presetRepo =
     let sendButtons text buttons =
-      chatCtx.SendMessageButtons(text, buttons) &|> ignore
+      chatCtx.SendMessageButtons(text, buttons) |> Task.map ignore
 
     showPresets' resp sendButtons presetRepo
 
@@ -526,7 +527,7 @@ module User =
 
   let sendCurrentPreset (resp: IResourceProvider) (userRepo: #ILoadUser) (presetRepo: #ILoadPreset) (chatCtx: #ISendKeyboard) =
     fun userId ->
-      userId |> userRepo.LoadUser &|> _.CurrentPresetId
+      userId |> userRepo.LoadUser |> Task.map _.CurrentPresetId
       &|&> (function
       | Some presetId -> task {
           let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
@@ -537,7 +538,8 @@ module User =
           [ [ KeyboardButton(resp[Buttons.MyPresets]) ]
             [ KeyboardButton(resp[Buttons.CreatePreset]) ] ]
 
-        chatCtx.SendKeyboard(resp[Messages.NoCurrentPreset], keyboard) &|> ignore)
+        chatCtx.SendKeyboard(resp[Messages.NoCurrentPreset], keyboard)
+        |> Task.map ignore)
 
   let sendCurrentPresetSettings
     (resp: IResourceProvider)
@@ -558,12 +560,12 @@ module User =
           [| [| KeyboardButton(resp[Buttons.SetPresetSize]) |]
              [| KeyboardButton(resp[Buttons.Back]) |] |]
 
-        do! chatCtx.SendKeyboard(text, buttons) &|> ignore
+        do! chatCtx.SendKeyboard(text, buttons) |> Task.map ignore
 
         return ()
       | None ->
         let sendButtons text buttons =
-          chatCtx.SendMessageButtons(text, buttons) &|> ignore
+          chatCtx.SendMessageButtons(text, buttons) |> Task.map ignore
 
         let! presets = presetRepo.ListUserPresets userId
 
@@ -588,7 +590,9 @@ module User =
       chatCtx.SendMessage errorsText |> Task.ignore
 
     fun userId ->
-      userId |> userRepo.LoadUser &|> (fun u -> u.CurrentPresetId |> Option.get)
+      userId
+      |> userRepo.LoadUser
+      |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
       &|&> (fun p -> presetService.QueueRun(userId, p))
       |> TaskResult.taskEither onSuccess onError
 

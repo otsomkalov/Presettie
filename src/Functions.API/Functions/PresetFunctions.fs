@@ -14,6 +14,7 @@ open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
 open otsom.fs.Extensions
 open Domain.Extensions
+open FsToolkit.ErrorHandling
 
 [<CLIMutable>]
 type CreatePresetRequest =
