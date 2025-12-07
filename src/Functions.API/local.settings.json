@@ -27,10 +27,7 @@
     "Auth__Scopes__1": "playlist-modify-public",
     "Auth__Scopes__2": "user-library-read",
 
-    "Authentication__DefaultScheme": "Bearer",
-    "Authentication__Schemes__Bearer__Authority": "<Authority>",
-    "Authentication__Schemes__Bearer__ValidAudience": "<ValidAudience>",
-    "Authentication__Schemes__Bearer__ValidIssuer": "<ValidIssuer>",
+    "Authentication__DefaultScheme": "Spotify",
 
     "Logging__LogLevel__Microsoft.IdentityModel": "Critical"
   },

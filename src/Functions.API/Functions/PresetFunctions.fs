@@ -3,6 +3,7 @@
 open System.Collections.Generic
 open System.ComponentModel.DataAnnotations
 open System.Threading.Tasks
+open AspNet.Security.OAuth.Spotify
 open Functions.API.Shared
 open Domain.Core
 open Domain.Repos
@@ -41,7 +42,7 @@ type PresetFunctions
     userService: IUserService
   ) =
   let validateUser (req: HttpRequest) : Task<Result<TokenUser, RequestError<_>>> =
-    authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
+    authService.AuthenticateAsync(req.HttpContext, SpotifyAuthenticationDefaults.AuthenticationScheme)
     |> Task.map (Option.someIf _.Succeeded)
     |> Task.map (Option.bind (_.Principal >> Option.ofObj))
     |> Task.map (Option.bind (_.Identity >> Option.ofObj))

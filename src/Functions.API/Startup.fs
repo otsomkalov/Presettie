@@ -4,10 +4,8 @@
 
 open System
 open System.Reflection
-open System.Security.Claims
 open System.Text.Json
 open System.Text.Json.Serialization
-open Azure.Core
 open Azure.Identity
 open Domain
 open Infrastructure
@@ -45,9 +43,8 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
 
   services
     .AddAuthentication()
-    .AddJwtBearer(fun opts ->
-      opts.TokenValidationParameters.NameClaimType <- ClaimTypes.NameIdentifier
-
+    .AddSpotify(fun opts ->
+      cfg.GetSection("Authentication:Spotify").Bind(opts)
       ())
 
   services.AddLocalization()

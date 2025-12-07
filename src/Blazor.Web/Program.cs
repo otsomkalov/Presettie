@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Blazor.Web;
-using Blazor.Web.Settings;
+using Blazor.Web.Options;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.Extensions.Options;
 
@@ -11,14 +11,14 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+    BaseAddress = new(builder.HostEnvironment.BaseAddress)
 });
 
-builder.Services.Configure<RemoteAuthenticationOptions<SpotifyProviderSettings>>(builder.Configuration.GetSection(SpotifyProviderSettings.SectionName));
+builder.Services.Configure<RemoteAuthenticationOptions<SpotifyProviderOptions>>(builder.Configuration.GetSection(SpotifyProviderOptions.SectionName));
 
 builder.Services
-    .AddScoped<IPostConfigureOptions<RemoteAuthenticationOptions<SpotifyProviderSettings>>, DefaultSpotifyProviderOptionsConfiguration>();
+    .AddScoped<IPostConfigureOptions<RemoteAuthenticationOptions<SpotifyProviderOptions>>, DefaultSpotifyProviderOptionsConfiguration>();
 
-builder.Services.AddRemoteAuthentication<RemoteAuthenticationState, RemoteUserAccount, SpotifyProviderSettings>();
+builder.Services.AddRemoteAuthentication<RemoteAuthenticationState, RemoteUserAccount, SpotifyProviderOptions>();
 
 await builder.Build().RunAsync();
