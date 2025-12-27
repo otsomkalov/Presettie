@@ -2,6 +2,7 @@
 
 open System
 open System.Net.Http
+open Blazored.Modal
 open Domain.Core
 open Microsoft.AspNetCore.Components
 open Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -79,6 +80,8 @@ builder.Services.AddOidcAuthentication(fun options ->
 
   ())
 
+builder.Services.AddBlazoredModal()
+
 builder.Services.AddScoped<APIAuthorizationMessageHandler>()
 
 builder.Services.AddScoped<IEnv, Env>()
@@ -87,6 +90,6 @@ builder.Services.AddHttpClient(nameof Env, configureHttpClient).AddHttpMessageHa
 
 builder.Logging.SetMinimumLevel(LogLevel.Information)
 
-builder.RootComponents.Add<Main.App>("#main")
+builder.RootComponents.Add<Main.Root>("#main")
 
 builder.Build().RunAsync()

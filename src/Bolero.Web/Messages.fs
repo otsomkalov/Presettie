@@ -1,7 +1,6 @@
 ﻿module Bolero.Web.Messages
 
 open Domain.Core
-open Microsoft.AspNetCore.Components.Authorization
 open Bolero.Web.Models
 
 [<RequireQualifiedAccess>]
@@ -38,9 +37,6 @@ module Preset =
     | Remove of Remove'.Message
     | Create of Create'.Message
 
-type AuthMsg = AuthChecked of AuthenticationState
-
 type Message =
   | PageChanged of Page
-  | Auth of AuthMsg
   | Preset of Preset.Message

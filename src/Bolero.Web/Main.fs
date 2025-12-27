@@ -1,12 +1,16 @@
 ﻿module Bolero.Web.Main
 
 open System
+open Blazored.Modal
 open Domain.Core
 open Elmish
 open Bolero
 open Bolero.Html
+open Microsoft.AspNetCore.Authorization
 open Microsoft.AspNetCore.Components
 open Microsoft.AspNetCore.Components.Authorization
+open Microsoft.AspNetCore.Components.Routing
+open Microsoft.AspNetCore.Components.Web
 open Microsoft.AspNetCore.Components.WebAssembly.Authentication
 open Bolero.Web.Messages
 open Bolero.Web.Models
@@ -32,25 +36,7 @@ module Loading =
   }
 
 let initModel =
-  fun _ ->
-    { Page = Page.Loading
-      AuthState = None },
-    Cmd.none
-
-let anonPageUpdate (authProvider: AuthenticationStateProvider) (page: Page) model =
-  let withAuthCheck model page =
-    { model with Page = page }, Cmd.OfTask.perform authProvider.GetAuthenticationStateAsync () (AuthChecked >> Auth)
-
-  match page with
-  | Page.Auth action -> { model with Page = Page.Auth action }, Cmd.none
-  | Page.Loading -> { model with Page = Page.Loading }, Cmd.none
-  | page -> withAuthCheck model page
-
-let unauthorizedPageUpdate (page: Page) model =
-  let withNoAuth model page = { model with Page = page }, Cmd.none
-
-  match page with
-  | p -> withNoAuth model p
+  fun _ -> { Page = Page.Presets { Model = { Presets = AsyncOp.Loading } } }, Cmd.none
 
 let authorizedPageUpdate (env: #IListPresets & #IGetPreset) (page: Page) model =
   let withNoCommand model page = { model with Page = page }, Cmd.none
@@ -64,20 +50,14 @@ let authorizedPageUpdate (env: #IListPresets & #IGetPreset) (page: Page) model =
     Cmd.OfTask.perform env.GetPreset' (RawPresetId id) (Preset.Details'.Message.PresetLoaded >> Preset.Message.Details >> Message.Preset)
   | p -> withNoCommand model p
 
-let authUpdate (env: #IListPresets & #IGetPreset) (authResult: AuthenticationState) model =
+let authUpdate (env: #IListPresets & #IGetPreset) model =
   match model.Page with
-  | Page.Presets p when authResult.User.Identity.IsAuthenticated ->
-    { model with
-        AuthState = Some authResult },
-    Cmd.OfTask.perform env.ListPresets () (Preset.List'.Message.PresetsLoaded >> Preset.Message.List >> Message.Preset)
-  | Page.Preset(id, p) when authResult.User.Identity.IsAuthenticated ->
-    { model with
-        AuthState = Some authResult },
+  | Page.Presets p ->
+    model, Cmd.OfTask.perform env.ListPresets () (Preset.List'.Message.PresetsLoaded >> Preset.Message.List >> Message.Preset)
+  | Page.Preset(id, p) ->
+    model,
     Cmd.OfTask.perform env.GetPreset' (RawPresetId id) (Preset.Details'.Message.PresetLoaded >> Preset.Message.Details >> Message.Preset)
-  | _ ->
-    { model with
-        AuthState = Some authResult },
-    Cmd.none
+  | _ -> model, Cmd.none
 
 let presetUpdate (env: #ICreatePreset & #IRemovePreset) (message: Preset.Message) (model: Model) =
   match message, model with
@@ -110,55 +90,119 @@ let presetUpdate (env: #ICreatePreset & #IRemovePreset) (message: Preset.Message
     Cmd.none
   | _ -> model, Cmd.none
 
-let update authProvider env (message: Message) (model: Model) =
+let update env (message: Message) (model: Model) =
   match message, model with
-  | PageChanged page, { AuthState = None } -> anonPageUpdate authProvider page model
-  | PageChanged page, { AuthState = Some(state) } when not state.User.Identity.IsAuthenticated -> unauthorizedPageUpdate page model
-  | PageChanged page, { AuthState = Some(state) } when state.User.Identity.IsAuthenticated -> authorizedPageUpdate env page model
-  | Auth(AuthMsg.AuthChecked result), m -> authUpdate env result m
+  | PageChanged page, model -> authorizedPageUpdate env page model
   | Preset(msg), m -> presetUpdate env msg m
   | _ -> model, Cmd.none
 
 let view model dispatch = concat {
-  Layout.Header.view model.AuthState dispatch
-
   div {
     attr.``class`` "container-fluid"
 
-    match model.Page, model.AuthState with
-    | Page.Home, _ -> div { "Home" }
-    | Page.About, _ -> div { "About" }
-    | Page.Loading, _ -> Loading.render () dispatch
-    | Page.NotFound, _ -> div { text "Not Found" }
-
-    | _, Some(state) when not state.User.Identity.IsAuthenticated -> comp<RemoteAuthenticatorView> { "Action" => "login" }
-
-    | Page.Presets m, Some(state) when state.User.Identity.IsAuthenticated -> Preset.List.view m.Model (Message.Preset >> dispatch)
-    | Page.Presets _, _ -> Loading.render () dispatch
-
-    | Page.Preset(id, m), Some(state) when state.User.Identity.IsAuthenticated -> Preset.Details.view m.Model dispatch
-    | Page.Preset _, _ -> Loading.render () dispatch
-
-    | Page.CreatePreset m, Some(state) when state.User.Identity.IsAuthenticated -> Preset.Create.view m.Model dispatch
-    | Page.CreatePreset m, _ -> Loading.render () dispatch
-
-    | Page.Profile, Some(state) when state.User.Identity.IsAuthenticated -> div { $"Hello {state.User.Identity.Name}" }
-    | Page.Profile, _ -> Loading.render () dispatch
-
-    | Page.Auth action, _ -> comp<RemoteAuthenticatorView> { "Action" => action }
+    match model.Page with
+    | Page.Presets m -> Preset.List.view m.Model (Message.Preset >> dispatch)
+    | Page.Preset(id, m) -> Preset.Details.view m.Model dispatch
+    | Page.CreatePreset m -> Preset.Create.view m.Model dispatch
   }
 }
 
-type App() =
-  inherit ProgramComponent<Model, Message>()
+[<Route("")>]
+type Home() =
+  inherit Component()
 
-  [<Inject>]
-  member val AuthenticationProvider: AuthenticationStateProvider = null with get, set
+  override this.Render() = div { "Home" }
+
+[<Route("about")>]
+type About() =
+  inherit Component()
+
+  override this.Render() = div { "About" }
+
+[<Route("profile")>]
+[<Authorize>]
+type Profile() =
+  inherit Component()
+
+  override this.Render() = div { $"Hello" }
+
+[<Route("presets*")>]
+[<Authorize>]
+type Presets() =
+  inherit ProgramComponent<Model, Message>()
 
   [<Inject>]
   member val Env: IEnv = Unchecked.defaultof<IEnv> with get, set
 
   override this.Program =
-    Program.mkProgram initModel (update this.AuthenticationProvider this.Env) view
+    Program.mkProgram initModel (update this.Env) view
     |> Program.withConsoleTrace
     |> Program.withRouter router
+
+[<Route("/authentication/{action}")>]
+[<AllowAnonymous>]
+type Authentication() =
+  inherit Component()
+
+  [<Parameter>]
+  member val Action: string | null = null with get, set
+
+  override this.Render() = comp<RemoteAuthenticatorView> { "Action" => this.Action }
+
+type RedirectToLogin() =
+  inherit Component()
+
+  [<Inject>]
+  member val NavigationManager = Unchecked.defaultof<NavigationManager> with get, set
+
+  override this.OnInitialized() =
+    this.NavigationManager.NavigateToLogin("authentication/login")
+
+    ()
+
+  override this.Render() = empty ()
+
+type NotFound() =
+  inherit Component()
+
+  override this.Render() = div {
+    comp<PageTitle> { "Not found" }
+
+    h1 { "Not Found" }
+  }
+
+type Root() =
+  inherit Component()
+
+  let unauthorizedView (authenticationState: AuthenticationState) =
+    match
+      authenticationState.User.Identity
+      |> Option.ofObj
+      |> Option.map _.IsAuthenticated
+    with
+    | Some true -> div { "You are not authorized to access this page." }
+    | _ -> comp<RedirectToLogin> { attr.empty () }
+
+  override this.Render() = comp<CascadingAuthenticationState> {
+    comp<CascadingBlazoredModal> {
+      comp<Router> {
+        "AppAssembly" => typeof<Root>.Assembly
+
+        attr.fragmentWith "Found" (fun (routeData: RouteData) -> concat {
+          comp<AuthorizeRouteView> {
+            "RouteData" => routeData
+            "DefaultLayout" => typeof<Layout.Layout>
+
+            attr.fragmentWith "NotAuthorized" unauthorizedView
+          }
+
+          comp<FocusOnNavigate> {
+            "RouteData" => routeData
+            "Selector" => "h1"
+          }
+        })
+
+        attr.fragment "NotFound" (comp<NotFound> { attr.empty () })
+      }
+    }
+  }

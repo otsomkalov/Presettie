@@ -9,20 +9,10 @@ open System
 
 let defaultModel =
   function
-  | Page.Home -> ()
-  | Page.About -> ()
   | Page.Presets m -> Router.definePageModel m { Presets = AsyncOp.Loading }
   | Page.CreatePreset m -> Router.definePageModel m { Name = String.Empty }
   | Page.Preset(_, m) -> Router.definePageModel m { Preset = AsyncOp.Loading }
-  | Page.NotFound -> ()
-  | Page.Loading -> ()
-  | Page.Auth action -> ()
-  | Page.Profile -> ()
 
-type Model =
-  { Page: Page
-    AuthState: AuthenticationState option }
+type Model = { Page: Page }
 
-let router =
-  Router.inferWithModel PageChanged _.Page defaultModel
-  |> Router.withNotFound Page.NotFound
+let router = Router.inferWithModel PageChanged _.Page defaultModel
