@@ -40,7 +40,7 @@ module Preset =
           }
 
           div {
-            attr.``class`` "card-footer"
+            attr.``class`` "card-footer d-flex justify-content-end"
 
             button {
               attr.``class`` "btn btn-danger"
@@ -65,7 +65,9 @@ module Preset =
     let view (model: Model) (dispatch: Message -> unit) =
       match model.Presets with
       | AsyncOp.Loading -> div { text "Loading presets..." }
-      | AsyncOp.Finished presets -> concat {
+      | AsyncOp.Finished presets -> div {
+          attr.``class`` "d-flex flex-column gap-2"
+
           div {
             attr.``class`` "row justify-content-end"
 
@@ -82,7 +84,7 @@ module Preset =
           }
 
           div {
-            attr.``class`` "row"
+            attr.``class`` "row gap-1"
 
             for preset in presets do
               PresetTile.view preset dispatch
@@ -96,6 +98,7 @@ module Preset =
     type Message =
       | LoadPreset of RawPresetId
       | PresetLoaded of Preset
+      | RunPreset of PresetId
 
     let init presetId =
       fun _ -> { Preset = AsyncOp.Loading }, Cmd.ofMsg (LoadPreset presetId)
@@ -110,12 +113,39 @@ module Preset =
         { model with
             Preset = AsyncOp.Finished preset },
         Cmd.none
+      | RunPreset presetId ->
+
+        model, Cmd.none
 
     let view (model: Model) dispatch =
       match model.Preset with
       | AsyncOp.Loading -> div { text "Loading..." }
       | AsyncOp.Finished preset -> div {
-          h1 { text preset.Name }
+          attr.``class`` "d-flex flex-column gap-2"
+
+          div {
+            attr.``class`` "d-flex justify-content-between align-items-center"
+
+            h1 { text preset.Name }
+
+            div {
+              attr.``class`` "d-flex gap-1"
+
+              button {
+                attr.``class`` "btn btn-outline-primary"
+
+                "Settings"
+              }
+
+              button {
+                attr.``class`` "btn btn-success"
+
+                on.click (fun _ -> RunPreset preset.Id |> dispatch)
+
+                "Run"
+              }
+            }
+          }
 
           div {
             comp<Accordion> {
@@ -126,27 +156,27 @@ module Preset =
               }
 
               comp<AccordionItem> {
-                "Title" => "Excluded Playlists"
-
-                attr.fragment "Content" (ExcludedPlaylists.view preset dispatch)
-              }
-
-              comp<AccordionItem> {
-                "Title" => "Targeted Playlists"
-
-                attr.fragment "Content" (TargetedPlaylists.view preset dispatch)
-              }
-
-              comp<AccordionItem> {
                 "Title" => "Included Artists"
 
                 attr.fragment "Content" (IncludedArtists.view preset dispatch)
               }
 
               comp<AccordionItem> {
+                "Title" => "Excluded Playlists"
+
+                attr.fragment "Content" (ExcludedPlaylists.view preset dispatch)
+              }
+
+              comp<AccordionItem> {
                 "Title" => "Excluded Artists"
 
                 attr.fragment "Content" (ExcludedArtists.view preset dispatch)
+              }
+
+              comp<AccordionItem> {
+                "Title" => "Targeted Playlists"
+
+                attr.fragment "Content" (TargetedPlaylists.view preset dispatch)
               }
             }
           }
