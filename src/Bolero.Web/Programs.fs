@@ -122,41 +122,31 @@ module Preset =
               comp<AccordionItem> {
                 "Title" => "Included Playlists"
 
-                attr.fragment
-                  "Content"
-                  (IncludedPlaylists.view preset dispatch)
+                attr.fragment "Content" (IncludedPlaylists.view preset dispatch)
               }
 
               comp<AccordionItem> {
                 "Title" => "Excluded Playlists"
 
-                attr.fragment
-                  "Content"
-                  (ExcludedPlaylists.view preset dispatch)
+                attr.fragment "Content" (ExcludedPlaylists.view preset dispatch)
               }
 
               comp<AccordionItem> {
                 "Title" => "Targeted Playlists"
 
-                attr.fragment
-                  "Content"
-                  (TargetedPlaylists.view preset dispatch)
+                attr.fragment "Content" (TargetedPlaylists.view preset dispatch)
               }
 
               comp<AccordionItem> {
                 "Title" => "Included Artists"
 
-                attr.fragment
-                  "Content"
-                  (IncludedArtists.view preset dispatch)
+                attr.fragment "Content" (IncludedArtists.view preset dispatch)
               }
 
               comp<AccordionItem> {
                 "Title" => "Excluded Artists"
 
-                attr.fragment
-                  "Content"
-                  (ExcludedArtists.view preset dispatch)
+                attr.fragment "Content" (ExcludedArtists.view preset dispatch)
               }
             }
           }
