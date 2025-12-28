@@ -196,7 +196,13 @@ module Preset =
 
     let init = fun _ -> { Name = String.Empty }, Cmd.none
 
-    let update (logger: ILogger) (navigationManager: NavigationManager) (env: #ICreatePreset) (message: Message) (model: Model) : Model * Cmd<Message> =
+    let update
+      (logger: ILogger)
+      (navigationManager: NavigationManager)
+      (env: #ICreatePreset)
+      (message: Message)
+      (model: Model)
+      : Model * Cmd<Message> =
       match message with
       | Message.NameChanged name -> { model with Name = name }, Cmd.none
       | Message.CreatePreset when model.Name |> String.IsNullOrEmpty |> not ->
