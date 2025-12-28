@@ -1,5 +1,7 @@
 ﻿module Bolero.Web.Startup
 
+#nowarn "20"
+
 open System
 open System.Net.Http
 open Domain.Core
@@ -13,6 +15,7 @@ open Bolero.Web.Repos
 open System.Net.Http.Json
 open Bolero.Web.Util
 open FsToolkit.ErrorHandling
+open BlazorBootstrap
 
 type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
   let httpClient = httpClientFactory.CreateClient(nameof Env)
@@ -83,6 +86,8 @@ builder.Services.AddScoped<APIAuthorizationMessageHandler>()
 builder.Services.AddScoped<IEnv, Env>()
 
 builder.Services.AddHttpClient(nameof Env, configureHttpClient).AddHttpMessageHandler<APIAuthorizationMessageHandler>()
+
+builder.Services.AddBlazorBootstrap()
 
 builder.Logging.SetMinimumLevel(LogLevel.Information)
 

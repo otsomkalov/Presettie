@@ -10,6 +10,7 @@ open Microsoft.AspNetCore.Components
 open Microsoft.AspNetCore.Components.Routing
 open Microsoft.Extensions.Logging
 open Bolero.Web.Repos
+open BlazorBootstrap
 
 [<RequireQualifiedAccess>]
 module Preset =
@@ -117,68 +118,35 @@ module Preset =
           h1 { text preset.Name }
 
           div {
-            attr.``class`` "row"
+            comp<Accordion> {
+              comp<AccordionItem> {
+                "Title" => "Included Playlists"
 
-            div {
-              attr.``class`` "col-lg-4"
-
-              div {
-                attr.``class`` "card"
-
-                h2 {
-                  attr.``class`` "card-header"
-
-                  "Included Playlists"
-                }
-
-                div {
-                  attr.``class`` "card-body"
-
-                  for includedPlaylist in preset.IncludedPlaylists do
-                    IncludedPlaylist.view includedPlaylist dispatch
-                }
+                attr.fragment "Content" (IncludedPlaylists.view preset dispatch)
               }
-            }
 
-            div {
-              attr.``class`` "col-lg-4"
+              comp<AccordionItem> {
+                "Title" => "Excluded Playlists"
 
-              div {
-                attr.``class`` "card"
-
-                h2 {
-                  attr.``class`` "card-header"
-
-                  "Excluded Playlists"
-                }
-
-                div {
-                  attr.``class`` "card-body"
-
-                  for excludedPlaylist in preset.ExcludedPlaylists do
-                    ExcludedPlaylist.view excludedPlaylist dispatch
-                }
+                attr.fragment "Content" (ExcludedPlaylists.view preset dispatch)
               }
-            }
 
-            div {
-              attr.``class`` "col-lg-4"
+              comp<AccordionItem> {
+                "Title" => "Targeted Playlists"
 
-              div {
-                attr.``class`` "card"
+                attr.fragment "Content" (TargetedPlaylists.view preset dispatch)
+              }
 
-                h2 {
-                  attr.``class`` "card-header"
+              comp<AccordionItem> {
+                "Title" => "Included Artists"
 
-                  "Targeted Playlists"
-                }
+                attr.fragment "Content" (IncludedArtists.view preset dispatch)
+              }
 
-                div {
-                  attr.``class`` "card-body"
+              comp<AccordionItem> {
+                "Title" => "Excluded Artists"
 
-                  for targetedPlaylist in preset.TargetedPlaylists do
-                    TargetedPlaylist.view targetedPlaylist dispatch
-                }
+                attr.fragment "Content" (ExcludedArtists.view preset dispatch)
               }
             }
           }
