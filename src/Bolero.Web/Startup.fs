@@ -12,7 +12,6 @@ open Microsoft.Extensions.Configuration
 open Bolero.Web.Repos
 open System.Net.Http.Json
 open Bolero.Web.Util
-open otsom.fs.Extensions
 open FsToolkit.ErrorHandling
 
 type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
@@ -27,7 +26,7 @@ type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
         return []
     }
 
-    member this.GetPreset'(RawPresetId presetId) = task {
+    member this.GetPreset'(PresetId presetId) = task {
       try
         return! httpClient.GetFromJsonAsync<Preset>($"api/presets/{presetId}", JSON.options)
       with e ->
@@ -87,6 +86,6 @@ builder.Services.AddHttpClient(nameof Env, configureHttpClient).AddHttpMessageHa
 
 builder.Logging.SetMinimumLevel(LogLevel.Information)
 
-builder.RootComponents.Add<Main.App>("#main")
+builder.RootComponents.Add<Components.Root>("#root")
 
 builder.Build().RunAsync()
