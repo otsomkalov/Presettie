@@ -3,6 +3,7 @@
 open System
 open System.Net.Http
 open Blazored.Modal
+open Blazored.Toast
 open Domain.Core
 open Microsoft.AspNetCore.Components
 open Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -28,7 +29,7 @@ type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
         return []
     }
 
-    member this.GetPreset'(RawPresetId presetId) = task {
+    member this.GetPreset'(PresetId presetId) = task {
       try
         return! httpClient.GetFromJsonAsync<Preset>($"api/presets/{presetId}", JSON.options)
       with e ->
@@ -80,8 +81,6 @@ builder.Services.AddOidcAuthentication(fun options ->
 
   ())
 
-builder.Services.AddBlazoredModal()
-
 builder.Services.AddScoped<APIAuthorizationMessageHandler>()
 
 builder.Services.AddScoped<IEnv, Env>()
@@ -90,6 +89,6 @@ builder.Services.AddHttpClient(nameof Env, configureHttpClient).AddHttpMessageHa
 
 builder.Logging.SetMinimumLevel(LogLevel.Information)
 
-builder.RootComponents.Add<Main.Root>("#main")
+builder.RootComponents.Add<Components.Root>("#main")
 
 builder.Build().RunAsync()
