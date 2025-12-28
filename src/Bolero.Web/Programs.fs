@@ -196,7 +196,7 @@ module Preset =
 
     let init = fun _ -> { Name = String.Empty }, Cmd.none
 
-    let update (navigationManager: NavigationManager) (env: #ICreatePreset) (message: Message) (model: Model) : Model * Cmd<Message> =
+    let update (logger: ILogger) (navigationManager: NavigationManager) (env: #ICreatePreset) (message: Message) (model: Model) : Model * Cmd<Message> =
       match message with
       | Message.NameChanged name -> { model with Name = name }, Cmd.none
       | Message.CreatePreset when model.Name |> String.IsNullOrEmpty |> not ->
@@ -208,6 +208,10 @@ module Preset =
           CreatePresetError
       | Message.Redirect url ->
         navigationManager.NavigateTo url
+        model, Cmd.none
+      | Message.CreatePresetError exn ->
+        logger.LogError(exn, "Error during creating Preset:")
+
         model, Cmd.none
       | _ -> model, Cmd.none
 

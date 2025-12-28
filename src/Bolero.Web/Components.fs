@@ -81,13 +81,10 @@ type CreatePreset() =
   [<Inject>]
   member val NavigationManager = Unchecked.defaultof<NavigationManager> with get, set
 
-  [<Parameter>]
-  member val PresetId = Unchecked.defaultof<string> with get, set
-
   override this.Program =
     Program.mkProgram
       Programs.Preset.Create.init
-      (Programs.Preset.Create.update this.NavigationManager this.Env)
+      (Programs.Preset.Create.update this.Logger this.NavigationManager this.Env)
       Programs.Preset.Create.view
     |> Program.withConsoleTrace
 
