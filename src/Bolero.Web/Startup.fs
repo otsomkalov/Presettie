@@ -2,8 +2,6 @@
 
 open System
 open System.Net.Http
-open Blazored.Modal
-open Blazored.Toast
 open Domain.Core
 open Microsoft.AspNetCore.Components
 open Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -14,7 +12,6 @@ open Microsoft.Extensions.Configuration
 open Bolero.Web.Repos
 open System.Net.Http.Json
 open Bolero.Web.Util
-open otsom.fs.Extensions
 open FsToolkit.ErrorHandling
 
 type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
@@ -89,6 +86,6 @@ builder.Services.AddHttpClient(nameof Env, configureHttpClient).AddHttpMessageHa
 
 builder.Logging.SetMinimumLevel(LogLevel.Information)
 
-builder.RootComponents.Add<Components.Root>("#main")
+builder.RootComponents.Add<Components.Root>("#root")
 
 builder.Build().RunAsync()

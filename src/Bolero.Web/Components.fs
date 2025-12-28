@@ -1,7 +1,5 @@
 ﻿module Bolero.Web.Components
 
-open Blazored.Modal
-open Blazored.Toast.Services
 open Bolero.Web.Programs
 open Domain.Core
 open Elmish
@@ -49,7 +47,10 @@ type About() =
 type Profile() =
   inherit Component()
 
-  override this.Render() = div { $"Hello" }
+  override this.Render() = comp<AuthorizeView> {
+    attr.fragmentWith "Authorized" (fun (state: AuthenticationState) -> div { sprintf "Hello %s" state.User.Identity.Name })
+    attr.fragmentWith "NotAuthorized" (fun (_: AuthenticationState) -> p { "You are not authorized" })
+  }
 
 [<Route("presets")>]
 [<Authorize>]
@@ -62,14 +63,8 @@ type Presets() =
   [<Inject>]
   member val Logger = Unchecked.defaultof<ILogger<Presets>> with get, set
 
-  [<Inject>]
-  member val ToastService = Unchecked.defaultof<IToastService> with get, set
-
   override this.Program =
-    Program.mkProgram
-      Programs.Preset.List.init
-      (Programs.Preset.List.update this.ToastService this.Logger this.Env)
-      Programs.Preset.List.view
+    Program.mkProgram Programs.Preset.List.init (Programs.Preset.List.update this.Logger this.Env) Programs.Preset.List.view
     |> Program.withConsoleTrace
 
 [<Route("presets/create")>]
