@@ -11,16 +11,23 @@ open Microsoft.AspNetCore.Components.Routing
 open Microsoft.Extensions.Logging
 open Bolero.Web.Repos
 open BlazorBootstrap
+open Bolero
 
 [<RequireQualifiedAccess>]
 module Preset =
   [<RequireQualifiedAccess>]
   module List =
-    type Model = { Presets: AsyncOp<SimplePreset list> }
+    type Model =
+      { Presets: AsyncOp<SimplePreset list>
+        DeletingPreset: SimplePreset option }
 
     type Message =
       | LoadPresets
       | PresetsLoaded of SimplePreset list
+      | AskDeletePreset of SimplePreset
+      | ConfirmDeletePreset
+      | CancelDeletePreset
+      | PresetRemoved of PresetId
 
     [<RequireQualifiedAccess>]
     module private PresetTile =
@@ -45,6 +52,8 @@ module Preset =
             button {
               attr.``class`` "btn btn-danger"
 
+              on.click (fun _ -> AskDeletePreset preset |> dispatch)
+
               "Delete"
             }
           }
@@ -52,17 +61,53 @@ module Preset =
       }
 
     let init _ =
-      { Presets = AsyncOp.Loading }, Cmd.ofMsg LoadPresets
+      { Presets = AsyncOp.Loading
+        DeletingPreset = None },
+      Cmd.ofMsg LoadPresets
 
-    let update (logger: ILogger) (env: #IListPresets & #IRemovePreset) (message: Message) (model: Model) : Model * Cmd<Message> =
+    let update
+      (modalRef: Ref<Modal>)
+      (toastService: ToastService)
+      (logger: ILogger)
+      (env: #IListPresets & #IRemovePreset)
+      (message: Message)
+      (model: Model)
+      : Model * Cmd<Message> =
       match message with
       | LoadPresets -> model, Cmd.OfTask.perform env.ListPresets () PresetsLoaded
       | PresetsLoaded presets ->
         { model with
             Presets = AsyncOp.Finished presets },
         Cmd.none
+      | AskDeletePreset preset ->
+        { model with
+            DeletingPreset = Some preset },
+        Cmd.OfTask.attempt Modal.show modalRef (fun _ -> CancelDeletePreset)
+      | ConfirmDeletePreset ->
+        match model.DeletingPreset with
+        | Some preset ->
 
-    let view (model: Model) (dispatch: Message -> unit) =
+          model,
+          Cmd.batch
+            [ Cmd.OfTask.perform env.RemovePreset preset.Id (fun () -> PresetRemoved preset.Id)
+              Cmd.OfTask.attempt Modal.hide modalRef (fun _ -> CancelDeletePreset) ]
+        | None -> model, Cmd.none
+      | CancelDeletePreset -> { model with DeletingPreset = None }, Cmd.OfTask.attempt Modal.hide modalRef (fun _ -> CancelDeletePreset)
+      | PresetRemoved presetId ->
+        match model.Presets with
+        | AsyncOp.Finished presets ->
+          toastService.Notify(
+            ToastMessage(Type = ToastType.Success, Title = "Preset deleted", Message = "Preset has been successfully deleted.")
+          )
+
+          let presets = presets |> List.filter (fun p -> p.Id <> presetId)
+
+          { model with
+              Presets = AsyncOp.Finished presets },
+          Cmd.none
+        | _ -> model, Cmd.none
+
+    let view (modal: Bolero.Ref<Modal>) (model: Model) (dispatch: Message -> unit) =
       match model.Presets with
       | AsyncOp.Loading -> div { text "Loading presets..." }
       | AsyncOp.Finished presets -> div {
@@ -88,6 +133,34 @@ module Preset =
 
             for preset in presets do
               PresetTile.view preset dispatch
+          }
+
+          comp<Modal> {
+            "Title" => "Confirm deletion"
+
+            attr.fragment
+              "BodyTemplate"
+              (match model.DeletingPreset with
+               | Some preset -> p { sprintf "Are you sure you want to delete preset '%s'?" preset.Name }
+               | None -> empty ())
+
+            attr.fragment
+              "FooterTemplate"
+              (concat {
+                button {
+                  attr.``class`` "btn btn-secondary"
+                  on.click (fun _ -> CancelDeletePreset |> dispatch)
+                  "Cancel"
+                }
+
+                button {
+                  attr.``class`` "btn btn-danger"
+                  on.click (fun _ -> ConfirmDeletePreset |> dispatch)
+                  "Delete"
+                }
+              })
+
+            attr.ref modal
           }
         }
 

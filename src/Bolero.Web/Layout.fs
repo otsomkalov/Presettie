@@ -6,6 +6,7 @@ open Microsoft.AspNetCore.Components
 open Microsoft.AspNetCore.Components.Authorization
 open Microsoft.AspNetCore.Components.Routing
 open Microsoft.AspNetCore.Components.WebAssembly.Authentication
+open BlazorBootstrap
 
 [<RequireQualifiedAccess>]
 module internal HeaderLinks =
@@ -154,6 +155,12 @@ module internal Layout =
       attr.``class`` "container-fluid"
 
       body
+    }
+
+    comp<Toasts> {
+      "Placement" => ToastsPlacement.TopRight
+      "AutoHide" => true
+      "Delay" => 5000
     }
   }
 

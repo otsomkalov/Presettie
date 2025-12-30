@@ -13,6 +13,7 @@ open Microsoft.AspNetCore.Components.Web
 open Microsoft.AspNetCore.Components.WebAssembly.Authentication
 open Bolero.Web.Repos
 open Microsoft.Extensions.Logging
+open BlazorBootstrap
 
 [<RequireQualifiedAccess>]
 module Loading =
@@ -57,14 +58,22 @@ type Profile() =
 type Presets() =
   inherit ProgramComponent<Preset.List.Model, Preset.List.Message>()
 
+  let modal = Ref<Modal>()
+
   [<Inject>]
   member val Env: IEnv = Unchecked.defaultof<IEnv> with get, set
 
   [<Inject>]
   member val Logger = Unchecked.defaultof<ILogger<Presets>> with get, set
 
+  [<Inject>]
+  member val ToastService = Unchecked.defaultof<ToastService> with get, set
+
   override this.Program =
-    Program.mkProgram Programs.Preset.List.init (Programs.Preset.List.update this.Logger this.Env) Programs.Preset.List.view
+    Program.mkProgram
+      Programs.Preset.List.init
+      (Programs.Preset.List.update modal this.ToastService this.Logger this.Env)
+      (Programs.Preset.List.view modal)
     |> Program.withConsoleTrace
 
 [<Route("presets/create")>]
