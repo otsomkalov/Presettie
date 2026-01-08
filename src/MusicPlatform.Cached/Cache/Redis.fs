@@ -1,6 +1,7 @@
 ﻿module internal MusicPlatform.Spotify.Cache.Redis
 
 open System
+open System.Net
 open Microsoft.ApplicationInsights
 open Microsoft.ApplicationInsights.DataContracts
 open MusicPlatform
@@ -49,7 +50,9 @@ let internal loadList (telemetryClient: TelemetryClient) (cache: IDatabase) =
 
     let! values = key |> cache.ListRangeAsync
 
-    operation.Telemetry.Success <- values |> Array.isEmpty
+    operation.Telemetry.ResultCode <-
+      if values |> Array.isEmpty then string HttpStatusCode.NotFound else string HttpStatusCode.OK
+    operation.Telemetry.Success <- true
 
     return values
   }
