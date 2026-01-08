@@ -49,7 +49,7 @@ let internal loadList (telemetryClient: TelemetryClient) (cache: IDatabase) =
 
     let! values = key |> cache.ListRangeAsync
 
-    operation.Telemetry.Success <- true
+    operation.Telemetry.Success <- values |> Array.isEmpty
 
     return values
   }
