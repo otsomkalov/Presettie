@@ -51,10 +51,11 @@ let internal loadList (telemetryClient: TelemetryClient) (cache: IDatabase) =
     let! values = key |> cache.ListRangeAsync
 
     operation.Telemetry.ResultCode <-
-      if values |> Array.isEmpty then
-        string HttpStatusCode.NotFound
-      else
-        string HttpStatusCode.OK
+      match values with
+      | [||] -> HttpStatusCode.NotFound
+      | _ -> HttpStatusCode.OK
+      |> int
+      |> string
 
     operation.Telemetry.Success <- true
 
