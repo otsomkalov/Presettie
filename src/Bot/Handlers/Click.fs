@@ -13,6 +13,7 @@ open otsom.fs.Extensions
 open otsom.fs.Resources
 open Domain.Core.PresetSettings
 open Bot.Resources
+open FsToolkit.ErrorHandling
 
 let presetInfoClickHandler presetRepo (resp: IResourceProvider) botService : ClickHandler =
   fun click ->
@@ -394,7 +395,7 @@ let runPresetClickHandler
 
       do!
         botService.SendMessage(resp[Messages.PresetQueued, [| preset.Name |]])
-        &|> ignore
+        |> Task.map ignore
     }
 
   let onError =

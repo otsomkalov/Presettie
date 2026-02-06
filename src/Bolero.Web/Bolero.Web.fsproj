@@ -6,25 +6,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Util.fs" />
-    <Compile Include="Models.fs" />
-    <Compile Include="Messages.fs" />
-    <Compile Include="Router.fs" />
-    <Compile Include="Repos.fs" />
-    <Compile Include="Views.fs" />
-    <Compile Include="Layout.fs" />
-    <Compile Include="Main.fs"/>
+    <Compile Include="Util.fs"/>
+    <Compile Include="Repos.fs"/>
+    <Compile Include="Views.fs"/>
+    <Compile Include="Layout.fs"/>
+    <Compile Include="Programs.fs"/>
+    <Compile Include="Components.fs"/>
     <Compile Include="Startup.fs"/>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Bolero" Version="0.*"/>
     <PackageReference Include="Bolero.Build" Version="0.*"/>
-    <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
+    <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36"/>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.21"/>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.10"/>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.21"/>
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10"/>
+    <PackageReference Include="Blazor.Bootstrap" Version="3.5.0"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -37,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domain\Domain.fsproj" />
+    <ProjectReference Include="..\Domain\Domain.fsproj"/>
   </ItemGroup>
 
 </Project>

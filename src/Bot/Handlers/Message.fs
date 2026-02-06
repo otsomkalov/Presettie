@@ -14,6 +14,7 @@ open Domain.Workflows
 open otsom.fs.Resources
 open Bot.Core
 open Bot.Resources
+open FsToolkit.ErrorHandling
 
 let startMessageHandler
   (userRepo: #ILoadUser)
@@ -32,7 +33,7 @@ let startMessageHandler
       let! user = userRepo.LoadUser message.Chat.UserId
 
       let processSuccessfulLogin =
-        fun () -> chatCtx.SendMessage resp[Messages.SuccessfulLogin] &|> ignore
+        fun () -> chatCtx.SendMessage resp[Messages.SuccessfulLogin] |> Task.map ignore
 
       let sendErrorMessage =
         function
@@ -51,7 +52,7 @@ let faqMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Messa
   fun message -> task {
     match message.Text with
     | Equals Commands.faq ->
-      do! chatCtx.SendMessage(resp[Messages.FAQ]) &|> ignore
+      do! chatCtx.SendMessage(resp[Messages.FAQ]) |> Task.map ignore
 
       return Some()
     | _ -> return None
@@ -61,7 +62,7 @@ let privacyMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : M
   fun message -> task {
     match message.Text with
     | Equals Commands.privacy ->
-      do! chatCtx.SendMessage(resp[Messages.Privacy]) &|> ignore
+      do! chatCtx.SendMessage(resp[Messages.Privacy]) |> Task.map ignore
 
       return Some()
     | _ -> return None
@@ -71,7 +72,7 @@ let guideMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Mes
   fun message -> task {
     match message.Text with
     | Equals Commands.guide ->
-      do! chatCtx.SendMessage(resp[Messages.Guide]) &|> ignore
+      do! chatCtx.SendMessage(resp[Messages.Guide]) |> Task.map ignore
 
       return Some()
     | _ -> return None
@@ -81,7 +82,7 @@ let helpMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Mess
   fun message -> task {
     match message.Text with
     | Equals Commands.help ->
-      do! chatCtx.SendMessage(resp[Messages.Help]) &|> ignore
+      do! chatCtx.SendMessage(resp[Messages.Help]) |> Task.map ignore
 
       return Some()
     | _ -> return None
@@ -213,7 +214,7 @@ let includePlaylistButtonMessageHandler
 
         return Some()
       | _ ->
-        do! sendLoginMessage authService resp chatCtx message.Chat.UserId &|> ignore
+        do! sendLoginMessage authService resp chatCtx message.Chat.UserId |> Task.map ignore
 
         return Some()
     | _ -> return None
@@ -236,7 +237,7 @@ let excludePlaylistButtonMessageHandler
 
         return Some()
       | _ ->
-        do! sendLoginMessage authService resp chatCtx message.Chat.UserId &|> ignore
+        do! sendLoginMessage authService resp chatCtx message.Chat.UserId |> Task.map ignore
 
         return Some()
     | _ -> return None
@@ -259,7 +260,7 @@ let excludeArtistButtonMessageHandler
 
         return Some()
       | _ ->
-        do! sendLoginMessage authService resp chatCtx message.Chat.UserId &|> ignore
+        do! sendLoginMessage authService resp chatCtx message.Chat.UserId |> Task.map ignore
 
         return Some()
     | _ -> return None
@@ -283,7 +284,7 @@ let targetPlaylistButtonMessageHandler
 
         return Some()
       | _ ->
-        do! sendLoginMessage authService resp chatCtx message.Chat.UserId &|> ignore
+        do! sendLoginMessage authService resp chatCtx message.Chat.UserId |> Task.map ignore
 
         return Some()
     | _ -> return None

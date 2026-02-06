@@ -10,6 +10,7 @@ open MusicPlatform
 open otsom.fs.Core
 open otsom.fs.Extensions
 open Domain.Extensions
+open FsToolkit.ErrorHandling
 
 [<RequireQualifiedAccess>]
 module Tracks =
@@ -289,14 +290,14 @@ module Preset =
     >> Task.map Option.get
     >> Task.bind (fun preset ->
       listIncludedTracks platform preset
-      &|> Result.errorIf List.isEmpty Preset.RunError.NoIncludedTracks
+      |> Task.map (Result.errorIf List.isEmpty Preset.RunError.NoIncludedTracks)
       &=|> shuffler
       &=|&> getRecommendations preset
       &=|> shuffler
       &=|&> (fun includedTracks ->
         listExcludedTracks platform preset
-        &|> (fun excludedTracks -> List.except excludedTracks includedTracks))
-      &|> (Result.bind (Result.errorIf List.isEmpty Preset.RunError.NoPotentialTracks))
+        |> Task.map (fun excludedTracks -> List.except excludedTracks includedTracks))
+      |> Task.map (Result.bind (Result.errorIf List.isEmpty Preset.RunError.NoPotentialTracks))
       &=|> (fun (tracks: Track list) ->
         match preset.Settings.UniqueArtists with
         | true -> tracks |> Tracks.uniqueByArtists

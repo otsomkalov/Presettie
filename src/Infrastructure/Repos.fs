@@ -15,6 +15,7 @@ open Infrastructure.Mapping
 open System.Threading.Tasks
 open System.Linq
 open MongoDB.Driver.Linq
+open FsToolkit.ErrorHandling
 
 [<RequireQualifiedAccess>]
 module PresetRepo =
@@ -35,7 +36,7 @@ module PresetRepo =
 
       return!
         collection.ReplaceOneAsync(presetsFilter, dbPreset, ReplaceOptions(IsUpsert = true))
-        &|> ignore
+        |> Task.map ignore
     }
 
   let remove (collection: IMongoCollection<Entities.Preset>) =

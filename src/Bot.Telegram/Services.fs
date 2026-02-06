@@ -10,6 +10,7 @@ open Bot.Repos
 open Bot.Resources
 open otsom.fs.Extensions
 open otsom.fs.Bot
+open FsToolkit.ErrorHandling
 
 type MessageService
   (
@@ -66,7 +67,7 @@ type MessageService
       | None ->
         Logf.logfw logger "Message content didn't match any handler. Running default one."
 
-        return! chatCtx.SendMessage resp[Messages.UnknownCommand] &|> ignore
+        return! chatCtx.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
     }
 
 type CallbackQueryService

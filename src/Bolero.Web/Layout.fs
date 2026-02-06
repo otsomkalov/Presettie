@@ -1,17 +1,15 @@
 ﻿[<RequireQualifiedAccess>]
 module Bolero.Web.Layout
 
-open Bolero
 open Bolero.Html
+open Microsoft.AspNetCore.Components
 open Microsoft.AspNetCore.Components.Authorization
 open Microsoft.AspNetCore.Components.Routing
-open Bolero.Web.Models
-open Bolero.Web.Router
-open Bolero.Web.Util
+open Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
 [<RequireQualifiedAccess>]
 module internal HeaderLinks =
-  let view dispatch = ul {
+  let view () = ul {
     attr.``class`` "navbar-nav"
 
     li {
@@ -30,7 +28,7 @@ module internal HeaderLinks =
 
       navLink NavLinkMatch.All {
         attr.``class`` "nav-link"
-        attr.href (router.Link(Page.Presets({ Model = { Presets = AsyncOp.Loading } })))
+        attr.href "presets"
 
         "Presets"
       }
@@ -41,7 +39,7 @@ module internal HeaderLinks =
 
       navLink NavLinkMatch.All {
         attr.``class`` "nav-link"
-        attr.href (router.Link(Page.About))
+        attr.href "about"
 
         "About"
       }
@@ -50,12 +48,12 @@ module internal HeaderLinks =
 
 [<RequireQualifiedAccess>]
 module internal HeaderLogin =
-  let view dispatch = li {
+  let view () = li {
     attr.``class`` "nav-item"
 
     navLink NavLinkMatch.All {
       attr.``class`` "nav-link"
-      attr.href (router.Link(Page.Auth "login"))
+      attr.href "authentication/login"
 
       "Login"
     }
@@ -63,7 +61,7 @@ module internal HeaderLogin =
 
 [<RequireQualifiedAccess>]
 module internal HeaderAuth =
-  let view (state: AuthenticationState) dispatch = li {
+  let view (navManager: NavigationManager) (state: AuthenticationState) = li {
     attr.``class`` "nav-item dropdown"
 
     navLink NavLinkMatch.All {
@@ -84,8 +82,7 @@ module internal HeaderAuth =
 
         navLink NavLinkMatch.All {
           attr.``class`` "nav-link"
-
-          attr.href (router.Link(Page.Profile))
+          attr.href "profile"
 
           "Profile"
         }
@@ -94,10 +91,9 @@ module internal HeaderAuth =
       li {
         attr.``class`` "dropdown-item"
 
-        navLink NavLinkMatch.All {
+        button {
           attr.``class`` "nav-link"
-
-          attr.href (router.Link(Page.Auth "logout"))
+          on.click (fun _ -> navManager.NavigateToLogout("authentication/logout"))
 
           "Logout"
         }
@@ -105,8 +101,8 @@ module internal HeaderAuth =
     }
   }
 
-module Header =
-  let view (authState: AuthenticationState option) dispatch = nav {
+module internal Header =
+  let render navManager = nav {
     attr.``class`` "navbar bg-primary navbar-expand-lg mb-2"
     "data-bs-theme" => "dark"
 
@@ -135,16 +131,41 @@ module Header =
         attr.``class`` "collapse navbar-collapse justify-content-between"
         attr.id "navbarNavDropdown"
 
-        HeaderLinks.view dispatch
+        HeaderLinks.view ()
 
         ul {
           attr.``class`` "navbar-nav"
 
-          match authState with
-          | Some state when state.User.Identity.IsAuthenticated -> HeaderAuth.view state dispatch
-          | Some state when not state.User.Identity.IsAuthenticated -> HeaderLogin.view dispatch
-          | _ -> empty ()
+          comp<AuthorizeView> {
+            attr.fragmentWith "Authorized" (fun (state: AuthenticationState) -> HeaderAuth.view navManager state)
+            attr.fragmentWith "NotAuthorized" (fun (_: AuthenticationState) -> HeaderLogin.view ())
+          }
         }
       }
     }
   }
+
+[<RequireQualifiedAccess>]
+module internal Layout =
+  let internal render navManager (body: RenderFragment) = concat {
+    Header.render navManager
+
+    div {
+      attr.``class`` "container-fluid"
+
+      body
+    }
+  }
+
+type Layout() =
+  inherit LayoutComponentBase()
+
+  [<Inject>]
+  member val NavigationManager = Unchecked.defaultof<NavigationManager> with get, set
+
+  override this.BuildRenderTree(builder) =
+    base.BuildRenderTree(builder)
+
+    Layout.render this.NavigationManager this.Body
+    |> _.Invoke(this, builder, 0)
+    |> ignore

@@ -1,289 +1,124 @@
 ﻿module Bolero.Web.Views
 
-open Bolero
 open Bolero.Html
-open Elmish
 open Domain.Core
-open Bolero.Web.Models
-open Bolero.Web.Repos
-open Bolero.Web.Router
-open Bolero.Web.Util
-open Bolero.Web.Messages
-open System
 
 [<RequireQualifiedAccess>]
-module Preset =
-  [<RequireQualifiedAccess>]
-  module private IncludedPlaylist =
-    let view (playlist: IncludedPlaylist) dispatch = div {
-      attr.``class`` "card"
+module IncludedPlaylist =
+  let view (playlist: IncludedPlaylist) dispatch = div {
+    attr.``class`` "card"
 
+    div {
+      attr.``class`` "card-header"
+
+      playlist.Name
+    }
+  }
+
+[<RequireQualifiedAccess>]
+module ExcludedPlaylist =
+  let view (playlist: ExcludedPlaylist) dispatch = div {
+    attr.``class`` "card"
+
+    div {
+      attr.``class`` "card-header"
+
+      playlist.Name
+    }
+  }
+
+[<RequireQualifiedAccess>]
+module TargetedPlaylist =
+  let view (playlist: TargetedPlaylist) dispatch = div {
+    attr.``class`` "card"
+
+    div {
+      attr.``class`` "card-header"
+
+      playlist.Name
+    }
+  }
+
+[<RequireQualifiedAccess>]
+module IncludedArtist =
+  let view (artist: IncludedArtist) dispatch = div {
+    attr.``class`` "card"
+
+    div {
+      attr.``class`` "card-header"
+
+      artist.Name
+    }
+  }
+
+[<RequireQualifiedAccess>]
+module ExcludedArtist =
+  let view (artist: ExcludedArtist) dispatch = div {
+    attr.``class`` "card"
+
+    div {
+      attr.``class`` "card-header"
+
+      artist.Name
+    }
+  }
+
+[<RequireQualifiedAccess>]
+module IncludedPlaylists =
+  let view preset dispatch = div {
+    attr.``class`` "row"
+
+    for includedPlaylist in preset.IncludedPlaylists do
       div {
-        attr.``class`` "card-header"
-
-        playlist.Name
+        attr.``class`` "col-md-4 mb-3"
+        IncludedPlaylist.view includedPlaylist dispatch
       }
-    }
+  }
 
-  [<RequireQualifiedAccess>]
-  module private ExcludedPlaylist =
-    let view (playlist: ExcludedPlaylist) dispatch = div {
-      attr.``class`` "card"
+[<RequireQualifiedAccess>]
+module ExcludedPlaylists =
+  let view preset dispatch = div {
+    attr.``class`` "row"
 
+    for excludedPlaylist in preset.ExcludedPlaylists do
       div {
-        attr.``class`` "card-header"
-
-        playlist.Name
+        attr.``class`` "col-md-4 mb-3"
+        ExcludedPlaylist.view excludedPlaylist dispatch
       }
-    }
+  }
 
-  [<RequireQualifiedAccess>]
-  module private TargetedPlaylist =
-    let view (playlist: TargetedPlaylist) dispatch = div {
-      attr.``class`` "card"
+[<RequireQualifiedAccess>]
+module TargetedPlaylists =
+  let view preset dispatch = div {
+    attr.``class`` "row"
 
+    for targetedPlaylist in preset.TargetedPlaylists do
       div {
-        attr.``class`` "card-header"
-
-        playlist.Name
+        attr.``class`` "col-md-4 mb-3"
+        TargetedPlaylist.view targetedPlaylist dispatch
       }
-    }
+  }
 
-  [<RequireQualifiedAccess>]
-  module private PresetTile =
-    let view (preset: SimplePreset) dispatch = div {
-      attr.``class`` "col-md-4"
+[<RequireQualifiedAccess>]
+module IncludedArtists =
+  let view preset dispatch = div {
+    attr.``class`` "row"
 
+    for includedArtist in preset.IncludedArtists do
       div {
-        attr.``class`` "card"
-
-        div {
-          attr.``class`` "card-header"
-
-          a {
-            router.HRef(Page.Preset(preset.Id.Value, { Model = { Preset = AsyncOp.Loading } }))
-
-            preset.Name
-          }
-        }
-
-        div {
-          attr.``class`` "card-footer"
-
-          button {
-            attr.``class`` "btn btn-danger"
-
-            on.click (fun _ ->
-              preset.Id
-              |> Preset.Remove'.Message.RemovePreset
-              |> Preset.Message.Remove
-              |> dispatch)
-
-            "Delete"
-          }
-        }
+        attr.``class`` "col-md-4 mb-3"
+        IncludedArtist.view includedArtist dispatch
       }
-    }
+  }
 
-  [<RequireQualifiedAccess>]
-  module List =
-    let init () : Preset.List.Model = { Presets = AsyncOp.Loading }
+[<RequireQualifiedAccess>]
+module ExcludedArtists =
+  let view preset dispatch = div {
+    attr.``class`` "row"
 
-    let update
-      (env: #IListPresets)
-      (message: Preset.List'.Message)
-      (model: Preset.List.Model)
-      : Preset.List.Model * Cmd<Preset.List'.Message> =
-      match message, model with
-      | Preset.List'.Message.PresetsLoaded presets, _ ->
-        { model with
-            Presets = AsyncOp.Finished presets },
-        Cmd.none
-
-    let view (model: Preset.List.Model) (dispatch: Preset.Message -> unit) =
-      match model.Presets with
-      | AsyncOp.Loading -> div { text "Loading presets..." }
-      | AsyncOp.Finished presets -> concat {
-          div {
-            attr.``class`` "row justify-content-end"
-
-            div {
-              attr.``class`` "col-sm-12 col-md-2"
-
-              a {
-                attr.``class`` "btn btn-success w-100"
-                attr.href "/presets/create"
-
-                "New preset"
-              }
-            }
-          }
-
-          div {
-            attr.``class`` "row"
-
-            for preset in presets do
-              PresetTile.view preset dispatch
-          }
-        }
-
-  [<RequireQualifiedAccess>]
-  module Details =
-    let init _ : Preset.Details.Model = { Preset = AsyncOp.Loading }
-
-    let update (message: Preset.Details'.Message) model : Preset.Details.Model * Cmd<Preset.Details'.Message> =
-
-      match message with
-      | Preset.Details'.Message.PresetLoaded preset ->
-        { model with
-            Preset = AsyncOp.Finished preset },
-        Cmd.none
-
-    let view (model: Preset.Details.Model) dispatch =
-      match model.Preset with
-      | AsyncOp.Loading -> div { text "Loading..." }
-      | AsyncOp.Finished preset -> div {
-          h1 { text preset.Name }
-
-          div {
-            attr.``class`` "row"
-
-            div {
-              attr.``class`` "col-lg-4"
-
-              div {
-                attr.``class`` "card"
-
-                h2 {
-                  attr.``class`` "card-header"
-
-                  "Included Playlists"
-                }
-
-                div {
-                  attr.``class`` "card-body"
-
-                  for includedPlaylist in preset.IncludedPlaylists do
-                    IncludedPlaylist.view includedPlaylist dispatch
-                }
-              }
-            }
-
-            div {
-              attr.``class`` "col-lg-4"
-
-              div {
-                attr.``class`` "card"
-
-                h2 {
-                  attr.``class`` "card-header"
-
-                  "Excluded Playlists"
-                }
-
-                div {
-                  attr.``class`` "card-body"
-
-                  for excludedPlaylist in preset.ExcludedPlaylists do
-                    ExcludedPlaylist.view excludedPlaylist dispatch
-                }
-              }
-            }
-
-            div {
-              attr.``class`` "col-lg-4"
-
-              div {
-                attr.``class`` "card"
-
-                h2 {
-                  attr.``class`` "card-header"
-
-                  "Targeted Playlists"
-                }
-
-                div {
-                  attr.``class`` "card-body"
-
-                  for targetedPlaylist in preset.TargetedPlaylists do
-                    TargetedPlaylist.view targetedPlaylist dispatch
-                }
-              }
-            }
-          }
-        }
-
-  [<RequireQualifiedAccess>]
-  module Create =
-    let update (env: #ICreatePreset) (message: Preset.Create'.Message) (model: Preset.Create.Model) =
-      match message with
-      | Preset.Create'.Message.NameChanged name -> { model with Name = name }, Cmd.none
-      | Preset.Create'.Message.CreatePreset when model.Name |> String.IsNullOrEmpty |> not ->
-        model,
-        Cmd.OfTask.either
-          env.CreatePreset
-          model.Name
-          (fun (PresetId presetId) -> Page.Preset(presetId, { Model = { Preset = AsyncOp.Loading } }) |> PageChanged)
-          (Preset.Create'.Message.CreatePresetError
-           >> Preset.Message.Create
-           >> Message.Preset)
-      | _ -> model, Cmd.none
-
-    let view (model: Preset.Create.Model) dispatch = div {
-      attr.``class`` "container"
-
-      h1 { text "Create New Preset" }
-
-      form {
-        attrs { "onsubmit" => "return false" }
-
-        attr.``class`` "form"
-
-        on.submit (fun _ ->
-          Preset.Create'.Message.CreatePreset
-          |> Preset.Message.Create
-          |> Message.Preset
-          |> dispatch)
-
-        div {
-          attr.``class`` "mb-3"
-
-          label {
-            attr.``for`` "presetName"
-            attr.``class`` "form-label"
-            text "Preset Name"
-          }
-
-          input {
-            attr.``type`` "text"
-            attr.id "presetName"
-            attr.value model.Name
-            attr.required true
-
-            on.input (
-              _.Value
-              >> string
-              >> Preset.Create'.Message.NameChanged
-              >> Preset.Message.Create
-              >> Message.Preset
-              >> dispatch
-            )
-
-            attr.``class`` "form-control"
-          }
-        }
-
-        button {
-          attr.``type`` "button"
-          attr.``class`` "btn btn-primary"
-
-          on.click (fun _ ->
-            Preset.Create'.Message.CreatePreset
-            |> Preset.Message.Create
-            |> Message.Preset
-            |> dispatch)
-
-          text "Create Preset"
-        }
+    for excludedArtist in preset.ExcludedArtists do
+      div {
+        attr.``class`` "col-md-4 mb-3"
+        ExcludedArtist.view excludedArtist dispatch
       }
-    }
+  }

@@ -8,7 +8,7 @@ type IListPresets =
   abstract ListPresets: unit -> Task<SimplePreset list>
 
 type IGetPreset =
-  abstract GetPreset': RawPresetId -> Task<Preset>
+  abstract GetPreset': PresetId -> Task<Preset>
 
 type IRemovePreset =
   abstract RemovePreset: PresetId -> Task<unit>
