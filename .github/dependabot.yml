@@ -2,14 +2,16 @@ version: 2
 
 updates:
   - package-ecosystem: "nuget"
-    directory: "/src"
+    directories: 
+      - "/src/*"
     schedule:
       interval: "weekly"
     groups:
       deps:
         patterns: [ "*" ]
   - package-ecosystem: "nuget"
-    directory: "/tests"
+    directories: 
+      - "/tests/*"
     schedule:
       interval: "weekly"
     groups:
