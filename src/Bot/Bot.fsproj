@@ -19,8 +19,8 @@
 
   <ItemGroup>
     <PackageReference Include="otsom.fs.Bot" Version="0.0.39"/>
-    <PackageReference Include="otsom.fs.Auth" Version="0.0.24"/>
-    <PackageReference Include="otsom.fs.Resources" Version="0.0.34"/>
+    <PackageReference Include="otsom.fs.Auth" Version="0.0.35"/>
+    <PackageReference Include="otsom.fs.Resources" Version="0.0.53"/>
   </ItemGroup>
 
   <ItemGroup>
