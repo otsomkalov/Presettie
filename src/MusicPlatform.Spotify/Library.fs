@@ -3,7 +3,6 @@
 open System
 open System.Net
 open FSharp
-open FsToolkit.ErrorHandling
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Options
 open Microsoft.FSharp.Control
