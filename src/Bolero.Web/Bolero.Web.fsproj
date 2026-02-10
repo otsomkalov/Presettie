@@ -17,12 +17,12 @@
 
   <ItemGroup>
     <PackageReference Include="Bolero" Version="0.*"/>
-    <PackageReference Include="Bolero.Build" Version="0.*"/>
+    <PackageReference Include="Bolero.Build" Version="0.24.39" />
     <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36"/>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.21"/>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.10"/>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.21"/>
-    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10"/>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
     <PackageReference Include="Blazor.Bootstrap" Version="3.5.0"/>
   </ItemGroup>
 
