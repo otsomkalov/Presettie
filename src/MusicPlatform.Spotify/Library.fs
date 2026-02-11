@@ -153,7 +153,7 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
           return! loadTracks' listPlaylistTracks
 
         with ApiException e when e.Response.StatusCode = HttpStatusCode.NotFound ->
-          Logf.logfw logger "Playlist with id %s{PlaylistId} not found in Spotify" playlistId
+          logger.LogWarning("Playlist with id %s{PlaylistId} not found in Spotify", playlistId)
 
           return []
       }
