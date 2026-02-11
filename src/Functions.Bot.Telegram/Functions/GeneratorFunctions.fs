@@ -31,7 +31,7 @@ type GeneratorFunctions
 
   [<Function("GenerateAsync")>]
   member this.GenerateAsync([<QueueTrigger("%Storage:QueueName%")>] command: {| UserId: string; PresetId: string |}, _: FunctionContext) =
-    Logf.logfi _logger "Running playlist generation for user %s{UserId} and preset %s{PresetId}" command.UserId command.PresetId
+    _logger.LogInformation("Running playlist generation for user %s{UserId} and preset %s{PresetId}", command.UserId, command.PresetId)
 
     let userId = command.UserId |> UserId
     let presetId = command.PresetId |> PresetId
@@ -43,5 +43,5 @@ type GeneratorFunctions
       | Some chat ->
         let! resp = getResp chat.Lang
         do! runPreset resp userId presetId chat.Id
-      | None -> Logf.logfw _logger "No chat found for user with id %s{UserId}" command.UserId
+      | None -> _logger.LogWarning("No chat found for user with id %s{UserId}", command.UserId)
     }
