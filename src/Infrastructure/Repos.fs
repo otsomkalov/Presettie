@@ -4,6 +4,7 @@ open Azure.Storage.Queues
 open Domain.Core
 open Domain.Repos
 open FSharp
+open Microsoft.Extensions.Logging
 open MongoDB.Bson
 open MongoDB.Driver
 open Database
@@ -48,13 +49,13 @@ module PresetRepo =
   let private listPlaylistsTracks (listTracks: PlaylistId -> Task<Track list>) =
     List.map listTracks >> Task.WhenAll >> Task.map List.concat
 
-  let listExcludedTracks logger listTracks =
+  let listExcludedTracks (logger: ILogger) listTracks =
     let listTracks = listPlaylistsTracks listTracks
 
     fun playlists -> task {
       let! playlistsTracks = playlists |> List.map _.Id |> listTracks
 
-      Logf.logfi logger "Preset has %i{ExcludedTracksCount} excluded tracks" playlistsTracks.Length
+      logger.LogInformation("Preset has %i{ExcludedTracksCount} excluded tracks", playlistsTracks.Length)
 
       return playlistsTracks
     }

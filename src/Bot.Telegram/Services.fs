@@ -65,7 +65,7 @@ type MessageService
       match lastHandlerResult with
       | Some() -> return ()
       | None ->
-        Logf.logfw logger "Message content didn't match any handler. Running default one."
+        logger.LogWarning "Message content didn't match any handler. Running default one."
 
         return! chatCtx.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
     }
@@ -122,7 +122,7 @@ type CallbackQueryService
       match lastHandlerResult with
       | Some() -> return ()
       | None ->
-        Logf.logfw logger "Button click data didn't match any handler. Running default one."
+        logger.LogWarning "Button click data didn't match any handler. Running default one."
 
         return! botService.SendNotification(clickId, resp[Notifications.UnknownCommand])
     }
