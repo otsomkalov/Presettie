@@ -11,9 +11,9 @@ open Microsoft.AspNetCore.Components.WebAssembly.Hosting
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Configuration
+open Runners.Shared
 open Bolero.Web.Repos
 open System.Net.Http.Json
-open Bolero.Web.Util
 open FsToolkit.ErrorHandling
 open BlazorBootstrap
 

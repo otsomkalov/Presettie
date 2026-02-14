@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.fsproj"/>
+    <ProjectReference Include="..\Runners.Shared\Runners.Shared.fsproj" />
   </ItemGroup>
 
 </Project>

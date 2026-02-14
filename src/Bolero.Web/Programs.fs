@@ -11,6 +11,7 @@ open Microsoft.AspNetCore.Components.Routing
 open Microsoft.Extensions.Logging
 open Bolero.Web.Repos
 open BlazorBootstrap
+open Runners.Shared
 
 [<RequireQualifiedAccess>]
 module Preset =

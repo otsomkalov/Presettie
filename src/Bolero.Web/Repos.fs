@@ -2,10 +2,9 @@
 
 open System.Threading.Tasks
 open Domain.Core
+open Runners.Shared
 
 // TODO: Is it possible to share contract with BE?
-type IListPresets =
-  abstract ListPresets: unit -> Task<SimplePreset list>
 
 type IGetPreset =
   abstract GetPreset': PresetId -> Task<Preset>
