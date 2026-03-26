@@ -80,7 +80,13 @@ type ExcludedPlaylist() =
           "i" ]
 
     let! result =
-      showExcludedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object Mocks.chat click
+      showExcludedPlaylistClickHandler
+        presetRepo.Object
+        musicPlatformFactory.Object
+        resourceProvider.Object
+        botService.Object
+        Mocks.chat
+        click
 
     result |> should equal (Some())
 
@@ -96,7 +102,13 @@ type ExcludedPlaylist() =
     let click = createClick []
 
     let! result =
-      showExcludedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object Mocks.chat click
+      showExcludedPlaylistClickHandler
+        presetRepo.Object
+        musicPlatformFactory.Object
+        resourceProvider.Object
+        botService.Object
+        Mocks.chat
+        click
 
     result |> should equal None
 
