@@ -29,7 +29,6 @@ type ExcludedPlaylist() =
 
   let createClick data : Click =
     { Id = Mocks.clickId
-      Chat = Mocks.chat
       MessageId = Mocks.botMessageId
       Data = data }
 
@@ -44,7 +43,7 @@ type ExcludedPlaylist() =
           CallbackQueryConstants.excludedPlaylists
           "0" ]
 
-    let! result = listExcludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object click
+    let! result = listExcludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal (Some())
 
@@ -56,7 +55,7 @@ type ExcludedPlaylist() =
   member _.``list click should not list excluded playlists if data does not match``() = task {
     let click = createClick []
 
-    let! result = listExcludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object click
+    let! result = listExcludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal None
 
@@ -81,7 +80,7 @@ type ExcludedPlaylist() =
           "i" ]
 
     let! result =
-      showExcludedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
+      showExcludedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal (Some())
 
@@ -97,7 +96,7 @@ type ExcludedPlaylist() =
     let click = createClick []
 
     let! result =
-      showExcludedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
+      showExcludedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal None
 
@@ -125,7 +124,7 @@ type ExcludedPlaylist() =
           Mocks.excludedPlaylistId.Value
           "rm" ]
 
-    let! result = removeExcludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object click
+    let! result = removeExcludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal (Some())
 
@@ -137,7 +136,7 @@ type ExcludedPlaylist() =
   member _.``remove click should not delete playlist``() = task {
     let click = createClick []
 
-    let! result = removeExcludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object click
+    let! result = removeExcludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal None
 

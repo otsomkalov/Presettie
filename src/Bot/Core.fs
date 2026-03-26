@@ -14,11 +14,8 @@ type Chat =
     UserId: UserId
     Lang: string }
 
-type Click =
-  { Id: ButtonClickId
-    MessageId: BotMessageId
-    Chat: Chat
-    Data: string list }
+  interface IChat with
+    member this.Id = this.Id
 
 type ReplyMessage = { Text: string }
 
@@ -31,10 +28,6 @@ type Message =
 type MessageHandler = Message -> Task<unit option>
 
 type MessageHandlerFactory = IResourceProvider -> IBotService -> MessageHandler
-
-type ClickHandler = Click -> Task<unit option>
-
-type ClickHandlerFactory = IResourceProvider -> IBotService -> ClickHandler
 
 type UserId with
   member this.ToAccountId() = this.Value |> AccountId

@@ -22,7 +22,6 @@ type PresetSettings() =
 
   let createClick data : Click =
     { Id = Mocks.clickId
-      Chat = Mocks.chat
       MessageId = Mocks.botMessageId
       Data = data }
 
@@ -42,7 +41,7 @@ type PresetSettings() =
           CallbackQueryConstants.enableUniqueArtists ]
 
     task {
-      let! result = sut click
+      let! result = sut Mocks.chat click
       result |> should equal (Some())
       presetRepo.VerifyAll()
       botService.VerifyAll()
@@ -57,7 +56,7 @@ type PresetSettings() =
     let click = createClick []
 
     task {
-      let! result = sut click
+      let! result = sut Mocks.chat click
       result |> should equal None
       presetRepo.VerifyAll()
       botService.VerifyAll()
@@ -80,7 +79,7 @@ type PresetSettings() =
           CallbackQueryConstants.disableUniqueArtists ]
 
     task {
-      let! result = sut click
+      let! result = sut Mocks.chat click
       result |> should equal (Some())
       presetRepo.VerifyAll()
       botService.VerifyAll()
@@ -95,7 +94,7 @@ type PresetSettings() =
     let click = createClick []
 
     task {
-      let! result = sut click
+      let! result = sut Mocks.chat click
       result |> should equal None
       presetRepo.VerifyAll()
       botService.VerifyAll()

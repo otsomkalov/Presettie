@@ -7,7 +7,6 @@ open Domain.Core
 open Domain.Repos
 open Moq
 open MusicPlatform
-open Bot.Core
 open Bot.Handlers.Click
 open Xunit
 open otsom.fs.Bot
@@ -29,7 +28,6 @@ type TargetedPlaylist() =
 
   let createClick data : Click =
     { Id = Mocks.clickId
-      Chat = Mocks.chat
       MessageId = Mocks.botMessageId
       Data = data }
 
@@ -40,7 +38,7 @@ type TargetedPlaylist() =
     let click =
       createClick [ CallbackQueryConstants.preset; Mocks.preset.Id.Value; "tp"; "0" ]
 
-    let! result = listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object click
+    let! result = listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal (Some())
 
@@ -52,7 +50,7 @@ type TargetedPlaylist() =
   member _.``list click should not list targeted playlists if data does not match``() = task {
     let click = createClick []
 
-    let! result = listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object click
+    let! result = listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal None
 
@@ -77,7 +75,7 @@ type TargetedPlaylist() =
           "i" ]
 
     let! result =
-      showTargetedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
+      showTargetedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal (Some())
 
@@ -93,7 +91,7 @@ type TargetedPlaylist() =
     let click = createClick []
 
     let! result =
-      showTargetedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
+      showTargetedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal None
 
@@ -121,7 +119,7 @@ type TargetedPlaylist() =
           Mocks.targetedPlaylistId.Value
           "rm" ]
 
-    let! result = removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object click
+    let! result = removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal (Some())
 
@@ -133,7 +131,7 @@ type TargetedPlaylist() =
   member _.``remove click should not delete playlist``() = task {
     let click = createClick []
 
-    let! result = removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object click
+    let! result = removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal None
 
