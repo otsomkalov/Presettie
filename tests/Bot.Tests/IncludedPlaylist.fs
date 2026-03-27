@@ -5,7 +5,6 @@ open Domain.Core
 open Domain.Repos
 open Moq
 open MusicPlatform
-open Bot.Core
 open FsUnit.Xunit
 open Bot.Handlers.Click
 open Bot.Tests
@@ -28,7 +27,6 @@ type IncludedPlaylist() =
 
   let createClick data : Click =
     { Id = Mocks.clickId
-      Chat = Mocks.chat
       MessageId = Mocks.botMessageId
       Data = data }
 
@@ -43,7 +41,7 @@ type IncludedPlaylist() =
           CallbackQueryConstants.includedPlaylists
           "0" ]
 
-    let! result = listIncludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object click
+    let! result = listIncludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal (Some())
 
@@ -55,7 +53,7 @@ type IncludedPlaylist() =
   member this.``list click should not list included playlists if data does not match``() = task {
     let click = createClick []
 
-    let! result = listIncludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object click
+    let! result = listIncludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal None
 
@@ -80,7 +78,13 @@ type IncludedPlaylist() =
           "i" ]
 
     let! result =
-      showIncludedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
+      showIncludedPlaylistClickHandler
+        presetRepo.Object
+        musicPlatformFactory.Object
+        resourceProvider.Object
+        botService.Object
+        Mocks.chat
+        click
 
     result |> should equal (Some())
 
@@ -96,7 +100,13 @@ type IncludedPlaylist() =
     let click = createClick []
 
     let! result =
-      showIncludedPlaylistClickHandler presetRepo.Object musicPlatformFactory.Object resourceProvider.Object botService.Object click
+      showIncludedPlaylistClickHandler
+        presetRepo.Object
+        musicPlatformFactory.Object
+        resourceProvider.Object
+        botService.Object
+        Mocks.chat
+        click
 
     result |> should equal None
 
@@ -124,7 +134,7 @@ type IncludedPlaylist() =
           Mocks.includedPlaylistId.Value
           "rm" ]
 
-    let! result = removeIncludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object click
+    let! result = removeIncludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal (Some())
 
@@ -136,7 +146,7 @@ type IncludedPlaylist() =
   member this.``remove click should not delete playlist``() = task {
     let click = createClick []
 
-    let! result = removeIncludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object click
+    let! result = removeIncludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
     result |> should equal None
 

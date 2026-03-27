@@ -15,57 +15,6 @@ open otsom.fs.Resources
 
 #nowarn "20"
 
-let private addClickHandlers (services: IServiceCollection) =
-  services
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listPresetsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(presetInfoClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(presetSettingsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetService>(runPresetClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IUserService>(removePresetClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IUserService>(setCurrentPresetClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(artistsAlbumsRecommendationsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(reccoBeatsRecommendationsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(spotifyRecommendationsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(disableRecommendationsClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(enableUniqueArtistsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(disableUniqueArtistsClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(includeLikedTracksClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(excludeLikedTracksClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService>(ignoreLikedTracksClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(showIncludedContentClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(showExcludedContentClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listIncludedPlaylistsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listExcludedPlaylistsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listTargetedPlaylistsClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listIncludedArtistsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(showIncludedArtistClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(listExcludedArtistsClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo>(showExcludedArtistClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IMusicPlatformFactory>(showIncludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IMusicPlatformFactory>(showExcludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IMusicPlatformFactory>(showTargetedPlaylistClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(appendToTargetedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(overwriteTargetedPlaylistClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetService>(removeIncludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetService>(removeExcludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetService>(removeTargetedPlaylistClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetService>(removeIncludedArtistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetService>(removeExcludedArtistClickHandler)
-
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(setAllTracksIncludedPlaylistClickHandler)
-    .BuildSingleton<ClickHandlerFactory, IPresetRepo, IPresetService, IMusicPlatformFactory>(setOnlyLikedIncludedPlaylistClickHandler)
-
 let private addMessageHandlers (services: IServiceCollection) =
   services
     .BuildSingleton<MessageHandlerFactory, IUserRepo, IPresetRepo, IAuthService>(startMessageHandler)
@@ -107,4 +56,4 @@ let addBot (cfg: IConfiguration) (services: IServiceCollection) =
 
   services |> Startup.addAuthCore cfg |> Startup.addResources cfg
 
-  services |> addClickHandlers |> addMessageHandlers
+  services |> addMessageHandlers
