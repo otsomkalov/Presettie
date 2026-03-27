@@ -8,3 +8,6 @@ updates:
     groups:
       deps:
         patterns: [ "*" ]
+    ignore:
+      - dependency-name: "Microsoft.ApplicationInsights"
+      - dependency-name: "Microsoft.ApplicationInsights.WorkerService"
