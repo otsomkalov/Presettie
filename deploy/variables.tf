@@ -50,10 +50,6 @@ variable "redis-connection-string" {
   type = string
 }
 
-variable "storage-queue-name" {
-  type = string
-}
-
 variable "resources-default-lang" {
   type = string
 }
