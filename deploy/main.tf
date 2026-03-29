@@ -114,7 +114,7 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
   name = "func-presettie-bot-${var.env}"
 
   runtime_name    = "dotnet-isolated"
-  runtime_version = "9.0"
+  runtime_version = "10.0"
 
   storage_authentication_type = "StorageAccountConnectionString"
   storage_access_key          = azurerm_storage_account.st-presettie.primary_access_key
@@ -159,7 +159,7 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
   name = "func-presettie-api-${var.env}"
 
   runtime_name    = "dotnet-isolated"
-  runtime_version = "9.0"
+  runtime_version = "10.0"
 
   storage_authentication_type = "StorageAccountConnectionString"
   storage_access_key          = azurerm_storage_account.st-presettie.primary_access_key
