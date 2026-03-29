@@ -229,14 +229,6 @@ stages:
               artifactName: 'Bolero.Web'
               targetPath: '$(Build.ArtifactStagingDirectory)/Bolero.Web'
           - task: AzureCLI@2
-            displayName: 'Show identity'
-            inputs:
-              azureSubscription: '$(subscription)'
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                az ad signed-in-user show
-          - task: AzureCLI@2
             displayName: 'Copy Bolero Web to Blob Storage'
             inputs:
               azureSubscription: '$(subscription)'
