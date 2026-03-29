@@ -108,7 +108,6 @@ stages:
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)/Bolero.Web/wwwroot'
               ArtifactName: 'Bolero.Web'
-
   - stage: deploy_dev
     displayName: 'Deploy DEV'
     dependsOn: build
@@ -151,7 +150,7 @@ stages:
                     package: '$(Pipeline.Workspace)/**/*.zip'
                     isFlexConsumption: true
 
-      - deployment: deploy_web
+      - job: deploy_web
         displayName: 'Deploy Bolero Web'
         environment: 'dev'
         strategy:
@@ -162,12 +161,11 @@ stages:
                   artifact: Bolero.Web
 
                 - task: AzureFileCopy@6
-                  inputs:
-                    SourcePath: $(Pipeline.Workspace)/Bolero.Web/
-                    azureSubscription: '$(subscription)'
-                    Destination: 'AzureBlob'
-                    storage: '$(web-storage-account)'
-                    ContainerName: '$web'
+                  SourcePath: $(Pipeline.Workspace)/Bolero.Web/
+                  azureSubscription: '$(subscription)'
+                  Destination: 'AzureBlob'
+                  storage: '$(web-storage-account)'
+                  ContainerName: '$web'
 
   - stage: deploy_prd
     displayName: 'Deploy PRD'
@@ -210,9 +208,9 @@ stages:
                     appName: '$(api-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
 
-      - deployment: deploy_web
+      - job: deploy_web
         displayName: 'Deploy Bolero Web'
-        environment: 'prd'
+        environment: 'dev'
         strategy:
           runOnce:
             deploy:
@@ -221,9 +219,8 @@ stages:
                   artifact: Bolero.Web
 
                 - task: AzureFileCopy@6
-                  inputs:
-                    SourcePath: $(Pipeline.Workspace)/Bolero.Web/
-                    azureSubscription: '$(subscription)'
-                    Destination: 'AzureBlob'
-                    storage: '$(web-storage-account)'
-                    ContainerName: '$web'
+                  SourcePath: $(Pipeline.Workspace)/Bolero.Web/
+                  azureSubscription: '$(subscription)'
+                  Destination: 'AzureBlob'
+                  storage: '$(web-storage-account)'
+                  ContainerName: '$web'
