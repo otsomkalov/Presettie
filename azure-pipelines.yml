@@ -2,6 +2,9 @@ trigger:
   branches:
     include:
       - main
+  paths:
+    include:
+      - src
 
 pr:
   branches:

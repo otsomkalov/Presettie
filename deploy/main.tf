@@ -75,7 +75,7 @@ resource "azurerm_storage_container" "stc-api-deployments-presettie" {
 resource "azurerm_storage_queue" "stq-requests-presettie" {
   storage_account_id = azurerm_storage_account.st-presettie.id
 
-  name = var.storage-queue-name
+  name = "requests"
 }
 
 # Identity
@@ -140,7 +140,7 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
 
       Auth__CallbackUrl  = var.auth-callback-url
       Database__Name     = var.database-name
-      Storage__QueueName = var.storage-queue-name
+      Storage__QueueName = azurerm_storage_queue.stq-requests-presettie.name
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
@@ -184,7 +184,7 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
       Auth__CallbackUrl      = var.auth-callback-url
       Resources__DefaultLang = var.resources-default-lang
       Database__Name         = var.database-name,
-      Storage__QueueName     = var.storage-queue-name
+      Storage__QueueName     = azurerm_storage_queue.stq-requests-presettie.name
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
