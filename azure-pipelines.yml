@@ -12,8 +12,11 @@ pr:
       - main
 
 variables:
-  Runtime: 'linux-x64'
-  BuildConfiguration: 'Release'
+  - group: dev
+  - name: Runtime
+    value: 'linux-x64'
+  - name: BuildConfiguration
+    value: 'Release'
 
 stages:
   - stage: build
