@@ -40,7 +40,6 @@ stages:
             inputs:
               command: 'restore'
               projects: 'src/**/**.fsproj'
-              arguments: '-r $(Runtime) --configuration $(BuildConfiguration)'
           - task: DotNetCoreCLI@2
             displayName: 'Build Telegram Bot in Azure Functions'
             inputs:
@@ -131,6 +130,7 @@ stages:
                     appType: 'functionAppLinux'
                     appName: '$(bot-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
+                    isFlexConsumption: true
       - deployment: deploy_api
         displayName: 'Deploy Azure Functions Web API'
         environment: 'dev'
@@ -147,6 +147,7 @@ stages:
                     appType: 'functionAppLinux'
                     appName: '$(api-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
+                    isFlexConsumption: true
       - job: deploy_web
         displayName: 'Deploy Bolero Web'
         steps:
