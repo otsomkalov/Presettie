@@ -118,8 +118,8 @@ resource "azurerm_key_vault_secret" "kvs-storage-connection-string" {
 
 resource "azurerm_key_vault_access_policy" "kvap-func-bot" {
   key_vault_id = azurerm_key_vault.kv-presettie.id
-  tenant_id    = azurerm_linux_function_app.func-presettie-bot.identity[0].tenant_id
-  object_id    = azurerm_linux_function_app.func-presettie-bot.identity[0].principal_id
+  tenant_id    = azurerm_function_app_flex_consumption.func-presettie-bot.identity[0].tenant_id
+  object_id    = azurerm_function_app_flex_consumption.func-presettie-bot.identity[0].principal_id
 
   secret_permissions = [
     "Get",
@@ -129,8 +129,8 @@ resource "azurerm_key_vault_access_policy" "kvap-func-bot" {
 
 resource "azurerm_key_vault_access_policy" "kvap-func-api" {
   key_vault_id = azurerm_key_vault.kv-presettie.id
-  tenant_id    = azurerm_linux_function_app.func-presettie-api.identity[0].tenant_id
-  object_id    = azurerm_linux_function_app.func-presettie-api.identity[0].principal_id
+  tenant_id    = azurerm_function_app_flex_consumption.func-presettie-api.identity[0].tenant_id
+  object_id    = azurerm_function_app_flex_consumption.func-presettie-api.identity[0].principal_id
 
   secret_permissions = [
     "Get",
