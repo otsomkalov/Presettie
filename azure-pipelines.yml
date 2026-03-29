@@ -131,6 +131,7 @@ stages:
                     appName: '$(bot-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
                     isFlexConsumption: true
+
       - deployment: deploy_api
         displayName: 'Deploy Azure Functions Web API'
         environment: 'dev'
@@ -148,29 +149,24 @@ stages:
                     appName: '$(api-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
                     isFlexConsumption: true
+
       - job: deploy_web
         displayName: 'Deploy Bolero Web'
-        steps:
-          - checkout: none
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              artifactName: 'Bolero.Web'
-              targetPath: '$(Build.ArtifactStagingDirectory)/Bolero.Web'
-          - task: AzureCLI@2
-            displayName: 'Copy Bolero Web to Blob Storage'
-            inputs:
-              azureSubscription: '$(subscription)'
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                az storage blob upload-batch \
-                  --auth-mode login \
-                  --account-name $(web-storage-account) \
-                  -d '$web' \
-                  -s $(Build.ArtifactStagingDirectory)/Bolero.Web/ \
-                  --overwrite \
-                  --no-progress
+        environment: 'dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: Bolero.Web
+
+                - task: AzureFileCopy@6
+                  SourcePath: $(Pipeline.Workspace)/Bolero.Web/
+                  azureSubscription: '$(subscription)'
+                  Destination: 'AzureBlob'
+                  storage: '$(web-storage-account)'
+                  ContainerName: '$web'
+
   - stage: deploy_prd
     displayName: 'Deploy PRD'
     dependsOn: deploy_dev
@@ -194,6 +190,7 @@ stages:
                     appType: 'functionAppLinux'
                     appName: '$(bot-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
+
       - deployment: deploy_api
         displayName: 'Deploy Azure Functions Web API'
         environment: 'prd'
@@ -210,26 +207,20 @@ stages:
                     appType: 'functionAppLinux'
                     appName: '$(api-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
+
       - job: deploy_web
         displayName: 'Deploy Bolero Web'
-        steps:
-          - checkout: none
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              artifactName: 'Bolero.Web'
-              targetPath: '$(Build.ArtifactStagingDirectory)/Bolero.Web'
-          - task: AzureCLI@2
-            displayName: 'Copy Bolero Web to Blob Storage'
-            inputs:
-              azureSubscription: '$(subscription)'
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                az storage blob upload-batch \
-                  --auth-mode login \
-                  --account-name $(web-storage-account) \
-                  -d '$web' \
-                  -s $(Build.ArtifactStagingDirectory)/Bolero.Web/ \
-                  --overwrite \
-                  --no-progress
+        environment: 'dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: Bolero.Web
+
+                - task: AzureFileCopy@6
+                  SourcePath: $(Pipeline.Workspace)/Bolero.Web/
+                  azureSubscription: '$(subscription)'
+                  Destination: 'AzureBlob'
+                  storage: '$(web-storage-account)'
+                  ContainerName: '$web'
