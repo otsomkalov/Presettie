@@ -57,6 +57,10 @@ resource "azurerm_storage_account" "st-presettie" {
   account_tier             = "Standard"
   account_replication_type = "LRS"
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   tags = local.tags
 }
 
