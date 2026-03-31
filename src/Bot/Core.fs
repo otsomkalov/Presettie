@@ -21,13 +21,12 @@ type ReplyMessage = { Text: string }
 
 type Message =
   { Id: ChatMessageId
-    Chat: Chat
     Text: string
     ReplyMessage: ReplyMessage option }
 
-type MessageHandler = Message -> Task<unit option>
-
-type MessageHandlerFactory = IResourceProvider -> IBotService -> MessageHandler
+  interface IMessage with
+    member this.Id = this.Id
+    member this.Text = this.Text
 
 type UserId with
   member this.ToAccountId() = this.Value |> AccountId

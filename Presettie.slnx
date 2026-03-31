@@ -24,4 +24,5 @@
     <Project Path="tests/Domain.Tests\Domain.Tests.fsproj" />
     <Project Path="tests\Bot.Tests\Bot.Tests.fsproj" />
   </Folder>
+  <Project Path="../otsom.fs/src/otsom.fs.Bot/otsom.fs.Bot.fsproj" />
 </Solution>

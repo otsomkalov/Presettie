@@ -23,15 +23,15 @@ let startMessageHandler
   (authService: #ICompleteAuth)
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
-  : MessageHandler =
-  fun message -> task {
+  : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message with
     | { Text = Equals Commands.start } ->
-      do! User.sendCurrentPreset resp userRepo presetRepo chatCtx message.Chat.UserId
+      do! User.sendCurrentPreset resp userRepo presetRepo chatCtx chat.UserId
 
       return Some()
     | { Text = CommandWithData Commands.start state } ->
-      let! user = userRepo.LoadUser message.Chat.UserId
+      let! user = userRepo.LoadUser chat.UserId
 
       let processSuccessfulLogin =
         fun () -> chatCtx.SendMessage resp[Messages.SuccessfulLogin] |> Task.map ignore
@@ -49,8 +49,8 @@ let startMessageHandler
     | _ -> return None
   }
 
-let faqMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
-  fun message -> task {
+let faqMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message.Text with
     | Equals Commands.faq ->
       do! chatCtx.SendMessage(resp[Messages.FAQ]) |> Task.map ignore
@@ -59,8 +59,8 @@ let faqMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Messa
     | _ -> return None
   }
 
-let privacyMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
-  fun message -> task {
+let privacyMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message.Text with
     | Equals Commands.privacy ->
       do! chatCtx.SendMessage(resp[Messages.Privacy]) |> Task.map ignore
@@ -69,8 +69,8 @@ let privacyMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : M
     | _ -> return None
   }
 
-let guideMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
-  fun message -> task {
+let guideMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message.Text with
     | Equals Commands.guide ->
       do! chatCtx.SendMessage(resp[Messages.Guide]) |> Task.map ignore
@@ -79,8 +79,8 @@ let guideMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Mes
     | _ -> return None
   }
 
-let helpMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
-  fun message -> task {
+let helpMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message.Text with
     | Equals Commands.help ->
       do! chatCtx.SendMessage(resp[Messages.Help]) |> Task.map ignore
@@ -89,45 +89,45 @@ let helpMessageHandler (resp: IResourceProvider) (chatCtx: #ISendMessage) : Mess
     | _ -> return None
   }
 
-let myPresetsMessageHandler presetRepo (resp: IResourceProvider) (chatCtx: #ISendMessageButtons) : MessageHandler =
+let myPresetsMessageHandler presetRepo (resp: IResourceProvider) (chatCtx: #ISendMessageButtons) : MessageHandler<Chat, Message> =
   let sendUserPresets = User.sendPresets resp chatCtx presetRepo
 
-  fun message -> task {
+  fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.MyPresets)) ->
-      do! sendUserPresets message.Chat.UserId
+      do! sendUserPresets chat.UserId
       return Some()
     | Equals Commands.presets ->
-      do! sendUserPresets message.Chat.UserId
+      do! sendUserPresets chat.UserId
       return Some()
     | _ -> return None
   }
 
-let backMessageButtonHandler loadUser getPreset (resp: IResourceProvider) (chatCtx: #ISendKeyboard) : MessageHandler =
-  fun message -> task {
+let backMessageButtonHandler loadUser getPreset (resp: IResourceProvider) (chatCtx: #ISendKeyboard) : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.Back)) ->
-      do! User.sendCurrentPreset resp loadUser getPreset chatCtx message.Chat.UserId
+      do! User.sendCurrentPreset resp loadUser getPreset chatCtx chat.UserId
 
       return Some()
     | _ -> return None
   }
 
-let presetSettingsMessageHandler userRepo presetRepo (resp: IResourceProvider) chatCtx : MessageHandler =
+let presetSettingsMessageHandler userRepo presetRepo (resp: IResourceProvider) chatCtx : MessageHandler<Chat, Message> =
   let sendSettingsMessage =
     User.sendCurrentPresetSettings resp userRepo presetRepo chatCtx
 
-  fun message -> task {
+  fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.Settings)) ->
-      do! sendSettingsMessage message.Chat.UserId
+      do! sendSettingsMessage chat.UserId
 
       return Some()
     | _ -> return None
   }
 
-let setPresetSizeMessageButtonHandler (resp: IResourceProvider) (chatCtx: #IAskForReply) : MessageHandler =
-  fun message -> task {
+let setPresetSizeMessageButtonHandler (resp: IResourceProvider) (chatCtx: #IAskForReply) : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.SetPresetSize)) ->
       do! chatCtx.AskForReply resp[Messages.SendPresetSize]
@@ -141,7 +141,7 @@ let setPresetSizeMessageHandler
   presetRepo
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
-  : MessageHandler =
+  : MessageHandler<Chat, Message> =
   let onSuccess chat =
     fun () -> User.sendCurrentPresetSettings resp userRepo presetRepo chatCtx chat
 
@@ -151,26 +151,26 @@ let setPresetSizeMessageHandler
     | PresetSettings.ParsingError.TooBig -> chatCtx.SendMessage resp[Messages.PresetSizeTooBig]
     | PresetSettings.ParsingError.NotANumber -> chatCtx.SendMessage resp[Messages.PresetSizeNotANumber]
 
-  fun message -> task {
+  fun chat message -> task {
     match message with
     | { Text = text
-        ReplyMessage = Some { Text = replyText } } when replyText = resp[Buttons.SetPresetSize] ->
+        ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendPresetSize] ->
       do!
-        userService.SetCurrentPresetSize(message.Chat.UserId, (PresetSettings.RawPresetSize text))
-        |> TaskResult.taskEither (onSuccess message.Chat.UserId) (onError >> Task.ignore)
+        userService.SetCurrentPresetSize(chat.UserId, (PresetSettings.RawPresetSize text))
+        |> TaskResult.taskEither (onSuccess chat.UserId) (onError >> Task.ignore)
 
       return Some()
     | { Text = CommandWithData Commands.size text } ->
       do!
-        (userService.SetCurrentPresetSize(message.Chat.UserId, (PresetSettings.RawPresetSize text))
-         |> TaskResult.taskEither (onSuccess message.Chat.UserId) (onError >> Task.ignore))
+        (userService.SetCurrentPresetSize(chat.UserId, (PresetSettings.RawPresetSize text))
+         |> TaskResult.taskEither (onSuccess chat.UserId) (onError >> Task.ignore))
 
       return Some()
     | _ -> return None
   }
 
-let createPresetButtonMessageHandler (resp: IResourceProvider) (chatCtx: #IAskForReply) : MessageHandler =
-  fun message -> task {
+let createPresetButtonMessageHandler (resp: IResourceProvider) (chatCtx: #IAskForReply) : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.CreatePreset)) ->
       do! chatCtx.AskForReply resp[Messages.SendPresetName]
@@ -179,18 +179,18 @@ let createPresetButtonMessageHandler (resp: IResourceProvider) (chatCtx: #IAskFo
     | _ -> return None
   }
 
-let createPresetMessageHandler (presetService: IPresetService) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler =
-  fun message -> task {
+let createPresetMessageHandler (presetService: IPresetService) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message with
     | { Text = text
         ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendPresetName] ->
-      let! preset = presetService.CreatePreset(message.Chat.UserId, text)
+      let! preset = presetService.CreatePreset(chat.UserId, text)
 
       do! Preset.send resp chatCtx preset
 
       return Some()
     | { Text = CommandWithData Commands.newPreset text } ->
-      let! preset = presetService.CreatePreset(message.Chat.UserId, text)
+      let! preset = presetService.CreatePreset(chat.UserId, text)
 
       do! Preset.send resp chatCtx preset
 
@@ -203,11 +203,11 @@ let includePlaylistButtonMessageHandler
   authService
   (resp: IResourceProvider)
   (chatCtx: #IAskForReply)
-  : MessageHandler =
-  fun message -> task {
+  : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.IncludePlaylist)) ->
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(message.Chat.UserId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -215,7 +215,7 @@ let includePlaylistButtonMessageHandler
 
         return Some()
       | _ ->
-        do! sendLoginMessage authService resp chatCtx message.Chat.UserId |> Task.map ignore
+        do! sendLoginMessage authService resp chatCtx chat.UserId |> Task.map ignore
 
         return Some()
     | _ -> return None
@@ -226,11 +226,11 @@ let excludePlaylistButtonMessageHandler
   authService
   (resp: IResourceProvider)
   (chatCtx: #IAskForReply)
-  : MessageHandler =
-  fun message -> task {
+  : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.ExcludePlaylist)) ->
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(message.Chat.UserId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -238,7 +238,7 @@ let excludePlaylistButtonMessageHandler
 
         return Some()
       | _ ->
-        do! sendLoginMessage authService resp chatCtx message.Chat.UserId |> Task.map ignore
+        do! sendLoginMessage authService resp chatCtx chat.UserId |> Task.map ignore
 
         return Some()
     | _ -> return None
@@ -249,11 +249,11 @@ let excludeArtistButtonMessageHandler
   authService
   (resp: IResourceProvider)
   (chatCtx: #IAskForReply)
-  : MessageHandler =
-  fun message -> task {
+  : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.ExcludeArtist)) ->
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(message.Chat.UserId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -261,7 +261,7 @@ let excludeArtistButtonMessageHandler
 
         return Some()
       | _ ->
-        do! sendLoginMessage authService resp chatCtx message.Chat.UserId |> Task.map ignore
+        do! sendLoginMessage authService resp chatCtx chat.UserId |> Task.map ignore
 
         return Some()
     | _ -> return None
@@ -272,12 +272,12 @@ let targetPlaylistButtonMessageHandler
   authService
   (resp: IResourceProvider)
   (chatCtx: #IBotService)
-  : MessageHandler =
-  fun message -> task {
+  : MessageHandler<Chat, Message> =
+  fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.TargetPlaylist)) ->
 
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(message.Chat.UserId.ToMusicPlatformId())
+      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -285,7 +285,7 @@ let targetPlaylistButtonMessageHandler
 
         return Some()
       | _ ->
-        do! sendLoginMessage authService resp chatCtx message.Chat.UserId |> Task.map ignore
+        do! sendLoginMessage authService resp chatCtx chat.UserId |> Task.map ignore
 
         return Some()
     | _ -> return None
@@ -297,7 +297,7 @@ let includePlaylistMessageHandler
   authService
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
-  : MessageHandler =
+  : MessageHandler<Chat, Message> =
   let includePlaylist =
     fun userId rawPlaylistId -> task {
       let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
@@ -321,15 +321,15 @@ let includePlaylistMessageHandler
       return! includePlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
     }
 
-  fun message -> task {
+  fun chat message -> task {
     match message with
     | { Text = text
         ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendIncludedPlaylist] ->
-      do! includePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
+      do! includePlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
     | { Text = CommandWithData Commands.includePlaylist text } ->
-      do! includePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
+      do! includePlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
     | _ -> return None
@@ -341,7 +341,7 @@ let excludePlaylistMessageHandler
   authService
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
-  : MessageHandler =
+  : MessageHandler<Chat, Message> =
   let excludePlaylist =
     fun userId rawPlaylistId -> task {
       let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
@@ -364,15 +364,15 @@ let excludePlaylistMessageHandler
       return! excludePlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
     }
 
-  fun message -> task {
+  fun chat message -> task {
     match message with
     | { Text = text
         ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendExcludedPlaylist] ->
-      do! excludePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
+      do! excludePlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
     | { Text = CommandWithData Commands.excludePlaylist text } ->
-      do! excludePlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
+      do! excludePlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
     | _ -> return None
@@ -384,7 +384,7 @@ let excludeArtistMessageHandler
   authService
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
-  : MessageHandler =
+  : MessageHandler<Chat, Message> =
   let excludeArtist =
     fun userId rawArtistId -> task {
       let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
@@ -407,15 +407,15 @@ let excludeArtistMessageHandler
       return! excludeArtistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
     }
 
-  fun message -> task {
+  fun chat message -> task {
     match message with
     | { Text = text
         ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendExcludedArtist] ->
-      do! excludeArtist message.Chat.UserId (Artist.RawArtistId text)
+      do! excludeArtist chat.UserId (Artist.RawArtistId text)
 
       return Some()
     | { Text = CommandWithData Commands.excludeArtist text } ->
-      do! excludeArtist message.Chat.UserId (Artist.RawArtistId text)
+      do! excludeArtist chat.UserId (Artist.RawArtistId text)
 
       return Some()
     | _ -> return None
@@ -427,7 +427,7 @@ let includeArtistMessageHandler
   authService
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
-  : MessageHandler =
+  : MessageHandler<Chat, Message> =
   let includeArtist =
     fun userId rawArtistId -> task {
       let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
@@ -450,15 +450,15 @@ let includeArtistMessageHandler
       return! includeArtistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
     }
 
-  fun message -> task {
+  fun chat message -> task {
     match message with
     | { Text = text
         ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendIncludedArtist] ->
-      do! includeArtist message.Chat.UserId (Artist.RawArtistId text)
+      do! includeArtist chat.UserId (Artist.RawArtistId text)
 
       return Some()
     | { Text = CommandWithData Commands.includeArtist text } ->
-      do! includeArtist message.Chat.UserId (Artist.RawArtistId text)
+      do! includeArtist chat.UserId (Artist.RawArtistId text)
 
       return Some()
     | _ -> return None
@@ -470,7 +470,7 @@ let targetPlaylistMessageHandler
   authService
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
-  : MessageHandler =
+  : MessageHandler<Chat, Message> =
   let targetPlaylist =
     fun userId rawPlaylistId -> task {
       let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
@@ -494,30 +494,30 @@ let targetPlaylistMessageHandler
       return! targetPlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
     }
 
-  fun message -> task {
+  fun chat message -> task {
     match message with
     | { Text = text
         ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendTargetedPlaylist] ->
-      do! targetPlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
+      do! targetPlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
     | { Text = CommandWithData Commands.targetPlaylist text } ->
-      do! targetPlaylist message.Chat.UserId (Playlist.RawPlaylistId text)
+      do! targetPlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
     | _ -> return None
   }
 
-let queuePresetRunMessageHandler userRepo presetService (resp: IResourceProvider) chatCtx : MessageHandler =
+let queuePresetRunMessageHandler userRepo presetService (resp: IResourceProvider) chatCtx : MessageHandler<Chat, Message> =
   let queueRun = User.queueCurrentPresetRun resp userRepo chatCtx presetService
 
-  fun message -> task {
+  fun chat message -> task {
     match message.Text with
     | Equals Commands.runPreset ->
-      do! queueRun message.Chat.UserId
+      do! queueRun chat.UserId
       return Some()
     | Equals(resp.Item(Buttons.RunPreset)) ->
-      do! queueRun message.Chat.UserId
+      do! queueRun chat.UserId
       return Some()
     | _ -> return None
   }

@@ -19,13 +19,11 @@ open Bot.Tests
 let private createMessage (text: string) : Message =
   { Id = Mocks.chatMessageId
     Text = text
-    Chat = Mocks.chat
     ReplyMessage = None }
 
 let private createMessageWithReply (text: string) (replyText: string) : Message =
   { Id = Mocks.chatMessageId
     Text = text
-    Chat = Mocks.chat
     ReplyMessage = Some { Text = replyText } }
 
 type StartMessageHandler() =
@@ -47,7 +45,7 @@ type StartMessageHandler() =
     let message = createMessage Commands.start
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -65,7 +63,7 @@ type StartMessageHandler() =
     let message = createMessage Commands.start
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
     }
@@ -80,7 +78,7 @@ type StartMessageHandler() =
     let message = createMessage $"{Commands.start} {testState}"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -99,7 +97,7 @@ type StartMessageHandler() =
     let message = createMessage $"{Commands.start} {testState}"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -119,7 +117,7 @@ type StartMessageHandler() =
     let message = createMessage $"{Commands.start} {testState}"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -133,7 +131,7 @@ type StartMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -157,7 +155,7 @@ type FaqMessageHandler() =
     let message = createMessage Commands.faq
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -173,7 +171,7 @@ type FaqMessageHandler() =
     let message = createMessage Commands.faq
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
     }
@@ -183,7 +181,7 @@ type FaqMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -196,7 +194,7 @@ type FaqMessageHandler() =
     let message = createMessage ""
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -209,7 +207,7 @@ type FaqMessageHandler() =
     let message = createMessage $"{Commands.faq} extra data"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -231,7 +229,7 @@ type PrivacyMessageHandler() =
     let message = createMessage Commands.privacy
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -247,7 +245,7 @@ type PrivacyMessageHandler() =
     let message = createMessage Commands.privacy
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
     }
@@ -257,7 +255,7 @@ type PrivacyMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -270,7 +268,7 @@ type PrivacyMessageHandler() =
     let message = createMessage ""
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -283,7 +281,7 @@ type PrivacyMessageHandler() =
     let message = createMessage $"{Commands.privacy} extra data"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -305,7 +303,7 @@ type GuideMessageHandler() =
     let message = createMessage Commands.guide
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -321,7 +319,7 @@ type GuideMessageHandler() =
     let message = createMessage Commands.guide
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
     }
@@ -331,7 +329,7 @@ type GuideMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -344,7 +342,7 @@ type GuideMessageHandler() =
     let message = createMessage ""
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -357,7 +355,7 @@ type GuideMessageHandler() =
     let message = createMessage $"{Commands.guide} extra data"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -379,7 +377,7 @@ type HelpMessageHandler() =
     let message = createMessage Commands.help
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -395,7 +393,7 @@ type HelpMessageHandler() =
     let message = createMessage Commands.help
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
     }
@@ -405,7 +403,7 @@ type HelpMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -418,7 +416,7 @@ type HelpMessageHandler() =
     let message = createMessage ""
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -431,7 +429,7 @@ type HelpMessageHandler() =
     let message = createMessage $"{Commands.help} extra data"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -458,7 +456,7 @@ type MyPresetsMessageHandler() =
     let message = createMessage Commands.presets
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
     }
@@ -470,7 +468,7 @@ type MyPresetsMessageHandler() =
     let message = createMessage Commands.presets
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
     }
@@ -482,7 +480,7 @@ type MyPresetsMessageHandler() =
     let message = createMessage Buttons.MyPresets
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
     }
@@ -493,7 +491,7 @@ type MyPresetsMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -508,7 +506,7 @@ type MyPresetsMessageHandler() =
     let message = createMessage ""
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -523,7 +521,7 @@ type MyPresetsMessageHandler() =
     let message = createMessage $"{Commands.presets} extra data"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -553,7 +551,7 @@ type BackMessageButtonHandler() =
     let message = createMessage Buttons.Back
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -567,7 +565,7 @@ type BackMessageButtonHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -583,7 +581,7 @@ type BackMessageButtonHandler() =
     let message = createMessage ""
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -599,7 +597,7 @@ type BackMessageButtonHandler() =
     let message = createMessage $"{Buttons.Back} extra data"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -633,7 +631,7 @@ type PresetSettingsMessageHandler() =
     let message = createMessage Buttons.Settings
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -647,7 +645,7 @@ type PresetSettingsMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -663,7 +661,7 @@ type PresetSettingsMessageHandler() =
     let message = createMessage ""
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -679,7 +677,7 @@ type PresetSettingsMessageHandler() =
     let message = createMessage $"{Buttons.Settings} extra data"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -708,7 +706,7 @@ type SetPresetSizeMessageButtonHandler() =
     let message = createMessage Buttons.SetPresetSize
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal (Some())
       resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
       chatCtx.Verify(_.AskForReply(It.IsAny()))
@@ -719,7 +717,7 @@ type SetPresetSizeMessageButtonHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal None
       resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
       resourceProvider.VerifyNoOtherCalls()
@@ -731,7 +729,7 @@ type SetPresetSizeMessageButtonHandler() =
     let message = createMessage ""
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal None
       resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
       resourceProvider.VerifyNoOtherCalls()
@@ -743,7 +741,7 @@ type SetPresetSizeMessageButtonHandler() =
     let message = createMessage $"{Buttons.SetPresetSize} extra data"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal None
       resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
       resourceProvider.VerifyNoOtherCalls()
@@ -792,7 +790,7 @@ type SetPresetSizeMessageHandler() =
           ReplyMessage = Some { Text = Buttons.SetPresetSize } }
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal (Some())
       userService.VerifyAll()
       chatCtx.VerifyAll()
@@ -810,7 +808,7 @@ type SetPresetSizeMessageHandler() =
     let message = createMessage $"{Commands.size} 42"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal (Some())
       userService.VerifyAll()
       chatCtx.VerifyAll()
@@ -828,7 +826,7 @@ type SetPresetSizeMessageHandler() =
           ReplyMessage = Some { Text = resourceProvider.Object.Item(Buttons.SetPresetSize) } }
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal (Some())
       userService.VerifyAll()
       chatCtx.VerifyAll()
@@ -844,7 +842,7 @@ type SetPresetSizeMessageHandler() =
           ReplyMessage = Some { Text = resourceProvider.Object.Item(Buttons.SetPresetSize) } }
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal (Some())
       userService.VerifyAll()
       chatCtx.VerifyAll()
@@ -860,7 +858,7 @@ type SetPresetSizeMessageHandler() =
           ReplyMessage = Some { Text = resourceProvider.Object.Item(Buttons.SetPresetSize) } }
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal (Some())
       userService.VerifyAll()
       chatCtx.VerifyAll()
@@ -871,7 +869,7 @@ type SetPresetSizeMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal None
       userService.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -901,7 +899,7 @@ type CreatePresetButtonMessageHandler() =
     let message = createMessage Buttons.CreatePreset
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal (Some())
       resourceProvider.Verify(_.Item(Buttons.CreatePreset))
       chatCtx.Verify(_.AskForReply(Messages.SendPresetName))
@@ -912,7 +910,7 @@ type CreatePresetButtonMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal None
       resourceProvider.Verify(_.Item(Buttons.CreatePreset))
       resourceProvider.VerifyNoOtherCalls()
@@ -924,7 +922,7 @@ type CreatePresetButtonMessageHandler() =
     let message = createMessage ""
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal None
       resourceProvider.Verify(_.Item(Buttons.CreatePreset))
       resourceProvider.VerifyNoOtherCalls()
@@ -936,7 +934,7 @@ type CreatePresetButtonMessageHandler() =
     let message = createMessage $"{Buttons.CreatePreset} extra data"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
       result |> should equal None
       resourceProvider.Verify(_.Item(Buttons.CreatePreset))
       resourceProvider.VerifyNoOtherCalls()
@@ -965,7 +963,7 @@ type CreatePresetMessageHandler() =
           ReplyMessage = Some { Text = resourceProvider.Object.Item(Messages.SendPresetName) } }
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -981,7 +979,7 @@ type CreatePresetMessageHandler() =
     let message = createMessage $"{Commands.newPreset} Another"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -994,7 +992,7 @@ type CreatePresetMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
 
@@ -1030,7 +1028,7 @@ type IncludePlaylistButtonMessageHandler() =
     let message = createMessage Buttons.IncludePlaylist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1046,7 +1044,7 @@ type IncludePlaylistButtonMessageHandler() =
     let message = createMessage Buttons.IncludePlaylist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1082,7 +1080,7 @@ type ExcludePlaylistButtonMessageHandler() =
     let message = createMessage Buttons.ExcludePlaylist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1098,7 +1096,7 @@ type ExcludePlaylistButtonMessageHandler() =
     let message = createMessage Buttons.ExcludePlaylist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1133,7 +1131,7 @@ type ExcludeArtistButtonMessageHandler() =
     let message = createMessage Buttons.ExcludeArtist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
       musicPlatformFactory.VerifyAll()
@@ -1150,7 +1148,7 @@ type ExcludeArtistButtonMessageHandler() =
     let message = createMessage Buttons.ExcludeArtist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1186,7 +1184,7 @@ type TargetPlaylistButtonMessageHandler() =
     let message = createMessage Buttons.TargetPlaylist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1202,7 +1200,7 @@ type TargetPlaylistButtonMessageHandler() =
     let message = createMessage Buttons.TargetPlaylist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1237,7 +1235,7 @@ type IncludePlaylistMessageHandler() =
           ReplyMessage = Some { Text = resourceProvider.Object.Item(Messages.SendIncludedPlaylist) } }
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1257,7 +1255,7 @@ type IncludePlaylistMessageHandler() =
     let message = createMessage $"{Commands.includePlaylist} raw-id"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1281,7 +1279,7 @@ type IncludePlaylistMessageHandler() =
     let message = createMessage $"{Commands.includePlaylist} bad-id"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1303,7 +1301,7 @@ type IncludePlaylistMessageHandler() =
     let message = createMessage $"{Commands.includePlaylist} nf-id"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1323,7 +1321,7 @@ type IncludePlaylistMessageHandler() =
     let message = createMessage $"{Commands.includePlaylist} some-id"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1357,7 +1355,7 @@ type ExcludePlaylistMessageHandler() =
           ReplyMessage = Some { Text = resourceProvider.Object.Item(Messages.SendExcludedPlaylist) } }
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1377,7 +1375,7 @@ type ExcludePlaylistMessageHandler() =
     let message = createMessage $"{Commands.excludePlaylist} raw-id"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1401,7 +1399,7 @@ type ExcludePlaylistMessageHandler() =
     let message = createMessage $"{Commands.excludePlaylist} bad-id"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1423,7 +1421,7 @@ type ExcludePlaylistMessageHandler() =
     let message = createMessage $"{Commands.excludePlaylist} nf-id"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1443,7 +1441,7 @@ type ExcludePlaylistMessageHandler() =
     let message = createMessage $"{Commands.excludePlaylist} some-id"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1477,7 +1475,7 @@ type ExcludeArtistMessageHandler() =
     let message = createMessageWithReply "artist123" Messages.SendExcludedArtist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
       userRepo.VerifyAll()
@@ -1499,7 +1497,7 @@ type ExcludeArtistMessageHandler() =
     let message = createMessage $"{Commands.excludeArtist} artist456"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
       userRepo.VerifyAll()
@@ -1523,7 +1521,7 @@ type ExcludeArtistMessageHandler() =
     let message = createMessageWithReply "invalid-id" Messages.SendExcludedArtist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
       userRepo.VerifyAll()
@@ -1548,7 +1546,7 @@ type ExcludeArtistMessageHandler() =
       createMessageWithReply "nonexistent-artist" Messages.SendExcludedArtist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
       userRepo.VerifyAll()
@@ -1570,7 +1568,7 @@ type ExcludeArtistMessageHandler() =
     let message = createMessageWithReply "artist789" Messages.SendExcludedArtist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
       userRepo.VerifyAll()
@@ -1606,7 +1604,7 @@ type IncludeArtistMessageHandler() =
     let message = createMessageWithReply "artist123" Messages.SendIncludedArtist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
       userRepo.VerifyAll()
@@ -1628,7 +1626,7 @@ type IncludeArtistMessageHandler() =
     let message = createMessage $"{Commands.includeArtist} artist456"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
       userRepo.VerifyAll()
@@ -1652,7 +1650,7 @@ type IncludeArtistMessageHandler() =
     let message = createMessageWithReply "invalid-id" Messages.SendIncludedArtist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
       userRepo.VerifyAll()
@@ -1677,7 +1675,7 @@ type IncludeArtistMessageHandler() =
       createMessageWithReply "nonexistent-artist" Messages.SendIncludedArtist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
       userRepo.VerifyAll()
@@ -1699,7 +1697,7 @@ type IncludeArtistMessageHandler() =
     let message = createMessageWithReply "artist789" Messages.SendIncludedArtist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
       userRepo.VerifyAll()
@@ -1735,7 +1733,7 @@ type TargetPlaylistMessageHandler() =
     let message = createMessageWithReply "playlist-url" Messages.SendTargetedPlaylist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1755,7 +1753,7 @@ type TargetPlaylistMessageHandler() =
     let message = createMessage $"{Commands.targetPlaylist} playlist-url"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1777,7 +1775,7 @@ type TargetPlaylistMessageHandler() =
     let message = createMessageWithReply "invalid-id" Messages.SendTargetedPlaylist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1799,7 +1797,7 @@ type TargetPlaylistMessageHandler() =
     let message = createMessageWithReply "playlist-url" Messages.SendTargetedPlaylist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1821,7 +1819,7 @@ type TargetPlaylistMessageHandler() =
     let message = createMessageWithReply "playlist-url" Messages.SendTargetedPlaylist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1839,7 +1837,7 @@ type TargetPlaylistMessageHandler() =
     let message = createMessageWithReply "playlist-url" Messages.SendTargetedPlaylist
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1851,7 +1849,7 @@ type TargetPlaylistMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
       userRepo.VerifyNoOtherCalls()
@@ -1885,7 +1883,7 @@ type QueuePresetRunMessageHandler() =
     let message = createMessage Commands.runPreset
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1905,7 +1903,7 @@ type QueuePresetRunMessageHandler() =
     let message = createMessage Buttons.RunPreset
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1925,7 +1923,7 @@ type QueuePresetRunMessageHandler() =
     let message = createMessage Commands.runPreset
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1945,7 +1943,7 @@ type QueuePresetRunMessageHandler() =
     let message = createMessage Commands.runPreset
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal (Some())
 
@@ -1957,7 +1955,7 @@ type QueuePresetRunMessageHandler() =
     let message = createMessage "some random text"
 
     task {
-      let! result = handler message
+      let! result = handler Mocks.chat message
 
       result |> should equal None
       userRepo.VerifyNoOtherCalls()

@@ -2,6 +2,7 @@
 
 open System
 open Bot.Handlers.Click
+open Bot.Handlers.Message
 open Domain.Core
 open Domain.Repos
 open Microsoft.Extensions.Logging
@@ -11,6 +12,7 @@ open Telegram.Bot.Types
 open Bot.Core
 open Bot.Repos
 open Bot.Resources
+open otsom.fs.Auth
 open otsom.fs.Bot.Builders
 open otsom.fs.Extensions
 open otsom.fs.Bot
@@ -20,10 +22,15 @@ type MessageService
   (
     buildChatContext: BuildBotService,
     logger: ILogger<MessageService>,
-    handlersFactories: MessageHandlerFactory seq,
     chatRepo: IChatRepo,
     chatService: IChatService,
-    getResp: Resources.GetResourceProvider
+    getResp: Resources.GetResourceProvider,
+    userRepo: IUserRepo,
+    presetRepo: IPresetRepo,
+    authService: IAuthService,
+    presetService: IPresetService,
+    userService: IUserService,
+    musicPlatformFactory: IMusicPlatformFactory
   ) =
 
   member this.ProcessAsync(message: Telegram.Bot.Types.Message) =
@@ -45,7 +52,6 @@ type MessageService
 
       let message' =
         { Id = ChatMessageId message.MessageId
-          Chat = chat
           Text = message.Text
           ReplyMessage =
             message.ReplyToMessage
@@ -53,18 +59,42 @@ type MessageService
             |> Option.map (fun m -> { Text = m.Text }) }
 
       let! resp = getResp lang
+      let botService = buildChatContext chatId
 
-      let handlers = handlersFactories |> Seq.map (fun f -> f resp chatCtx)
+      let handlers = messageHandlers {
+        startMessageHandler userRepo presetRepo authService resp botService
 
-      use e = handlers.GetEnumerator()
+        faqMessageHandler resp botService
+        privacyMessageHandler resp botService
+        guideMessageHandler resp botService
+        helpMessageHandler resp botService
 
-      let mutable lastHandlerResult = None
+        myPresetsMessageHandler presetRepo resp botService
+        presetSettingsMessageHandler userRepo presetRepo resp botService
+        queuePresetRunMessageHandler userRepo presetService resp botService
 
-      while lastHandlerResult.IsNone && e.MoveNext() do
-        let handler = e.Current
-        let! currentHandlerResult = handler message'
+        createPresetMessageHandler presetService resp botService
+        createPresetButtonMessageHandler resp botService
 
-        lastHandlerResult <- currentHandlerResult
+        setPresetSizeMessageButtonHandler resp botService
+        setPresetSizeMessageHandler userService userRepo presetRepo resp botService
+
+        includePlaylistButtonMessageHandler musicPlatformFactory authService resp botService
+        excludePlaylistButtonMessageHandler musicPlatformFactory authService resp botService
+        targetPlaylistButtonMessageHandler musicPlatformFactory authService resp botService
+
+        excludeArtistButtonMessageHandler musicPlatformFactory authService resp botService
+
+        includePlaylistMessageHandler userRepo presetService authService resp botService
+        includeArtistMessageHandler userRepo presetService authService resp botService
+        excludePlaylistMessageHandler userRepo presetService authService resp botService
+        excludeArtistMessageHandler userRepo presetService authService resp botService
+        targetPlaylistMessageHandler userRepo presetService authService resp botService
+
+        backMessageButtonHandler userRepo presetRepo resp botService
+      }
+
+      let! lastHandlerResult = handlers chat message'
 
       match lastHandlerResult with
       | Some() -> return ()
