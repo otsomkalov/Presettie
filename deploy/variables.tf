@@ -54,6 +54,10 @@ variable "resources-default-lang" {
   type = string
 }
 
+variable "web-url" {
+  type = string
+}
+
 variable "env" {
   type    = string
   default = "prd"

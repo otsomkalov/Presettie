@@ -10,7 +10,6 @@ open FsUnit.Xunit
 open Moq
 open Xunit
 open otsom.fs.Bot
-open otsom.fs.Core
 open otsom.fs.Resources
 open Domain.Core
 open Domain.Repos

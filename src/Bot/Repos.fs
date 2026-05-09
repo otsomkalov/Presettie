@@ -4,7 +4,6 @@ open System.Threading.Tasks
 open Domain.Core
 open Bot.Core
 open otsom.fs.Bot
-open otsom.fs.Core
 
 [<RequireQualifiedAccess>]
 module PresetRepo =

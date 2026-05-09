@@ -2,12 +2,11 @@
 
 open System
 open Database
-open Domain.Core
 open Domain.Core.PresetSettings
 open Domain.Workflows
 open MongoDB.Bson
 open MusicPlatform
-open otsom.fs.Core
+open Domain.Core
 
 [<RequireQualifiedAccess>]
 module SimplePreset =
@@ -18,13 +17,13 @@ module SimplePreset =
 [<RequireQualifiedAccess>]
 module User =
   let fromDb (user: Entities.User) : User =
-    { Id = user.Id.ToString() |> UserId
+    { Id = user.Id |> UserId
       CurrentPresetId = user.CurrentPresetId |> Option.ofNullable |> Option.map (string >> PresetId)
       MusicPlatforms = user.MusicPlatforms |> Seq.map MusicPlatform.UserId |> List.ofSeq }
 
   let toDb (user: User) : Entities.User =
     Entities.User(
-      Id = (user.Id.Value |> ObjectId),
+      Id = user.Id.Value,
       CurrentPresetId =
         (user.CurrentPresetId
          |> Option.map (_.Value >> ObjectId.Parse)
@@ -133,7 +132,7 @@ module Preset =
 
     { Id = preset.Id |> string |> PresetId
       Name = preset.Name
-      OwnerId = preset.OwnerId |> string |> UserId
+      OwnerId = preset.OwnerId |> UserId
       IncludedPlaylists = mapIncludedPlaylist preset.IncludedPlaylists
       ExcludedPlaylists = mapExcludedPlaylist preset.ExcludedPlaylists
       IncludedArtists = mapIncludedArtist preset.IncludedArtists
@@ -146,7 +145,7 @@ module Preset =
       Id = (preset.Id.Value |> ObjectId.Parse),
       Name = preset.Name,
       Settings = (preset.Settings |> PresetSettings.toDb),
-      OwnerId = (preset.OwnerId.Value |> ObjectId.Parse),
+      OwnerId = preset.OwnerId.Value,
       IncludedPlaylists = (preset.IncludedPlaylists |> Seq.map IncludedPlaylist.toDb),
       ExcludedPlaylists = (preset.ExcludedPlaylists |> Seq.map ExcludedPlaylist.toDb),
       IncludedArtists = (preset.IncludedArtists |> Seq.map IncludedArtist.toDb),

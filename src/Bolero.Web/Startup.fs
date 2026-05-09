@@ -23,7 +23,7 @@ type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
   interface IEnv with
     member this.ListPresets() = task {
       try
-        return! httpClient.GetFromJsonAsync<SimplePreset list>("api/presets", JSON.options)
+        return! httpClient.GetFromJsonAsync<SimplePreset list>("presets", JSON.options)
       with e ->
         logger.LogError(e, "Error while fetching presets")
         return []
@@ -31,7 +31,7 @@ type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
 
     member this.GetPreset'(PresetId presetId) = task {
       try
-        return! httpClient.GetFromJsonAsync<Preset>($"api/presets/{presetId}", JSON.options)
+        return! httpClient.GetFromJsonAsync<Preset>($"presets/{presetId}", JSON.options)
       with e ->
         logger.LogError(e, "Error while fetching preset")
         return Unchecked.defaultof<Preset>
@@ -39,14 +39,14 @@ type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
 
     member this.RemovePreset(PresetId presetId) = task {
       try
-        do! httpClient.DeleteAsync($"api/presets/{presetId}") |> Task.ignore
+        do! httpClient.DeleteAsync($"presets/{presetId}") |> Task.ignore
       with e ->
         logger.LogError(e, "Error while removing preset")
     }
 
     member this.CreatePreset(name) = task {
       try
-        use! response = httpClient.PostAsJsonAsync("api/presets", {| Name = name |})
+        use! response = httpClient.PostAsJsonAsync("presets", {| Name = name |})
 
         return!
           response.Content.ReadFromJsonAsync<{| Id: string |}>()

@@ -1,7 +1,7 @@
 ﻿namespace Functions.Bot.Telegram
 
+open System
 open Bot
-open FSharp
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Extensions.Logging
 open Domain.Core
@@ -9,7 +9,6 @@ open Telegram.Bot
 open Bot.Core
 open Bot.Repos
 open otsom.fs.Bot
-open otsom.fs.Core
 open otsom.fs.Resources
 
 type GeneratorFunctions
@@ -30,7 +29,7 @@ type GeneratorFunctions
     }
 
   [<Function("GenerateAsync")>]
-  member this.GenerateAsync([<QueueTrigger("%Storage:QueueName%")>] command: {| UserId: string; PresetId: string |}, _: FunctionContext) =
+  member this.GenerateAsync([<QueueTrigger("%Storage:QueueName%")>] command: {| UserId: Guid; PresetId: string |}, _: FunctionContext) =
     _logger.LogInformation("Running playlist generation for user %s{UserId} and preset %s{PresetId}", command.UserId, command.PresetId)
 
     let userId = command.UserId |> UserId

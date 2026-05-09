@@ -15,7 +15,6 @@ pr:
       - src
 
 variables:
-  - group: dev
   - name: Runtime
     value: 'linux-x64'
   - name: BuildConfiguration
@@ -135,7 +134,7 @@ stages:
                   artifact: Functions.Bot.Telegram
                 - task: AzureFunctionApp@2
                   inputs:
-                    azureSubscription: '$(subscription)'
+                    azureSubscription: 'az-dev'
                     appType: 'functionAppLinux'
                     appName: '$(bot-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
@@ -152,7 +151,7 @@ stages:
 
                 - task: AzureFunctionApp@2
                   inputs:
-                    azureSubscription: '$(subscription)'
+                    azureSubscription: 'az-dev'
                     appType: 'functionAppLinux'
                     appName: '$(api-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
@@ -169,7 +168,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Copy Bolero Web to Blob Storage'
             inputs:
-              azureSubscription: '$(subscription)'
+              azureSubscription: 'az-dev'
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
@@ -199,7 +198,7 @@ stages:
 
                 - task: AzureFunctionApp@2
                   inputs:
-                    azureSubscription: '$(subscription)'
+                    azureSubscription: 'az-prd'
                     appType: 'functionAppLinux'
                     appName: '$(bot-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
@@ -215,7 +214,7 @@ stages:
 
                 - task: AzureFunctionApp@2
                   inputs:
-                    azureSubscription: '$(subscription)'
+                    azureSubscription: 'az-prd'
                     appType: 'functionAppLinux'
                     appName: '$(api-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
@@ -231,7 +230,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Copy Bolero Web to Blob Storage'
             inputs:
-              azureSubscription: '$(subscription)'
+              azureSubscription: 'az-prd'
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |

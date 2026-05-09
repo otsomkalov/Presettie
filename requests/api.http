@@ -1,14 +1,14 @@
 ﻿###
 GET http://localhost:7071/api/presets
-Authorization: Bearer {{apiToken}}
+Authorization: Bearer {{web-token}}
 
 ###
 GET http://localhost:7071/api/presets/{{presetId}}
-Authorization: Bearer {{apiToken}}
+Authorization: Bearer {{web-token}}
 
 ###
 POST http://localhost:7071/api/presets
-Authorization: Bearer {{apiToken}}
+Authorization: Bearer {{web-token}}
 Content-Type: application/json
 
 {
@@ -17,4 +17,4 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost:7071/api/presets/{{presetId}}
-Authorization: Bearer {{apiToken}}
+Authorization: Bearer {{web-token}}
