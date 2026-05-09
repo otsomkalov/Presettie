@@ -1,22 +1,19 @@
 ﻿module internal Infrastructure.Repos
 
 open Azure.Storage.Queues
-open Domain.Core
 open Domain.Repos
-open FSharp
 open Microsoft.Extensions.Logging
 open MongoDB.Bson
 open MongoDB.Driver
 open Database
 open MusicPlatform
 open MusicPlatform.Cached.Helpers
-open otsom.fs.Core
-open otsom.fs.Extensions
 open Infrastructure.Mapping
 open System.Threading.Tasks
 open System.Linq
 open MongoDB.Driver.Linq
 open FsToolkit.ErrorHandling
+open Domain.Core
 
 [<RequireQualifiedAccess>]
 module PresetRepo =
@@ -49,22 +46,11 @@ module PresetRepo =
   let private listPlaylistsTracks (listTracks: PlaylistId -> Task<Track list>) =
     List.map listTracks >> Task.WhenAll >> Task.map List.concat
 
-  let listExcludedTracks (logger: ILogger) listTracks =
-    let listTracks = listPlaylistsTracks listTracks
-
-    fun playlists -> task {
-      let! playlistsTracks = playlists |> List.map _.Id |> listTracks
-
-      logger.LogInformation("Preset has %i{ExcludedTracksCount} excluded tracks", playlistsTracks.Length)
-
-      return playlistsTracks
-    }
-
 [<RequireQualifiedAccess>]
 module UserRepo =
   let load (collection: IMongoCollection<Entities.User>) =
     fun (UserId userId) ->
-      let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, ObjectId userId)
+      let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, userId)
 
       collection.Find(usersFilter).SingleOrDefaultAsync() |> Task.map User.fromDb
 
@@ -76,7 +62,7 @@ module UserRepo =
 
   let save (collection: IMongoCollection<Entities.User>) =
     fun (user: User) ->
-      let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, ObjectId user.Id.Value)
+      let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, user.Id.Value)
 
       let dbUser = user |> User.toDb
 
@@ -108,9 +94,7 @@ type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
     member this.GenerateId() = ObjectId.GenerateNewId() |> string
 
     member this.ListUserPresets(UserId userId) =
-      let id = userId |> ObjectId.Parse
-
-      collection.AsQueryable().Where(fun p -> p.OwnerId = id).Select(fun p -> {| Id = p.Id; Name = p.Name |}).ToListAsync()
+      collection.AsQueryable().Where(fun p -> p.OwnerId = userId).Select(fun p -> {| Id = p.Id; Name = p.Name |}).ToListAsync()
       |> Task.map (Seq.map SimplePreset.fromDb >> List.ofSeq)
 
     member this.ParseId(RawPresetId rawPresetId) =
@@ -124,8 +108,6 @@ type UserRepo(db: IMongoDatabase) =
   interface IUserRepo with
     member this.LoadUser(userId) = UserRepo.load collection userId
     member this.SaveUser(user) = UserRepo.save collection user
-
-    member this.GenerateId() = ObjectId.GenerateNewId() |> string
 
     member this.LoadUserByMusicPlatform(userId) =
       UserRepo.loadByMusicPlatform collection userId

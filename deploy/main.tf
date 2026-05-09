@@ -175,6 +175,10 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
 
   site_config {
     application_insights_connection_string = azurerm_application_insights.appi-presettie.connection_string
+
+    cors {
+      allowed_origins = [var.web-url]
+    }
   }
 
   app_settings = merge(

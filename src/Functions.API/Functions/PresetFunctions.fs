@@ -1,5 +1,6 @@
 ﻿namespace Functions.API.Functions
 
+open System
 open System.Collections.Generic
 open System.ComponentModel.DataAnnotations
 open System.Threading.Tasks
@@ -40,15 +41,17 @@ type PresetFunctions
     authService: IAuthenticationService,
     userService: IUserService
   ) =
-  let validateUser (req: HttpRequest) : Task<Result<TokenUser, RequestError<_>>> =
-    authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
-    |> Task.map (Option.someIf _.Succeeded)
-    |> Task.map (Option.bind (_.Principal >> Option.ofObj))
-    |> Task.map (Option.bind (_.Identity >> Option.ofObj))
-    |> Task.map (Option.bind (_.Name >> Option.ofObj))
-    |> TaskOption.map (fun name -> name.Split "|" |> Array.last |> _.Split(":") |> Array.last)
-    |> TaskOption.map (fun userId -> { UserId = MusicPlatform.UserId userId })
-    |> Task.map (Result.ofOption RequestError.Unauthorized)
+  let validateUser (req: HttpRequest) : Task<Result<TokenUser, RequestError<_>>> = task {
+    return!
+      authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
+      |> Task.map (Option.someIf _.Succeeded)
+      |> Task.map (Option.bind (_.Principal >> Option.ofObj))
+      |> Task.map (Option.bind (_.Identity >> Option.ofObj))
+      |> Task.map (Option.bind (_.Name >> Option.ofObj))
+      |> Task.map (Option.bind (Guid.TryParse >> Option.someIf fst >> Option.map snd))
+      |> TaskOption.map (fun userId -> { UserId = UserId userId })
+      |> Task.map (Result.ofOption RequestError.Unauthorized)
+  }
 
   let validateBody (request: 'a) : Result<'a, RequestError<_>> =
     let validationCtx = ValidationContext(request, null, null)
@@ -76,7 +79,7 @@ type PresetFunctions
     ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets")>] request: HttpRequest)
     : Task<IActionResult> =
     let handler (token: TokenUser) = task {
-      let! user = userRepo.LoadUserByMusicPlatform token.UserId
+      let! user = userRepo.LoadUser token.UserId
 
       return! presetRepo.ListUserPresets user.Id
     }
@@ -95,7 +98,7 @@ type PresetFunctions
     : Task<IActionResult> =
     let handler (token: TokenUser) =
       fun presetId -> task {
-        let! user = userRepo.LoadUserByMusicPlatform token.UserId
+        let! user = userRepo.LoadUser token.UserId
 
         let! preset = presetService.GetPreset(user.Id, presetId)
 
@@ -115,7 +118,7 @@ type PresetFunctions
     ([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets")>] request: HttpRequest, [<FromBody>] body: CreatePresetRequest)
     : Task<IActionResult> =
     let handler (token: TokenUser) (body: CreatePresetRequest) = task {
-      let! user = userRepo.LoadUserByMusicPlatform token.UserId
+      let! user = userRepo.LoadUser token.UserId
 
       let! newPreset = presetService.CreatePreset(user.Id, body.Name)
 
@@ -136,7 +139,7 @@ type PresetFunctions
     : Task<IActionResult> =
     let handler (token: TokenUser) =
       fun presetId -> task {
-        let! user = userRepo.LoadUserByMusicPlatform token.UserId
+        let! user = userRepo.LoadUser token.UserId
 
         let! result = userService.RemoveUserPreset(user.Id, presetId)
 

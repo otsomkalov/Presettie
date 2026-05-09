@@ -29,7 +29,8 @@ public class Preset
 
     public string Name { get; set; }
 
-    public ObjectId OwnerId { get; set; }
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
+    public Guid OwnerId { get; set; }
 
     public Settings Settings { get; set; }
 
