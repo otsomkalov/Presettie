@@ -41,17 +41,15 @@ type PresetFunctions
     authService: IAuthenticationService,
     userService: IUserService
   ) =
-  let validateUser (req: HttpRequest) : Task<Result<TokenUser, RequestError<_>>> = task {
-    return!
-      authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
-      |> Task.map (Option.someIf _.Succeeded)
-      |> Task.map (Option.bind (_.Principal >> Option.ofObj))
-      |> Task.map (Option.bind (_.Identity >> Option.ofObj))
-      |> Task.map (Option.bind (_.Name >> Option.ofObj))
-      |> Task.map (Option.bind (Guid.TryParse >> Option.someIf fst >> Option.map snd))
-      |> TaskOption.map (fun userId -> { UserId = UserId userId })
-      |> Task.map (Result.ofOption RequestError.Unauthorized)
-  }
+  let validateUser (req: HttpRequest) : Task<Result<TokenUser, RequestError<_>>> =
+    authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
+    |> Task.map (Option.someIf _.Succeeded)
+    |> Task.map (Option.bind (_.Principal >> Option.ofObj))
+    |> Task.map (Option.bind (_.Identity >> Option.ofObj))
+    |> Task.map (Option.bind (_.Name >> Option.ofObj))
+    |> Task.map (Option.bind (Guid.TryParse >> Option.someIf fst >> Option.map snd))
+    |> TaskOption.map (fun userId -> { UserId = UserId userId })
+    |> Task.map (Result.ofOption RequestError.Unauthorized)
 
   let validateBody (request: 'a) : Result<'a, RequestError<_>> =
     let validationCtx = ValidationContext(request, null, null)
