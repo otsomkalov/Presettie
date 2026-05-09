@@ -15,7 +15,6 @@ pr:
       - src
 
 variables:
-  - group: dev
   - name: Runtime
     value: 'linux-x64'
   - name: BuildConfiguration
