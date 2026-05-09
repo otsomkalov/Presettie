@@ -2,14 +2,11 @@
 
 open Azure.Storage.Queues
 open Domain.Repos
-open Microsoft.Extensions.Logging
 open MongoDB.Bson
 open MongoDB.Driver
 open Database
-open MusicPlatform
 open MusicPlatform.Cached.Helpers
 open Infrastructure.Mapping
-open System.Threading.Tasks
 open System.Linq
 open MongoDB.Driver.Linq
 open FsToolkit.ErrorHandling
@@ -42,9 +39,6 @@ module PresetRepo =
       let presetsFilter = Builders<Entities.Preset>.Filter.Eq(_.Id, ObjectId presetId)
 
       collection.DeleteOneAsync(presetsFilter) |> Task.ignore
-
-  let private listPlaylistsTracks (listTracks: PlaylistId -> Task<Track list>) =
-    List.map listTracks >> Task.WhenAll >> Task.map List.concat
 
 [<RequireQualifiedAccess>]
 module UserRepo =
