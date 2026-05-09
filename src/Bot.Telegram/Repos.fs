@@ -1,6 +1,5 @@
 ﻿module Bot.Telegram.Repos
 
-open MongoDB.Bson
 open MongoDB.Driver
 open otsom.fs.Bot
 open Bot.Repos
@@ -24,8 +23,7 @@ type ChatRepo(collection: IMongoCollection<Entities.Chat>) =
     }
 
     member this.LoadUserChat(userId) = task {
-      let id = userId.Value |> ObjectId
-      let! chat = collection.AsQueryable().FirstOrDefaultAsync(fun c -> c.UserId = id)
+      let! chat = collection.AsQueryable().FirstOrDefaultAsync(fun c -> c.UserId = userId.Value)
 
       return chat |> Option.ofObj |> Option.map _.ToDomain()
     }

@@ -1,6 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module Domain.Tests.Mocks
 
+open System
 open Domain.Core
 open MusicPlatform
 
@@ -82,8 +83,8 @@ let rawPresetId = RawPresetId "raw-preset-id"
 let presetId = PresetId("preset-id")
 let presetName = "test-preset-name"
 let otherPresetId = PresetId("other-preset-id")
-let userId = otsom.fs.Core.UserId("user-id")
-let otherUserId = otsom.fs.Core.UserId("other-user-id")
+let userId = Domain.Core.UserId(Guid.NewGuid())
+let otherUserId = UserId("other-user-id")
 
 let simplePreset: SimplePreset = { Id = presetId; Name = presetName }
 
