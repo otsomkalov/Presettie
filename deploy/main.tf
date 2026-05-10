@@ -80,15 +80,15 @@ resource "azurerm_storage_queue" "stq-requests-presettie" {
 
 # Identity
 
-resource "azurerm_user_assigned_identity" "ado-pipeline-identity" {
+resource "azurerm_user_assigned_identity" "ui-ado-pipeline" {
   location            = azurerm_resource_group.rg-presettie.location
-  name                = "ado-pipeline-identity-presettie-${var.env}"
+  name                = "ui-ado-pipeline-presettie-${var.env}"
   resource_group_name = azurerm_resource_group.rg-presettie.name
 }
 
-resource "azurerm_role_assignment" "ado-pipeline-identity-blob-access" {
+resource "azurerm_role_assignment" "ra-ui-ado-pipeline-blob-access" {
   scope                = azurerm_storage_account.st-presettie.id
-  principal_id         = azurerm_user_assigned_identity.ado-pipeline-identity.principal_id
+  principal_id         = azurerm_user_assigned_identity.ui-ado-pipeline.principal_id
   role_definition_name = "Storage Blob Data Contributor"
 }
 
