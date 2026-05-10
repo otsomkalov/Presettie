@@ -1,16 +1,16 @@
 ﻿module Domain.Workflows
 
+open System
 open System.Threading.Tasks
-open Domain.Core
 open Domain.Core.PresetSettings
 open Domain.Repos
 open Microsoft.FSharp.Control
 open Microsoft.FSharp.Core
 open MusicPlatform
-open otsom.fs.Core
 open otsom.fs.Extensions
 open Domain.Extensions
 open FsToolkit.ErrorHandling
+open Domain.Core
 
 [<RequireQualifiedAccess>]
 module Tracks =
@@ -343,7 +343,7 @@ module Preset =
       &=|&> (saveTracks platform preset)
       &=|> (fun _ -> preset))
 
-  let queueRun (presetRepo: #ILoadPreset & #IQueueRun) =
+  let queueRun (presetRepo: #ILoadPreset & #Repos.IQueueRun) =
     fun userId ->
       presetRepo.LoadPreset
       >> Task.map Option.get
@@ -413,7 +413,7 @@ module Preset =
         |> TaskResult.taskMap updatePreset
 
     fun (UserId userId) presetId rawPlaylistId ->
-      musicPlatformFactory.GetMusicPlatform(userId |> MusicPlatform.UserId)
+      musicPlatformFactory.GetMusicPlatform(userId |> string |> MusicPlatform.UserId)
       |> Task.bind (function
         | Some mp -> excludePlaylist' mp presetId rawPlaylistId
         | None -> Preset.ExcludePlaylistError.Unauthorized |> Error |> Task.FromResult)
@@ -518,7 +518,7 @@ module Preset =
         |> TaskResult.taskMap updatePreset
 
     fun (UserId userId) presetId rawPlaylistId ->
-      musicPlatformFactory.GetMusicPlatform(userId |> MusicPlatform.UserId)
+      musicPlatformFactory.GetMusicPlatform(userId |> string |> MusicPlatform.UserId)
       |> Task.bind (function
         | Some mp -> targetPlaylist' mp presetId rawPlaylistId
         | None -> Preset.TargetPlaylistError.Unauthorized |> Error |> Task.FromResult)
@@ -567,9 +567,9 @@ module User =
       |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
       |> Task.bind (fun presetId -> presetService.SetPresetSize(presetId, size))
 
-  let create (userRepo: #ISaveUser & #IIdGenerator) =
+  let create (userRepo: #ISaveUser) =
     fun () -> task {
-      let newUserId = userRepo.GenerateId() |> UserId
+      let newUserId = Guid.CreateVersion7() |> UserId
 
       let newUser: User =
         { Id = newUserId

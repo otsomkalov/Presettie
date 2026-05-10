@@ -1,5 +1,5 @@
 ﻿module Functions.API.Shared
 
-open MusicPlatform
+open Domain.Core
 
 type TokenUser = { UserId: UserId }

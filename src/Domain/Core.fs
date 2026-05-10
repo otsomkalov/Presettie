@@ -3,10 +3,14 @@
 open System
 open System.Threading.Tasks
 open MusicPlatform
-open otsom.fs.Core
 
-type UserId with
-  member this.ToMusicPlatformId() = this.Value |> MusicPlatform.UserId
+type UserId =
+  | UserId of Guid
+
+  member this.Value = let (UserId id) = this in id
+
+  member this.ToMusicPlatformId() =
+    this.Value |> string |> MusicPlatform.UserId
 
 type ReadablePlaylistId =
   | ReadablePlaylistId of PlaylistId

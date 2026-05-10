@@ -13,7 +13,6 @@ open Bot.Core
 open Bot.Repos
 open otsom.fs.Auth
 open otsom.fs.Bot
-open otsom.fs.Core
 open otsom.fs.Extensions
 open System
 open otsom.fs.Resources

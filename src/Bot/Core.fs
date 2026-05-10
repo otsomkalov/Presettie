@@ -1,10 +1,10 @@
 ﻿module Bot.Core
 
 open System.Threading.Tasks
+open Domain.Core
 open Microsoft.FSharp.Core
 open otsom.fs.Auth
 open otsom.fs.Bot
-open otsom.fs.Core
 open otsom.fs.Resources
 
 type Page = Page of int
@@ -29,7 +29,7 @@ type Message =
     member this.Text = this.Text
 
 type UserId with
-  member this.ToAccountId() = this.Value |> AccountId
+  member this.ToAccountId() = this.Value |> string |> AccountId
 
 type ICreateChat =
   abstract CreateChat: ChatId * string option -> Task<Chat>

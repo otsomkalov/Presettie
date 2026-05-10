@@ -2,7 +2,6 @@
 
 open System.Threading.Tasks
 open Domain.Core
-open otsom.fs.Core
 
 type IIdGenerator =
   abstract GenerateId: unit -> string
@@ -47,4 +46,3 @@ type IUserRepo =
   inherit ILoadUser
   inherit ILoadUserByMusicPlatform
   inherit ISaveUser
-  inherit IIdGenerator
