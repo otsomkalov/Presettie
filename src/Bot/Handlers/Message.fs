@@ -179,7 +179,11 @@ let createPresetButtonMessageHandler (resp: IResourceProvider) (chatCtx: #IAskFo
     | _ -> return None
   }
 
-let createPresetMessageHandler (presetService: IPresetService) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler<Chat, Message> =
+let createPresetMessageHandler
+  (presetService: IPresetService)
+  (resp: IResourceProvider)
+  (chatCtx: #ISendMessage)
+  : MessageHandler<Chat, Message> =
   fun chat message -> task {
     match message with
     | { Text = text
