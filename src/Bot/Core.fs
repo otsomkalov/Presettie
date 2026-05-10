@@ -26,7 +26,6 @@ type Message =
 
   interface IMessage with
     member this.Id = this.Id
-    member this.Text = this.Text
 
 type UserId with
   member this.ToAccountId() = this.Value |> string |> AccountId

@@ -9,6 +9,8 @@
     "Telegram__Token": "<Telegram bot token>",
     "Telegram__BotUrl": "<Telegram bot url, e.g. https://t.me/*bot_name*>",
 
+    "KeyVaultName": "kv-presettie-dev",
+
     "ReccoBeats__Url": "https://api.reccobeats.com/v1/",
 
     "Database__ConnectionString": "<MongoDB connection string>",

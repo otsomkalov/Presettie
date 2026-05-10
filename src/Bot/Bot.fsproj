@@ -18,12 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="otsom.fs.Bot" Version="0.1.5"/>
     <PackageReference Include="otsom.fs.Auth" Version="0.1.4" />
     <PackageReference Include="otsom.fs.Resources" Version="0.1.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\otsom.fs\src\otsom.fs.Bot\otsom.fs.Bot.fsproj" />
     <ProjectReference Include="..\Domain\Domain.fsproj"/>
   </ItemGroup>
 
