@@ -787,7 +787,7 @@ type SetPresetSizeMessageHandler() =
 
     let message =
       { createMessage "42" with
-          ReplyMessage = Some { Text = Buttons.SetPresetSize } }
+          ReplyMessage = Some { Text = Messages.SendPresetSize } }
 
     task {
       let! result = handler Mocks.chat message
@@ -819,11 +819,11 @@ type SetPresetSizeMessageHandler() =
   [<Fact>]
   member _.``should handle reply with too small size and call onError``() =
     userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Error PresetSettings.ParsingError.TooSmall)
-    chatCtx.Setup(_.SendMessage(resourceProvider.Object.Item(Messages.PresetSizeTooSmall))).ReturnsAsync(Mocks.botMessageId)
+    chatCtx.Setup(_.SendMessage(Messages.PresetSizeTooSmall)).ReturnsAsync(Mocks.botMessageId)
 
     let message =
       { createMessage "1" with
-          ReplyMessage = Some { Text = resourceProvider.Object.Item(Buttons.SetPresetSize) } }
+          ReplyMessage = Some { Text = Messages.SendPresetSize } }
 
     task {
       let! result = handler Mocks.chat message
@@ -835,11 +835,11 @@ type SetPresetSizeMessageHandler() =
   [<Fact>]
   member _.``should handle reply with too big size and call onError``() =
     userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Error PresetSettings.ParsingError.TooBig)
-    chatCtx.Setup(_.SendMessage(resourceProvider.Object.Item(Messages.PresetSizeTooBig))).ReturnsAsync(Mocks.botMessageId)
+    chatCtx.Setup(_.SendMessage(Messages.PresetSizeTooBig)).ReturnsAsync(Mocks.botMessageId)
 
     let message =
       { createMessage "1000" with
-          ReplyMessage = Some { Text = resourceProvider.Object.Item(Buttons.SetPresetSize) } }
+          ReplyMessage = Some { Text = Messages.SendPresetSize } }
 
     task {
       let! result = handler Mocks.chat message
@@ -851,11 +851,11 @@ type SetPresetSizeMessageHandler() =
   [<Fact>]
   member _.``should handle reply with not a number and call onError``() =
     userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Error PresetSettings.ParsingError.NotANumber)
-    chatCtx.Setup(_.SendMessage(resourceProvider.Object.Item(Messages.PresetSizeNotANumber))).ReturnsAsync(Mocks.botMessageId)
+    chatCtx.Setup(_.SendMessage(Messages.PresetSizeNotANumber)).ReturnsAsync(Mocks.botMessageId)
 
     let message =
       { createMessage "abc" with
-          ReplyMessage = Some { Text = resourceProvider.Object.Item(Buttons.SetPresetSize) } }
+          ReplyMessage = Some { Text = Messages.SendPresetSize } }
 
     task {
       let! result = handler Mocks.chat message
@@ -960,7 +960,7 @@ type CreatePresetMessageHandler() =
 
     let message =
       { createMessage "MyPreset" with
-          ReplyMessage = Some { Text = resourceProvider.Object.Item(Messages.SendPresetName) } }
+          ReplyMessage = Some { Text = Messages.SendPresetName } }
 
     task {
       let! result = handler Mocks.chat message
@@ -1032,7 +1032,7 @@ type IncludePlaylistButtonMessageHandler() =
 
       result |> should equal (Some())
 
-      chatCtx.Verify(_.AskForReply(resourceProvider.Object.Item(Messages.SendIncludedPlaylist)))
+      chatCtx.Verify(_.AskForReply(Messages.SendIncludedPlaylist))
     }
 
   [<Fact>]
@@ -1084,7 +1084,7 @@ type ExcludePlaylistButtonMessageHandler() =
 
       result |> should equal (Some())
 
-      chatCtx.Verify(_.AskForReply(resourceProvider.Object.Item(Messages.SendExcludedPlaylist)))
+      chatCtx.Verify(_.AskForReply(Messages.SendExcludedPlaylist))
     }
 
   [<Fact>]
@@ -1188,7 +1188,7 @@ type TargetPlaylistButtonMessageHandler() =
 
       result |> should equal (Some())
 
-      chatCtx.Verify(_.AskForReply(resourceProvider.Object.Item(Messages.SendTargetedPlaylist)))
+      chatCtx.Verify(_.AskForReply(Messages.SendTargetedPlaylist))
     }
 
   [<Fact>]
@@ -1232,7 +1232,7 @@ type IncludePlaylistMessageHandler() =
 
     let message =
       { createMessage "raw-id" with
-          ReplyMessage = Some { Text = resourceProvider.Object.Item(Messages.SendIncludedPlaylist) } }
+          ReplyMessage = Some { Text = Messages.SendIncludedPlaylist } }
 
     task {
       let! result = handler Mocks.chat message
@@ -1352,7 +1352,7 @@ type ExcludePlaylistMessageHandler() =
 
     let message =
       { createMessage "raw-id" with
-          ReplyMessage = Some { Text = resourceProvider.Object.Item(Messages.SendExcludedPlaylist) } }
+          ReplyMessage = Some { Text = Messages.SendExcludedPlaylist } }
 
     task {
       let! result = handler Mocks.chat message
