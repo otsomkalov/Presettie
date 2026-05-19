@@ -62,13 +62,13 @@ module Playlist =
             Writable(
               { Id = playlist.Id |> PlaylistId
                 Name = playlist.Name
-                TracksCount = playlist.Tracks.Total.Value }
+                TracksCount = playlist.Items.Total.Value }
             )
           else
             Readable(
               { Id = playlist.Id |> PlaylistId
                 Name = playlist.Name
-                TracksCount = playlist.Tracks.Total.Value }
+                TracksCount = playlist.Items.Total.Value }
             )
 
         return playlist |> Ok
@@ -139,7 +139,7 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
 
   interface IMusicPlatform with
     member this.AddTracks(PlaylistId playlistId, tracks) =
-      client.Playlists.AddItems(playlistId, tracks |> mapToSpotifyTracksIds |> PlaylistAddItemsRequest)
+      client.Playlists.AddPlaylistItems(playlistId, tracks |> mapToSpotifyTracksIds |> PlaylistAddItemsRequest)
       |> Task.map ignore
 
     member this.ListLikedTracks() = User.listLikedTracks' client ()
@@ -161,7 +161,7 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
     member this.LoadPlaylist(playlistId) = Playlist.load client playlistId
 
     member this.ReplaceTracks(PlaylistId playlistId, tracks) =
-      client.Playlists.ReplaceItems(playlistId, tracks |> mapToSpotifyTracksIds |> PlaylistReplaceItemsRequest)
+      client.Playlists.ReplacePlaylistItems(playlistId, tracks |> mapToSpotifyTracksIds |> PlaylistReplaceItemsRequest)
       |> Task.map ignore
 
     member this.ListArtistTracks(ArtistId artistId) = task {
@@ -170,21 +170,11 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
 
       let! artistAlbums = client.Artists.GetAlbums(artistId, request)
 
-      if artistAlbums.Items.Count = 0 then
-        return []
-      else
-        let request =
-          AlbumsRequest(
-            artistAlbums.Items
-            |> Seq.map (_.Id >> AlbumId)
-            |> Seq.takeSafe 20
-            |> Seq.map _.Value
-            |> List<string>
-          )
-
-        let! albums = client.Albums.GetSeveral(request)
-
-        return albums.Albums |> Seq.map Album.fromFull |> Seq.collect _.Tracks |> List.ofSeq
+      return!
+        artistAlbums.Items
+        |> Seq.map (fun a -> client.Albums.Get(a.Id))
+        |> Task.WhenAll
+        |> Task.map (Seq.map Album.fromFull >> Seq.collect _.Tracks >> List.ofSeq)
     }
 
     member this.Recommend(tracks) =
