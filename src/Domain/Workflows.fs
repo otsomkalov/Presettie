@@ -626,7 +626,7 @@ module TargetedPlaylist =
 
 type ArtistAlbumsRecommender(musicPlatform: IMusicPlatform) =
   [<Literal>]
-  let seedTracksCount = 50
+  let seedTracksCount = 20
 
   interface IRecommender with
     member this.Recommend(tracks: Track list) =
