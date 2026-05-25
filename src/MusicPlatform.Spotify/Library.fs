@@ -2,7 +2,6 @@
 
 open System
 open System.Net
-open FSharp
 open FsToolkit.ErrorHandling
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Options
@@ -35,7 +34,7 @@ module Playlist =
 
   let rec listTracks' (client: ISpotifyClient) playlistId (offset: int) = async {
     let! tracks =
-      client.Playlists.GetItems(playlistId, PlaylistGetItemsRequest(Offset = offset))
+      client.Playlists.GetPlaylistItems(playlistId, PlaylistGetItemsRequest(Offset = offset))
       |> Async.AwaitTask
 
     return
@@ -170,11 +169,13 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
 
       let! artistAlbums = client.Artists.GetAlbums(artistId, request)
 
-      return!
-        artistAlbums.Items
-        |> Seq.map (fun a -> client.Albums.Get(a.Id))
-        |> Task.WhenAll
-        |> Task.map (Seq.map Album.fromFull >> Seq.collect _.Tracks >> List.ofSeq)
+      let artistTracks = ResizeArray()
+
+      for album in artistAlbums.Items do
+        let! albumTracks = client.Albums.GetTracks(album.Id, AlbumTracksRequest(Limit = 50))
+        artistTracks.AddRange(albumTracks.Items |> Seq.map Track.fromSimple)
+
+      return artistTracks |> List.ofSeq
     }
 
     member this.Recommend(tracks) =
