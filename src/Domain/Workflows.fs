@@ -312,36 +312,46 @@ module Preset =
         |> Task.ignore
 
     let getRecommendations =
-      fun (preset: Preset) (tracks: Track list) -> task {
+      fun (preset: Preset) (tracks: Track list) ->
         match preset.Settings.RecommendationsEngine with
         | Some engine ->
           let recommender = recommenderFactory.Create(engine)
 
-          let! recommendedTracks = recommender.Recommend tracks
+          recommender.Recommend tracks
+        | None -> Task.FromResult []
 
-          return recommendedTracks @ tracks
-        | None -> return tracks
-      }
+    fun presetId -> taskResult {
+      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
-    presetRepo.LoadPreset
-    >> Task.map Option.get
-    >> Task.bind (fun preset ->
-      listIncludedTracks platform preset
-      |> Task.map (Result.errorIf List.isEmpty Preset.RunError.NoIncludedTracks)
-      &=|> shuffler
-      &=|&> getRecommendations preset
-      &=|> shuffler
-      &=|&> (fun includedTracks ->
-        listExcludedTracks platform preset
-        |> Task.map (fun excludedTracks -> List.except excludedTracks includedTracks))
-      |> Task.map (Result.bind (Result.errorIf List.isEmpty Preset.RunError.NoPotentialTracks))
-      &=|> (fun (tracks: Track list) ->
+      let! includedTracks = listIncludedTracks platform preset
+
+      do! includedTracks |> Result.requireNotEmpty Preset.RunError.NoIncludedTracks
+
+      let shuffledIncludedTracks = shuffler includedTracks
+
+      let! recommendedTracks = getRecommendations preset shuffledIncludedTracks
+
+      let! excludedTracks = listExcludedTracks platform preset
+
+      let potentialTracks =
+        List.except excludedTracks (recommendedTracks @ shuffledIncludedTracks)
+
+      let filteredPotentialTracks =
         match preset.Settings.UniqueArtists with
-        | true -> tracks |> Tracks.uniqueByArtists
-        | false -> tracks)
-      &=|> (List.takeSafe preset.Settings.Size.Value)
-      &=|&> (saveTracks platform preset)
-      &=|> (fun _ -> preset))
+        | true -> potentialTracks |> Tracks.uniqueByArtists
+        | false -> potentialTracks
+
+      do!
+        filteredPotentialTracks
+        |> Result.requireNotEmpty Preset.RunError.NoPotentialTracks
+
+      let tracksToSave =
+        filteredPotentialTracks |> shuffler |> List.takeSafe preset.Settings.Size.Value
+
+      do! saveTracks platform preset tracksToSave
+
+      return preset
+    }
 
   let queueRun (presetRepo: #ILoadPreset & #Repos.IQueueRun) =
     fun userId ->
