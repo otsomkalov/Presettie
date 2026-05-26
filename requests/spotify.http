@@ -1,3 +1,11 @@
 ﻿###
-https://api.spotify.com/v1/albums/3jQ7eqotwovipeZ3j3rMqu
+GET https://api.spotify.com/v1/albums/3jQ7eqotwovipeZ3j3rMqu
+Authorization: Bearer {{spotify-token}}
+
+###
+GET https://api.spotify.com/v1/playlists/06vilf4PberxG6DSVezHJF/items?limit=100
+Authorization: Bearer {{spotify-token}}
+
+###
+GET https://api.spotify.com/v1/me/tracks?limit=50
 Authorization: Bearer {{spotify-token}}

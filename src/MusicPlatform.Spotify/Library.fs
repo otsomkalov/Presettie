@@ -16,6 +16,7 @@ open otsom.fs.Auth.Settings
 open otsom.fs.Extensions
 open System.Collections.Generic
 open System.Threading.Tasks
+open FSharp.Control
 
 [<RequireQualifiedAccess>]
 module Playlist =
@@ -163,19 +164,16 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
       client.Playlists.ReplacePlaylistItems(playlistId, tracks |> mapToSpotifyTracksIds |> PlaylistReplaceItemsRequest)
       |> Task.map ignore
 
-    member this.ListArtistTracks(ArtistId artistId) = task {
+    member this.ListArtistTracks(ArtistId artistId) = taskSeq {
       let request =
         ArtistsAlbumsRequest(IncludeGroupsParam = ArtistsAlbumsRequest.IncludeGroups.Album, Limit = 50)
 
       let! artistAlbums = client.Artists.GetAlbums(artistId, request)
 
-      let artistTracks = ResizeArray()
-
       for album in artistAlbums.Items do
         let! albumTracks = client.Albums.GetTracks(album.Id, AlbumTracksRequest(Limit = 50))
-        artistTracks.AddRange(albumTracks.Items |> Seq.map Track.fromSimple)
 
-      return artistTracks |> List.ofSeq
+        yield! albumTracks.Items |> Seq.map Track.fromSimple
     }
 
     member this.Recommend(tracks) =

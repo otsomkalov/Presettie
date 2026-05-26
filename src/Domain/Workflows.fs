@@ -4,7 +4,8 @@ open System
 open System.Threading.Tasks
 open Domain.Core.PresetSettings
 open Domain.Repos
-open Microsoft.FSharp.Control
+open FSharp.Control
+open FsToolkit.ErrorHandling.Operator.TaskOption
 open Microsoft.FSharp.Core
 open MusicPlatform
 open otsom.fs.Extensions
@@ -181,9 +182,9 @@ module ExcludedArtist =
   let internal listTracks (platform: #IListArtistTracks) =
     fun (artists: ExcludedArtist list) ->
       artists
-      |> List.map (fun artist -> platform.ListArtistTracks artist.Id)
-      |> Task.WhenAll
-      |> Task.map List.concat
+      |> TaskSeq.ofList
+      |> TaskSeq.collect (fun artist -> platform.ListArtistTracks artist.Id)
+      |> TaskSeq.toListAsync
 
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId excludedArtistId -> task {
@@ -206,9 +207,9 @@ module IncludedArtist =
   let internal listTracks (platform: #IListArtistTracks) =
     fun (artists: IncludedArtist list) ->
       artists
-      |> List.map (fun artist -> platform.ListArtistTracks artist.Id)
-      |> Task.WhenAll
-      |> Task.map List.concat
+      |> TaskSeq.ofList
+      |> TaskSeq.collect (fun artist -> platform.ListArtistTracks artist.Id)
+      |> TaskSeq.toListAsync
 
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId includedArtistId -> task {
@@ -274,7 +275,6 @@ module Preset =
   let private listIncludedTracks (platform: #IListPlaylistTracks & #IListLikedTracks) =
     fun preset -> task {
       let! includedByPlaylists = preset.IncludedPlaylists |> IncludedPlaylist.listTracks platform
-
       let! includedByArtists = preset.IncludedArtists |> IncludedArtist.listTracks platform
 
       let! includedLiked =
@@ -639,14 +639,19 @@ type ArtistAlbumsRecommender(musicPlatform: IMusicPlatform) =
   let seedTracksCount = 20
 
   interface IRecommender with
-    member this.Recommend(tracks: Track list) =
-      tracks
-      |> List.takeSafe seedTracksCount
-      |> Seq.collect _.Artists
-      |> Seq.distinct
-      |> Seq.map (fun a -> musicPlatform.ListArtistTracks a.Id)
-      |> Task.WhenAll
-      |> Task.map (List.concat >> List.distinct)
+    member this.Recommend(tracks: Track list) = task {
+      let! result =
+        tracks
+        |> List.takeSafe seedTracksCount
+        |> Seq.collect _.Artists
+        |> Seq.distinct
+        |> TaskSeq.ofSeq
+        |> TaskSeq.collect (fun a -> musicPlatform.ListArtistTracks a.Id)
+        |> TaskSeq.distinct
+        |> TaskSeq.toListAsync
+
+      return result
+    }
 
 type RecommenderFactory(musicPlatform: IMusicPlatform, reccoBeatsRecommender: IRecommender) =
   interface IRecommenderFactory with

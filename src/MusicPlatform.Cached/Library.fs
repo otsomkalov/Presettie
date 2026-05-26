@@ -4,6 +4,7 @@ open Microsoft.ApplicationInsights
 open MusicPlatform
 open MusicPlatform.Spotify.Cache
 open StackExchange.Redis
+open FSharp.Control
 
 type RedisMusicPlatform
   (musicPlatform: IMusicPlatform, telemetryClient: TelemetryClient, multiplexer: IConnectionMultiplexer, userId: UserId) =
@@ -44,17 +45,18 @@ type RedisMusicPlatform
       let loadList = Redis.listCachedTracks telemetryClient database
       let replaceList = Redis.replaceList telemetryClient database
 
-      task {
+      taskSeq {
         let! tracks = loadList artistId.Value
 
         match tracks with
         | [] ->
-          let! tracks = musicPlatform.ListArtistTracks artistId
+          let! tracks = musicPlatform.ListArtistTracks artistId |> TaskSeq.toListAsync
 
           do! replaceList artistId.Value (tracks |> Redis.serializeTracks)
 
-          return tracks
-        | tracks -> return tracks
+          yield! tracks
+        | tracks ->
+          yield! tracks
       }
 
     member this.Recommend(tracks) = musicPlatform.Recommend tracks
