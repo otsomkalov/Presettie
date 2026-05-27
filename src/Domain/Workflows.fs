@@ -12,6 +12,8 @@ open Domain.Extensions
 open FsToolkit.ErrorHandling
 open Domain.Core
 
+type Shuffler<'a> = 'a list -> 'a list
+
 [<RequireQualifiedAccess>]
 module Tracks =
   let uniqueByArtists (tracks: Track seq) =
@@ -298,7 +300,7 @@ module Preset =
       return List.concat [ excludedByPlaylists; excludedByArtists; excludedLiked ]
     }
 
-  let run (presetRepo: #ILoadPreset) shuffler platform (recommenderFactory: IRecommenderFactory) =
+  let run (presetRepo: #ILoadPreset) (shuffler: Shuffler<Track>) platform (recommenderFactory: IRecommenderFactory) =
 
     let saveTracks (platform: #IAddTracks & #IReplaceTracks) =
       fun preset (tracks: Track list) ->
@@ -322,19 +324,17 @@ module Preset =
     fun presetId -> taskResult {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
-      let! includedTracks = listIncludedTracks platform preset
+      let! includedTracks = listIncludedTracks platform preset |> Task.map shuffler
 
       do! includedTracks |> Result.requireNotEmpty Preset.RunError.NoIncludedTracks
 
       // Shuffle first to get recommendations based on different tracks each time
-      let shuffledIncludedTracks = shuffler includedTracks
-
-      let! recommendedTracks = getRecommendations preset shuffledIncludedTracks
+      let! recommendedTracks = getRecommendations preset includedTracks |> Task.map shuffler
 
       let! excludedTracks = listExcludedTracks platform preset
 
       let potentialTracks =
-        (recommendedTracks @ shuffledIncludedTracks) |> List.except excludedTracks
+        (recommendedTracks @ includedTracks) |> List.except excludedTracks
 
       let filteredPotentialTracks =
         match preset.Settings.UniqueArtists with
@@ -555,7 +555,7 @@ module User =
             CurrentPresetId = Some presetId })
       |> Task.bind userRepo.SaveUser
 
-  let removePreset (userRepo: #ILoadUser & #ISaveUser) (presetService: #Core.IRemovePreset) =
+  let removePreset (userRepo: #ILoadUser & #ISaveUser) (presetService: #IRemovePreset) =
     fun userId presetId ->
       presetService.RemovePreset(userId, presetId)
       |> Task.bind (Result.taskMap (fun preset -> userRepo.LoadUser userId |> Task.map (fun u -> (preset, u))))
@@ -656,8 +656,6 @@ type RecommenderFactory(musicPlatform: IMusicPlatform, reccoBeatsRecommender: IR
       | RecommendationsEngine.ArtistAlbums -> ArtistAlbumsRecommender(musicPlatform)
       | RecommendationsEngine.ReccoBeats -> reccoBeatsRecommender
       | RecommendationsEngine.Spotify -> musicPlatform
-
-type Shuffler<'a> = 'a list -> 'a list
 
 type PresetService
   (
