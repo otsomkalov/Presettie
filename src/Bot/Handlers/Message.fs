@@ -11,7 +11,6 @@ open Bot.Workflows
 open Domain.Core
 open Bot.Helpers
 open Domain.Workflows
-open System
 open otsom.fs.Resources
 open Bot.Core
 open Bot.Resources

@@ -5,7 +5,6 @@ open System.Threading.Tasks
 open Domain.Core.PresetSettings
 open Domain.Repos
 open FSharp.Control
-open FsToolkit.ErrorHandling.Operator.TaskOption
 open Microsoft.FSharp.Core
 open MusicPlatform
 open otsom.fs.Extensions

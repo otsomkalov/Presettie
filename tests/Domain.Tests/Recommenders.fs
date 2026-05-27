@@ -1,6 +1,5 @@
 ﻿namespace Domain.Tests.Recommenders
 
-open System.Threading.Tasks
 open Domain.Tests
 open Domain.Workflows
 open Moq

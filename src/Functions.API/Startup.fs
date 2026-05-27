@@ -7,7 +7,6 @@ open System.Reflection
 open System.Security.Claims
 open System.Text.Json
 open System.Text.Json.Serialization
-open Azure.Core
 open Azure.Identity
 open Domain
 open Infrastructure

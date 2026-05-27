@@ -8,7 +8,6 @@ open Domain.Tests
 open FsUnit.Xunit
 open Moq
 open Bot.Constants
-open Bot.Core
 open Bot.Handlers.Click
 open Xunit
 open otsom.fs.Bot
