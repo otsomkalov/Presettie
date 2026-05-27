@@ -326,6 +326,7 @@ module Preset =
 
       do! includedTracks |> Result.requireNotEmpty Preset.RunError.NoIncludedTracks
 
+      // Shuffle first to get recommendations based on different tracks each time
       let shuffledIncludedTracks = shuffler includedTracks
 
       let! recommendedTracks = getRecommendations preset shuffledIncludedTracks
@@ -333,7 +334,7 @@ module Preset =
       let! excludedTracks = listExcludedTracks platform preset
 
       let potentialTracks =
-        List.except excludedTracks (recommendedTracks @ shuffledIncludedTracks)
+        (recommendedTracks @ shuffledIncludedTracks) |> List.except excludedTracks
 
       let filteredPotentialTracks =
         match preset.Settings.UniqueArtists with
@@ -345,7 +346,7 @@ module Preset =
         |> Result.requireNotEmpty Preset.RunError.NoPotentialTracks
 
       let tracksToSave =
-        filteredPotentialTracks |> shuffler |> List.takeSafe preset.Settings.Size.Value
+        filteredPotentialTracks |> List.takeSafe preset.Settings.Size.Value
 
       do! saveTracks platform preset tracksToSave
 
@@ -638,19 +639,15 @@ type ArtistAlbumsRecommender(musicPlatform: IMusicPlatform) =
   let seedTracksCount = 20
 
   interface IRecommender with
-    member this.Recommend(tracks: Track list) = task {
-      let! result =
-        tracks
-        |> List.takeSafe seedTracksCount
-        |> Seq.collect _.Artists
-        |> Seq.distinct
-        |> TaskSeq.ofSeq
-        |> TaskSeq.collect (fun a -> musicPlatform.ListArtistTracks a.Id)
-        |> TaskSeq.distinct
-        |> TaskSeq.toListAsync
-
-      return result
-    }
+    member this.Recommend(tracks: Track list) =
+      tracks
+      |> List.takeSafe seedTracksCount
+      |> Seq.collect _.Artists
+      |> Seq.distinct
+      |> TaskSeq.ofSeq
+      |> TaskSeq.collect (fun a -> musicPlatform.ListArtistTracks a.Id)
+      |> TaskSeq.distinct
+      |> TaskSeq.toListAsync
 
 type RecommenderFactory(musicPlatform: IMusicPlatform, reccoBeatsRecommender: IRecommender) =
   interface IRecommenderFactory with
