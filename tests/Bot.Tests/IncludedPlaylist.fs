@@ -21,7 +21,9 @@ type IncludedPlaylist() =
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let presetService = Mock<IPresetService>()
 
-  let preset = { Mocks.preset with IncludedPlaylists = [ Mocks.includedPlaylist ] }
+  let preset =
+    { Mocks.preset with
+        IncludedPlaylists = [ Mocks.includedPlaylist ] }
 
   do
     presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some preset)

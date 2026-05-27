@@ -794,7 +794,9 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
   member _.``should handle valid click data``() =
     let playlistId = Mocks.includedPlaylistId.Value
 
-    let preset = { Mocks.preset with IncludedPlaylists = [ Mocks.includedPlaylist ] }
+    let preset =
+      { Mocks.preset with
+          IncludedPlaylists = [ Mocks.includedPlaylist ] }
 
     let click =
       createClick
@@ -858,7 +860,9 @@ type setAllTracksIncludedPlaylistClickHandler() =
   member _.``should handle valid click data``() =
     let playlistId = Mocks.includedPlaylistId.Value
 
-    let preset = { Mocks.preset with IncludedPlaylists = [ Mocks.includedPlaylist ] }
+    let preset =
+      { Mocks.preset with
+          IncludedPlaylists = [ Mocks.includedPlaylist ] }
 
     let click =
       createClick
@@ -1110,7 +1114,9 @@ type showExcludedArtistClickHandler() =
 
   [<Fact>]
   member _.``should handle valid click data``() =
-    let preset = { Mocks.preset with ExcludedArtists = [ Mocks.artist2 ] }
+    let preset =
+      { Mocks.preset with
+          ExcludedArtists = [ Mocks.artist2 ] }
 
     presetRepo.Setup(_.LoadPreset(It.IsAny<PresetId>())).ReturnsAsync(Some preset)
     resourceProviderMock.Setup(fun x -> x[Messages.ExcludedArtists]).Returns(Messages.ExcludedArtists)
@@ -1207,7 +1213,9 @@ type showIncludedArtistClickHandler() =
 
   [<Fact>]
   member _.``should handle valid click data``() =
-    let preset = { Mocks.preset with IncludedArtists = [ Mocks.artist1 ] }
+    let preset =
+      { Mocks.preset with
+          IncludedArtists = [ Mocks.artist1 ] }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
     resourceProviderMock.Setup(fun x -> x[Messages.IncludedArtists]).Returns(Messages.IncludedArtists)

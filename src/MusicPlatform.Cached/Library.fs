@@ -55,8 +55,7 @@ type RedisMusicPlatform
           do! replaceList artistId.Value (tracks |> Redis.serializeTracks)
 
           yield! tracks
-        | tracks ->
-          yield! tracks
+        | tracks -> yield! tracks
       }
 
     member this.Recommend(tracks) = musicPlatform.Recommend tracks
