@@ -4,6 +4,8 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=True",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
 
+    "KeyVaultName": "kv-presettie-dev",
+
     "APPINSIGHTS_INSTRUMENTATIONKEY": "<Application Insights Instrumentation Key>",
 
     "Telegram__Token": "<Telegram bot token>",

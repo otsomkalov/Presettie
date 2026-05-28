@@ -1,12 +1,12 @@
 ﻿namespace Domain.Tests.Recommenders
 
-open System.Threading.Tasks
 open Domain.Tests
 open Domain.Workflows
 open Moq
 open MusicPlatform
 open Xunit
 open FsUnit.Xunit
+open FSharp.Control
 
 type ArtistsAlbumsTests() =
   let musicPlatformMock = Mock<IMusicPlatform>()
@@ -17,8 +17,8 @@ type ArtistsAlbumsTests() =
   member this.``returns tracks from seed tracks artists albums``() =
     // Arrange
 
-    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist1.Id)).Returns(Task.FromResult([ Mocks.recommendedTrack ]))
-    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist2.Id)).Returns(Task.FromResult([ Mocks.recommendedTrack ]))
+    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist1.Id)).Returns(TaskSeq.ofList [ Mocks.recommendedTrack ])
+    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist2.Id)).Returns(TaskSeq.ofList [ Mocks.recommendedTrack ])
 
     task {
       // Act
@@ -32,8 +32,8 @@ type ArtistsAlbumsTests() =
 
   [<Fact>]
   member this.``takes only first 50 tracks as a seed``() =
-    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist1.Id)).Returns(Task.FromResult([ Mocks.recommendedTrack ]))
-    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist2.Id)).Returns(Task.FromResult([ Mocks.recommendedTrack ]))
+    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist1.Id)).Returns(TaskSeq.ofList [ Mocks.recommendedTrack ])
+    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist2.Id)).Returns(TaskSeq.ofList [ Mocks.recommendedTrack ])
 
     let inputTracks = (List.replicate 50 Mocks.includedTrack) @ [ Mocks.excludedTrack ]
 
@@ -49,8 +49,8 @@ type ArtistsAlbumsTests() =
 
   [<Fact>]
   member this.``loads tracks only for distinct artists``() =
-    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist1.Id)).Returns(Task.FromResult([ Mocks.recommendedTrack ]))
-    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist2.Id)).Returns(Task.FromResult([ Mocks.recommendedTrack ]))
+    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist1.Id)).Returns(TaskSeq.ofList [ Mocks.recommendedTrack ])
+    musicPlatformMock.Setup(_.ListArtistTracks(Mocks.artist2.Id)).Returns(TaskSeq.ofList [ Mocks.recommendedTrack ])
 
     let inputTracks = List.replicate 50 Mocks.includedTrack
 

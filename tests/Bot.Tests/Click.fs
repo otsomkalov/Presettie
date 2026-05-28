@@ -792,20 +792,23 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
 
   [<Fact>]
   member _.``should handle valid click data``() =
-    let presetId = Mocks.presetId.Value
     let playlistId = Mocks.includedPlaylistId.Value
+
+    let preset =
+      { Mocks.preset with
+          IncludedPlaylists = [ Mocks.includedPlaylist ] }
 
     let click =
       createClick
         [ CallbackQueryConstants.preset
-          presetId
+          Mocks.presetId.Value
           CallbackQueryConstants.includedPlaylists
           playlistId
           "o" ]
 
     presetService.Setup(_.SetOnlyLiked(Mocks.presetId, ReadablePlaylistId(Mocks.includedPlaylistId))).ReturnsAsync(())
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
 
     // IncludedPlaylist.show is called, but we don't need to mock its internals for this test
@@ -855,20 +858,23 @@ type setAllTracksIncludedPlaylistClickHandler() =
 
   [<Fact>]
   member _.``should handle valid click data``() =
-    let presetId = Mocks.presetId.Value
     let playlistId = Mocks.includedPlaylistId.Value
+
+    let preset =
+      { Mocks.preset with
+          IncludedPlaylists = [ Mocks.includedPlaylist ] }
 
     let click =
       createClick
         [ CallbackQueryConstants.preset
-          presetId
+          Mocks.presetId.Value
           CallbackQueryConstants.includedPlaylists
           playlistId
           "a" ]
 
     presetService.Setup(_.SetAll(Mocks.presetId, ReadablePlaylistId(Mocks.includedPlaylistId))).ReturnsAsync(())
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
 
     // IncludedPlaylist.show is called, but we don't need to mock its internals for this test
@@ -1108,7 +1114,11 @@ type showExcludedArtistClickHandler() =
 
   [<Fact>]
   member _.``should handle valid click data``() =
-    presetRepo.Setup(_.LoadPreset(It.IsAny<PresetId>())).ReturnsAsync(Some Mocks.preset)
+    let preset =
+      { Mocks.preset with
+          ExcludedArtists = [ Mocks.artist2 ] }
+
+    presetRepo.Setup(_.LoadPreset(It.IsAny<PresetId>())).ReturnsAsync(Some preset)
     resourceProviderMock.Setup(fun x -> x[Messages.ExcludedArtists]).Returns(Messages.ExcludedArtists)
 
     let click =
@@ -1203,7 +1213,11 @@ type showIncludedArtistClickHandler() =
 
   [<Fact>]
   member _.``should handle valid click data``() =
-    presetRepo.Setup(_.LoadPreset(It.IsAny<PresetId>())).ReturnsAsync(Some Mocks.preset)
+    let preset =
+      { Mocks.preset with
+          IncludedArtists = [ Mocks.artist1 ] }
+
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
     resourceProviderMock.Setup(fun x -> x[Messages.IncludedArtists]).Returns(Messages.IncludedArtists)
 
     let click =

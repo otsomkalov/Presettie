@@ -6,7 +6,6 @@ open System
 open System.Text.Json
 open System.Text.Json.Serialization
 open System.Reflection
-open Azure.Core
 open Azure.Identity
 open Microsoft.Azure.Functions.Worker.Builder
 open Microsoft.Extensions.Configuration

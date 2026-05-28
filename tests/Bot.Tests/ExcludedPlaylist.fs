@@ -8,7 +8,6 @@ open Domain.Repos
 open Domain.Tests
 open Moq
 open MusicPlatform
-open Bot.Core
 open Bot.Handlers.Click
 open Xunit
 open otsom.fs.Bot
@@ -23,8 +22,12 @@ type ExcludedPlaylist() =
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let presetService = Mock<IPresetService>()
 
+  let preset =
+    { Mocks.preset with
+        ExcludedPlaylists = [ Mocks.excludedPlaylist ] }
+
   do
-    presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some Mocks.preset)
+    presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some preset)
     |> ignore
 
   let createClick data : Click =

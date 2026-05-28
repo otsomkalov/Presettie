@@ -4,13 +4,15 @@ open System
 open System.Threading.Tasks
 open Domain.Core.PresetSettings
 open Domain.Repos
-open Microsoft.FSharp.Control
+open FSharp.Control
 open Microsoft.FSharp.Core
 open MusicPlatform
 open otsom.fs.Extensions
 open Domain.Extensions
 open FsToolkit.ErrorHandling
 open Domain.Core
+
+type Shuffler<'a> = 'a list -> 'a list
 
 [<RequireQualifiedAccess>]
 module Tracks =
@@ -181,9 +183,9 @@ module ExcludedArtist =
   let internal listTracks (platform: #IListArtistTracks) =
     fun (artists: ExcludedArtist list) ->
       artists
-      |> List.map (fun artist -> platform.ListArtistTracks artist.Id)
-      |> Task.WhenAll
-      |> Task.map List.concat
+      |> TaskSeq.ofList
+      |> TaskSeq.collect (fun artist -> platform.ListArtistTracks artist.Id)
+      |> TaskSeq.toListAsync
 
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId excludedArtistId -> task {
@@ -206,9 +208,9 @@ module IncludedArtist =
   let internal listTracks (platform: #IListArtistTracks) =
     fun (artists: IncludedArtist list) ->
       artists
-      |> List.map (fun artist -> platform.ListArtistTracks artist.Id)
-      |> Task.WhenAll
-      |> Task.map List.concat
+      |> TaskSeq.ofList
+      |> TaskSeq.collect (fun artist -> platform.ListArtistTracks artist.Id)
+      |> TaskSeq.toListAsync
 
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId includedArtistId -> task {
@@ -274,7 +276,6 @@ module Preset =
   let private listIncludedTracks (platform: #IListPlaylistTracks & #IListLikedTracks) =
     fun preset -> task {
       let! includedByPlaylists = preset.IncludedPlaylists |> IncludedPlaylist.listTracks platform
-
       let! includedByArtists = preset.IncludedArtists |> IncludedArtist.listTracks platform
 
       let! includedLiked =
@@ -299,7 +300,7 @@ module Preset =
       return List.concat [ excludedByPlaylists; excludedByArtists; excludedLiked ]
     }
 
-  let run (presetRepo: #ILoadPreset) shuffler platform (recommenderFactory: IRecommenderFactory) =
+  let run (presetRepo: #ILoadPreset) (shuffler: Shuffler<Track>) platform (recommenderFactory: IRecommenderFactory) =
 
     let saveTracks (platform: #IAddTracks & #IReplaceTracks) =
       fun preset (tracks: Track list) ->
@@ -312,36 +313,45 @@ module Preset =
         |> Task.ignore
 
     let getRecommendations =
-      fun (preset: Preset) (tracks: Track list) -> task {
+      fun (preset: Preset) (tracks: Track list) ->
         match preset.Settings.RecommendationsEngine with
         | Some engine ->
           let recommender = recommenderFactory.Create(engine)
 
-          let! recommendedTracks = recommender.Recommend tracks
+          recommender.Recommend tracks
+        | None -> Task.FromResult []
 
-          return recommendedTracks @ tracks
-        | None -> return tracks
-      }
+    fun presetId -> taskResult {
+      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
-    presetRepo.LoadPreset
-    >> Task.map Option.get
-    >> Task.bind (fun preset ->
-      listIncludedTracks platform preset
-      |> Task.map (Result.errorIf List.isEmpty Preset.RunError.NoIncludedTracks)
-      &=|> shuffler
-      &=|&> getRecommendations preset
-      &=|> shuffler
-      &=|&> (fun includedTracks ->
-        listExcludedTracks platform preset
-        |> Task.map (fun excludedTracks -> List.except excludedTracks includedTracks))
-      |> Task.map (Result.bind (Result.errorIf List.isEmpty Preset.RunError.NoPotentialTracks))
-      &=|> (fun (tracks: Track list) ->
+      let! includedTracks = listIncludedTracks platform preset |> Task.map shuffler
+
+      do! includedTracks |> Result.requireNotEmpty Preset.RunError.NoIncludedTracks
+
+      // Shuffle first to get recommendations based on different tracks each time
+      let! recommendedTracks = getRecommendations preset includedTracks |> Task.map shuffler
+
+      let! excludedTracks = listExcludedTracks platform preset
+
+      let potentialTracks =
+        (recommendedTracks @ includedTracks) |> List.except excludedTracks
+
+      let filteredPotentialTracks =
         match preset.Settings.UniqueArtists with
-        | true -> tracks |> Tracks.uniqueByArtists
-        | false -> tracks)
-      &=|> (List.takeSafe preset.Settings.Size.Value)
-      &=|&> (saveTracks platform preset)
-      &=|> (fun _ -> preset))
+        | true -> potentialTracks |> Tracks.uniqueByArtists
+        | false -> potentialTracks
+
+      do!
+        filteredPotentialTracks
+        |> Result.requireNotEmpty Preset.RunError.NoPotentialTracks
+
+      let tracksToSave =
+        filteredPotentialTracks |> List.takeSafe preset.Settings.Size.Value
+
+      do! saveTracks platform preset tracksToSave
+
+      return preset
+    }
 
   let queueRun (presetRepo: #ILoadPreset & #Repos.IQueueRun) =
     fun userId ->
@@ -545,7 +555,7 @@ module User =
             CurrentPresetId = Some presetId })
       |> Task.bind userRepo.SaveUser
 
-  let removePreset (userRepo: #ILoadUser & #ISaveUser) (presetService: #Core.IRemovePreset) =
+  let removePreset (userRepo: #ILoadUser & #ISaveUser) (presetService: #IRemovePreset) =
     fun userId presetId ->
       presetService.RemovePreset(userId, presetId)
       |> Task.bind (Result.taskMap (fun preset -> userRepo.LoadUser userId |> Task.map (fun u -> (preset, u))))
@@ -626,7 +636,7 @@ module TargetedPlaylist =
 
 type ArtistAlbumsRecommender(musicPlatform: IMusicPlatform) =
   [<Literal>]
-  let seedTracksCount = 50
+  let seedTracksCount = 20
 
   interface IRecommender with
     member this.Recommend(tracks: Track list) =
@@ -634,9 +644,10 @@ type ArtistAlbumsRecommender(musicPlatform: IMusicPlatform) =
       |> List.takeSafe seedTracksCount
       |> Seq.collect _.Artists
       |> Seq.distinct
-      |> Seq.map (fun a -> musicPlatform.ListArtistTracks a.Id)
-      |> Task.WhenAll
-      |> Task.map (List.concat >> List.distinct)
+      |> TaskSeq.ofSeq
+      |> TaskSeq.collect (fun a -> musicPlatform.ListArtistTracks a.Id)
+      |> TaskSeq.distinct
+      |> TaskSeq.toListAsync
 
 type RecommenderFactory(musicPlatform: IMusicPlatform, reccoBeatsRecommender: IRecommender) =
   interface IRecommenderFactory with
@@ -645,8 +656,6 @@ type RecommenderFactory(musicPlatform: IMusicPlatform, reccoBeatsRecommender: IR
       | RecommendationsEngine.ArtistAlbums -> ArtistAlbumsRecommender(musicPlatform)
       | RecommendationsEngine.ReccoBeats -> reccoBeatsRecommender
       | RecommendationsEngine.Spotify -> musicPlatform
-
-type Shuffler<'a> = 'a list -> 'a list
 
 type PresetService
   (

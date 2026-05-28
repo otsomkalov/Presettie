@@ -2,7 +2,6 @@
 
 #nowarn "20"
 
-open Infrastructure
 open Bot.Telegram.Services
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection

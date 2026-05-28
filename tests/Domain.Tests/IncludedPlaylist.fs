@@ -67,7 +67,11 @@ type IncludedPlaylist() =
   [<Fact>]
   member _.``setLikedOnly should update included playlist in preset``() =
     // Arrange
-    mockPresetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    let startingPreset =
+      { Mocks.preset with
+          IncludedPlaylists = [ Mocks.includedPlaylist ] }
+
+    mockPresetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some startingPreset)
 
     let expectedPlaylist =
       { Mocks.includedPlaylist with

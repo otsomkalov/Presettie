@@ -1,6 +1,7 @@
 ﻿namespace MusicPlatform
 
 open System.Threading.Tasks
+open FSharp.Control
 
 type UserId =
   | UserId of string
@@ -92,7 +93,7 @@ type IListLikedTracks =
   abstract ListLikedTracks: unit -> Task<Track list>
 
 type IListArtistTracks =
-  abstract ListArtistTracks: ArtistId -> Task<Track list>
+  abstract ListArtistTracks: ArtistId -> TaskSeq<Track>
 
 type IRecommender =
   abstract Recommend: Track list -> Task<Track list>
