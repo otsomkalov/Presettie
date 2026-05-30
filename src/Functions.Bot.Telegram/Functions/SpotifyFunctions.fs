@@ -10,8 +10,7 @@ open Functions.Bot.Telegram.Extensions.IQueryCollection
 open otsom.fs.Auth
 open otsom.fs.Extensions
 
-type SpotifyFunctions
-  (_telegramOptions: IOptions<TelegramSettings>, authService: IAuthService) =
+type SpotifyFunctions(_telegramOptions: IOptions<TelegramSettings>, authService: IAuthService) =
 
   let _telegramSettings = _telegramOptions.Value
 

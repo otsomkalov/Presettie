@@ -482,7 +482,7 @@ module Preset =
         let! sentMessageId = chatCtx.SendMessage(resp[Messages.RunningPreset])
 
         return!
-          presetService.RunPreset (userId, presetId)
+          presetService.RunPreset(userId, presetId)
           |> TaskResult.taskEither (onSuccess >> Task.ignore) (onError sentMessageId)
       }
 
