@@ -102,7 +102,7 @@ stages:
               publishWebProjects: false
               zipAfterPublish: false
           - task: DotNetCoreCLI@2
-            displayName: 'Publish Azure Functions Web API'
+            displayName: 'Publish Azure Functions Generator'
             inputs:
               command: 'publish'
               projects: 'src/**/Functions.Generator.fsproj'
