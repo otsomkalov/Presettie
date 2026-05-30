@@ -5,5 +5,11 @@
       "default": "Information",
       "Azure.Core": "Warning"
     }
+  },
+  "extensions": {
+    "queues": {
+      "maxDequeueCount": 1,
+      "messageEncoding": "none"
+    }
   }
 }

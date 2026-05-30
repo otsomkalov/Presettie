@@ -7,12 +7,11 @@ open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Extensions.Options
 open Functions.Bot.Telegram.Extensions.IQueryCollection
-open StackExchange.Redis
 open otsom.fs.Auth
 open otsom.fs.Extensions
 
 type SpotifyFunctions
-  (_telegramOptions: IOptions<TelegramSettings>, _connectionMultiplexer: IConnectionMultiplexer, authService: IAuthService) =
+  (_telegramOptions: IOptions<TelegramSettings>, authService: IAuthService) =
 
   let _telegramSettings = _telegramOptions.Value
 

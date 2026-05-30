@@ -9,12 +9,17 @@
     "APPINSIGHTS_INSTRUMENTATIONKEY": "<Application Insights Instrumentation Key>",
 
     "Telegram__Token": "<Telegram bot token>",
-    "Telegram__BotUrl": "<Telegram bot url, e.g. https://t.me/*bot_name*>",
+
+    "ReccoBeats__Url": "https://api.reccobeats.com/v1/",
 
     "Database__ConnectionString": "<MongoDB connection string>",
     "Database__Name": "presettie",
 
     "Resources__DefaultLang": "en",
+
+    "GeneratorSchedule": "0 * * * * *",
+
+    "Redis__ConnectionString": "<Redis connection string>",
 
     "Auth__ClientId": "<Spotify Client ID>",
     "Auth__ClientSecret": "<Spotify Client Secret>",

@@ -468,7 +468,7 @@ module Preset =
       >> Task.bind (show' (editButtons messageId) resp)
 
   let run (resp: IResourceProvider) (chatCtx: #ISendMessage & #IEditMessage) (presetService: #IRunPreset) =
-    fun presetId ->
+    fun (userId, presetId) ->
       let onSuccess =
         fun (preset: Preset) -> chatCtx.SendMessage resp[Messages.PresetExecuted, [| preset.Name |]]
 
@@ -482,7 +482,7 @@ module Preset =
         let! sentMessageId = chatCtx.SendMessage(resp[Messages.RunningPreset])
 
         return!
-          presetService.RunPreset presetId
+          presetService.RunPreset (userId, presetId)
           |> TaskResult.taskEither (onSuccess >> Task.ignore) (onError sentMessageId)
       }
 
