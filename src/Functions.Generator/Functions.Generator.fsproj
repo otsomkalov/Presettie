@@ -1,28 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <OutputType>exe</OutputType>
-    <WarningLevel>5</WarningLevel>
-    <AzureFunctionsVersion>v4</AzureFunctionsVersion>
-    <UserSecretsId>bed95743-1b23-49f6-bfc6-e955afd4ecc6</UserSecretsId>
+    <AzureFunctionsVersion>V4</AzureFunctionsVersion>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>2b4fd603-ad1c-4128-a0b7-5329666f1b20</UserSecretsId>
   </PropertyGroup>
-
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.52.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.1.0"/>
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.7" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.5.4"/>
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.50.0" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.5.1" />
-    <PackageReference Include="Telegram.Bot.AspNetCore" Version="22.5.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="Extensions.fs"/>
-    <Compile Include="Functions\SpotifyFunctions.fs"/>
-    <Compile Include="Functions\UpdateFunctions.fs"/>
+    <Compile Include="Functions.fs" />
     <Compile Include="Startup.fs"/>
   </ItemGroup>
 
@@ -38,7 +33,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bot.Telegram\Bot.Telegram.fsproj" />
-    <ProjectReference Include="..\MusicPlatform.Cached\MusicPlatform.Cached.fsproj" />
+    <ProjectReference Include="..\Infrastructure\Infrastructure.fsproj"/>
   </ItemGroup>
-
 </Project>

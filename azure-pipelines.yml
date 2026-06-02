@@ -101,6 +101,13 @@ stages:
               arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory) /p:InformationalVersion=$(Build.BuildNumber)'
               publishWebProjects: false
               zipAfterPublish: false
+          - task: DotNetCoreCLI@2
+            displayName: 'Publish Azure Functions Generator'
+            inputs:
+              command: 'publish'
+              projects: 'src/**/Functions.Generator.fsproj'
+              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory)/Functions.Generator /p:InformationalVersion=$(Build.BuildNumber)'
+              publishWebProjects: false
           - task: PublishBuildArtifacts@1
             displayName: 'Pack Telegram Bot'
             inputs:
@@ -116,6 +123,11 @@ stages:
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)/Bolero.Web/wwwroot'
               ArtifactName: 'Bolero.Web'
+          - task: PublishBuildArtifacts@1
+            displayName: 'Pack Azure Functions Generator'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Functions.Generator'
+              ArtifactName: 'Functions.Generator'
   - stage: deploy_dev
     displayName: 'Deploy DEV'
     dependsOn: build
@@ -154,6 +166,23 @@ stages:
                     azureSubscription: 'az-dev'
                     appType: 'functionAppLinux'
                     appName: '$(api-functions-name)'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    isFlexConsumption: true
+      - deployment: deploy_generator
+        displayName: 'Deploy Azure Functions Generator'
+        environment: 'dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: Functions.Generator
+
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: 'az-dev'
+                    appType: 'functionAppLinux'
+                    appName: '$(generator-functions-name)'
                     package: '$(Pipeline.Workspace)/**/*.zip'
                     isFlexConsumption: true
       - job: deploy_web
@@ -241,3 +270,21 @@ stages:
                   -s $(Build.ArtifactStagingDirectory)/Bolero.Web/ \
                   --overwrite \
                   --no-progress
+
+      - deployment: deploy_generator
+        displayName: 'Deploy Azure Functions Generator'
+        environment: 'prd'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: Functions.Generator
+
+                - task: AzureFunctionApp@2
+                  inputs:
+                    azureSubscription: 'az-prd'
+                    appType: 'functionAppLinux'
+                    appName: '$(generator-functions-name)'
+                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    isFlexConsumption: true

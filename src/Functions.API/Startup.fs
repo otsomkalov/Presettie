@@ -49,8 +49,6 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
 
       ())
 
-  services.AddLocalization()
-
   services
     .AddMvcCore()
     .AddJsonOptions(fun opts ->
