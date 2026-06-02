@@ -137,3 +137,14 @@ resource "azurerm_key_vault_access_policy" "kvap-func-api" {
     "List"
   ]
 }
+
+resource "azurerm_key_vault_access_policy" "kvap-func-generator" {
+  key_vault_id = azurerm_key_vault.kv-presettie.id
+  tenant_id    = azurerm_function_app_flex_consumption.func-presettie-generator.identity[0].tenant_id
+  object_id    = azurerm_function_app_flex_consumption.func-presettie-generator.identity[0].principal_id
+
+  secret_permissions = [
+    "Get",
+    "List"
+  ]
+}

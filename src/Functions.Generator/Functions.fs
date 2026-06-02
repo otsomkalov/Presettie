@@ -1,26 +1,24 @@
-﻿namespace Functions.Bot.Telegram
+﻿namespace Functions.Generator
 
 open System
 open Bot
+open Bot.Repos
+open Domain.Core
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Extensions.Logging
-open Domain.Core
 open Telegram.Bot
-open Bot.Core
-open Bot.Repos
-open otsom.fs.Bot
 open otsom.fs.Resources
+open otsom.fs.Bot
 
-type GeneratorFunctions
+type Functions
   (
     _bot: ITelegramBotClient,
-    _logger: ILogger<GeneratorFunctions>,
+    _logger: ILogger<Functions>,
     buildChatContext: BuildBotService,
     chatRepo: IChatRepo,
     presetService: IPresetService,
     getResp: CreateResourceProvider
   ) =
-
   let runPreset resp =
     fun userId presetId chatId -> task {
       let chatCtx = buildChatContext chatId
@@ -30,7 +28,7 @@ type GeneratorFunctions
 
   [<Function("GenerateAsync")>]
   member this.GenerateAsync([<QueueTrigger("%Storage:QueueName%")>] command: {| UserId: Guid; PresetId: string |}, _: FunctionContext) =
-    _logger.LogInformation("Running playlist generation for user %s{UserId} and preset %s{PresetId}", command.UserId, command.PresetId)
+    _logger.LogInformation("Running playlist generation for user {UserId} and preset %s{PresetId}", command.UserId, command.PresetId)
 
     let userId = command.UserId |> UserId
     let presetId = command.PresetId |> PresetId
@@ -42,5 +40,5 @@ type GeneratorFunctions
       | Some chat ->
         let! resp = getResp chat.Lang
         do! runPreset resp userId presetId chat.Id
-      | None -> _logger.LogWarning("No chat found for user with id %s{UserId}", command.UserId)
+      | None -> _logger.LogWarning("No chat found for user with id {UserId}", command.UserId)
     }

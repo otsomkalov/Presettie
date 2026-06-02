@@ -16,6 +16,7 @@
     <Project Path="src\MusicPlatform.Spotify\MusicPlatform.Spotify.fsproj" />
   </Folder>
   <Folder Name="/src/Runners/">
+    <Project Path="src/Functions.Generator/Functions.Generator.fsproj" />
     <Project Path="src\Bolero.Web\Bolero.Web.fsproj" />
     <Project Path="src\Functions.API\Functions.API.fsproj" />
     <Project Path="src\Functions.Bot.Telegram\Functions.Bot.Telegram.fsproj" />

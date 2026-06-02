@@ -72,10 +72,22 @@ resource "azurerm_storage_container" "stc-api-deployments-presettie" {
   name = "api-deployments"
 }
 
-resource "azurerm_storage_queue" "stq-requests-presettie" {
+resource "azurerm_storage_container" "stc-generator-deployments-presettie" {
   storage_account_id = azurerm_storage_account.st-presettie.id
 
-  name = "requests"
+  name = "generator-deployments"
+}
+
+resource "azurerm_storage_queue" "stq-bot-requests-presettie" {
+  storage_account_id = azurerm_storage_account.st-presettie.id
+
+  name = "bot-requests"
+}
+
+resource "azurerm_storage_queue" "stq-api-requests-presettie" {
+  storage_account_id = azurerm_storage_account.st-presettie.id
+
+  name = "api-requests"
 }
 
 # Identity
@@ -94,11 +106,33 @@ resource "azurerm_role_assignment" "ra-ui-ado-pipeline-blob-access" {
 
 # App Service
 
-resource "azurerm_service_plan" "asp-presettie" {
+resource "azurerm_service_plan" "asp-api-presettie" {
   resource_group_name = azurerm_resource_group.rg-presettie.name
   location            = azurerm_resource_group.rg-presettie.location
 
-  name     = "asp-presettie-${var.env}"
+  name     = "asp-api-presettie-${var.env}"
+  os_type  = "Linux"
+  sku_name = "FC1"
+
+  tags = local.tags
+}
+
+resource "azurerm_service_plan" "asp-bot-presettie" {
+  resource_group_name = azurerm_resource_group.rg-presettie.name
+  location            = azurerm_resource_group.rg-presettie.location
+
+  name     = "asp-bot-presettie-${var.env}"
+  os_type  = "Linux"
+  sku_name = "FC1"
+
+  tags = local.tags
+}
+
+resource "azurerm_service_plan" "asp-generator-presettie" {
+  resource_group_name = azurerm_resource_group.rg-presettie.name
+  location            = azurerm_resource_group.rg-presettie.location
+
+  name     = "asp-generator-presettie-${var.env}"
   os_type  = "Linux"
   sku_name = "FC1"
 
@@ -109,7 +143,7 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
   resource_group_name = azurerm_resource_group.rg-presettie.name
   location            = azurerm_resource_group.rg-presettie.location
 
-  service_plan_id = azurerm_service_plan.asp-presettie.id
+  service_plan_id = azurerm_service_plan.asp-bot-presettie.id
 
   name = "func-presettie-bot-${var.env}"
 
@@ -140,7 +174,7 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
 
       Auth__CallbackUrl  = var.auth-callback-url
       Database__Name     = var.database-name
-      Storage__QueueName = azurerm_storage_queue.stq-requests-presettie.name
+      Storage__QueueName = azurerm_storage_queue.stq-bot-requests-presettie.name
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
@@ -154,7 +188,7 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
   resource_group_name = azurerm_resource_group.rg-presettie.name
   location            = azurerm_resource_group.rg-presettie.location
 
-  service_plan_id = azurerm_service_plan.asp-presettie.id
+  service_plan_id = azurerm_service_plan.asp-api-presettie.id
 
   name = "func-presettie-api-${var.env}"
 
@@ -188,7 +222,50 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
       Auth__CallbackUrl      = var.auth-callback-url
       Resources__DefaultLang = var.resources-default-lang
       Database__Name         = var.database-name,
-      Storage__QueueName     = azurerm_storage_queue.stq-requests-presettie.name
+      Storage__QueueName     = azurerm_storage_queue.stq-bot-requests-presettie.name
+    },
+    {
+      for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
+    }
+  )
+
+  tags = local.tags
+}
+
+resource "azurerm_function_app_flex_consumption" "func-presettie-generator" {
+  resource_group_name = azurerm_resource_group.rg-presettie.name
+  location            = azurerm_resource_group.rg-presettie.location
+
+  service_plan_id = azurerm_service_plan.asp-generator-presettie.id
+
+  name = "func-presettie-generator-${var.env}"
+
+  runtime_name    = "dotnet-isolated"
+  runtime_version = "10.0"
+
+  storage_authentication_type = "StorageAccountConnectionString"
+  storage_access_key          = azurerm_storage_account.st-presettie.primary_access_key
+  storage_container_endpoint  = "${azurerm_storage_account.st-presettie.primary_blob_endpoint}${azurerm_storage_container.stc-generator-deployments-presettie.name}"
+  storage_container_type      = "blobContainer"
+
+  instance_memory_in_mb  = 512
+  maximum_instance_count = 10
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  site_config {
+    application_insights_connection_string = azurerm_application_insights.appi-presettie.connection_string
+  }
+
+  app_settings = merge(
+    {
+      KeyVaultName = azurerm_key_vault.kv-presettie.name,
+
+      Resources__DefaultLang = var.resources-default-lang
+      Database__Name         = var.database-name,
+      Storage__QueueName     = azurerm_storage_queue.stq-bot-requests-presettie.name
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope

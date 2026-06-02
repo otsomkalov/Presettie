@@ -3,8 +3,6 @@ module Functions.Bot.Startup
 #nowarn "20"
 
 open System
-open System.Text.Json
-open System.Text.Json.Serialization
 open System.Reflection
 open Azure.Identity
 open Microsoft.Azure.Functions.Worker.Builder
@@ -14,7 +12,6 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.ApplicationInsights
 open Microsoft.Azure.Functions.Worker
-open Telegram.Bot.AspNetCore
 
 [<RequireQualifiedAccess>]
 module KeyVault =
@@ -31,11 +28,10 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   services
   |> Domain.Startup.addDomain cfg
   |> MusicPlatform.Spotify.Startup.addSpotifyMusicPlatform cfg
+  |> MusicPlatform.Cached.Startup.addCachedMusicPlatform cfg
   |> Bot.Startup.addBot cfg
   |> Infrastructure.Startup.addInfrastructure cfg
   |> Bot.Telegram.Startup.addTelegram cfg
-
-  services.ConfigureTelegramBotMvc()
 
   builder
 
@@ -50,20 +46,14 @@ let private configureAppConfiguration (builder: FunctionsApplicationBuilder) =
 
   builder
 
-let private configureFunctionsWebApp (builder: FunctionsApplicationBuilder) =
-  builder.Services.Configure<JsonSerializerOptions>(fun opts -> JsonFSharpOptions.Default().AddToJsonSerializerOptions opts)
-
-  builder
-
 let private configureLogging (builder: FunctionsApplicationBuilder) =
   builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Information)
 
   builder
 
 let builder =
-  FunctionsApplication.CreateBuilder(Environment.GetCommandLineArgs() |> Array.tail).ConfigureFunctionsWebApplication()
+  FunctionsApplication.CreateBuilder(Environment.GetCommandLineArgs() |> Array.tail)
   |> configureAppConfiguration
-  |> configureFunctionsWebApp
   |> configureLogging
   |> configureServices
 
