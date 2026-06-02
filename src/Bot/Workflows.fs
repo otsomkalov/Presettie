@@ -525,20 +525,20 @@ module User =
     fun messageId -> showPresets' resp (editButtons messageId) presetRepo
 
   let sendCurrentPreset (resp: IResourceProvider) (userRepo: #ILoadUser) (presetRepo: #ILoadPreset) (chatCtx: #ISendKeyboard) =
-    fun userId ->
-      userId |> userRepo.LoadUser |> Task.map _.CurrentPresetId
-      &|&> (function
-      | Some presetId -> task {
-          let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
-          return! Preset.send resp chatCtx preset
-        }
+    fun userId -> task {
+      let! user = userId |> userRepo.LoadUser
+
+      match user.CurrentPresetId with
+      | Some presetId ->
+        let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+        return! Preset.send resp chatCtx preset
       | None ->
         let keyboard: Keyboard =
           [ [ KeyboardButton(resp[Buttons.MyPresets]) ]
             [ KeyboardButton(resp[Buttons.CreatePreset]) ] ]
 
-        chatCtx.SendKeyboard(resp[Messages.NoCurrentPreset], keyboard)
-        |> Task.map ignore)
+        do! chatCtx.SendKeyboard(resp[Messages.NoCurrentPreset], keyboard) |> Task.ignore
+    }
 
   let sendCurrentPresetSettings
     (resp: IResourceProvider)
@@ -592,7 +592,7 @@ module User =
       userId
       |> userRepo.LoadUser
       |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
-      &|&> (fun p -> presetService.QueueRun(userId, p))
+      |> Task.bind (fun p -> presetService.QueueRun(userId, p))
       |> TaskResult.taskEither onSuccess onError
 
 [<RequireQualifiedAccess>]
