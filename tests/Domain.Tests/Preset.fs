@@ -27,7 +27,15 @@ type Run() =
     |> ignore
 
   let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object, logger.Object)
+    PresetService(
+      parsePlaylistId,
+      parseArtistId,
+      presetRepo.Object,
+      musicPlatformFactory.Object,
+      shuffler,
+      recommender.Object,
+      logger.Object
+    )
 
   [<Fact>]
   member _.``takes only liked tracks from included playlists if configured``() =
