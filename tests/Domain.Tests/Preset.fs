@@ -4,6 +4,7 @@ open Domain.Core.PresetSettings
 open Domain.Repos
 open Domain.Workflows
 open FSharp.Control
+open Microsoft.Extensions.Logging
 open Moq
 open Xunit
 open FsUnit.Xunit
@@ -19,10 +20,22 @@ type Run() =
   let presetRepo = Mock<IPresetRepo>()
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let recommender = Mock<IRecommender>()
+  let logger = Mock<ILogger<PresetService>>()
 
   do
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
     |> ignore
+
+  let sut: IPresetService =
+    PresetService(
+      parsePlaylistId,
+      parseArtistId,
+      presetRepo.Object,
+      musicPlatformFactory.Object,
+      shuffler,
+      recommender.Object,
+      logger.Object
+    )
 
   [<Fact>]
   member _.``takes only liked tracks from included playlists if configured``() =
@@ -41,9 +54,6 @@ type Run() =
     platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.likedTrack ])).ReturnsAsync(())
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-
-    let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -66,9 +76,6 @@ type Run() =
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
-    let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
-
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
@@ -81,9 +88,6 @@ type Run() =
   [<Fact>]
   member _.``returns error if no tracks in included playlists and liked tracks are not included``() =
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
-
-    let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -105,9 +109,6 @@ type Run() =
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([ Mocks.includedTrack ])
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-
-    let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -135,9 +136,6 @@ type Run() =
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
-    let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
-
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
@@ -163,9 +161,6 @@ type Run() =
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
-    let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
-
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
@@ -189,9 +184,6 @@ type Run() =
           Settings.LikedTracksHandling = LikedTracksHandling.Exclude }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-
-    let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -217,9 +209,6 @@ type Run() =
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
-    let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
-
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
@@ -243,9 +232,6 @@ type Run() =
     platform.Setup(_.ReplaceTracks(Mocks.targetedPlaylistId, [ Mocks.likedTrack ])).ReturnsAsync(())
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-
-    let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
@@ -273,9 +259,6 @@ type Run() =
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
-    let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
-
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
@@ -297,9 +280,6 @@ type Run() =
           ExcludedArtists = [ Mocks.artist2 ] }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
-
-    let sut: IPresetService =
-      PresetService(parsePlaylistId, parseArtistId, presetRepo.Object, musicPlatformFactory.Object, shuffler, recommender.Object)
 
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)

@@ -5,6 +5,7 @@ open System.Threading.Tasks
 open Domain.Core.PresetSettings
 open Domain.Repos
 open FSharp.Control
+open Microsoft.Extensions.Logging
 open Microsoft.FSharp.Core
 open MusicPlatform
 open otsom.fs.Extensions
@@ -300,7 +301,7 @@ module Preset =
       return List.concat [ excludedByPlaylists; excludedByArtists; excludedLiked ]
     }
 
-  let run (presetRepo: #ILoadPreset) (shuffler: Shuffler<Track>) platform (recommenderFactory: IRecommenderFactory) =
+  let run (presetRepo: #ILoadPreset) (logger: ILogger) (shuffler: Shuffler<Track>) platform (recommenderFactory: IRecommenderFactory) =
 
     let saveTracks (platform: #IAddTracks & #IReplaceTracks) =
       fun preset (tracks: Track list) ->
@@ -326,10 +327,14 @@ module Preset =
 
       let! includedTracks = listIncludedTracks platform preset |> Task.map shuffler
 
+      logger.LogInformation("Loaded {IncludedTracksCount} included tracks", includedTracks.Length)
+
       do! includedTracks |> Result.requireNotEmpty Preset.RunError.NoIncludedTracks
 
       // Shuffle first to get recommendations based on different tracks each time
       let! recommendedTracks = getRecommendations preset includedTracks |> Task.map shuffler
+
+      logger.LogInformation("Loaded {RecommendedTracksCount} recommended tracks", recommendedTracks.Length)
 
       let! excludedTracks = listExcludedTracks platform preset
 
@@ -340,6 +345,8 @@ module Preset =
         match preset.Settings.UniqueArtists with
         | true -> potentialTracks |> Tracks.uniqueByArtists
         | false -> potentialTracks
+
+      logger.LogInformation("{PotentialTracksCount} potential tracks", potentialTracks.Length)
 
       do!
         filteredPotentialTracks
@@ -664,7 +671,8 @@ type PresetService
     presetRepo: IPresetRepo,
     musicPlatformFactory: IMusicPlatformFactory,
     shuffler: Shuffler<Track>,
-    reccoBeatsRecommender: IRecommender
+    reccoBeatsRecommender: IRecommender,
+    logger: ILogger<PresetService>
   ) =
   interface IPresetService with
     member this.QueueRun(userId, presetId) =
@@ -740,7 +748,7 @@ type PresetService
       | Some platform ->
         let recsEngineFactory = RecommenderFactory(platform, reccoBeatsRecommender)
 
-        return! Preset.run presetRepo shuffler platform recsEngineFactory presetId
+        return! Preset.run presetRepo logger shuffler platform recsEngineFactory presetId
       | None -> return Preset.RunError.Unauthorized |> Error
     }
 

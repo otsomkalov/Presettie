@@ -1,4 +1,4 @@
-module Functions.Bot.Startup
+module Functions.Generator.Startup
 
 #nowarn "20"
 
