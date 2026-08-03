@@ -2,7 +2,6 @@
 
 #nowarn "20"
 
-open Bot.Telegram.Services
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Options
@@ -34,5 +33,3 @@ let addTelegram (cfg: IConfiguration) (services: IServiceCollection) =
   services.BuildSingleton<IMongoCollection<Entities.Chat>, IMongoDatabase>(fun db -> db.GetCollection "chats")
 
   services.AddSingleton<IChatRepo, ChatRepo>()
-
-  services.AddScoped<MessageService>().AddScoped<CallbackQueryService>()
