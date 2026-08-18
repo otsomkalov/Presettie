@@ -500,20 +500,25 @@ let targetPlaylistMessageHandler
       let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let targetPlaylistResult =
-        presetService.TargetPlaylist(userId, currentPresetId, rawPlaylistId)
+        presetService.TargetPlaylist
+          { TargetPlaylist.Cmd.UserId = userId
+            PresetId = currentPresetId
+            PlaylistId = rawPlaylistId }
 
       let onSuccess (playlist: TargetedPlaylist) =
         chatCtx.SendMessage resp[Messages.PlaylistTargeted, [| playlist.Name |]]
 
       let onError =
         function
-        | Preset.TargetPlaylistError.IdParsing(Playlist.IdParsingError id) ->
+        | TargetPlaylist.Error.IdParsing(Playlist.IdParsingError id) ->
           chatCtx.SendMessage resp[Messages.PlaylistIdCannotBeParsed, [| id |]]
-        | Preset.TargetPlaylistError.Load(Playlist.LoadError.NotFound) ->
+        | TargetPlaylist.Error.Load(Playlist.LoadError.NotFound) ->
           let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
           chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId |]]
-        | Preset.TargetPlaylistError.AccessError _ -> chatCtx.SendMessage resp[Messages.PlaylistIsReadonly]
-        | Preset.TargetPlaylistError.Unauthorized -> sendLoginMessage authService resp chatCtx userId
+        | TargetPlaylist.Error.AccessError _ -> chatCtx.SendMessage resp[Messages.PlaylistIsReadonly]
+        | TargetPlaylist.Error.Duplicate playlistId ->
+          chatCtx.SendMessage resp[Messages.PlaylistAlreadyTargeted, [| playlistId |]]
+        | TargetPlaylist.Error.Unauthorized -> sendLoginMessage authService resp chatCtx userId
 
       return! targetPlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
     }

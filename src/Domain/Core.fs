@@ -123,14 +123,6 @@ module Preset =
     | NoPotentialTracks
     | Unauthorized
 
-  type AccessError = AccessError of unit
-
-  type TargetPlaylistError =
-    | IdParsing of Playlist.IdParsingError
-    | Load of Playlist.LoadError
-    | AccessError of AccessError
-    | Unauthorized
-
   type GetPresetError = | NotFound
 
 [<RequireQualifiedAccess>]
@@ -247,8 +239,25 @@ module ExcludeArtist =
 type IExcludeArtist =
   abstract ExcludeArtist: ExcludeArtist.Cmd -> Task<Result<ExcludedArtist, ExcludeArtist.Error>>
 
+[<RequireQualifiedAccess>]
+module TargetPlaylist =
+  type Cmd =
+    { UserId: UserId
+      PresetId: PresetId
+      PlaylistId: Playlist.RawPlaylistId }
+
+  type AccessError = AccessError of unit
+
+  [<RequireQualifiedAccess>]
+  type Error =
+    | IdParsing of Playlist.IdParsingError
+    | Load of Playlist.LoadError
+    | AccessError of AccessError
+    | Unauthorized
+    | Duplicate of PlaylistId
+
 type ITargetPlaylist =
-  abstract TargetPlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, Preset.TargetPlaylistError>>
+  abstract TargetPlaylist: TargetPlaylist.Cmd -> Task<Result<TargetedPlaylist, TargetPlaylist.Error>>
 
 type ISetRecommendationsEngine =
   abstract SetRecommendationsEngine: PresetId * PresetSettings.RecommendationsEngine option -> Task<unit>

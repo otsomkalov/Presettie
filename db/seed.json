@@ -345,6 +345,11 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.playlist-already-targeted",
+    "Value": "Playlist {0} is already targeted!",
+    "Lang": "en"
+  },
+  {
     "Key": "messages.artist-already-excluded",
     "Value": "Artist {0} is already excluded!",
     "Lang": "en"
