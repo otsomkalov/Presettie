@@ -246,13 +246,11 @@ module TargetPlaylist =
       PresetId: PresetId
       PlaylistId: Playlist.RawPlaylistId }
 
-  type AccessError = AccessError of unit
-
   [<RequireQualifiedAccess>]
   type Error =
     | IdParsing of Playlist.IdParsingError
     | Load of Playlist.LoadError
-    | AccessError of AccessError
+    | AccessError
     | Unauthorized
     | Duplicate of PlaylistId
 

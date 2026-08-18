@@ -1810,7 +1810,7 @@ type TargetPlaylistMessageHandler() =
 
     presetService
       .Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>()))
-      .ReturnsAsync(Error(TargetPlaylist.Error.AccessError(TargetPlaylist.AccessError())))
+      .ReturnsAsync(Error(TargetPlaylist.Error.AccessError))
 
     resourceProvider.Setup(_.Item(Messages.PlaylistIsReadonly)).Returns(Messages.PlaylistIsReadonly)
 
