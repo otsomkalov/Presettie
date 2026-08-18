@@ -36,6 +36,15 @@ type ICreateChat =
 type IChatService =
   inherit ICreateChat
 
+type UpdateData =
+  | Msg of Message
+  | Click of Click
+
+type Update =
+  { ChatId: ChatId
+    Lang: string option
+    Data: UpdateData }
+
 [<RequireQualifiedAccess>]
 module Resources =
   type GetResourceProvider = string option -> Task<IResourceProvider>

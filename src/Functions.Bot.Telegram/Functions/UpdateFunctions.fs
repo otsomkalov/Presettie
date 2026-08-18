@@ -1,17 +1,47 @@
 ﻿namespace Functions.Bot.Telegram
 
-open System.Threading.Tasks
-open Bot.Telegram.Services
+open Bot.Core
+open Bot.Handlers
+open Bot.Repos
+open Domain.Core
+open Domain.Repos
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
 open Microsoft.Extensions.Logging
 open Telegram.Bot.Types
-open Telegram.Bot.Types.Enums
+open otsom.fs.Auth
 
-type UpdateFunctions(_messageService: MessageService, _logger: ILogger<UpdateFunctions>, _callbackQueryService: CallbackQueryService) =
+type UpdateFunctions
+  (
+    authSvc: IAuthService,
+    userRepo: IUserRepo,
+    userService: IUserService,
+    presetService,
+    presetRepo: IPresetRepo,
+    buildMusicPlatform,
+    buildChatContext,
+    getResp,
+    chatRepo: IChatRepo,
+    chatService: IChatService,
+    logger: ILogger<UpdateFunctions>
+  ) =
   inherit ControllerBase()
+
+  let updateHandler =
+    Update.main
+      authSvc
+      userRepo
+      userService
+      presetService
+      presetRepo
+      buildMusicPlatform
+      buildChatContext
+      getResp
+      chatRepo
+      chatService
+      logger
 
   [<Function("HandleUpdateAsync")>]
   member this.HandleUpdateAsync
@@ -19,13 +49,11 @@ type UpdateFunctions(_messageService: MessageService, _logger: ILogger<UpdateFun
     =
     task {
       try
-        let handleUpdateTask =
-          match update.Type with
-          | UpdateType.Message when update.Message.Type = MessageType.Text -> _messageService.ProcessAsync update.Message
-          | UpdateType.CallbackQuery -> _callbackQueryService.ProcessAsync update.CallbackQuery
-          | _ -> () |> Task.FromResult
+        let upd = Mappers.Update.map update
 
-        do! handleUpdateTask
+        match upd with
+        | Some upd -> do! updateHandler upd
+        | None -> logger.LogInformation("Unsupported update type: {UpdateType}", update.Type)
       with e ->
-        _logger.LogError(e, "Error during processing update:")
+        logger.LogError(e, "Error during processing update:")
     }
