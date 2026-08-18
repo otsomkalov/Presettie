@@ -1312,9 +1312,7 @@ type IncludePlaylistMessageHandler() =
   member _.``should trigger login when unauthorized``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.IncludePlaylist(It.IsAny<IncludePlaylist.Cmd>()))
-      .ReturnsAsync(Error IncludePlaylist.Error.Unauthorized)
+    presetService.Setup(_.IncludePlaylist(It.IsAny<IncludePlaylist.Cmd>())).ReturnsAsync(Error IncludePlaylist.Error.Unauthorized)
 
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1432,9 +1430,7 @@ type ExcludePlaylistMessageHandler() =
   member _.``should trigger login when unauthorized``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.ExcludePlaylist(It.IsAny<ExcludePlaylist.Cmd>()))
-      .ReturnsAsync(Error ExcludePlaylist.Error.Unauthorized)
+    presetService.Setup(_.ExcludePlaylist(It.IsAny<ExcludePlaylist.Cmd>())).ReturnsAsync(Error ExcludePlaylist.Error.Unauthorized)
 
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1559,9 +1555,7 @@ type ExcludeArtistMessageHandler() =
   member _.``should trigger login when unauthorized``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.ExcludeArtist(It.IsAny<ExcludeArtist.Cmd>()))
-      .ReturnsAsync(Error(ExcludeArtist.Error.Unauthorized))
+    presetService.Setup(_.ExcludeArtist(It.IsAny<ExcludeArtist.Cmd>())).ReturnsAsync(Error(ExcludeArtist.Error.Unauthorized))
 
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1688,9 +1682,7 @@ type IncludeArtistMessageHandler() =
   member _.``should trigger login when unauthorized``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>()))
-      .ReturnsAsync(Error(IncludeArtist.Error.Unauthorized))
+    presetService.Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>())).ReturnsAsync(Error(IncludeArtist.Error.Unauthorized))
 
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1808,9 +1800,7 @@ type TargetPlaylistMessageHandler() =
   member _.``should send PlaylistIsReadonly on access error``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>()))
-      .ReturnsAsync(Error(TargetPlaylist.Error.AccessError))
+    presetService.Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>())).ReturnsAsync(Error(TargetPlaylist.Error.AccessError))
 
     resourceProvider.Setup(_.Item(Messages.PlaylistIsReadonly)).Returns(Messages.PlaylistIsReadonly)
 
