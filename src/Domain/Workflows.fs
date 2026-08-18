@@ -393,38 +393,29 @@ module Preset =
     }
 
   let excludePlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
-    let parseId = parseId >> Result.mapError Preset.ExcludePlaylistError.IdParsing
+    fun (cmd: ExcludePlaylist.Cmd) -> taskResult {
+      let! playlistId = parseId cmd.PlaylistId |> Result.mapError ExcludePlaylist.Error.IdParsing
 
-    let loadPlaylist (mp: #ILoadPlaylist) =
-      mp.LoadPlaylist >> TaskResult.mapError Preset.ExcludePlaylistError.Load
+      let! preset = presetRepo.LoadPreset cmd.PresetId |> Task.map Option.get
 
-    let excludePlaylist' mp =
-      fun presetId rawPlaylistId ->
-        let updatePreset playlist = task {
-          let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+      let! musicPlatform =
+        musicPlatformFactory.GetMusicPlatform(cmd.UserId.ToMusicPlatformId())
+        |> TaskResult.requireSome ExcludePlaylist.Error.Unauthorized
 
-          let updatedExcludedPlaylists = preset.ExcludedPlaylists |> List.append [ playlist ]
+      let! playlist =
+        musicPlatform.LoadPlaylist playlistId
+        |> TaskResult.mapError ExcludePlaylist.Error.Load
 
-          let updatedPreset =
-            { preset with
-                ExcludedPlaylists = updatedExcludedPlaylists }
+      let playlistToExclude = ExcludedPlaylist.fromSpotifyPlaylist playlist
 
-          do! presetRepo.SavePreset updatedPreset
+      let updatedPreset =
+        { preset with
+            ExcludedPlaylists = playlistToExclude :: preset.ExcludedPlaylists }
 
-          return playlist
-        }
+      do! presetRepo.SavePreset updatedPreset
 
-        rawPlaylistId
-        |> parseId
-        |> Result.taskBind (loadPlaylist mp)
-        |> TaskResult.map ExcludedPlaylist.fromSpotifyPlaylist
-        |> TaskResult.taskMap updatePreset
-
-    fun (UserId userId) presetId rawPlaylistId ->
-      musicPlatformFactory.GetMusicPlatform(userId |> string |> MusicPlatform.UserId)
-      |> Task.bind (function
-        | Some mp -> excludePlaylist' mp presetId rawPlaylistId
-        | None -> Preset.ExcludePlaylistError.Unauthorized |> Error |> Task.FromResult)
+      return playlistToExclude
+    }
 
   let excludeArtist (parseId: Artist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
     let parseId = parseId >> Result.mapError Preset.ExcludeArtistError.IdParsing
@@ -678,8 +669,8 @@ type PresetService
     member this.IncludePlaylist(cmd) =
       Preset.includePlaylist parsePlaylistId presetRepo musicPlatformFactory cmd
 
-    member this.ExcludePlaylist(userId, presetId, rawPlaylistId) =
-      Preset.excludePlaylist parsePlaylistId presetRepo musicPlatformFactory userId presetId rawPlaylistId
+    member this.ExcludePlaylist(cmd) =
+      Preset.excludePlaylist parsePlaylistId presetRepo musicPlatformFactory cmd
 
     member this.ExcludeArtist(userId, presetId, artistId) =
       Preset.excludeArtist parseArtistId presetRepo musicPlatformFactory userId presetId artistId

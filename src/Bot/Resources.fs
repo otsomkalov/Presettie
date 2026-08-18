@@ -71,6 +71,9 @@ module Messages =
   let PlaylistAlreadyIncluded = "messages.playlist-already-included"
 
   [<Literal>]
+  let PlaylistAlreadyExcluded = "messages.playlist-already-excluded"
+
+  [<Literal>]
   let ArtistNotFoundInSpotify = "messages.artist-not-found-in-spotify"
 
   [<Literal>]

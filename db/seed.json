@@ -339,6 +339,11 @@
     "Value": "Playlist {0} is already included!",
     "Lang": "en"
   },
+  {
+    "Key": "messages.playlist-already-excluded",
+    "Value": "Playlist {0} is already excluded!",
+    "Lang": "en"
+  },
 
   {
     "Key": "buttons.run-preset",
