@@ -418,37 +418,27 @@ module Preset =
     }
 
   let excludeArtist (parseId: Artist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
-    let parseId = parseId >> Result.mapError Preset.ExcludeArtistError.IdParsing
+    fun (cmd: ExcludeArtist.Cmd) -> taskResult {
+      let! artistId = parseId cmd.ArtistId |> Result.mapError ExcludeArtist.Error.IdParsing
 
-    let loadArtist (mp: #ILoadArtist) =
-      mp.LoadArtist >> TaskResult.mapError Preset.ExcludeArtistError.Load
+      let! preset = presetRepo.LoadPreset cmd.PresetId |> Task.map Option.get
 
-    let excludeArtist' mp =
-      fun presetId rawArtistId ->
-        let updatePreset artist = task {
-          let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+      let! musicPlatform =
+        musicPlatformFactory.GetMusicPlatform(cmd.UserId.ToMusicPlatformId())
+        |> TaskResult.requireSome ExcludeArtist.Error.Unauthorized
 
-          let updatedExcludedArtists = preset.ExcludedArtists |> List.append [ artist ]
+      let! artist =
+        musicPlatform.LoadArtist artistId
+        |> TaskResult.mapError ExcludeArtist.Error.Load
 
-          let updatedPreset =
-            { preset with
-                ExcludedArtists = updatedExcludedArtists }
+      let updatedPreset =
+        { preset with
+            ExcludedArtists = artist :: preset.ExcludedArtists }
 
-          do! presetRepo.SavePreset updatedPreset
+      do! presetRepo.SavePreset updatedPreset
 
-          return artist
-        }
-
-        rawArtistId
-        |> parseId
-        |> Result.taskBind (loadArtist mp)
-        |> TaskResult.taskMap updatePreset
-
-    fun (userId: UserId) presetId rawArtistId ->
-      musicPlatformFactory.GetMusicPlatform(userId.ToMusicPlatformId())
-      |> Task.bind (function
-        | Some mp -> excludeArtist' mp presetId rawArtistId
-        | None -> Preset.ExcludeArtistError.Unauthorized |> Error |> Task.FromResult)
+      return artist
+    }
 
   let includeArtist (parseId: Artist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
     let parseId = parseId >> Result.mapError Preset.IncludeArtistError.IdParsing
@@ -672,8 +662,8 @@ type PresetService
     member this.ExcludePlaylist(cmd) =
       Preset.excludePlaylist parsePlaylistId presetRepo musicPlatformFactory cmd
 
-    member this.ExcludeArtist(userId, presetId, artistId) =
-      Preset.excludeArtist parseArtistId presetRepo musicPlatformFactory userId presetId artistId
+    member this.ExcludeArtist(cmd) =
+      Preset.excludeArtist parseArtistId presetRepo musicPlatformFactory cmd
 
     member this.IncludeArtist(userId, presetId, artistId) =
       Preset.includeArtist parseArtistId presetRepo musicPlatformFactory userId presetId artistId

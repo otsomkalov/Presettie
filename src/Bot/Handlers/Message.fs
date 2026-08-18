@@ -404,19 +404,24 @@ let excludeArtistMessageHandler
       let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let excludeArtistResult =
-        presetService.ExcludeArtist(userId, currentPresetId, rawArtistId)
+        presetService.ExcludeArtist
+          { ExcludeArtist.Cmd.UserId = userId
+            PresetId = currentPresetId
+            ArtistId = rawArtistId }
 
       let onSuccess (artist: ExcludedArtist) =
         chatCtx.SendMessage resp[Messages.ArtistExcluded, [| artist.Name |]]
 
       let onError =
         function
-        | Preset.ExcludeArtistError.IdParsing(Artist.IdParsingError id) ->
+        | ExcludeArtist.Error.IdParsing(Artist.IdParsingError id) ->
           chatCtx.SendMessage resp[Messages.ArtistIdCannotBeParsed, [| id |]]
-        | Preset.ExcludeArtistError.Load(Artist.LoadError.NotFound) ->
+        | ExcludeArtist.Error.Load(Artist.LoadError.NotFound) ->
           let (Artist.RawArtistId rawArtistId) = rawArtistId
           chatCtx.SendMessage resp[Messages.ArtistNotFoundInSpotify, [| rawArtistId |]]
-        | Preset.ExcludeArtistError.Unauthorized -> sendLoginMessage authService resp chatCtx userId
+        | ExcludeArtist.Error.Duplicate artistId ->
+          chatCtx.SendMessage resp[Messages.ArtistAlreadyExcluded, [| artistId |]]
+        | ExcludeArtist.Error.Unauthorized -> sendLoginMessage authService resp chatCtx userId
 
       return! excludeArtistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
     }

@@ -344,6 +344,11 @@
     "Value": "Playlist {0} is already excluded!",
     "Lang": "en"
   },
+  {
+    "Key": "messages.artist-already-excluded",
+    "Value": "Artist {0} is already excluded!",
+    "Lang": "en"
+  },
 
   {
     "Key": "buttons.run-preset",

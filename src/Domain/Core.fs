@@ -128,11 +128,6 @@ module Preset =
     | IdParsing of Artist.IdParsingError
     | Unauthorized
 
-  type ExcludeArtistError =
-    | Load of Artist.LoadError
-    | IdParsing of Artist.IdParsingError
-    | Unauthorized
-
   type AccessError = AccessError of unit
 
   type TargetPlaylistError =
@@ -226,8 +221,22 @@ type IExcludePlaylist =
 type IIncludeArtist =
   abstract IncludeArtist: UserId * PresetId * Artist.RawArtistId -> Task<Result<IncludedArtist, Preset.IncludeArtistError>>
 
+[<RequireQualifiedAccess>]
+module ExcludeArtist =
+  type Cmd =
+    { UserId: UserId
+      PresetId: PresetId
+      ArtistId: Artist.RawArtistId }
+
+  [<RequireQualifiedAccess>]
+  type Error =
+    | Load of Artist.LoadError
+    | IdParsing of Artist.IdParsingError
+    | Unauthorized
+    | Duplicate of ArtistId
+
 type IExcludeArtist =
-  abstract ExcludeArtist: UserId * PresetId * Artist.RawArtistId -> Task<Result<ExcludedArtist, Preset.ExcludeArtistError>>
+  abstract ExcludeArtist: ExcludeArtist.Cmd -> Task<Result<ExcludedArtist, ExcludeArtist.Error>>
 
 type ITargetPlaylist =
   abstract TargetPlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, Preset.TargetPlaylistError>>
