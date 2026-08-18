@@ -334,6 +334,11 @@
     "Value": "You've successfully logged in into music platform!",
     "Lang": "en"
   },
+  {
+    "Key": "messages.playlist-already-included",
+    "Value": "Playlist {0} is already included!",
+    "Lang": "en"
+  },
 
   {
     "Key": "buttons.run-preset",

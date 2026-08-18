@@ -123,11 +123,6 @@ module Preset =
     | NoPotentialTracks
     | Unauthorized
 
-  type IncludePlaylistError =
-    | IdParsing of Playlist.IdParsingError
-    | Load of Playlist.LoadError
-    | Unauthorized
-
   type ExcludePlaylistError =
     | IdParsing of Playlist.IdParsingError
     | Load of Playlist.LoadError
@@ -199,8 +194,22 @@ type IQueueRun =
 type ICreatePreset =
   abstract CreatePreset: UserId * string -> Task<Preset>
 
+[<RequireQualifiedAccess>]
+module IncludePlaylist =
+  type Cmd =
+    { UserId: UserId
+      PresetId: PresetId
+      PlaylistId: Playlist.RawPlaylistId }
+
+  [<RequireQualifiedAccess>]
+  type Error =
+    | IdParsing of Playlist.IdParsingError
+    | Load of Playlist.LoadError
+    | Unauthorized
+    | Duplicate of PlaylistId
+
 type IIncludePlaylist =
-  abstract IncludePlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<IncludedPlaylist, Preset.IncludePlaylistError>>
+  abstract IncludePlaylist: IncludePlaylist.Cmd -> Task<Result<IncludedPlaylist, IncludePlaylist.Error>>
 
 type IExcludePlaylist =
   abstract ExcludePlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<ExcludedPlaylist, Preset.ExcludePlaylistError>>
