@@ -80,6 +80,9 @@ module Messages =
   let ArtistAlreadyExcluded = "messages.artist-already-excluded"
 
   [<Literal>]
+  let ArtistAlreadyIncluded = "messages.artist-already-included"
+
+  [<Literal>]
   let PlaylistIsReadonly = "messages.playlist-is-readonly"
 
   [<Literal>]

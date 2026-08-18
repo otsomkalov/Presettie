@@ -349,6 +349,11 @@
     "Value": "Artist {0} is already excluded!",
     "Lang": "en"
   },
+  {
+    "Key": "messages.artist-already-included",
+    "Value": "Artist {0} is already included!",
+    "Lang": "en"
+  },
 
   {
     "Key": "buttons.run-preset",

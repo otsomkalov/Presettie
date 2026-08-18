@@ -1595,7 +1595,7 @@ type IncludeArtistMessageHandler() =
   member _.``should handle reply with included artist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist1))
+    presetService.Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>())).ReturnsAsync(Ok(Mocks.artist1))
 
     resourceProvider.Setup(_.Item(Messages.ArtistIncluded, It.IsAny())).Returns("Artist included message")
 
@@ -1617,7 +1617,7 @@ type IncludeArtistMessageHandler() =
   member _.``should handle /includeartist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist1))
+    presetService.Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>())).ReturnsAsync(Ok(Mocks.artist1))
 
     resourceProvider.Setup(_.Item(Messages.ArtistIncluded, It.IsAny())).Returns(Messages.ArtistIncluded)
 
@@ -1640,8 +1640,8 @@ type IncludeArtistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
-      .ReturnsAsync(Error(Preset.IncludeArtistError.IdParsing(Artist.IdParsingError "invalid-id")))
+      .Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>()))
+      .ReturnsAsync(Error(IncludeArtist.Error.IdParsing(Artist.IdParsingError "invalid-id")))
 
     resourceProvider.Setup(_.Item(Messages.ArtistIdCannotBeParsed, It.IsAny())).Returns("Cannot parse artist ID")
 
@@ -1664,8 +1664,8 @@ type IncludeArtistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
-      .ReturnsAsync(Error(Preset.IncludeArtistError.Load(Artist.LoadError.NotFound)))
+      .Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>()))
+      .ReturnsAsync(Error(IncludeArtist.Error.Load(Artist.LoadError.NotFound)))
 
     resourceProvider.Setup(_.Item(Messages.ArtistNotFoundInSpotify, It.IsAny())).Returns("Artist not found")
 
@@ -1689,8 +1689,8 @@ type IncludeArtistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
-      .ReturnsAsync(Error(Preset.IncludeArtistError.Unauthorized))
+      .Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>()))
+      .ReturnsAsync(Error(IncludeArtist.Error.Unauthorized))
 
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 

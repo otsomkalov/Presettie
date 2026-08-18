@@ -304,7 +304,7 @@ type IncludeArtist() =
 
     let updatedPreset =
       { Mocks.preset with
-          IncludedArtists = Mocks.preset.IncludedArtists @ [ Mocks.artist3 ] }
+          IncludedArtists = Mocks.artist3 :: Mocks.preset.IncludedArtists }
 
     presetRepo.Setup(_.SavePreset(updatedPreset)).ReturnsAsync(())
 
@@ -316,9 +316,13 @@ type IncludeArtist() =
       Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
-      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+      let! result =
+        sut
+          { IncludeArtist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            ArtistId = rawArtistId }
 
-      result |> should equal (Result<_, Preset.IncludeArtistError>.Ok Mocks.artist3)
+      result |> should equal (Result<_, IncludeArtist.Error>.Ok Mocks.artist3)
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -337,10 +341,14 @@ type IncludeArtist() =
       Preset.includeArtist invalidParseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
-      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+      let! result =
+        sut
+          { IncludeArtist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            ArtistId = rawArtistId }
 
       match result with
-      | Error(Preset.IncludeArtistError.IdParsing(Artist.IdParsingError msg)) -> msg |> should equal "invalid"
+      | Error(IncludeArtist.Error.IdParsing(Artist.IdParsingError msg)) -> msg |> should equal "invalid"
       | _ -> failwith "Expected IdParsing error"
 
       presetRepo.VerifyNoOtherCalls()
@@ -351,6 +359,8 @@ type IncludeArtist() =
   member _.``should return error when artist not found``() =
     let rawArtistId = Artist.RawArtistId "not-found-id"
 
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+
     platform.Setup(_.LoadArtist(It.IsAny<ArtistId>())).ReturnsAsync(Error Artist.LoadError.NotFound)
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some platform.Object)
@@ -359,19 +369,25 @@ type IncludeArtist() =
       Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
-      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+      let! result =
+        sut
+          { IncludeArtist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            ArtistId = rawArtistId }
 
       match result with
-      | Error(Preset.IncludeArtistError.Load Artist.LoadError.NotFound) -> ()
+      | Error(IncludeArtist.Error.Load Artist.LoadError.NotFound) -> ()
       | _ -> failwith "Expected Load NotFound error"
 
       platform.VerifyAll()
-      presetRepo.VerifyNoOtherCalls()
+      presetRepo.VerifyAll()
     }
 
   [<Fact>]
   member _.``should return error when user unauthorized``() =
     let rawArtistId = Artist.RawArtistId "some-id"
+
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(None)
 
@@ -379,12 +395,16 @@ type IncludeArtist() =
       Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
-      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+      let! result =
+        sut
+          { IncludeArtist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            ArtistId = rawArtistId }
 
       match result with
-      | Error Preset.IncludeArtistError.Unauthorized -> ()
+      | Error IncludeArtist.Error.Unauthorized -> ()
       | _ -> failwith "Expected Unauthorized error"
 
-      presetRepo.VerifyNoOtherCalls()
+      presetRepo.VerifyAll()
       platform.VerifyNoOtherCalls()
     }
