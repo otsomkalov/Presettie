@@ -373,6 +373,11 @@ module Preset =
 
       let! preset = presetRepo.LoadPreset cmd.PresetId |> Task.map Option.get
 
+      do!
+        preset.IncludedPlaylists
+        |> List.tryFind (fun p -> p.Id = ReadablePlaylistId playlistId)
+        |> Result.requireNone (IncludePlaylist.Error.Duplicate playlistId)
+
       let! musicPlatform =
         musicPlatformFactory.GetMusicPlatform(cmd.UserId.ToMusicPlatformId())
         |> TaskResult.requireSome IncludePlaylist.Error.Unauthorized
@@ -397,6 +402,11 @@ module Preset =
       let! playlistId = parseId cmd.PlaylistId |> Result.mapError ExcludePlaylist.Error.IdParsing
 
       let! preset = presetRepo.LoadPreset cmd.PresetId |> Task.map Option.get
+
+      do!
+        preset.ExcludedPlaylists
+        |> List.tryFind (fun p -> p.Id = ReadablePlaylistId playlistId)
+        |> Result.requireNone (ExcludePlaylist.Error.Duplicate playlistId)
 
       let! musicPlatform =
         musicPlatformFactory.GetMusicPlatform(cmd.UserId.ToMusicPlatformId())
@@ -423,6 +433,11 @@ module Preset =
 
       let! preset = presetRepo.LoadPreset cmd.PresetId |> Task.map Option.get
 
+      do!
+        preset.ExcludedArtists
+        |> List.tryFind (fun p -> p.Id = artistId)
+        |> Result.requireNone (ExcludeArtist.Error.Duplicate artistId)
+
       let! musicPlatform =
         musicPlatformFactory.GetMusicPlatform(cmd.UserId.ToMusicPlatformId())
         |> TaskResult.requireSome ExcludeArtist.Error.Unauthorized
@@ -446,6 +461,11 @@ module Preset =
 
       let! preset = presetRepo.LoadPreset cmd.PresetId |> Task.map Option.get
 
+      do!
+        preset.IncludedArtists
+        |> List.tryFind (fun p -> p.Id = artistId)
+        |> Result.requireNone (IncludeArtist.Error.Duplicate artistId)
+
       let! musicPlatform =
         musicPlatformFactory.GetMusicPlatform(cmd.UserId.ToMusicPlatformId())
         |> TaskResult.requireSome IncludeArtist.Error.Unauthorized
@@ -468,6 +488,11 @@ module Preset =
       let! playlistId = parseId cmd.PlaylistId |> Result.mapError TargetPlaylist.Error.IdParsing
 
       let! preset = presetRepo.LoadPreset cmd.PresetId |> Task.map Option.get
+
+      do!
+        preset.TargetedPlaylists
+        |> List.tryFind (fun p -> p.Id = WritablePlaylistId playlistId)
+        |> Result.requireNone (TargetPlaylist.Error.Duplicate playlistId)
 
       let! musicPlatform =
         musicPlatformFactory.GetMusicPlatform(cmd.UserId.ToMusicPlatformId())
