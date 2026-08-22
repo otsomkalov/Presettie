@@ -297,6 +297,33 @@ type IncludeArtist() =
   let platform = Mock<IMusicPlatform>()
 
   [<Fact>]
+  member _.``should return error when artist is already included``() =
+    let preset =
+      { Mocks.preset with
+          IncludedArtists = [ Mocks.artist1 ] }
+
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
+
+    let sut =
+      Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
+
+    task {
+      let! result =
+        sut
+          { IncludeArtist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            ArtistId = Artist.RawArtistId Mocks.artist1.Id.Value }
+
+      match result with
+      | Error(IncludeArtist.Error.Duplicate artistId) -> artistId |> should equal Mocks.artist1.Id
+      | _ -> failwith "Expected Duplicate error"
+
+      presetRepo.VerifyAll()
+      musicPlatformFactory.VerifyNoOtherCalls()
+      platform.VerifyNoOtherCalls()
+    }
+
+  [<Fact>]
   member _.``should include artist successfully``() =
     let rawArtistId = Artist.RawArtistId "artist-raw-id"
 
@@ -304,7 +331,7 @@ type IncludeArtist() =
 
     let updatedPreset =
       { Mocks.preset with
-          IncludedArtists = Mocks.preset.IncludedArtists @ [ Mocks.artist3 ] }
+          IncludedArtists = Mocks.artist3 :: Mocks.preset.IncludedArtists }
 
     presetRepo.Setup(_.SavePreset(updatedPreset)).ReturnsAsync(())
 
@@ -316,9 +343,13 @@ type IncludeArtist() =
       Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
-      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+      let! result =
+        sut
+          { IncludeArtist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            ArtistId = rawArtistId }
 
-      result |> should equal (Result<_, Preset.IncludeArtistError>.Ok Mocks.artist3)
+      result |> should equal (Result<_, IncludeArtist.Error>.Ok Mocks.artist3)
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -337,10 +368,14 @@ type IncludeArtist() =
       Preset.includeArtist invalidParseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
-      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+      let! result =
+        sut
+          { IncludeArtist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            ArtistId = rawArtistId }
 
       match result with
-      | Error(Preset.IncludeArtistError.IdParsing(Artist.IdParsingError msg)) -> msg |> should equal "invalid"
+      | Error(IncludeArtist.Error.IdParsing(Artist.IdParsingError msg)) -> msg |> should equal "invalid"
       | _ -> failwith "Expected IdParsing error"
 
       presetRepo.VerifyNoOtherCalls()
@@ -351,6 +386,8 @@ type IncludeArtist() =
   member _.``should return error when artist not found``() =
     let rawArtistId = Artist.RawArtistId "not-found-id"
 
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+
     platform.Setup(_.LoadArtist(It.IsAny<ArtistId>())).ReturnsAsync(Error Artist.LoadError.NotFound)
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some platform.Object)
@@ -359,19 +396,25 @@ type IncludeArtist() =
       Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
-      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+      let! result =
+        sut
+          { IncludeArtist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            ArtistId = rawArtistId }
 
       match result with
-      | Error(Preset.IncludeArtistError.Load Artist.LoadError.NotFound) -> ()
+      | Error(IncludeArtist.Error.Load Artist.LoadError.NotFound) -> ()
       | _ -> failwith "Expected Load NotFound error"
 
       platform.VerifyAll()
-      presetRepo.VerifyNoOtherCalls()
+      presetRepo.VerifyAll()
     }
 
   [<Fact>]
   member _.``should return error when user unauthorized``() =
     let rawArtistId = Artist.RawArtistId "some-id"
+
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
 
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(None)
 
@@ -379,12 +422,144 @@ type IncludeArtist() =
       Preset.includeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
 
     task {
-      let! result = sut Mocks.userId Mocks.presetId rawArtistId
+      let! result =
+        sut
+          { IncludeArtist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            ArtistId = rawArtistId }
 
       match result with
-      | Error Preset.IncludeArtistError.Unauthorized -> ()
+      | Error IncludeArtist.Error.Unauthorized -> ()
       | _ -> failwith "Expected Unauthorized error"
 
-      presetRepo.VerifyNoOtherCalls()
+      presetRepo.VerifyAll()
+      platform.VerifyNoOtherCalls()
+    }
+
+type ExcludeArtist() =
+  let parseArtistId: Artist.ParseId = fun p -> Ok(ArtistId p.Value)
+  let presetRepo = Mock<IPresetRepo>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+  let platform = Mock<IMusicPlatform>()
+
+  [<Fact>]
+  member _.``should return error when artist is already excluded``() =
+    let preset =
+      { Mocks.preset with
+          ExcludedArtists = [ Mocks.artist1 ] }
+
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
+
+    let sut =
+      Preset.excludeArtist parseArtistId presetRepo.Object musicPlatformFactory.Object
+
+    task {
+      let! result =
+        sut
+          { ExcludeArtist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            ArtistId = Artist.RawArtistId Mocks.artist1.Id.Value }
+
+      match result with
+      | Error(ExcludeArtist.Error.Duplicate artistId) -> artistId |> should equal Mocks.artist1.Id
+      | _ -> failwith "Expected Duplicate error"
+
+      presetRepo.VerifyAll()
+      musicPlatformFactory.VerifyNoOtherCalls()
+      platform.VerifyNoOtherCalls()
+    }
+
+type IncludePlaylist() =
+  let parsePlaylistId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
+  let presetRepo = Mock<IPresetRepo>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+  let platform = Mock<IMusicPlatform>()
+
+  [<Fact>]
+  member _.``should return error when playlist is already included``() =
+    let preset =
+      { Mocks.preset with
+          IncludedPlaylists = [ Mocks.includedPlaylist ] }
+
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
+
+    let sut =
+      Preset.includePlaylist parsePlaylistId presetRepo.Object musicPlatformFactory.Object
+
+    task {
+      let! result =
+        sut
+          { IncludePlaylist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            PlaylistId = Playlist.RawPlaylistId Mocks.includedPlaylistId.Value }
+
+      match result with
+      | Error(IncludePlaylist.Error.Duplicate playlistId) -> playlistId |> should equal Mocks.includedPlaylistId
+      | _ -> failwith "Expected Duplicate error"
+
+      presetRepo.VerifyAll()
+      musicPlatformFactory.VerifyNoOtherCalls()
+      platform.VerifyNoOtherCalls()
+    }
+
+type ExcludePlaylist() =
+  let parsePlaylistId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
+  let presetRepo = Mock<IPresetRepo>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+  let platform = Mock<IMusicPlatform>()
+
+  [<Fact>]
+  member _.``should return error when playlist is already excluded``() =
+    let preset =
+      { Mocks.preset with
+          ExcludedPlaylists = [ Mocks.excludedPlaylist ] }
+
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
+
+    let sut =
+      Preset.excludePlaylist parsePlaylistId presetRepo.Object musicPlatformFactory.Object
+
+    task {
+      let! result =
+        sut
+          { ExcludePlaylist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            PlaylistId = Playlist.RawPlaylistId Mocks.excludedPlaylistId.Value }
+
+      match result with
+      | Error(ExcludePlaylist.Error.Duplicate playlistId) -> playlistId |> should equal Mocks.excludedPlaylistId
+      | _ -> failwith "Expected Duplicate error"
+
+      presetRepo.VerifyAll()
+      musicPlatformFactory.VerifyNoOtherCalls()
+      platform.VerifyNoOtherCalls()
+    }
+
+type TargetPlaylist() =
+  let parsePlaylistId: Playlist.ParseId = fun p -> Ok(PlaylistId p.Value)
+  let presetRepo = Mock<IPresetRepo>()
+  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+  let platform = Mock<IMusicPlatform>()
+
+  [<Fact>]
+  member _.``should return error when playlist is already targeted``() =
+    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+
+    let sut =
+      Preset.targetPlaylist parsePlaylistId presetRepo.Object musicPlatformFactory.Object
+
+    task {
+      let! result =
+        sut
+          { TargetPlaylist.Cmd.UserId = Mocks.userId
+            PresetId = Mocks.presetId
+            PlaylistId = Playlist.RawPlaylistId Mocks.targetedPlaylistId.Value }
+
+      match result with
+      | Error(TargetPlaylist.Error.Duplicate playlistId) -> playlistId |> should equal Mocks.targetedPlaylistId
+      | _ -> failwith "Expected Duplicate error"
+
+      presetRepo.VerifyAll()
+      musicPlatformFactory.VerifyNoOtherCalls()
       platform.VerifyNoOtherCalls()
     }

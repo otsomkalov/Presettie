@@ -334,6 +334,31 @@
     "Value": "You've successfully logged in into music platform!",
     "Lang": "en"
   },
+  {
+    "Key": "messages.playlist-already-included",
+    "Value": "Playlist {0} is already included!",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.playlist-already-excluded",
+    "Value": "Playlist {0} is already excluded!",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.playlist-already-targeted",
+    "Value": "Playlist {0} is already targeted!",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.artist-already-excluded",
+    "Value": "Artist {0} is already excluded!",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.artist-already-included",
+    "Value": "Artist {0} is already included!",
+    "Lang": "en"
+  },
 
   {
     "Key": "buttons.run-preset",

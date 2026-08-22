@@ -28,10 +28,10 @@ module Commands =
   let newPreset = "/new"
 
   [<Literal>]
-  let includePlaylist = "/include"
+  let includePlaylist = "/ip"
 
   [<Literal>]
-  let excludePlaylist = "/exclude"
+  let excludePlaylist = "/ep"
 
   [<Literal>]
   let excludeArtist = "/ea"

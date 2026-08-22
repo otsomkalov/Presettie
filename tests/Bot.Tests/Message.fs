@@ -1226,7 +1226,7 @@ type IncludePlaylistMessageHandler() =
   member _.``should handle reply with included playlist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.includedPlaylist)
+    presetService.Setup(_.IncludePlaylist(It.IsAny<IncludePlaylist.Cmd>())).ReturnsAsync(Ok Mocks.includedPlaylist)
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1240,7 +1240,7 @@ type IncludePlaylistMessageHandler() =
       result |> should equal (Some())
 
       userRepo.Verify(_.LoadUser(Mocks.userId))
-      presetService.Verify(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
+      presetService.Verify(_.IncludePlaylist(It.IsAny<IncludePlaylist.Cmd>()))
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
 
@@ -1248,7 +1248,7 @@ type IncludePlaylistMessageHandler() =
   member _.``should handle /includeplaylist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.includedPlaylist)
+    presetService.Setup(_.IncludePlaylist(It.IsAny<IncludePlaylist.Cmd>())).ReturnsAsync(Ok Mocks.includedPlaylist)
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1260,7 +1260,7 @@ type IncludePlaylistMessageHandler() =
       result |> should equal (Some())
 
       userRepo.Verify(_.LoadUser(Mocks.userId))
-      presetService.Verify(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
+      presetService.Verify(_.IncludePlaylist(It.IsAny<IncludePlaylist.Cmd>()))
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
 
@@ -1269,8 +1269,8 @@ type IncludePlaylistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
-      .ReturnsAsync(Error(Preset.IncludePlaylistError.IdParsing(Playlist.IdParsingError "bad")))
+      .Setup(_.IncludePlaylist(It.IsAny<IncludePlaylist.Cmd>()))
+      .ReturnsAsync(Error(IncludePlaylist.Error.IdParsing(Playlist.IdParsingError "bad")))
 
     resourceProvider.Setup(_.Item(Messages.PlaylistIdCannotBeParsed, It.IsAny())).Returns(Messages.PlaylistIdCannotBeParsed)
 
@@ -1291,8 +1291,8 @@ type IncludePlaylistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
-      .ReturnsAsync(Error(Preset.IncludePlaylistError.Load(Playlist.LoadError.NotFound)))
+      .Setup(_.IncludePlaylist(It.IsAny<IncludePlaylist.Cmd>()))
+      .ReturnsAsync(Error(IncludePlaylist.Error.Load(Playlist.LoadError.NotFound)))
 
     resourceProvider.Setup(_.Item(Messages.PlaylistNotFoundInSpotify, It.IsAny())).Returns(Messages.PlaylistNotFoundInSpotify)
 
@@ -1312,9 +1312,7 @@ type IncludePlaylistMessageHandler() =
   member _.``should trigger login when unauthorized``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.IncludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
-      .ReturnsAsync(Error Preset.IncludePlaylistError.Unauthorized)
+    presetService.Setup(_.IncludePlaylist(It.IsAny<IncludePlaylist.Cmd>())).ReturnsAsync(Error IncludePlaylist.Error.Unauthorized)
 
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1346,7 +1344,7 @@ type ExcludePlaylistMessageHandler() =
   member _.``should handle reply with excluded playlist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.ExcludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok(Mocks.excludedPlaylist))
+    presetService.Setup(_.ExcludePlaylist(It.IsAny<ExcludePlaylist.Cmd>())).ReturnsAsync(Ok(Mocks.excludedPlaylist))
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1360,7 +1358,7 @@ type ExcludePlaylistMessageHandler() =
       result |> should equal (Some())
 
       userRepo.Verify(_.LoadUser(Mocks.userId))
-      presetService.Verify(_.ExcludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
+      presetService.Verify(_.ExcludePlaylist(It.IsAny<ExcludePlaylist.Cmd>()))
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
 
@@ -1368,7 +1366,7 @@ type ExcludePlaylistMessageHandler() =
   member _.``should handle /excludeplaylist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.ExcludePlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok(Mocks.excludedPlaylist))
+    presetService.Setup(_.ExcludePlaylist(It.IsAny<ExcludePlaylist.Cmd>())).ReturnsAsync(Ok(Mocks.excludedPlaylist))
 
     chatCtx.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1380,7 +1378,7 @@ type ExcludePlaylistMessageHandler() =
       result |> should equal (Some())
 
       userRepo.Verify(_.LoadUser(Mocks.userId))
-      presetService.Verify(_.ExcludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
+      presetService.Verify(_.ExcludePlaylist(It.IsAny<ExcludePlaylist.Cmd>()))
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
 
@@ -1389,8 +1387,8 @@ type ExcludePlaylistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.ExcludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
-      .ReturnsAsync(Error(Preset.ExcludePlaylistError.IdParsing(Playlist.IdParsingError "bad")))
+      .Setup(_.ExcludePlaylist(It.IsAny<ExcludePlaylist.Cmd>()))
+      .ReturnsAsync(Error(ExcludePlaylist.Error.IdParsing(Playlist.IdParsingError "bad")))
 
     resourceProvider.Setup(_.Item(Messages.PlaylistIdCannotBeParsed, It.IsAny())).Returns(Messages.PlaylistIdCannotBeParsed)
 
@@ -1411,8 +1409,8 @@ type ExcludePlaylistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.ExcludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
-      .ReturnsAsync(Error(Preset.ExcludePlaylistError.Load(Playlist.LoadError.NotFound)))
+      .Setup(_.ExcludePlaylist(It.IsAny<ExcludePlaylist.Cmd>()))
+      .ReturnsAsync(Error(ExcludePlaylist.Error.Load(Playlist.LoadError.NotFound)))
 
     resourceProvider.Setup(_.Item(Messages.PlaylistNotFoundInSpotify, It.IsAny())).Returns(Messages.PlaylistNotFoundInSpotify)
 
@@ -1432,9 +1430,7 @@ type ExcludePlaylistMessageHandler() =
   member _.``should trigger login when unauthorized``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.ExcludePlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
-      .ReturnsAsync(Error Preset.ExcludePlaylistError.Unauthorized)
+    presetService.Setup(_.ExcludePlaylist(It.IsAny<ExcludePlaylist.Cmd>())).ReturnsAsync(Error ExcludePlaylist.Error.Unauthorized)
 
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1466,7 +1462,7 @@ type ExcludeArtistMessageHandler() =
   member _.``should handle reply with excluded artist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist2))
+    presetService.Setup(_.ExcludeArtist(It.IsAny<ExcludeArtist.Cmd>())).ReturnsAsync(Ok(Mocks.artist2))
 
     resourceProvider.Setup(_.Item(Messages.ArtistExcluded, It.IsAny())).Returns("Artist excluded message")
 
@@ -1488,7 +1484,7 @@ type ExcludeArtistMessageHandler() =
   member _.``should handle /excludeartist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist2))
+    presetService.Setup(_.ExcludeArtist(It.IsAny<ExcludeArtist.Cmd>())).ReturnsAsync(Ok(Mocks.artist2))
 
     resourceProvider.Setup(_.Item(Messages.ArtistExcluded, It.IsAny())).Returns(Messages.ArtistExcluded)
 
@@ -1511,8 +1507,8 @@ type ExcludeArtistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
-      .ReturnsAsync(Error(Preset.ExcludeArtistError.IdParsing(Artist.IdParsingError "invalid-id")))
+      .Setup(_.ExcludeArtist(It.IsAny<ExcludeArtist.Cmd>()))
+      .ReturnsAsync(Error(ExcludeArtist.Error.IdParsing(Artist.IdParsingError "invalid-id")))
 
     resourceProvider.Setup(_.Item(Messages.ArtistIdCannotBeParsed, It.IsAny())).Returns("Cannot parse artist ID")
 
@@ -1535,8 +1531,8 @@ type ExcludeArtistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
-      .ReturnsAsync(Error(Preset.ExcludeArtistError.Load(Artist.LoadError.NotFound)))
+      .Setup(_.ExcludeArtist(It.IsAny<ExcludeArtist.Cmd>()))
+      .ReturnsAsync(Error(ExcludeArtist.Error.Load(Artist.LoadError.NotFound)))
 
     resourceProvider.Setup(_.Item(Messages.ArtistNotFoundInSpotify, It.IsAny())).Returns("Artist not found")
 
@@ -1559,9 +1555,7 @@ type ExcludeArtistMessageHandler() =
   member _.``should trigger login when unauthorized``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.ExcludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
-      .ReturnsAsync(Error(Preset.ExcludeArtistError.Unauthorized))
+    presetService.Setup(_.ExcludeArtist(It.IsAny<ExcludeArtist.Cmd>())).ReturnsAsync(Error(ExcludeArtist.Error.Unauthorized))
 
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1595,7 +1589,7 @@ type IncludeArtistMessageHandler() =
   member _.``should handle reply with included artist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist1))
+    presetService.Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>())).ReturnsAsync(Ok(Mocks.artist1))
 
     resourceProvider.Setup(_.Item(Messages.ArtistIncluded, It.IsAny())).Returns("Artist included message")
 
@@ -1617,7 +1611,7 @@ type IncludeArtistMessageHandler() =
   member _.``should handle /includeartist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny())).ReturnsAsync(Ok(Mocks.artist1))
+    presetService.Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>())).ReturnsAsync(Ok(Mocks.artist1))
 
     resourceProvider.Setup(_.Item(Messages.ArtistIncluded, It.IsAny())).Returns(Messages.ArtistIncluded)
 
@@ -1640,8 +1634,8 @@ type IncludeArtistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
-      .ReturnsAsync(Error(Preset.IncludeArtistError.IdParsing(Artist.IdParsingError "invalid-id")))
+      .Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>()))
+      .ReturnsAsync(Error(IncludeArtist.Error.IdParsing(Artist.IdParsingError "invalid-id")))
 
     resourceProvider.Setup(_.Item(Messages.ArtistIdCannotBeParsed, It.IsAny())).Returns("Cannot parse artist ID")
 
@@ -1664,8 +1658,8 @@ type IncludeArtistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
-      .ReturnsAsync(Error(Preset.IncludeArtistError.Load(Artist.LoadError.NotFound)))
+      .Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>()))
+      .ReturnsAsync(Error(IncludeArtist.Error.Load(Artist.LoadError.NotFound)))
 
     resourceProvider.Setup(_.Item(Messages.ArtistNotFoundInSpotify, It.IsAny())).Returns("Artist not found")
 
@@ -1688,9 +1682,7 @@ type IncludeArtistMessageHandler() =
   member _.``should trigger login when unauthorized``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.IncludeArtist(Mocks.userId, Mocks.presetId, It.IsAny()))
-      .ReturnsAsync(Error(Preset.IncludeArtistError.Unauthorized))
+    presetService.Setup(_.IncludeArtist(It.IsAny<IncludeArtist.Cmd>())).ReturnsAsync(Error(IncludeArtist.Error.Unauthorized))
 
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1724,7 +1716,7 @@ type TargetPlaylistMessageHandler() =
   member _.``should handle reply with targeted playlist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.targetedPlaylist)
+    presetService.Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>())).ReturnsAsync(Ok Mocks.targetedPlaylist)
 
     resourceProvider.Setup(_.Item(Messages.PlaylistTargeted, It.IsAny())).Returns(Messages.PlaylistTargeted)
 
@@ -1744,7 +1736,7 @@ type TargetPlaylistMessageHandler() =
   member _.``should handle /targetplaylist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Ok Mocks.targetedPlaylist)
+    presetService.Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>())).ReturnsAsync(Ok Mocks.targetedPlaylist)
 
     resourceProvider.Setup(_.Item(Messages.PlaylistTargeted, It.IsAny())).Returns(Messages.PlaylistTargeted)
 
@@ -1765,8 +1757,8 @@ type TargetPlaylistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
-      .ReturnsAsync(Error(Preset.TargetPlaylistError.IdParsing(Playlist.IdParsingError "invalid-id")))
+      .Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>()))
+      .ReturnsAsync(Error(TargetPlaylist.Error.IdParsing(Playlist.IdParsingError "invalid-id")))
 
     resourceProvider.Setup(_.Item(Messages.PlaylistIdCannotBeParsed, It.IsAny())).Returns(Messages.PlaylistIdCannotBeParsed)
 
@@ -1787,8 +1779,8 @@ type TargetPlaylistMessageHandler() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     presetService
-      .Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
-      .ReturnsAsync(Error(Preset.TargetPlaylistError.Load(Playlist.LoadError.NotFound)))
+      .Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>()))
+      .ReturnsAsync(Error(TargetPlaylist.Error.Load(Playlist.LoadError.NotFound)))
 
     resourceProvider.Setup(_.Item(Messages.PlaylistNotFoundInSpotify, It.IsAny())).Returns("Not found")
 
@@ -1808,9 +1800,7 @@ type TargetPlaylistMessageHandler() =
   member _.``should send PlaylistIsReadonly on access error``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny()))
-      .ReturnsAsync(Error(Preset.TargetPlaylistError.AccessError(Preset.AccessError())))
+    presetService.Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>())).ReturnsAsync(Error(TargetPlaylist.Error.AccessError))
 
     resourceProvider.Setup(_.Item(Messages.PlaylistIsReadonly)).Returns(Messages.PlaylistIsReadonly)
 
@@ -1830,7 +1820,7 @@ type TargetPlaylistMessageHandler() =
   member _.``should trigger login when unauthorized``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.TargetPlaylist(Mocks.userId, It.IsAny(), It.IsAny())).ReturnsAsync(Error Preset.TargetPlaylistError.Unauthorized)
+    presetService.Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>())).ReturnsAsync(Error TargetPlaylist.Error.Unauthorized)
 
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 

@@ -123,34 +123,6 @@ module Preset =
     | NoPotentialTracks
     | Unauthorized
 
-  type IncludePlaylistError =
-    | IdParsing of Playlist.IdParsingError
-    | Load of Playlist.LoadError
-    | Unauthorized
-
-  type ExcludePlaylistError =
-    | IdParsing of Playlist.IdParsingError
-    | Load of Playlist.LoadError
-    | Unauthorized
-
-  type IncludeArtistError =
-    | Load of Artist.LoadError
-    | IdParsing of Artist.IdParsingError
-    | Unauthorized
-
-  type ExcludeArtistError =
-    | Load of Artist.LoadError
-    | IdParsing of Artist.IdParsingError
-    | Unauthorized
-
-  type AccessError = AccessError of unit
-
-  type TargetPlaylistError =
-    | IdParsing of Playlist.IdParsingError
-    | Load of Playlist.LoadError
-    | AccessError of AccessError
-    | Unauthorized
-
   type GetPresetError = | NotFound
 
 [<RequireQualifiedAccess>]
@@ -199,20 +171,91 @@ type IQueueRun =
 type ICreatePreset =
   abstract CreatePreset: UserId * string -> Task<Preset>
 
+[<RequireQualifiedAccess>]
+module IncludePlaylist =
+  type Cmd =
+    { UserId: UserId
+      PresetId: PresetId
+      PlaylistId: Playlist.RawPlaylistId }
+
+  [<RequireQualifiedAccess>]
+  type Error =
+    | IdParsing of Playlist.IdParsingError
+    | Load of Playlist.LoadError
+    | Unauthorized
+    | Duplicate of PlaylistId
+
 type IIncludePlaylist =
-  abstract IncludePlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<IncludedPlaylist, Preset.IncludePlaylistError>>
+  abstract IncludePlaylist: IncludePlaylist.Cmd -> Task<Result<IncludedPlaylist, IncludePlaylist.Error>>
+
+[<RequireQualifiedAccess>]
+module ExcludePlaylist =
+  type Cmd =
+    { UserId: UserId
+      PresetId: PresetId
+      PlaylistId: Playlist.RawPlaylistId }
+
+  [<RequireQualifiedAccess>]
+  type Error =
+    | IdParsing of Playlist.IdParsingError
+    | Load of Playlist.LoadError
+    | Unauthorized
+    | Duplicate of PlaylistId
 
 type IExcludePlaylist =
-  abstract ExcludePlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<ExcludedPlaylist, Preset.ExcludePlaylistError>>
+  abstract ExcludePlaylist: ExcludePlaylist.Cmd -> Task<Result<ExcludedPlaylist, ExcludePlaylist.Error>>
+
+[<RequireQualifiedAccess>]
+module IncludeArtist =
+  type Cmd =
+    { UserId: UserId
+      PresetId: PresetId
+      ArtistId: Artist.RawArtistId }
+
+  [<RequireQualifiedAccess>]
+  type Error =
+    | Load of Artist.LoadError
+    | IdParsing of Artist.IdParsingError
+    | Unauthorized
+    | Duplicate of ArtistId
 
 type IIncludeArtist =
-  abstract IncludeArtist: UserId * PresetId * Artist.RawArtistId -> Task<Result<IncludedArtist, Preset.IncludeArtistError>>
+  abstract IncludeArtist: IncludeArtist.Cmd -> Task<Result<IncludedArtist, IncludeArtist.Error>>
+
+[<RequireQualifiedAccess>]
+module ExcludeArtist =
+  type Cmd =
+    { UserId: UserId
+      PresetId: PresetId
+      ArtistId: Artist.RawArtistId }
+
+  [<RequireQualifiedAccess>]
+  type Error =
+    | Load of Artist.LoadError
+    | IdParsing of Artist.IdParsingError
+    | Unauthorized
+    | Duplicate of ArtistId
 
 type IExcludeArtist =
-  abstract ExcludeArtist: UserId * PresetId * Artist.RawArtistId -> Task<Result<ExcludedArtist, Preset.ExcludeArtistError>>
+  abstract ExcludeArtist: ExcludeArtist.Cmd -> Task<Result<ExcludedArtist, ExcludeArtist.Error>>
+
+[<RequireQualifiedAccess>]
+module TargetPlaylist =
+  type Cmd =
+    { UserId: UserId
+      PresetId: PresetId
+      PlaylistId: Playlist.RawPlaylistId }
+
+  [<RequireQualifiedAccess>]
+  type Error =
+    | IdParsing of Playlist.IdParsingError
+    | Load of Playlist.LoadError
+    | AccessError
+    | Unauthorized
+    | Duplicate of PlaylistId
 
 type ITargetPlaylist =
-  abstract TargetPlaylist: UserId * PresetId * Playlist.RawPlaylistId -> Task<Result<TargetedPlaylist, Preset.TargetPlaylistError>>
+  abstract TargetPlaylist: TargetPlaylist.Cmd -> Task<Result<TargetedPlaylist, TargetPlaylist.Error>>
 
 type ISetRecommendationsEngine =
   abstract SetRecommendationsEngine: PresetId * PresetSettings.RecommendationsEngine option -> Task<unit>
