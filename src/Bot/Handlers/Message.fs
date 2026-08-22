@@ -320,10 +320,8 @@ let includePlaylistMessageHandler
         | IncludePlaylist.Error.IdParsing(Playlist.IdParsingError id) ->
           chatCtx.SendMessage resp[Messages.PlaylistIdCannotBeParsed, [| id |]]
         | IncludePlaylist.Error.Load(Playlist.LoadError.NotFound) ->
-          let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
-
-          chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId |]]
-        | IncludePlaylist.Error.Duplicate playlistId -> chatCtx.SendMessage resp[Messages.PlaylistAlreadyIncluded, [| playlistId |]]
+          chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId.Value |]]
+        | IncludePlaylist.Error.Duplicate playlistId -> chatCtx.SendMessage resp[Messages.PlaylistAlreadyIncluded, [| playlistId.Value |]]
         | IncludePlaylist.Error.Unauthorized -> sendLoginMessage authService resp chatCtx userId
 
       return! includePlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
@@ -368,9 +366,8 @@ let excludePlaylistMessageHandler
         | ExcludePlaylist.Error.IdParsing(Playlist.IdParsingError id) ->
           chatCtx.SendMessage resp[Messages.PlaylistIdCannotBeParsed, [| id |]]
         | ExcludePlaylist.Error.Load(Playlist.LoadError.NotFound) ->
-          let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
-          chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId |]]
-        | ExcludePlaylist.Error.Duplicate playlistId -> chatCtx.SendMessage resp[Messages.PlaylistAlreadyExcluded, [| playlistId |]]
+          chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId.Value |]]
+        | ExcludePlaylist.Error.Duplicate playlistId -> chatCtx.SendMessage resp[Messages.PlaylistAlreadyExcluded, [| playlistId.Value |]]
         | ExcludePlaylist.Error.Unauthorized -> sendLoginMessage authService resp chatCtx userId
 
       return! excludePlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
@@ -414,9 +411,8 @@ let excludeArtistMessageHandler
         function
         | ExcludeArtist.Error.IdParsing(Artist.IdParsingError id) -> chatCtx.SendMessage resp[Messages.ArtistIdCannotBeParsed, [| id |]]
         | ExcludeArtist.Error.Load(Artist.LoadError.NotFound) ->
-          let (Artist.RawArtistId rawArtistId) = rawArtistId
-          chatCtx.SendMessage resp[Messages.ArtistNotFoundInSpotify, [| rawArtistId |]]
-        | ExcludeArtist.Error.Duplicate artistId -> chatCtx.SendMessage resp[Messages.ArtistAlreadyExcluded, [| artistId |]]
+          chatCtx.SendMessage resp[Messages.ArtistNotFoundInSpotify, [| rawArtistId.Value |]]
+        | ExcludeArtist.Error.Duplicate artistId -> chatCtx.SendMessage resp[Messages.ArtistAlreadyExcluded, [| artistId.Value |]]
         | ExcludeArtist.Error.Unauthorized -> sendLoginMessage authService resp chatCtx userId
 
       return! excludeArtistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
@@ -460,9 +456,8 @@ let includeArtistMessageHandler
         function
         | IncludeArtist.Error.IdParsing(Artist.IdParsingError id) -> chatCtx.SendMessage resp[Messages.ArtistIdCannotBeParsed, [| id |]]
         | IncludeArtist.Error.Load(Artist.LoadError.NotFound) ->
-          let (Artist.RawArtistId rawArtistId) = rawArtistId
-          chatCtx.SendMessage resp[Messages.ArtistNotFoundInSpotify, [| rawArtistId |]]
-        | IncludeArtist.Error.Duplicate artistId -> chatCtx.SendMessage resp[Messages.ArtistAlreadyIncluded, [| artistId |]]
+          chatCtx.SendMessage resp[Messages.ArtistNotFoundInSpotify, [| rawArtistId.Value |]]
+        | IncludeArtist.Error.Duplicate artistId -> chatCtx.SendMessage resp[Messages.ArtistAlreadyIncluded, [| artistId.Value |]]
         | IncludeArtist.Error.Unauthorized -> sendLoginMessage authService resp chatCtx userId
 
       return! includeArtistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
@@ -507,10 +502,9 @@ let targetPlaylistMessageHandler
         | TargetPlaylist.Error.IdParsing(Playlist.IdParsingError id) ->
           chatCtx.SendMessage resp[Messages.PlaylistIdCannotBeParsed, [| id |]]
         | TargetPlaylist.Error.Load(Playlist.LoadError.NotFound) ->
-          let (Playlist.RawPlaylistId rawPlaylistId) = rawPlaylistId
-          chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId |]]
-        | TargetPlaylist.Error.AccessError _ -> chatCtx.SendMessage resp[Messages.PlaylistIsReadonly]
-        | TargetPlaylist.Error.Duplicate playlistId -> chatCtx.SendMessage resp[Messages.PlaylistAlreadyTargeted, [| playlistId |]]
+          chatCtx.SendMessage resp[Messages.PlaylistNotFoundInSpotify, [| rawPlaylistId.Value |]]
+        | TargetPlaylist.Error.AccessError -> chatCtx.SendMessage resp[Messages.PlaylistIsReadonly]
+        | TargetPlaylist.Error.Duplicate playlistId -> chatCtx.SendMessage resp[Messages.PlaylistAlreadyTargeted, [| playlistId.Value |]]
         | TargetPlaylist.Error.Unauthorized -> sendLoginMessage authService resp chatCtx userId
 
       return! targetPlaylistResult |> TaskResult.taskEither onSuccess onError |> Task.ignore
