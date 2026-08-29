@@ -725,7 +725,8 @@ type PresetService
 
       match musicPlatform with
       | Some platform ->
-        let recommenderFactory = RecommenderFactory(platform, reccoBeatsRecommender, musicaeRecommender)
+        let recommenderFactory =
+          RecommenderFactory(platform, reccoBeatsRecommender, musicaeRecommender)
 
         return! Preset.run presetRepo logger shuffler platform recommenderFactory presetId
       | None -> return Preset.RunError.Unauthorized |> Error
