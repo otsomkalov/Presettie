@@ -12,6 +12,9 @@
 
     "ReccoBeats__Url": "https://api.reccobeats.com/v1/",
 
+    "Musicae__Host": "spotify-extended-audio-features-api.p.rapidapi.com",
+    "Musicae__Key": "<Musicae API key>",
+
     "Database__ConnectionString": "<MongoDB connection string>",
     "Database__Name": "presettie",
 

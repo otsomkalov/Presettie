@@ -67,6 +67,23 @@ let reccoBeatsRecommendationsClickHandler
       }
     | _ -> Task.FromResult(None)
 
+let musicaeRecommendationsClickHandler
+  presetRepo
+  (presetService: #ISetRecommendationsEngine)
+  (resp: IResourceProvider)
+  (botService: #ISendNotification)
+  : ClickHandler<Chat> =
+  fun chat click ->
+    match click.Data with
+    | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.musicaeRecommendations ] -> task {
+        let presetId = PresetId presetId
+        do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.Musicae)
+        do! botService.SendNotification(click.Id, resp[Notifications.Updated])
+        do! PresetSettings.show presetRepo botService resp click.MessageId presetId
+        return Some()
+      }
+    | _ -> Task.FromResult(None)
+
 let spotifyRecommendationsClickHandler
   presetRepo
   (presetService: #ISetRecommendationsEngine)

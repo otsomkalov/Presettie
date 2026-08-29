@@ -125,6 +125,11 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.musicae-recommendation",
+    "Value": "♪ Musicae.io",
+    "Lang": "en"
+  },
+  {
     "Key": "messages.spotify-recommendation",
     "Value": "🎵 Spotify",
     "Lang": "en"
@@ -441,6 +446,11 @@
     "Lang": "en"
   },
   {
+    "Key": "buttons.musicae-recommendations",
+    "Value": "♪ Musicae.io",
+    "Lang": "en"
+  },
+  {
     "Key": "buttons.spotify-recommendations",
     "Value": "🎵 Spotify",
     "Lang": "en"
@@ -530,6 +540,7 @@
     "Value": "Playlists",
     "Lang": "en"
   },
+
   {
     "Key": "notifications.unknown-command",
     "Value": "Unknown command!",

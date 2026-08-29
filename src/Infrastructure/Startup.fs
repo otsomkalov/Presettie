@@ -10,6 +10,7 @@ open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Options
 open MongoDB.Driver
+open MusicPlatform.Musicae
 open MusicPlatform.ReccoBeats
 open otsom.fs.Extensions.DependencyInjection
 
@@ -37,7 +38,9 @@ let addInfrastructure (configuration: IConfiguration) (services: IServiceCollect
   services.BuildSingleton<IMongoClient, IOptions<DatabaseSettings>>(configureMongoClient)
   services.BuildSingleton<IMongoDatabase, IOptions<DatabaseSettings>, IMongoClient>(configureMongoDatabase)
 
-  services |> Startup.addReccoBeatsMusicPlatform configuration
+  services
+  |> Startup.addReccoBeatsMusicPlatform configuration
+  |> Startup.addMusicaeMusicPlatform configuration
 
   services.AddSingleton<IPresetRepo, PresetRepo>()
   services.AddSingleton<IUserRepo, UserRepo>()

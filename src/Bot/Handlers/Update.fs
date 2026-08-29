@@ -54,6 +54,7 @@ let private buildClickHandlers userService presetService presetRepo resp botServ
 
   artistsAlbumsRecommendationsClickHandler presetRepo presetService resp botService
   reccoBeatsRecommendationsClickHandler presetRepo presetService resp botService
+  musicaeRecommendationsClickHandler presetRepo presetService resp botService
   spotifyRecommendationsClickHandler presetRepo presetService resp botService
   disableRecommendationsClickHandler presetRepo presetService resp botService
 

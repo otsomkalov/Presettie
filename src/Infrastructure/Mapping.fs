@@ -95,7 +95,8 @@ module PresetSettings =
         |> Option.map (function
           | Entities.RecommendationsEngine.ArtistsAlbums -> RecommendationsEngine.ArtistAlbums
           | Entities.RecommendationsEngine.ReccoBeats -> RecommendationsEngine.ReccoBeats
-          | Entities.RecommendationsEngine.Spotify -> RecommendationsEngine.Spotify)
+          | Entities.RecommendationsEngine.Spotify -> RecommendationsEngine.Spotify
+          | Entities.RecommendationsEngine.Musicae -> RecommendationsEngine.Musicae)
       UniqueArtists = settings.UniqueArtists }
 
   let toDb (settings: PresetSettings.PresetSettings) : Entities.Settings =
@@ -111,6 +112,7 @@ module PresetSettings =
          | Some RecommendationsEngine.ArtistAlbums -> Nullable<_> Entities.RecommendationsEngine.ArtistsAlbums
          | Some RecommendationsEngine.ReccoBeats -> Nullable<_> Entities.RecommendationsEngine.ReccoBeats
          | Some RecommendationsEngine.Spotify -> Nullable<_> Entities.RecommendationsEngine.Spotify
+         | Some RecommendationsEngine.Musicae -> Nullable<_> Entities.RecommendationsEngine.Musicae
          | None -> Nullable<Entities.RecommendationsEngine>()),
       UniqueArtists = settings.UniqueArtists
     )

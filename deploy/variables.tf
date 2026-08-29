@@ -50,6 +50,10 @@ variable "redis-connection-string" {
   type = string
 }
 
+variable "musicae-key" {
+  type = string
+}
+
 variable "resources-default-lang" {
   type = string
 }

@@ -1,4 +1,4 @@
-﻿module MusicPlatform.ReccoBeats.Startup
+﻿module MusicPlatform.Musicae.Startup
 
 #nowarn "20"
 
@@ -13,13 +13,13 @@ let configureHttpClient =
   fun (serviceProvider: IServiceProvider) (client: HttpClient) ->
     let settings = serviceProvider.GetRequiredService<IOptions<Settings>>().Value
 
-    client.BaseAddress <- Uri settings.Url
+    client.BaseAddress <- Uri($"https://{settings.Host}/v1/")
 
     ()
 
-let addReccoBeatsMusicPlatform (cfg: IConfiguration) (services: IServiceCollection) =
+let addMusicaeMusicPlatform (cfg: IConfiguration) (services: IServiceCollection) =
   services.Configure<Settings>(cfg.GetSection Settings.SectionName)
 
   services.AddHttpClient(Settings.SectionName, configureHttpClient)
 
-  services.AddKeyedSingleton<IRecommender, ReccoBeatsRecommender>("reccobeats")
+  services.AddKeyedSingleton<IRecommender, MusicaeRecommender>("musicae")

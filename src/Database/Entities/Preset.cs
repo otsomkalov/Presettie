@@ -7,7 +7,8 @@ public enum RecommendationsEngine
 {
     ArtistsAlbums,
     ReccoBeats,
-    Spotify
+    Spotify,
+    Musicae
 }
 
 [BsonIgnoreExtraElements]

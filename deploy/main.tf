@@ -264,6 +264,7 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-generator" {
       KeyVaultName = azurerm_key_vault.kv-presettie.name,
 
       ReccoBeats__Url        = "https://api.reccobeats.com/v1/"
+      Musicae__Host          = "spotify-extended-audio-features-api.p.rapidapi.com"
       Resources__DefaultLang = var.resources-default-lang
       Database__Name         = var.database-name,
       Storage__QueueName     = azurerm_storage_queue.stq-bot-requests-presettie.name
