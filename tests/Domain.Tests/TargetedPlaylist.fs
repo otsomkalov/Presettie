@@ -5,7 +5,6 @@ open Domain.Repos
 open Domain.Workflows
 open Moq
 open Xunit
-open FsUnit.Xunit
 
 type TargetedPlaylist() =
   let mock = Mock<IPresetRepo>()
@@ -83,7 +82,7 @@ type TargetedPlaylist() =
     task {
       let! preset = sut Mocks.presetId Mocks.targetedPlaylist.Id
 
-      preset.TargetedPlaylists |> should equivalent List.empty<TargetedPlaylist>
+      Assert.Equivalent([], preset.TargetedPlaylists)
 
       mock.VerifyAll()
     }

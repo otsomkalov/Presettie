@@ -6,7 +6,6 @@ open Moq
 open Xunit
 open Domain.Core
 open Domain.Workflows
-open FsUnit.Xunit
 
 type SetCurrentPreset() =
   let repo = Mock<IUserRepo>()
@@ -53,7 +52,7 @@ type RemovePreset() =
     task {
       let! result = sut.RemoveUserPreset(Mocks.userId, Mocks.rawPresetId)
 
-      result |> should equal (Result<unit, Preset.GetPresetError>.Ok())
+      Assert.Equal(Result<unit, Preset.GetPresetError>.Ok(), result)
 
       userRepo.VerifyAll()
       presetService.VerifyAll()
@@ -74,7 +73,7 @@ type RemovePreset() =
     task {
       let! result = sut.RemoveUserPreset(Mocks.userId, Mocks.rawPresetId)
 
-      result |> should equal (Result<unit, Preset.GetPresetError>.Ok())
+      Assert.Equal(Result<unit, Preset.GetPresetError>.Ok(), result)
 
       userRepo.VerifyAll()
       presetService.VerifyAll()
@@ -87,7 +86,7 @@ type RemovePreset() =
     task {
       let! result = sut.RemoveUserPreset(Mocks.userId, Mocks.rawPresetId)
 
-      result |> should equal (Result<unit, _>.Error Preset.GetPresetError.NotFound)
+      Assert.Equal(Result<unit, _>.Error Preset.GetPresetError.NotFound, result)
 
       userRepo.VerifyAll()
       presetService.VerifyAll()

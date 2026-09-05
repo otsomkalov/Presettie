@@ -3,7 +3,6 @@
 open Domain.Workflows
 open MusicPlatform
 open Xunit
-open FsUnit.Xunit
 
 type Tracks() =
   [<Fact>]
@@ -16,4 +15,4 @@ type Tracks() =
     let result = Tracks.uniqueByArtists tracks
 
     // Assert
-    result |> should equalSeq [ Mocks.includedTrack; Mocks.likedTrack ]
+    Assert.Equal<Track>([ Mocks.includedTrack; Mocks.likedTrack ], result)

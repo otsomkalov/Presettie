@@ -12,7 +12,6 @@ open Bot.Handlers.Click
 open Xunit
 open otsom.fs.Bot
 open otsom.fs.Resources
-open FsUnit.Xunit
 
 type ExcludedPlaylist() =
   let presetRepo = Mock<IPresetRepo>()
@@ -48,7 +47,7 @@ type ExcludedPlaylist() =
 
     let! result = listExcludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
-    result |> should equal (Some())
+    Assert.Equal(Some(), result)
 
     presetRepo.VerifyAll()
     botService.VerifyAll()
@@ -60,7 +59,7 @@ type ExcludedPlaylist() =
 
     let! result = listExcludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
-    result |> should equal None
+    Assert.Equal(None, result)
 
     presetRepo.VerifyNoOtherCalls()
     botService.VerifyNoOtherCalls()
@@ -91,7 +90,7 @@ type ExcludedPlaylist() =
         Mocks.chat
         click
 
-    result |> should equal (Some())
+    Assert.Equal(Some(), result)
 
     presetRepo.VerifyAll()
     botService.VerifyAll()
@@ -113,7 +112,7 @@ type ExcludedPlaylist() =
         Mocks.chat
         click
 
-    result |> should equal None
+    Assert.Equal(None, result)
 
     presetRepo.VerifyNoOtherCalls()
     botService.VerifyNoOtherCalls()
@@ -141,7 +140,7 @@ type ExcludedPlaylist() =
 
     let! result = removeExcludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
-    result |> should equal (Some())
+    Assert.Equal(Some(), result)
 
     botService.VerifyAll()
     presetService.VerifyAll()
@@ -153,7 +152,7 @@ type ExcludedPlaylist() =
 
     let! result = removeExcludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
-    result |> should equal None
+    Assert.Equal(None, result)
 
     botService.VerifyAll()
     presetService.VerifyAll()

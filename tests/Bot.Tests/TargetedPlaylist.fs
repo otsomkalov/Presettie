@@ -10,7 +10,6 @@ open MusicPlatform
 open Bot.Handlers.Click
 open Xunit
 open otsom.fs.Bot
-open FsUnit.Xunit
 open Domain.Tests
 open otsom.fs.Resources
 
@@ -40,7 +39,7 @@ type TargetedPlaylist() =
 
     let! result = listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
-    result |> should equal (Some())
+    Assert.Equal(Some(), result)
 
     presetRepo.VerifyAll()
     botService.VerifyAll()
@@ -52,7 +51,7 @@ type TargetedPlaylist() =
 
     let! result = listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
-    result |> should equal None
+    Assert.Equal(None, result)
 
     presetRepo.VerifyNoOtherCalls()
     botService.VerifyNoOtherCalls()
@@ -83,7 +82,7 @@ type TargetedPlaylist() =
         Mocks.chat
         click
 
-    result |> should equal (Some())
+    Assert.Equal(Some(), result)
 
     presetRepo.VerifyAll()
     botService.VerifyAll()
@@ -105,7 +104,7 @@ type TargetedPlaylist() =
         Mocks.chat
         click
 
-    result |> should equal None
+    Assert.Equal(None, result)
 
     presetRepo.VerifyNoOtherCalls()
     botService.VerifyNoOtherCalls()
@@ -133,7 +132,7 @@ type TargetedPlaylist() =
 
     let! result = removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
-    result |> should equal (Some())
+    Assert.Equal(Some(), result)
 
     botService.VerifyAll()
     presetService.VerifyAll()
@@ -145,7 +144,7 @@ type TargetedPlaylist() =
 
     let! result = removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
-    result |> should equal None
+    Assert.Equal(None, result)
 
     botService.VerifyAll()
     presetService.VerifyAll()

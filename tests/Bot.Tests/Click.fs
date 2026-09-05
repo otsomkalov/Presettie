@@ -6,7 +6,6 @@ open Bot.Handlers
 open Bot.Resources
 open Domain.Core.PresetSettings
 open Domain.Tests
-open FsUnit.Xunit
 open Moq
 open Xunit
 open otsom.fs.Bot
@@ -40,7 +39,7 @@ type presetInfoClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetRepoMock.VerifyAll()
       botServiceMock.VerifyAll()
@@ -57,7 +56,7 @@ type presetInfoClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetRepoMock.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
@@ -83,7 +82,7 @@ type listPresetsClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetRepo.VerifyAll()
       botServiceMock.VerifyAll()
@@ -98,7 +97,7 @@ type listPresetsClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetRepo.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
@@ -132,7 +131,7 @@ type artistsAlbumsRecommendationsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetService.VerifyAll()
       botService.VerifyAll()
@@ -146,7 +145,7 @@ type artistsAlbumsRecommendationsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
@@ -179,7 +178,7 @@ type reccoBeatsRecommendationsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       botService.VerifyAll()
       presetRepo.VerifyAll()
@@ -192,7 +191,7 @@ type reccoBeatsRecommendationsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -224,7 +223,7 @@ type spotifyRecommendationsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       botService.VerifyAll()
       presetRepo.VerifyAll()
@@ -237,7 +236,7 @@ type spotifyRecommendationsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -269,7 +268,7 @@ type disableRecommendationsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       botService.VerifyAll()
       presetRepo.VerifyAll()
@@ -282,7 +281,7 @@ type disableRecommendationsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -314,7 +313,7 @@ type enableUniqueArtistsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       botService.VerifyAll()
       presetRepo.VerifyAll()
@@ -327,7 +326,7 @@ type enableUniqueArtistsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -359,7 +358,7 @@ type disableUniqueArtistsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       botService.VerifyAll()
       presetRepo.VerifyAll()
@@ -372,7 +371,7 @@ type disableUniqueArtistsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -404,7 +403,7 @@ type includeLikedTracksClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       botService.VerifyAll()
       presetRepo.VerifyAll()
@@ -417,7 +416,7 @@ type includeLikedTracksClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -449,7 +448,7 @@ type excludeLikedTracksClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       botService.VerifyAll()
       presetRepo.VerifyAll()
@@ -462,7 +461,7 @@ type excludeLikedTracksClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -497,7 +496,7 @@ type ignoreLikedTracksClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       botService.VerifyAll()
       presetRepo.VerifyAll()
@@ -510,7 +509,7 @@ type ignoreLikedTracksClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -548,7 +547,7 @@ type overwriteTargetedPlaylistClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       musicPlatformFactory.VerifyAll()
       presetRepo.VerifyAll()
@@ -567,7 +566,7 @@ type overwriteTargetedPlaylistClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       musicPlatformFactory.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -593,7 +592,7 @@ type setCurrentPresetClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userService.VerifyAll()
       botService.VerifyAll()
     }
@@ -605,7 +604,7 @@ type setCurrentPresetClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       userService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
@@ -642,7 +641,7 @@ type appendToTargetedPlaylistClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       musicPlatformFactory.VerifyAll()
       presetRepo.VerifyAll()
@@ -661,7 +660,7 @@ type appendToTargetedPlaylistClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       musicPlatformFactory.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -689,7 +688,7 @@ type runPresetClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       botService.VerifyAll()
     }
@@ -705,7 +704,7 @@ type runPresetClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       botService.VerifyAll()
     }
@@ -721,7 +720,7 @@ type runPresetClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       botService.VerifyAll()
     }
@@ -733,7 +732,7 @@ type runPresetClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
@@ -758,7 +757,7 @@ type presetSettingsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetRepo.VerifyAll()
       botService.VerifyAll()
     }
@@ -770,7 +769,7 @@ type presetSettingsClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetRepo.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
@@ -815,7 +814,7 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       musicPlatformFactory.VerifyAll()
       presetRepo.VerifyAll()
@@ -834,7 +833,7 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       musicPlatformFactory.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -881,7 +880,7 @@ type setAllTracksIncludedPlaylistClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetService.VerifyAll()
       musicPlatformFactory.VerifyAll()
       presetRepo.VerifyAll()
@@ -900,7 +899,7 @@ type setAllTracksIncludedPlaylistClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
       musicPlatformFactory.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -932,7 +931,7 @@ type removePresetClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userService.VerifyAll()
       botService.VerifyAll()
@@ -950,7 +949,7 @@ type removePresetClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userService.VerifyAll()
       botService.VerifyAll()
@@ -963,7 +962,7 @@ type removePresetClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
 
       userService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
@@ -996,7 +995,7 @@ type showIncludedContentClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetRepo.VerifyAll()
       botService.VerifyAll()
@@ -1009,7 +1008,7 @@ type showIncludedContentClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetRepo.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
@@ -1038,7 +1037,7 @@ type showExcludedContentClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetRepo.VerifyAll()
       botService.VerifyAll()
@@ -1051,7 +1050,7 @@ type showExcludedContentClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetRepo.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
@@ -1082,7 +1081,7 @@ type listExcludedArtistsClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetRepo.VerifyAll()
       botServiceMock.VerifyAll()
@@ -1097,7 +1096,7 @@ type listExcludedArtistsClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetRepo.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
@@ -1134,7 +1133,7 @@ type showExcludedArtistClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetRepo.VerifyAll()
       botServiceMock.VerifyAll()
@@ -1149,7 +1148,7 @@ type showExcludedArtistClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetRepo.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
@@ -1181,7 +1180,7 @@ type removeExcludedArtistClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetService.VerifyAll()
       botServiceMock.VerifyAll()
@@ -1196,7 +1195,7 @@ type removeExcludedArtistClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetService.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
@@ -1233,7 +1232,7 @@ type showIncludedArtistClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetRepo.VerifyAll()
       botServiceMock.VerifyAll()
@@ -1248,7 +1247,7 @@ type showIncludedArtistClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetRepo.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
@@ -1280,7 +1279,7 @@ type removeIncludedArtistClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetService.VerifyAll()
       botServiceMock.VerifyAll()
@@ -1295,7 +1294,7 @@ type removeIncludedArtistClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetService.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
@@ -1326,7 +1325,7 @@ type listIncludedArtistsClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetRepo.VerifyAll()
       botServiceMock.VerifyAll()
@@ -1341,7 +1340,7 @@ type listIncludedArtistsClickHandler() =
       let! result = handler Mocks.chat click
 
       // Assert
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetRepo.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
