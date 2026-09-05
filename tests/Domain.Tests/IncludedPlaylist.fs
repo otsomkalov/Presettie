@@ -5,7 +5,6 @@ open Domain.Repos
 open Domain.Workflows
 open Moq
 open Xunit
-open FsUnit.Xunit
 
 type IncludedPlaylist() =
   let mockPresetRepo = Mock<IPresetRepo>()
@@ -27,7 +26,7 @@ type IncludedPlaylist() =
 
       mockPresetRepo.VerifyAll()
 
-      preset.IncludedPlaylists |> should equivalent List.empty<IncludedPlaylist>
+      Assert.Equivalent(List.empty<IncludedPlaylist>, preset.IncludedPlaylists)
     }
 
   [<Fact>]

@@ -7,7 +7,6 @@ open Bot.Resources
 open MusicPlatform
 open Domain.Core
 open Domain.Tests
-open FsUnit.Xunit
 open Moq
 open Xunit
 open otsom.fs.Bot
@@ -47,7 +46,7 @@ type StartMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userRepo.VerifyAll()
       presetRepo.VerifyAll()
@@ -65,7 +64,7 @@ type StartMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
     }
 
   [<Fact>]
@@ -80,7 +79,7 @@ type StartMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userRepo.VerifyAll()
       chatCtx.VerifyAll()
@@ -99,7 +98,7 @@ type StartMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userRepo.VerifyAll()
       chatCtx.VerifyAll()
@@ -119,7 +118,7 @@ type StartMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userRepo.VerifyAll()
       chatCtx.VerifyAll()
@@ -133,7 +132,7 @@ type StartMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       userRepo.VerifyNoOtherCalls()
       presetRepo.VerifyNoOtherCalls()
@@ -157,7 +156,7 @@ type FaqMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       resourceProvider.VerifyAll()
       chatCtx.VerifyAll()
@@ -173,7 +172,7 @@ type FaqMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
     }
 
   [<Fact>]
@@ -183,7 +182,7 @@ type FaqMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -196,7 +195,7 @@ type FaqMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -209,7 +208,7 @@ type FaqMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -231,7 +230,7 @@ type PrivacyMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       resourceProvider.VerifyAll()
       chatCtx.VerifyAll()
@@ -247,7 +246,7 @@ type PrivacyMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
     }
 
   [<Fact>]
@@ -257,7 +256,7 @@ type PrivacyMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -270,7 +269,7 @@ type PrivacyMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -283,7 +282,7 @@ type PrivacyMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -305,7 +304,7 @@ type GuideMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       resourceProvider.VerifyAll()
       chatCtx.VerifyAll()
@@ -321,7 +320,7 @@ type GuideMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
     }
 
   [<Fact>]
@@ -331,7 +330,7 @@ type GuideMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -344,7 +343,7 @@ type GuideMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -357,7 +356,7 @@ type GuideMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -379,7 +378,7 @@ type HelpMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       resourceProvider.VerifyAll()
       chatCtx.VerifyAll()
@@ -395,7 +394,7 @@ type HelpMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
     }
 
   [<Fact>]
@@ -405,7 +404,7 @@ type HelpMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -418,7 +417,7 @@ type HelpMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -431,7 +430,7 @@ type HelpMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -458,7 +457,7 @@ type MyPresetsMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
     }
 
   [<Fact>]
@@ -470,7 +469,7 @@ type MyPresetsMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
     }
 
   [<Fact>]
@@ -482,7 +481,7 @@ type MyPresetsMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
     }
 
   [<Fact>]
@@ -493,7 +492,7 @@ type MyPresetsMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.Verify(_.Item(Buttons.MyPresets))
       resourceProvider.VerifyNoOtherCalls()
@@ -508,7 +507,7 @@ type MyPresetsMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.Verify(_.Item(Buttons.MyPresets))
       resourceProvider.VerifyNoOtherCalls()
@@ -523,7 +522,7 @@ type MyPresetsMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.Verify(_.Item(Buttons.MyPresets))
       resourceProvider.VerifyNoOtherCalls()
@@ -553,7 +552,7 @@ type BackMessageButtonHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userRepo.VerifyAll()
       presetRepo.VerifyAll()
@@ -567,7 +566,7 @@ type BackMessageButtonHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.Verify(_.Item(Buttons.Back))
       resourceProvider.VerifyNoOtherCalls()
@@ -583,7 +582,7 @@ type BackMessageButtonHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.Verify(_.Item(Buttons.Back))
       resourceProvider.VerifyNoOtherCalls()
@@ -599,7 +598,7 @@ type BackMessageButtonHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.Verify(_.Item(Buttons.Back))
       resourceProvider.VerifyNoOtherCalls()
@@ -633,7 +632,7 @@ type PresetSettingsMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userRepo.VerifyAll()
       presetRepo.VerifyAll()
@@ -647,7 +646,7 @@ type PresetSettingsMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.Verify(_.Item(Buttons.Settings))
       resourceProvider.VerifyNoOtherCalls()
@@ -663,7 +662,7 @@ type PresetSettingsMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.Verify(_.Item(Buttons.Settings))
       resourceProvider.VerifyNoOtherCalls()
@@ -679,7 +678,7 @@ type PresetSettingsMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       resourceProvider.Verify(_.Item(Buttons.Settings))
       resourceProvider.VerifyNoOtherCalls()
@@ -707,7 +706,7 @@ type SetPresetSizeMessageButtonHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
       chatCtx.Verify(_.AskForReply(It.IsAny()))
     }
@@ -718,7 +717,7 @@ type SetPresetSizeMessageButtonHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal None
+      Assert.Equal(None, result)
       resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -730,7 +729,7 @@ type SetPresetSizeMessageButtonHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal None
+      Assert.Equal(None, result)
       resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -742,7 +741,7 @@ type SetPresetSizeMessageButtonHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal None
+      Assert.Equal(None, result)
       resourceProvider.Verify(_.Item(Buttons.SetPresetSize))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -791,7 +790,7 @@ type SetPresetSizeMessageHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userService.VerifyAll()
       chatCtx.VerifyAll()
       userRepo.VerifyAll()
@@ -809,7 +808,7 @@ type SetPresetSizeMessageHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userService.VerifyAll()
       chatCtx.VerifyAll()
       userRepo.VerifyAll()
@@ -827,7 +826,7 @@ type SetPresetSizeMessageHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userService.VerifyAll()
       chatCtx.VerifyAll()
     }
@@ -843,7 +842,7 @@ type SetPresetSizeMessageHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userService.VerifyAll()
       chatCtx.VerifyAll()
     }
@@ -859,7 +858,7 @@ type SetPresetSizeMessageHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userService.VerifyAll()
       chatCtx.VerifyAll()
     }
@@ -870,7 +869,7 @@ type SetPresetSizeMessageHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal None
+      Assert.Equal(None, result)
       userService.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
       userRepo.VerifyNoOtherCalls()
@@ -900,7 +899,7 @@ type CreatePresetButtonMessageHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       resourceProvider.Verify(_.Item(Buttons.CreatePreset))
       chatCtx.Verify(_.AskForReply(Messages.SendPresetName))
     }
@@ -911,7 +910,7 @@ type CreatePresetButtonMessageHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal None
+      Assert.Equal(None, result)
       resourceProvider.Verify(_.Item(Buttons.CreatePreset))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -923,7 +922,7 @@ type CreatePresetButtonMessageHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal None
+      Assert.Equal(None, result)
       resourceProvider.Verify(_.Item(Buttons.CreatePreset))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -935,7 +934,7 @@ type CreatePresetButtonMessageHandler() =
 
     task {
       let! result = handler Mocks.chat message
-      result |> should equal None
+      Assert.Equal(None, result)
       resourceProvider.Verify(_.Item(Buttons.CreatePreset))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -965,7 +964,7 @@ type CreatePresetMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -981,7 +980,7 @@ type CreatePresetMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -994,7 +993,7 @@ type CreatePresetMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
 
       presetService.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -1030,7 +1029,7 @@ type IncludePlaylistButtonMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.AskForReply(Messages.SendIncludedPlaylist))
     }
@@ -1046,7 +1045,7 @@ type IncludePlaylistButtonMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1082,7 +1081,7 @@ type ExcludePlaylistButtonMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.AskForReply(Messages.SendExcludedPlaylist))
     }
@@ -1098,7 +1097,7 @@ type ExcludePlaylistButtonMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1133,7 +1132,7 @@ type ExcludeArtistButtonMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       musicPlatformFactory.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1150,7 +1149,7 @@ type ExcludeArtistButtonMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1186,7 +1185,7 @@ type TargetPlaylistButtonMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.AskForReply(Messages.SendTargetedPlaylist))
     }
@@ -1202,7 +1201,7 @@ type TargetPlaylistButtonMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1237,7 +1236,7 @@ type IncludePlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userRepo.Verify(_.LoadUser(Mocks.userId))
       presetService.Verify(_.IncludePlaylist(It.IsAny<IncludePlaylist.Cmd>()))
@@ -1257,7 +1256,7 @@ type IncludePlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userRepo.Verify(_.LoadUser(Mocks.userId))
       presetService.Verify(_.IncludePlaylist(It.IsAny<IncludePlaylist.Cmd>()))
@@ -1281,7 +1280,7 @@ type IncludePlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1303,7 +1302,7 @@ type IncludePlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1321,7 +1320,7 @@ type IncludePlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny()))
     }
@@ -1355,7 +1354,7 @@ type ExcludePlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userRepo.Verify(_.LoadUser(Mocks.userId))
       presetService.Verify(_.ExcludePlaylist(It.IsAny<ExcludePlaylist.Cmd>()))
@@ -1375,7 +1374,7 @@ type ExcludePlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       userRepo.Verify(_.LoadUser(Mocks.userId))
       presetService.Verify(_.ExcludePlaylist(It.IsAny<ExcludePlaylist.Cmd>()))
@@ -1399,7 +1398,7 @@ type ExcludePlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1421,7 +1420,7 @@ type ExcludePlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1439,7 +1438,7 @@ type ExcludePlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny()))
     }
@@ -1473,7 +1472,7 @@ type ExcludeArtistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userRepo.VerifyAll()
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -1495,7 +1494,7 @@ type ExcludeArtistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userRepo.VerifyAll()
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -1519,7 +1518,7 @@ type ExcludeArtistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userRepo.VerifyAll()
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -1544,7 +1543,7 @@ type ExcludeArtistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userRepo.VerifyAll()
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -1564,7 +1563,7 @@ type ExcludeArtistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userRepo.VerifyAll()
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -1600,7 +1599,7 @@ type IncludeArtistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userRepo.VerifyAll()
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -1622,7 +1621,7 @@ type IncludeArtistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userRepo.VerifyAll()
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -1646,7 +1645,7 @@ type IncludeArtistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userRepo.VerifyAll()
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -1671,7 +1670,7 @@ type IncludeArtistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userRepo.VerifyAll()
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -1691,7 +1690,7 @@ type IncludeArtistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       userRepo.VerifyAll()
       presetService.VerifyAll()
       chatCtx.VerifyAll()
@@ -1727,7 +1726,7 @@ type TargetPlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1747,7 +1746,7 @@ type TargetPlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1769,7 +1768,7 @@ type TargetPlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1791,7 +1790,7 @@ type TargetPlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1811,7 +1810,7 @@ type TargetPlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1829,7 +1828,7 @@ type TargetPlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny()))
     }
@@ -1841,7 +1840,7 @@ type TargetPlaylistMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
       userRepo.VerifyNoOtherCalls()
       presetService.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -1875,7 +1874,7 @@ type QueuePresetRunMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1895,7 +1894,7 @@ type QueuePresetRunMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1915,7 +1914,7 @@ type QueuePresetRunMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1935,7 +1934,7 @@ type QueuePresetRunMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
     }
@@ -1947,7 +1946,7 @@ type QueuePresetRunMessageHandler() =
     task {
       let! result = handler Mocks.chat message
 
-      result |> should equal None
+      Assert.Equal(None, result)
       userRepo.VerifyNoOtherCalls()
       presetService.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()

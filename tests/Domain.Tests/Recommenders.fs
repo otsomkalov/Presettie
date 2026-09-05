@@ -5,7 +5,6 @@ open Domain.Workflows
 open Moq
 open MusicPlatform
 open Xunit
-open FsUnit.Xunit
 open FSharp.Control
 
 type ArtistsAlbumsTests() =
@@ -25,7 +24,7 @@ type ArtistsAlbumsTests() =
       let! result = recommender.Recommend([ Mocks.includedTrack ])
 
       // Assert
-      result |> should equal [ Mocks.recommendedTrack ]
+      Assert.Equal<Track>([ Mocks.recommendedTrack ], result)
 
       musicPlatformMock.VerifyAll()
     }
@@ -42,7 +41,7 @@ type ArtistsAlbumsTests() =
       let! result = recommender.Recommend(inputTracks)
 
       // Assert
-      result |> should equal [ Mocks.recommendedTrack ]
+      Assert.Equal<Track>([ Mocks.recommendedTrack ], result)
 
       musicPlatformMock.VerifyAll()
     }
@@ -59,7 +58,7 @@ type ArtistsAlbumsTests() =
       let! result = recommender.Recommend(inputTracks)
 
       // Assert
-      result |> should equal [ Mocks.recommendedTrack ]
+      Assert.Equal<Track>([ Mocks.recommendedTrack ], result)
 
       musicPlatformMock.Verify(_.ListArtistTracks(Mocks.artist1.Id), Times.Once())
       musicPlatformMock.Verify(_.ListArtistTracks(Mocks.artist2.Id), Times.Once())

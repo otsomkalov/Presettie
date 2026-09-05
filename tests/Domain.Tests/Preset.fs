@@ -7,7 +7,6 @@ open FSharp.Control
 open Microsoft.Extensions.Logging
 open Moq
 open Xunit
-open FsUnit.Xunit
 open MusicPlatform
 open Domain.Core
 open Domain.Tests
@@ -60,7 +59,7 @@ type Run() =
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
-      result |> should equal (Result<Preset, Preset.RunError>.Ok(preset))
+      Assert.Equal(Result<Preset, Preset.RunError>.Ok(preset), result)
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -81,7 +80,7 @@ type Run() =
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
-      result |> should equal (Result<Preset, Preset.RunError>.Ok(preset))
+      Assert.Equal(Result<Preset, Preset.RunError>.Ok(preset), result)
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -94,8 +93,7 @@ type Run() =
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
-      result
-      |> should equal (Result<Preset, Preset.RunError>.Error(Preset.RunError.NoIncludedTracks))
+      Assert.Equal(Result<Preset, Preset.RunError>.Error(Preset.RunError.NoIncludedTracks), result)
 
       platform.VerifyAll()
     }
@@ -115,8 +113,7 @@ type Run() =
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
-      result
-      |> should equal (Result<Preset, Preset.RunError>.Error(Preset.RunError.NoPotentialTracks))
+      Assert.Equal(Result<Preset, Preset.RunError>.Error(Preset.RunError.NoPotentialTracks), result)
 
       platform.VerifyAll()
     }
@@ -141,7 +138,7 @@ type Run() =
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
-      result |> should equal (Result<Preset, Preset.RunError>.Ok(preset))
+      Assert.Equal(Result<Preset, Preset.RunError>.Ok(preset), result)
 
       platform.VerifyAll()
     }
@@ -166,7 +163,7 @@ type Run() =
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
-      result |> should equal (Result<_, Preset.RunError>.Ok(preset))
+      Assert.Equal(Result<_, Preset.RunError>.Ok(preset), result)
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -190,7 +187,7 @@ type Run() =
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
-      result |> should equal (Result<_, Preset.RunError>.Ok(preset))
+      Assert.Equal(Result<_, Preset.RunError>.Ok(preset), result)
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -214,7 +211,7 @@ type Run() =
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
-      result |> should equal (Result<_, Preset.RunError>.Ok(preset))
+      Assert.Equal(Result<_, Preset.RunError>.Ok(preset), result)
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -238,7 +235,7 @@ type Run() =
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
-      result |> should equal (Result<_, Preset.RunError>.Ok(preset))
+      Assert.Equal(Result<_, Preset.RunError>.Ok(preset), result)
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -264,7 +261,7 @@ type Run() =
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
-      result |> should equal (Result<_, Preset.RunError>.Ok(preset))
+      Assert.Equal(Result<_, Preset.RunError>.Ok(preset), result)
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -286,7 +283,7 @@ type Run() =
     task {
       let! result = sut.RunPreset(Mocks.userId, Mocks.presetId)
 
-      result |> should equal (Result<Preset, _>.Error(Preset.NoPotentialTracks))
+      Assert.Equal(Result<Preset, _>.Error(Preset.NoPotentialTracks), result)
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -317,7 +314,7 @@ type IncludeArtist() =
             ArtistId = Artist.RawArtistId Mocks.artist1.Id.Value }
 
       match result with
-      | Error(IncludeArtist.Error.Duplicate artistId) -> artistId |> should equal Mocks.artist1.Id
+      | Error(IncludeArtist.Error.Duplicate artistId) -> Assert.Equal(Mocks.artist1.Id, artistId)
       | _ -> failwith "Expected Duplicate error"
 
       presetRepo.VerifyAll()
@@ -351,7 +348,7 @@ type IncludeArtist() =
             PresetId = Mocks.presetId
             ArtistId = rawArtistId }
 
-      result |> should equal (Result<_, IncludeArtist.Error>.Ok Mocks.artist3)
+      Assert.Equal(Result<_, IncludeArtist.Error>.Ok Mocks.artist3, result)
 
       platform.VerifyAll()
       presetRepo.VerifyAll()
@@ -377,7 +374,7 @@ type IncludeArtist() =
             ArtistId = rawArtistId }
 
       match result with
-      | Error(IncludeArtist.Error.IdParsing(Artist.IdParsingError msg)) -> msg |> should equal "invalid"
+      | Error(IncludeArtist.Error.IdParsing(Artist.IdParsingError msg)) -> Assert.Equal("invalid", msg)
       | _ -> failwith "Expected IdParsing error"
 
       presetRepo.VerifyNoOtherCalls()
@@ -463,7 +460,7 @@ type ExcludeArtist() =
             ArtistId = Artist.RawArtistId Mocks.artist1.Id.Value }
 
       match result with
-      | Error(ExcludeArtist.Error.Duplicate artistId) -> artistId |> should equal Mocks.artist1.Id
+      | Error(ExcludeArtist.Error.Duplicate artistId) -> Assert.Equal(Mocks.artist1.Id, artistId)
       | _ -> failwith "Expected Duplicate error"
 
       presetRepo.VerifyAll()
@@ -496,7 +493,7 @@ type IncludePlaylist() =
             PlaylistId = Playlist.RawPlaylistId Mocks.includedPlaylistId.Value }
 
       match result with
-      | Error(IncludePlaylist.Error.Duplicate playlistId) -> playlistId |> should equal Mocks.includedPlaylistId
+      | Error(IncludePlaylist.Error.Duplicate playlistId) -> Assert.Equal(Mocks.includedPlaylistId, playlistId)
       | _ -> failwith "Expected Duplicate error"
 
       presetRepo.VerifyAll()
@@ -529,7 +526,7 @@ type ExcludePlaylist() =
             PlaylistId = Playlist.RawPlaylistId Mocks.excludedPlaylistId.Value }
 
       match result with
-      | Error(ExcludePlaylist.Error.Duplicate playlistId) -> playlistId |> should equal Mocks.excludedPlaylistId
+      | Error(ExcludePlaylist.Error.Duplicate playlistId) -> Assert.Equal(Mocks.excludedPlaylistId, playlistId)
       | _ -> failwith "Expected Duplicate error"
 
       presetRepo.VerifyAll()
@@ -558,7 +555,7 @@ type TargetPlaylist() =
             PlaylistId = Playlist.RawPlaylistId Mocks.targetedPlaylistId.Value }
 
       match result with
-      | Error(TargetPlaylist.Error.Duplicate playlistId) -> playlistId |> should equal Mocks.targetedPlaylistId
+      | Error(TargetPlaylist.Error.Duplicate playlistId) -> Assert.Equal(Mocks.targetedPlaylistId, playlistId)
       | _ -> failwith "Expected Duplicate error"
 
       presetRepo.VerifyAll()

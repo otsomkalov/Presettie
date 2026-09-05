@@ -6,7 +6,6 @@ open Domain.Repos
 open Domain.Workflows
 open Moq
 open Xunit
-open FsUnit.Xunit
 
 type ExcludedArtist() =
   let mockPresetRepo = Mock<IPresetRepo>()
@@ -28,5 +27,5 @@ type ExcludedArtist() =
 
       mockPresetRepo.VerifyAll()
 
-      preset.ExcludedArtists |> should equivalent List.empty<ExcludedArtist>
+      Assert.Equivalent(List.empty<ExcludedArtist>, preset.ExcludedArtists)
     }

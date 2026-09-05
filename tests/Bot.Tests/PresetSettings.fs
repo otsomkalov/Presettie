@@ -5,7 +5,6 @@
 open Domain.Core
 open Domain.Repos
 open Domain.Tests
-open FsUnit.Xunit
 open Moq
 open Bot.Constants
 open Bot.Handlers.Click
@@ -41,7 +40,7 @@ type PresetSettings() =
 
     task {
       let! result = sut Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetRepo.VerifyAll()
       botService.VerifyAll()
       presetService.VerifyAll()
@@ -56,7 +55,7 @@ type PresetSettings() =
 
     task {
       let! result = sut Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetRepo.VerifyAll()
       botService.VerifyAll()
       presetService.VerifyAll()
@@ -79,7 +78,7 @@ type PresetSettings() =
 
     task {
       let! result = sut Mocks.chat click
-      result |> should equal (Some())
+      Assert.Equal(Some(), result)
       presetRepo.VerifyAll()
       botService.VerifyAll()
       presetService.VerifyAll()
@@ -94,7 +93,7 @@ type PresetSettings() =
 
     task {
       let! result = sut Mocks.chat click
-      result |> should equal None
+      Assert.Equal(None, result)
       presetRepo.VerifyAll()
       botService.VerifyAll()
       presetService.VerifyAll()
