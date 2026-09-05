@@ -11,18 +11,19 @@
     <Project Path="src\MusicPlatform\MusicPlatform.fsproj" />
   </Folder>
   <Folder Name="/src/Integrations/">
+    <Project Path="src\MusicPlatform.Musicae\MusicPlatform.Musicae.fsproj" />
     <Project Path="src\MusicPlatform.Cached\MusicPlatform.Cached.fsproj" />
     <Project Path="src\MusicPlatform.ReccoBeats\MusicPlatform.ReccoBeats.fsproj" />
     <Project Path="src\MusicPlatform.Spotify\MusicPlatform.Spotify.fsproj" />
   </Folder>
   <Folder Name="/src/Runners/">
-    <Project Path="src/Functions.Generator/Functions.Generator.fsproj" />
+    <Project Path="src\Functions.Generator\Functions.Generator.fsproj" />
     <Project Path="src\Bolero.Web\Bolero.Web.fsproj" />
     <Project Path="src\Functions.API\Functions.API.fsproj" />
     <Project Path="src\Functions.Bot.Telegram\Functions.Bot.Telegram.fsproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/Domain.Tests\Domain.Tests.fsproj" />
+    <Project Path="tests\Domain.Tests\Domain.Tests.fsproj" />
     <Project Path="tests\Bot.Tests\Bot.Tests.fsproj" />
   </Folder>
 </Solution>

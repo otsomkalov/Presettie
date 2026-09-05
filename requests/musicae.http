@@ -1,0 +1,4 @@
+﻿###
+GET https://spotify-extended-audio-features-api.p.rapidapi.com/v1/recommendations?seed_tracks=2Zy7XVdxyZQB8xp5xbpJdl&limit=10
+x-rapidapi-host: spotify-extended-audio-features-api.p.rapidapi.com
+x-rapidapi-key: {{musicae-key}}

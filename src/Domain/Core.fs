@@ -67,6 +67,7 @@ module PresetSettings =
   type RecommendationsEngine =
     | ArtistAlbums
     | ReccoBeats
+    | Musicae
     | Spotify
 
   type ParsingError =

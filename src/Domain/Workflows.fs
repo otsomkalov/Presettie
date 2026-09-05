@@ -5,6 +5,7 @@ open System.Threading.Tasks
 open Domain.Core.PresetSettings
 open Domain.Repos
 open FSharp.Control
+open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Logging
 open Microsoft.FSharp.Core
 open MusicPlatform
@@ -325,13 +326,13 @@ module Preset =
     fun presetId -> taskResult {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
 
+      // Shuffle first to get recommendations based on different tracks each time
       let! includedTracks = listIncludedTracks platform preset |> Task.map shuffler
 
       logger.LogInformation("Loaded {IncludedTracksCount} included tracks", includedTracks.Length)
 
       do! includedTracks |> Result.requireNotEmpty Preset.RunError.NoIncludedTracks
 
-      // Shuffle first to get recommendations based on different tracks each time
       let! recommendedTracks = getRecommendations preset includedTracks |> Task.map shuffler
 
       logger.LogInformation("Loaded {RecommendedTracksCount} recommended tracks", recommendedTracks.Length)
@@ -632,13 +633,14 @@ type ArtistAlbumsRecommender(musicPlatform: IMusicPlatform) =
       |> TaskSeq.distinct
       |> TaskSeq.toListAsync
 
-type RecommenderFactory(musicPlatform: IMusicPlatform, reccoBeatsRecommender: IRecommender) =
+type RecommenderFactory(musicPlatform: IMusicPlatform, reccoBeatsRecommender: IRecommender, musicaeRecommender: IRecommender) =
   interface IRecommenderFactory with
     member this.Create(recommenderType) =
       match recommenderType with
       | RecommendationsEngine.ArtistAlbums -> ArtistAlbumsRecommender(musicPlatform)
       | RecommendationsEngine.ReccoBeats -> reccoBeatsRecommender
       | RecommendationsEngine.Spotify -> musicPlatform
+      | RecommendationsEngine.Musicae -> musicaeRecommender
 
 type PresetService
   (
@@ -647,7 +649,8 @@ type PresetService
     presetRepo: IPresetRepo,
     musicPlatformFactory: IMusicPlatformFactory,
     shuffler: Shuffler<Track>,
-    reccoBeatsRecommender: IRecommender,
+    [<FromKeyedServices("reccobeats")>] reccoBeatsRecommender: IRecommender,
+    [<FromKeyedServices("musicae")>] musicaeRecommender: IRecommender,
     logger: ILogger<PresetService>
   ) =
   interface IPresetService with
@@ -722,9 +725,10 @@ type PresetService
 
       match musicPlatform with
       | Some platform ->
-        let recsEngineFactory = RecommenderFactory(platform, reccoBeatsRecommender)
+        let recommenderFactory =
+          RecommenderFactory(platform, reccoBeatsRecommender, musicaeRecommender)
 
-        return! Preset.run presetRepo logger shuffler platform recsEngineFactory presetId
+        return! Preset.run presetRepo logger shuffler platform recommenderFactory presetId
       | None -> return Preset.RunError.Unauthorized |> Error
     }
 

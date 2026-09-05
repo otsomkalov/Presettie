@@ -95,6 +95,9 @@ module Messages =
   let ArtistsAlbumsRecommendation = "messages.artists-albums-recommendation"
 
   [<Literal>]
+  let MusicaeRecommendation = "messages.musicae-recommendation"
+
+  [<Literal>]
   let ReccoBeatsRecommendation = "messages.recco-beats-recommendation"
 
   [<Literal>]
@@ -272,6 +275,9 @@ module Buttons =
 
   [<Literal>]
   let SpotifyRecommendations = "buttons.spotify-recommendations"
+
+  [<Literal>]
+  let MusicaeRecommendations = "buttons.musicae-recommendations"
 
   [<Literal>]
   let DisableRecommendations = "buttons.disable-recommendations"

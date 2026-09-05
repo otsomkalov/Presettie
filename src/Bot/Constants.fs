@@ -65,6 +65,9 @@ module CallbackQueryConstants =
   let reccoBeatsRecommendations = "rbr"
 
   [<Literal>]
+  let musicaeRecommendations = "mr"
+
+  [<Literal>]
   let spotifyRecommendations = "sr"
 
   [<Literal>]

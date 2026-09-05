@@ -20,6 +20,7 @@ type Run() =
   let presetRepo = Mock<IPresetRepo>()
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let recommender = Mock<IRecommender>()
+  let musicaeRecommender = Mock<IRecommender>()
   let logger = Mock<ILogger<PresetService>>()
 
   do
@@ -34,6 +35,7 @@ type Run() =
       musicPlatformFactory.Object,
       shuffler,
       recommender.Object,
+      musicaeRecommender.Object,
       logger.Object
     )
 
