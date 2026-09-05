@@ -15,10 +15,10 @@ pr:
       - src
 
 variables:
-  - name: Runtime
-    value: 'linux-x64'
-  - name: BuildConfiguration
-    value: 'Release'
+  Runtime: 'linux-x64'
+  Configuration: 'Release'
+
+pool: 'self-hosted'
 
 stages:
   - stage: build
@@ -27,9 +27,9 @@ stages:
       - job: build_all
         steps:
           - task: UseDotNet@2
-            displayName: 'Use .NET 10'
+            displayName: 'Use .NET'
             inputs:
-              version: '10.x'
+              useGlobalJson: true
           - task: DotNetCoreCLI@2
             displayName: 'Install Fantomas formatter'
             inputs:
@@ -44,37 +44,11 @@ stages:
                 fantomas . --check
               workingDirectory: '$(Build.SourcesDirectory)'
           - task: DotNetCoreCLI@2
-            displayName: 'Restore packages'
-            inputs:
-              command: 'restore'
-              projects: 'src/**/**.fsproj'
-          - task: DotNetCoreCLI@2
-            displayName: 'Build Telegram Bot in Azure Functions'
-            inputs:
-              command: 'build'
-              projects: 'src/**/Functions.Bot.Telegram.fsproj'
-              arguments: '-r $(Runtime) --configuration $(BuildConfiguration)'
-              publishWebProjects: false
-          - task: DotNetCoreCLI@2
-            displayName: 'Build Azure Functions Web API'
-            inputs:
-              command: 'build'
-              projects: 'src/**/Functions.API.fsproj'
-              arguments: '-r $(Runtime) --configuration $(BuildConfiguration)'
-              publishWebProjects: false
-          - task: DotNetCoreCLI@2
-            displayName: 'Build Bolero Web'
-            inputs:
-              command: 'build'
-              projects: 'src/**/Bolero.Web.fsproj'
-              arguments: '--configuration $(BuildConfiguration)'
-              publishWebProjects: false
-          - task: DotNetCoreCLI@2
             name: Test
             inputs:
               command: 'test'
               projects: 'tests/**/*.fsproj'
-              arguments: '--coverage --coverage-output-format cobertura'
+              arguments: '-r $(Runtime) -c $(Configuration) --coverage --coverage-output-format cobertura'
           - task: PublishCodeCoverageResults@2
             displayName: 'Publish coverage'
             inputs:
@@ -98,9 +72,8 @@ stages:
             inputs:
               command: 'publish'
               projects: 'src/**/Bolero.Web.fsproj'
-              arguments: '-r $(Runtime) -o $(Build.ArtifactStagingDirectory) /p:InformationalVersion=$(Build.BuildNumber)'
+              arguments: '-o $(Build.ArtifactStagingDirectory)/Bolero.Web /p:InformationalVersion=$(Build.BuildNumber) /p:WasmApplicationEnvironmentName=Production'
               publishWebProjects: false
-              zipAfterPublish: false
           - task: DotNetCoreCLI@2
             displayName: 'Publish Azure Functions Generator'
             inputs:
@@ -121,7 +94,7 @@ stages:
           - task: PublishBuildArtifacts@1
             displayName: 'Pack Bolero Web'
             inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Bolero.Web/wwwroot'
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/Bolero.Web'
               ArtifactName: 'Bolero.Web'
           - task: PublishBuildArtifacts@1
             displayName: 'Pack Azure Functions Generator'
@@ -149,7 +122,7 @@ stages:
                     azureSubscription: 'az-dev'
                     appType: 'functionAppLinux'
                     appName: '$(bot-functions-name)'
-                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    package: '$(Pipeline.Workspace)/Functions.Bot.Telegram/*.zip'
                     isFlexConsumption: true
       - deployment: deploy_api
         displayName: 'Deploy Azure Functions Web API'
@@ -166,7 +139,7 @@ stages:
                     azureSubscription: 'az-dev'
                     appType: 'functionAppLinux'
                     appName: '$(api-functions-name)'
-                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    package: '$(Pipeline.Workspace)/Functions.API/*.zip'
                     isFlexConsumption: true
       - deployment: deploy_generator
         displayName: 'Deploy Azure Functions Generator'
@@ -183,31 +156,37 @@ stages:
                     azureSubscription: 'az-dev'
                     appType: 'functionAppLinux'
                     appName: '$(generator-functions-name)'
-                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    package: '$(Pipeline.Workspace)/Functions.Generator/*.zip'
                     isFlexConsumption: true
-      - job: deploy_web
+      - deployment: deploy_bolero
         displayName: 'Deploy Bolero Web'
-        steps:
-          - checkout: none
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              artifactName: 'Bolero.Web'
-              targetPath: '$(Build.ArtifactStagingDirectory)/Bolero.Web'
-          - task: AzureCLI@2
-            displayName: 'Copy Bolero Web to Blob Storage'
-            inputs:
-              azureSubscription: 'az-dev'
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                az storage blob upload-batch \
-                  --auth-mode login \
-                  --account-name $(web-storage-account) \
-                  -d '$web' \
-                  -s $(Build.ArtifactStagingDirectory)/Bolero.Web/ \
-                  --overwrite \
-                  --no-progress
+        environment: 'dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: Bolero.Web
+                - task: ExtractFiles@1
+                  inputs:
+                    archiveFilePatterns: '$(Pipeline.Workspace)/Bolero.Web/Bolero.Web.zip'
+                    destinationFolder: '$(Pipeline.Workspace)/Bolero.Web/dist'
+                    cleanDestinationFolder: true
+                    overwriteExistingFiles: true
+                - task: AzureCLI@2
+                  displayName: 'Copy Bolero Web to Blob Storage'
+                  inputs:
+                    azureSubscription: 'az-dev'
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az storage blob upload-batch \
+                        --auth-mode login \
+                        --account-name $(web-storage-account) \
+                        -d '$web' \
+                        -s $(Pipeline.Workspace)/Bolero.Web/dist/wwwroot \
+                        --overwrite \
+                        --no-progress
   - stage: deploy_prd
     displayName: 'Deploy PRD'
     dependsOn: deploy_dev
@@ -230,7 +209,7 @@ stages:
                     azureSubscription: 'az-prd'
                     appType: 'functionAppLinux'
                     appName: '$(bot-functions-name)'
-                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    package: '$(Pipeline.Workspace)/Functions.Bot.Telegram/*.zip'
       - deployment: deploy_api
         displayName: 'Deploy Azure Functions Web API'
         environment: 'prd'
@@ -246,31 +225,36 @@ stages:
                     azureSubscription: 'az-prd'
                     appType: 'functionAppLinux'
                     appName: '$(api-functions-name)'
-                    package: '$(Pipeline.Workspace)/**/*.zip'
-      - job: deploy_web
+                    package: '$(Pipeline.Workspace)/Functions.API/*.zip'
+      - deployment: deploy_bolero
         displayName: 'Deploy Bolero Web'
-        steps:
-          - checkout: none
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              artifactName: 'Bolero.Web'
-              targetPath: '$(Build.ArtifactStagingDirectory)/Bolero.Web'
-          - task: AzureCLI@2
-            displayName: 'Copy Bolero Web to Blob Storage'
-            inputs:
-              azureSubscription: 'az-prd'
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                az storage blob upload-batch \
-                  --auth-mode login \
-                  --account-name $(web-storage-account) \
-                  -d '$web' \
-                  -s $(Build.ArtifactStagingDirectory)/Bolero.Web/ \
-                  --overwrite \
-                  --no-progress
-
+        environment: 'prd'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: Bolero.Web
+                - task: ExtractFiles@1
+                  inputs:
+                    archiveFilePatterns: '$(Pipeline.Workspace)/Bolero.Web/Bolero.Web.zip'
+                    destinationFolder: '$(Pipeline.Workspace)/Bolero.Web/dist'
+                    cleanDestinationFolder: true
+                    overwriteExistingFiles: true
+                - task: AzureCLI@2
+                  displayName: 'Copy Bolero Web to Blob Storage'
+                  inputs:
+                    azureSubscription: 'az-prd'
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az storage blob upload-batch \
+                        --auth-mode login \
+                        --account-name $(web-storage-account) \
+                        -d '$web' \
+                        -s $(Pipeline.Workspace)/Bolero.Web/dist/wwwroot \
+                        --overwrite \
+                        --no-progress
       - deployment: deploy_generator
         displayName: 'Deploy Azure Functions Generator'
         environment: 'prd'
@@ -286,5 +270,5 @@ stages:
                     azureSubscription: 'az-prd'
                     appType: 'functionAppLinux'
                     appName: '$(generator-functions-name)'
-                    package: '$(Pipeline.Workspace)/**/*.zip'
+                    package: '$(Pipeline.Workspace)/Functions.Generator/*.zip'
                     isFlexConsumption: true
