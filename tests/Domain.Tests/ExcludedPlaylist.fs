@@ -27,5 +27,5 @@ type ExcludedPlaylist() =
 
       mockPresetRepo.VerifyAll()
 
-      Assert.Equivalent(List.empty<ExcludedPlaylist>, preset.ExcludedPlaylists)
+      Assert.Equivalent([], preset.ExcludedPlaylists)
     }

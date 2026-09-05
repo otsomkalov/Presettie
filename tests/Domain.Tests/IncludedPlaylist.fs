@@ -26,7 +26,7 @@ type IncludedPlaylist() =
 
       mockPresetRepo.VerifyAll()
 
-      Assert.Equivalent(List.empty<IncludedPlaylist>, preset.IncludedPlaylists)
+      Assert.Equivalent([], preset.IncludedPlaylists)
     }
 
   [<Fact>]

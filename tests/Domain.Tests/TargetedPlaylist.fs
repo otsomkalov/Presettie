@@ -82,7 +82,7 @@ type TargetedPlaylist() =
     task {
       let! preset = sut Mocks.presetId Mocks.targetedPlaylist.Id
 
-      Assert.Equivalent(List.empty<TargetedPlaylist>, preset.TargetedPlaylists)
+      Assert.Equivalent([], preset.TargetedPlaylists)
 
       mock.VerifyAll()
     }
