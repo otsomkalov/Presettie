@@ -49,7 +49,7 @@ type PresetFunctions
     |> Task.map (Option.bind (_.Name >> Option.ofObj))
     |> Task.map (Option.bind (Guid.TryParse >> Option.someIf fst >> Option.map snd))
     |> TaskOption.map (fun userId -> { UserId = UserId userId })
-    |> Task.map (Result.ofOption RequestError.Unauthorized)
+    |> Task.map (Result.requireSome RequestError.Unauthorized)
 
   let validateBody (request: 'a) : Result<'a, RequestError<_>> =
     let validationCtx = ValidationContext(request, null, null)
