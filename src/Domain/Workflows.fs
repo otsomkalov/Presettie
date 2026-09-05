@@ -506,7 +506,7 @@ module Preset =
       let! playlistToTarget =
         playlist
         |> TargetedPlaylist.fromSpotifyPlaylist
-        |> Result.ofOption TargetPlaylist.Error.AccessError
+        |> Result.requireSome TargetPlaylist.Error.AccessError
 
       let updatedPreset =
         { preset with
