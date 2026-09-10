@@ -2,6 +2,7 @@
 
 open Domain.Workflows
 open MusicPlatform
+open Tests.Shared
 open Xunit
 
 type Tracks() =

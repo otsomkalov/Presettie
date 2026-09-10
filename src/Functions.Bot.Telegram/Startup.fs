@@ -6,7 +6,12 @@ open System
 open System.Text.Json
 open System.Text.Json.Serialization
 open System.Reflection
+open App
 open Azure.Identity
+open Bot
+open Bot.Telegram
+open Domain
+open Infrastructure
 open Microsoft.Azure.Functions.Worker.Builder
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -14,6 +19,7 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.ApplicationInsights
 open Microsoft.Azure.Functions.Worker
+open MusicPlatform.Spotify
 open Telegram.Bot.AspNetCore
 
 [<RequireQualifiedAccess>]
@@ -29,11 +35,12 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   services.ConfigureFunctionsApplicationInsights()
 
   services
-  |> Domain.Startup.addDomain cfg
-  |> MusicPlatform.Spotify.Startup.addSpotifyMusicPlatform cfg
-  |> Bot.Startup.addBot cfg
-  |> Infrastructure.Startup.addInfrastructure cfg
-  |> Bot.Telegram.Startup.addTelegram cfg
+  |> Startup.addSpotifyMusicPlatform cfg
+  |> Startup.addDomain cfg
+  |> Startup.addApp
+  |> Startup.addBot cfg
+  |> Startup.addInfrastructure cfg
+  |> Startup.addTelegram cfg
 
   services.ConfigureTelegramBotMvc()
 

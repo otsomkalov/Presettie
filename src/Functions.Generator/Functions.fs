@@ -1,6 +1,7 @@
 ﻿namespace Functions.Generator
 
 open System
+open App
 open Bot
 open Bot.Repos
 open Domain.Core
@@ -16,14 +17,14 @@ type Functions
     _logger: ILogger<Functions>,
     buildChatContext: BuildBotService,
     chatRepo: IChatRepo,
-    presetService: IPresetService,
+    mediator: IMediator,
     getResp: CreateResourceProvider
   ) =
   let runPreset resp =
     fun userId presetId chatId -> task {
       let chatCtx = buildChatContext chatId
 
-      do! Workflows.Preset.run resp chatCtx presetService (userId, presetId)
+      do! Workflows.Preset.run mediator resp chatCtx (userId, presetId)
     }
 
   [<Function("GenerateAsync")>]

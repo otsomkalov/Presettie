@@ -8,6 +8,7 @@ open Domain.Repos
 open Moq
 open MusicPlatform
 open Bot.Handlers.Click
+open Tests.Shared
 open Xunit
 open otsom.fs.Bot
 open Domain.Tests

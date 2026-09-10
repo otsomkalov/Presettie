@@ -4,6 +4,7 @@ open Domain.Core
 open Domain.Repos
 open Domain.Tests
 open Moq
+open Tests.Shared
 open Xunit
 open Bot.Workflows
 open otsom.fs.Bot

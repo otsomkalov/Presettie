@@ -5,6 +5,7 @@
     <Project Path="src\Bot\Bot.fsproj" />
   </Folder>
   <Folder Name="/src/Domain/">
+    <Project Path="src/App/App.fsproj" />
     <Project Path="src\Database\Database.csproj" />
     <Project Path="src\Domain\Domain.fsproj" />
     <Project Path="src\Infrastructure\Infrastructure.fsproj" />
@@ -24,6 +25,8 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests\Domain.Tests\Domain.Tests.fsproj" />
+    <Project Path="tests/App.Tests/App.Tests.fsproj" />
+    <Project Path="tests/Shared/Shared.fsproj" />
     <Project Path="tests\Bot.Tests\Bot.Tests.fsproj" />
   </Folder>
 </Solution>

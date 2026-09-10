@@ -4,6 +4,7 @@ open Domain.Tests
 open Domain.Workflows
 open Moq
 open MusicPlatform
+open Tests.Shared
 open Xunit
 open FSharp.Control
 

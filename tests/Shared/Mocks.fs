@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module Domain.Tests.Mocks
+module Tests.Shared.Mocks
 
 open System
 open Domain.Core

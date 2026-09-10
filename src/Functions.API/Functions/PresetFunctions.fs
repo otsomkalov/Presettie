@@ -104,7 +104,7 @@ type PresetFunctions
       }
 
     validateUser request
-    |> TaskResult.bind (flip handler (RawPresetId presetId))
+    |> TaskResult.bind (flip handler (PresetId presetId))
     |> Task.map (function
       | Ok preset -> OkObjectResult(preset) :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult

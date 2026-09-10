@@ -8,19 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Extensions.fs"/>
-    <Compile Include="IncludedPlaylist.fs"/>
-    <Compile Include="ExcludedPlaylist.fs"/>
-    <Compile Include="IncludedArtist.fs"/>
-    <Compile Include="ExcludedArtist.fs"/>
-    <Compile Include="Recommenders.fs" />
-    <Compile Include="TargetedPlaylist.fs"/>
-    <Compile Include="Tracks.fs"/>
-    <Compile Include="Preset.fs"/>
-    <Compile Include="User.fs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Moq" Version="4.20.72"/>
     <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.0"/>
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.0"/>
@@ -28,7 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\App\App.fsproj" />
     <ProjectReference Include="..\Shared\Shared.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="RunPreset.fs" />
   </ItemGroup>
 
 </Project>

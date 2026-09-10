@@ -4,6 +4,7 @@ open Domain.Core
 open Domain.Repos
 open Domain.Workflows
 open Moq
+open Tests.Shared
 open Xunit
 
 type IncludedPlaylist() =

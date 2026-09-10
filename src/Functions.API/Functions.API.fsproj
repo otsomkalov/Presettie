@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\App\App.fsproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.fsproj"/>
   </ItemGroup>
 </Project>

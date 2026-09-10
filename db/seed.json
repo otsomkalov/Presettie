@@ -364,6 +364,16 @@
     "Value": "Artist {0} is already included!",
     "Lang": "en"
   },
+  {
+    "Key": "messages.preset-not-found",
+    "Value": "Preset not found!",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.preset-access-forbidden",
+    "Value": "You cannot access this preset!",
+    "Lang": "en"
+  },
 
   {
     "Key": "buttons.run-preset",
