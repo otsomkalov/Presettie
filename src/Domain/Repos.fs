@@ -1,7 +1,9 @@
 ﻿module Domain.Repos
 
 open System.Threading.Tasks
+open MusicPlatform
 open Domain.Core
+open Domain.Core.PresetSettings
 
 type IIdGenerator =
   abstract GenerateId: unit -> string
@@ -46,3 +48,6 @@ type IUserRepo =
   inherit ILoadUser
   inherit ILoadUserByMusicPlatform
   inherit ISaveUser
+
+type IRecommenderFactory =
+  abstract member Create: IMusicPlatform * RecommendationsEngine -> IRecommender

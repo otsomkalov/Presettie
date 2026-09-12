@@ -35,6 +35,8 @@ let addInfrastructure (configuration: IConfiguration) (services: IServiceCollect
 
   services.BuildSingleton<QueueClient, IOptions<StorageSettings>>(configureQueueClient)
 
+  services.AddSingleton<IRecommenderFactory, RecommenderFactory>()
+
   services.BuildSingleton<IMongoClient, IOptions<DatabaseSettings>>(configureMongoClient)
   services.BuildSingleton<IMongoDatabase, IOptions<DatabaseSettings>, IMongoClient>(configureMongoDatabase)
 

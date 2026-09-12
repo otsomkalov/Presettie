@@ -13,18 +13,6 @@ open Domain.Repos
 open FsToolkit.ErrorHandling
 open otsom.fs.Extensions
 
-type IRecommenderFactory =
-  abstract member Create: IMusicPlatform * RecommendationsEngine -> IRecommender
-
-type RecommenderFactory(reccoBeatsRecommender, musicaeRecommender) =
-  interface IRecommenderFactory with
-    member this.Create(musicPlatform, engine) =
-      match engine with
-      | RecommendationsEngine.ArtistAlbums -> ArtistAlbumsRecommender(musicPlatform)
-      | RecommendationsEngine.ReccoBeats -> reccoBeatsRecommender
-      | RecommendationsEngine.Spotify -> musicPlatform
-      | RecommendationsEngine.Musicae -> musicaeRecommender
-
 [<RequireQualifiedAccess>]
 module rec RunPreset =
   type Cmd = { UserId: UserId; PresetId: PresetId }

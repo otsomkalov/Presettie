@@ -4,7 +4,12 @@ module Functions.Generator.Startup
 
 open System
 open System.Reflection
+open App
 open Azure.Identity
+open Bot
+open Bot.Telegram
+open Domain
+open Infrastructure
 open Microsoft.Azure.Functions.Worker.Builder
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -12,6 +17,8 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.ApplicationInsights
 open Microsoft.Azure.Functions.Worker
+open MusicPlatform.Cached
+open MusicPlatform.Spotify
 
 [<RequireQualifiedAccess>]
 module KeyVault =
@@ -26,12 +33,13 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   services.ConfigureFunctionsApplicationInsights()
 
   services
-  |> Domain.Startup.addDomain cfg
-  |> MusicPlatform.Spotify.Startup.addSpotifyMusicPlatform cfg
-  |> MusicPlatform.Cached.Startup.addCachedMusicPlatform cfg
-  |> Bot.Startup.addBot cfg
-  |> Infrastructure.Startup.addInfrastructure cfg
-  |> Bot.Telegram.Startup.addTelegram cfg
+  |> Startup.addDomain cfg
+  |> Startup.addApp
+  |> Startup.addSpotifyMusicPlatform cfg
+  |> Startup.addCachedMusicPlatform cfg
+  |> Startup.addBot cfg
+  |> Startup.addInfrastructure cfg
+  |> Startup.addTelegram cfg
 
   builder
 
