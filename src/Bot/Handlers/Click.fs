@@ -589,7 +589,9 @@ let removePresetClickHandler
     | [ CallbackQueryConstants.preset; presetId; "rm" ] -> task {
         let presetId = PresetId presetId
 
-        let cmd : RemovePreset.Cmd = { UserId = chat.UserId; PresetId = presetId }
+        let cmd: RemovePreset.Cmd =
+          { UserId = chat.UserId
+            PresetId = presetId }
 
         match! mediator.Send cmd with
         | Ok _ ->

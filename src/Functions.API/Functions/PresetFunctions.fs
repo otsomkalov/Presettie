@@ -35,13 +35,7 @@ type RequestError<'a> =
   | OperationError of 'a
 
 type PresetFunctions
-  (
-    presetRepo: IPresetRepo,
-    presetService: IPresetService,
-    userRepo: IUserRepo,
-    authService: IAuthenticationService,
-    mediator: IMediator
-  ) =
+  (presetRepo: IPresetRepo, presetService: IPresetService, userRepo: IUserRepo, authService: IAuthenticationService, mediator: IMediator) =
   let validateUser (req: HttpRequest) : Task<Result<TokenUser, RequestError<_>>> =
     authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
     |> Task.map (Option.someIf _.Succeeded)

@@ -10,7 +10,9 @@ open Xunit
 type RemovePreset() =
   let userRepo = Mock<IUserRepo>()
   let presetRepo = Mock<IPresetRepo>()
-  let sut: RemovePreset.Handler = RemovePreset.handler userRepo.Object presetRepo.Object
+
+  let sut: RemovePreset.Handler =
+    RemovePreset.handler userRepo.Object presetRepo.Object
 
   [<Fact>]
   member _.``keeps current Preset untouched if other was removed``() =
@@ -23,7 +25,10 @@ type RemovePreset() =
     presetRepo.Setup(_.RemovePreset(Mocks.presetId)).ReturnsAsync(())
 
     task {
-      let! result = sut { UserId = Mocks.userId; PresetId = Mocks.presetId }
+      let! result =
+        sut
+          { UserId = Mocks.userId
+            PresetId = Mocks.presetId }
 
       Assert.Equal(Result<unit, Preset.GetPresetError>.Ok(), result)
 
@@ -43,7 +48,10 @@ type RemovePreset() =
     presetRepo.Setup(_.RemovePreset(Mocks.presetId)).ReturnsAsync(())
 
     task {
-      let! result = sut { UserId = Mocks.userId; PresetId = Mocks.presetId }
+      let! result =
+        sut
+          { UserId = Mocks.userId
+            PresetId = Mocks.presetId }
 
       Assert.Equal(Result<unit, Preset.GetPresetError>.Ok(), result)
 
@@ -57,7 +65,10 @@ type RemovePreset() =
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(None)
 
     task {
-      let! result = sut { UserId = Mocks.userId; PresetId = Mocks.presetId }
+      let! result =
+        sut
+          { UserId = Mocks.userId
+            PresetId = Mocks.presetId }
 
       Assert.Equal(Result<unit, Preset.GetPresetError>.Error Preset.GetPresetError.NotFound, result)
 

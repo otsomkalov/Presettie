@@ -947,6 +947,7 @@ type removePresetClickHandler() =
     mediator
       .Setup(_.Send(It.IsAny<RemovePreset.Cmd>()))
       .ReturnsAsync(Result<obj, Preset.GetPresetError>.Error Preset.GetPresetError.NotFound)
+
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.PresetNotFound]).Returns(Notifications.PresetNotFound)
 
