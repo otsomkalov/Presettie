@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Compile Include="RunPreset.fs" />
+    <Compile Include="RemovePreset.fs" />
   </ItemGroup>
 
 </Project>

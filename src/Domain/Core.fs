@@ -300,9 +300,6 @@ type ISetOnlyLiked =
 type ISetAll =
   abstract SetAll: PresetId * IncludedPlaylistId -> Task<unit>
 
-type IRemovePreset =
-  abstract RemovePreset: UserId * RawPresetId -> Task<Result<Preset, Preset.GetPresetError>>
-
 type IGetPreset =
   abstract GetPreset: UserId * PresetId -> Task<Result<Preset, Preset.GetPresetError>>
 
@@ -311,7 +308,6 @@ type IPresetService =
 
   inherit ISetPresetSize
   inherit ICreatePreset
-  inherit IRemovePreset
   inherit IGetPreset
 
   inherit IIncludePlaylist
@@ -347,14 +343,10 @@ type ISetCurrentPresetSize =
 type ISetCurrentPreset =
   abstract SetCurrentPreset: UserId * PresetId -> Task<unit>
 
-type IRemoveUserPreset =
-  abstract RemoveUserPreset: UserId * RawPresetId -> Task<Result<unit, Preset.GetPresetError>>
-
 type ICreateUser =
   abstract CreateUser: unit -> Task<User>
 
 type IUserService =
   inherit ISetCurrentPresetSize
   inherit ISetCurrentPreset
-  inherit IRemoveUserPreset
   inherit ICreateUser

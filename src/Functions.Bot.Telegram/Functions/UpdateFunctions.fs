@@ -1,5 +1,6 @@
 ﻿namespace Functions.Bot.Telegram
 
+open App
 open Bot.Core
 open Bot.Handlers
 open Bot.Repos
@@ -25,12 +26,14 @@ type UpdateFunctions
     getResp,
     chatRepo: IChatRepo,
     chatService: IChatService,
+    mediator: IMediator,
     logger: ILogger<UpdateFunctions>
   ) =
   inherit ControllerBase()
 
   let updateHandler =
     Update.main
+      mediator
       authSvc
       userRepo
       userService
