@@ -361,3 +361,6 @@ module Notifications =
 
   [<Literal>]
   let IncludedArtistRemoved = "notifications.included-artist-removed"
+
+  [<Literal>]
+  let PresetAccessForbidden = "notifications.preset-access-forbidden"

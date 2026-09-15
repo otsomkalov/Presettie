@@ -422,21 +422,6 @@ module User =
             CurrentPresetId = Some presetId })
       |> Task.bind userRepo.SaveUser
 
-  let removePreset (userRepo: #ILoadUser & #ISaveUser) (presetService: #IRemovePreset) =
-    fun userId presetId ->
-      presetService.RemovePreset(userId, presetId)
-      |> Task.bind (Result.taskMap (fun preset -> userRepo.LoadUser userId |> Task.map (fun u -> (preset, u))))
-      |> TaskResult.taskMap (fun (preset, user) ->
-        match user.CurrentPresetId with
-        | Some p when p = preset.Id -> task {
-            let updatedUser = { user with CurrentPresetId = None }
-
-            do! userRepo.SaveUser updatedUser
-
-            return ()
-          }
-        | _ -> Task.FromResult())
-
   let setCurrentPresetSize (userRepo: #ILoadUser) (presetService: #ISetPresetSize) =
     fun userId size ->
       userId
@@ -585,15 +570,6 @@ type PresetService
     member this.SetOnlyLiked(presetId, playlistId) =
       IncludedPlaylist.setLikedOnly presetRepo presetId playlistId
 
-    member this.RemovePreset(userId, presetId) =
-      presetId
-      |> presetRepo.ParseId
-      |> TaskOption.taskBind presetRepo.LoadPreset
-      |> Task.map (function
-        | Some preset when preset.OwnerId = userId -> Ok preset
-        | _ -> Error Preset.GetPresetError.NotFound)
-      |> TaskResult.taskTap (_.Id >> presetRepo.RemovePreset)
-
     member this.GetPreset(userId, presetId) = Preset.get presetRepo userId presetId
 
 type UserService(userRepo: IUserRepo, presetService: IPresetService) =
@@ -603,8 +579,5 @@ type UserService(userRepo: IUserRepo, presetService: IPresetService) =
 
     member this.SetCurrentPreset(userId, presetId) =
       User.setCurrentPreset userRepo userId presetId
-
-    member this.RemoveUserPreset(userId, presetId) =
-      User.removePreset userRepo presetService userId presetId
 
     member this.CreateUser() = User.create userRepo ()

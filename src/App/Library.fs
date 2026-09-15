@@ -115,7 +115,7 @@ module rec RunPreset =
       | None -> Task.FromResult []
 
   let handler
-    (presetRepo: IPresetRepo)
+    presetRepo
     (musicPlatformFactory: IMusicPlatformFactory)
     (shuffler: Shuffler<Track>)
     (recommenderFactory: IRecommenderFactory)
@@ -164,6 +164,28 @@ module rec RunPreset =
       do! saveTracks musicPlatform preset tracksToSave
 
       return preset
+    }
+
+[<RequireQualifiedAccess>]
+module RemovePreset =
+  type Cmd = { UserId: UserId; PresetId: PresetId }
+
+  type Handler = Cmd -> TaskResult<unit, Preset.GetPresetError>
+
+  let handler (userRepo: #ILoadUser & #ISaveUser) (presetRepo: #IRemovePreset) : Handler =
+    fun cmd -> taskResult {
+      let! user = userRepo.LoadUser cmd.UserId
+
+      let! preset = Preset.get presetRepo cmd.UserId cmd.PresetId
+
+      do! presetRepo.RemovePreset preset.Id
+
+      if user.CurrentPresetId = Some preset.Id then
+        let updatedUser = { user with CurrentPresetId = None }
+
+        do! userRepo.SaveUser updatedUser
+
+      return ()
     }
 
 type IMediator =

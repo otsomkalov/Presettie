@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.ComponentModel.DataAnnotations
 open System.Threading.Tasks
+open App
 open Functions.API.Shared
 open Domain.Core
 open Domain.Repos
@@ -39,7 +40,7 @@ type PresetFunctions
     presetService: IPresetService,
     userRepo: IUserRepo,
     authService: IAuthenticationService,
-    userService: IUserService
+    mediator: IMediator
   ) =
   let validateUser (req: HttpRequest) : Task<Result<TokenUser, RequestError<_>>> =
     authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
@@ -109,7 +110,8 @@ type PresetFunctions
       | Ok preset -> OkObjectResult(preset) :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
       | Error Unauthorized -> UnauthorizedResult() :> IActionResult
-      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult)
+      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult
+      | Error(OperationError Preset.GetPresetError.Forbidden) -> ForbidResult() :> IActionResult)
 
   [<Function("CreatePreset")>]
   member this.CreatePreset
@@ -137,17 +139,20 @@ type PresetFunctions
     : Task<IActionResult> =
     let handler (token: TokenUser) =
       fun presetId -> task {
-        let! user = userRepo.LoadUser token.UserId
+        let cmd: RemovePreset.Cmd =
+          { UserId = token.UserId
+            PresetId = presetId }
 
-        let! result = userService.RemoveUserPreset(user.Id, presetId)
+        let! result = mediator.Send cmd
 
         return result |> Result.mapError RequestError.OperationError
       }
 
     validateUser request
-    |> TaskResult.bind (flip handler (RawPresetId presetId))
+    |> TaskResult.bind (flip handler (PresetId presetId))
     |> Task.map (function
       | Ok _ -> NoContentResult() :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
       | Error Unauthorized -> UnauthorizedResult() :> IActionResult
-      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult)
+      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult
+      | Error(OperationError Preset.GetPresetError.Forbidden) -> ForbidResult() :> IActionResult)

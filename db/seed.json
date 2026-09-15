@@ -590,5 +590,10 @@
     "Key": "notifications.included-artist-removed",
     "Value": "Included artist successfully removed!",
     "Lang": "en"
+  },
+  {
+    "Key": "notifications.preset-access-forbidden",
+    "Value": "You cannot access this preset!",
+    "Lang": "en"
   }
 ]
