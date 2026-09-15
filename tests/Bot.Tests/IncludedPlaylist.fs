@@ -7,6 +7,7 @@ open Moq
 open MusicPlatform
 open Bot.Handlers.Click
 open Bot.Tests
+open Tests.Shared
 open Xunit
 open otsom.fs.Bot
 open otsom.fs.Resources

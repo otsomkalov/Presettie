@@ -1,10 +1,14 @@
 ﻿module internal Infrastructure.Repos
 
 open Azure.Storage.Queues
+open Domain.Core.PresetSettings
 open Domain.Repos
+open Domain.Workflows
+open Microsoft.Extensions.DependencyInjection
 open MongoDB.Bson
 open MongoDB.Driver
 open Database
+open MusicPlatform
 open MusicPlatform.Cached.Helpers
 open Infrastructure.Mapping
 open System.Linq
@@ -105,3 +109,13 @@ type UserRepo(db: IMongoDatabase) =
 
     member this.LoadUserByMusicPlatform(userId) =
       UserRepo.loadByMusicPlatform collection userId
+
+type RecommenderFactory
+  ([<FromKeyedServices("reccobeats")>] reccoBeatsRecommender: IRecommender, [<FromKeyedServices("musicae")>] musicaeRecommender) =
+  interface IRecommenderFactory with
+    member this.Create(musicPlatform, engine) =
+      match engine with
+      | RecommendationsEngine.ArtistAlbums -> ArtistAlbumsRecommender(musicPlatform)
+      | RecommendationsEngine.ReccoBeats -> reccoBeatsRecommender
+      | RecommendationsEngine.Spotify -> musicPlatform
+      | RecommendationsEngine.Musicae -> musicaeRecommender

@@ -1,5 +1,6 @@
 ﻿module Bot.Workflows
 
+open App
 open Domain.Core.PresetSettings
 open Domain.Repos
 open Microsoft.Extensions.Options
@@ -471,22 +472,26 @@ module Preset =
       >> Task.map Option.get
       >> Task.bind (show' (editButtons messageId) resp)
 
-  let run (resp: IResourceProvider) (chatCtx: #ISendMessage & #IEditMessage) (presetService: #IRunPreset) =
+  let run (mediator: IMediator) (resp: IResourceProvider) (chatCtx: #ISendMessage & #IEditMessage) =
     fun (userId, presetId) ->
       let onSuccess =
         fun (preset: Preset) -> chatCtx.SendMessage resp[Messages.PresetExecuted, [| preset.Name |]]
 
       let onError messageId =
         function
-        | Preset.RunError.NoIncludedTracks -> chatCtx.EditMessage(messageId, resp[Messages.NoIncludedTracks])
-        | Preset.RunError.NoPotentialTracks -> chatCtx.EditMessage(messageId, resp[Messages.NoPotentialTracks])
-        | Preset.Unauthorized -> chatCtx.EditMessage(messageId, resp[Messages.NotAuthorized])
+        | RunPreset.Error.NoIncludedTracks -> chatCtx.EditMessage(messageId, resp[Messages.NoIncludedTracks])
+        | RunPreset.Error.NoPotentialTracks -> chatCtx.EditMessage(messageId, resp[Messages.NoPotentialTracks])
+        | RunPreset.Error.NoMusicPlatform -> chatCtx.EditMessage(messageId, resp[Messages.NotAuthorized])
+        | RunPreset.Error.Preset Preset.GetPresetError.NotFound -> chatCtx.EditMessage(messageId, resp[Messages.PresetNotFound])
+        | RunPreset.Error.Preset Preset.GetPresetError.Forbidden -> chatCtx.EditMessage(messageId, resp[Messages.PresetAccessForbidden])
 
       task {
         let! sentMessageId = chatCtx.SendMessage(resp[Messages.RunningPreset])
 
+        let cmd: RunPreset.Cmd = { UserId = userId; PresetId = presetId }
+
         return!
-          presetService.RunPreset(userId, presetId)
+          mediator.Send cmd
           |> TaskResult.taskEither (onSuccess >> Task.ignore) (onError sentMessageId)
       }
 

@@ -72,24 +72,6 @@ module PresetSettings =
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
-  let private listPlaylistTracks (env: #IListPlaylistTracks & #IListLikedTracks) =
-    fun (playlist: IncludedPlaylist) -> task {
-      let! tracks = playlist.Id.Value |> env.ListPlaylistTracks |> Task.map Set.ofSeq
-
-      if playlist.LikedOnly then
-        return! env.ListLikedTracks() |> Task.map (Set.ofList >> Set.intersect tracks)
-      else
-        return tracks
-    }
-
-  let internal listTracks env =
-    fun (playlists: IncludedPlaylist list) ->
-      playlists
-      |> List.map (listPlaylistTracks env)
-      |> Task.WhenAll
-      |> Task.map Seq.concat
-      |> Task.map List.ofSeq
-
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId includedPlaylistId -> task {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
@@ -154,16 +136,6 @@ module IncludedPlaylist =
 
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
-  let private listPlaylistTracks (env: #IListPlaylistTracks) =
-    fun (playlist: ExcludedPlaylist) -> playlist.Id.Value |> env.ListPlaylistTracks
-
-  let internal listTracks platform =
-    fun (playlists: ExcludedPlaylist list) ->
-      playlists
-      |> List.map (listPlaylistTracks platform)
-      |> Task.WhenAll
-      |> Task.map List.concat
-
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId excludedPlaylistId -> task {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
@@ -182,13 +154,6 @@ module ExcludedPlaylist =
 
 [<RequireQualifiedAccess>]
 module ExcludedArtist =
-  let internal listTracks (platform: #IListArtistTracks) =
-    fun (artists: ExcludedArtist list) ->
-      artists
-      |> TaskSeq.ofList
-      |> TaskSeq.collect (fun artist -> platform.ListArtistTracks artist.Id)
-      |> TaskSeq.toListAsync
-
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId excludedArtistId -> task {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
@@ -207,13 +172,6 @@ module ExcludedArtist =
 
 [<RequireQualifiedAccess>]
 module IncludedArtist =
-  let internal listTracks (platform: #IListArtistTracks) =
-    fun (artists: IncludedArtist list) ->
-      artists
-      |> TaskSeq.ofList
-      |> TaskSeq.collect (fun artist -> platform.ListArtistTracks artist.Id)
-      |> TaskSeq.toListAsync
-
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId includedArtistId -> task {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
@@ -273,92 +231,6 @@ module Preset =
       do! presetRepo.SavePreset newPreset
 
       return newPreset
-    }
-
-  let private listIncludedTracks (platform: #IListPlaylistTracks & #IListLikedTracks) =
-    fun preset -> task {
-      let! includedByPlaylists = preset.IncludedPlaylists |> IncludedPlaylist.listTracks platform
-      let! includedByArtists = preset.IncludedArtists |> IncludedArtist.listTracks platform
-
-      let! includedLiked =
-        match preset.Settings.LikedTracksHandling with
-        | LikedTracksHandling.Include -> platform.ListLikedTracks()
-        | _ -> Task.FromResult []
-
-      return List.concat [ includedByPlaylists; includedByArtists; includedLiked ]
-    }
-
-  let private listExcludedTracks (platform: #IListLikedTracks) =
-    fun preset -> task {
-      let! excludedByPlaylists = preset.ExcludedPlaylists |> ExcludedPlaylist.listTracks platform
-
-      let! excludedByArtists = preset.ExcludedArtists |> ExcludedArtist.listTracks platform
-
-      let! excludedLiked =
-        match preset.Settings.LikedTracksHandling with
-        | LikedTracksHandling.Exclude -> platform.ListLikedTracks()
-        | _ -> Task.FromResult []
-
-      return List.concat [ excludedByPlaylists; excludedByArtists; excludedLiked ]
-    }
-
-  let run (presetRepo: #ILoadPreset) (logger: ILogger) (shuffler: Shuffler<Track>) platform (recommenderFactory: IRecommenderFactory) =
-
-    let saveTracks (platform: #IAddTracks & #IReplaceTracks) =
-      fun preset (tracks: Track list) ->
-        preset.TargetedPlaylists
-        |> Seq.map (fun p ->
-          match p.Overwrite with
-          | true -> platform.ReplaceTracks(p.Id.Value, tracks)
-          | false -> platform.AddTracks(p.Id.Value, tracks))
-        |> Task.WhenAll
-        |> Task.ignore
-
-    let getRecommendations =
-      fun (preset: Preset) (tracks: Track list) ->
-        match preset.Settings.RecommendationsEngine with
-        | Some engine ->
-          let recommender = recommenderFactory.Create(engine)
-
-          recommender.Recommend tracks
-        | None -> Task.FromResult []
-
-    fun presetId -> taskResult {
-      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
-
-      // Shuffle first to get recommendations based on different tracks each time
-      let! includedTracks = listIncludedTracks platform preset |> Task.map shuffler
-
-      logger.LogInformation("Loaded {IncludedTracksCount} included tracks", includedTracks.Length)
-
-      do! includedTracks |> Result.requireNotEmpty Preset.RunError.NoIncludedTracks
-
-      let! recommendedTracks = getRecommendations preset includedTracks |> Task.map shuffler
-
-      logger.LogInformation("Loaded {RecommendedTracksCount} recommended tracks", recommendedTracks.Length)
-
-      let! excludedTracks = listExcludedTracks platform preset
-
-      let potentialTracks =
-        (recommendedTracks @ includedTracks) |> List.except excludedTracks
-
-      let filteredPotentialTracks =
-        match preset.Settings.UniqueArtists with
-        | true -> potentialTracks |> Tracks.uniqueByArtists
-        | false -> potentialTracks
-
-      logger.LogInformation("{PotentialTracksCount} potential tracks", potentialTracks.Length)
-
-      do!
-        filteredPotentialTracks
-        |> Result.requireNotEmpty Preset.RunError.NoPotentialTracks
-
-      let tracksToSave =
-        filteredPotentialTracks |> List.takeSafe preset.Settings.Size.Value
-
-      do! saveTracks platform preset tracksToSave
-
-      return preset
     }
 
   let queueRun (presetRepo: #ILoadPreset & #Repos.IQueueRun) =
@@ -528,6 +400,17 @@ module Preset =
         |> Task.map (fun p -> { p with Settings.Size = s })
         |> Task.bind presetRepo.SavePreset)
 
+  let get (presetRepo: #ILoadPreset) =
+    fun userId presetId -> taskResult {
+      let! preset =
+        presetRepo.LoadPreset presetId
+        |> TaskResult.requireSome Preset.GetPresetError.NotFound
+
+      do! Result.requireEqual preset.OwnerId userId Preset.GetPresetError.Forbidden
+
+      return preset
+    }
+
 [<RequireQualifiedAccess>]
 module User =
   let setCurrentPreset (userRepo: #ILoadUser & #ISaveUser) =
@@ -633,26 +516,8 @@ type ArtistAlbumsRecommender(musicPlatform: IMusicPlatform) =
       |> TaskSeq.distinct
       |> TaskSeq.toListAsync
 
-type RecommenderFactory(musicPlatform: IMusicPlatform, reccoBeatsRecommender: IRecommender, musicaeRecommender: IRecommender) =
-  interface IRecommenderFactory with
-    member this.Create(recommenderType) =
-      match recommenderType with
-      | RecommendationsEngine.ArtistAlbums -> ArtistAlbumsRecommender(musicPlatform)
-      | RecommendationsEngine.ReccoBeats -> reccoBeatsRecommender
-      | RecommendationsEngine.Spotify -> musicPlatform
-      | RecommendationsEngine.Musicae -> musicaeRecommender
-
 type PresetService
-  (
-    parsePlaylistId: Playlist.ParseId,
-    parseArtistId: Artist.ParseId,
-    presetRepo: IPresetRepo,
-    musicPlatformFactory: IMusicPlatformFactory,
-    shuffler: Shuffler<Track>,
-    [<FromKeyedServices("reccobeats")>] reccoBeatsRecommender: IRecommender,
-    [<FromKeyedServices("musicae")>] musicaeRecommender: IRecommender,
-    logger: ILogger<PresetService>
-  ) =
+  (parsePlaylistId: Playlist.ParseId, parseArtistId: Artist.ParseId, presetRepo: IPresetRepo, musicPlatformFactory: IMusicPlatformFactory) =
   interface IPresetService with
     member this.QueueRun(userId, presetId) =
       Preset.queueRun presetRepo userId presetId
@@ -720,18 +585,6 @@ type PresetService
     member this.SetOnlyLiked(presetId, playlistId) =
       IncludedPlaylist.setLikedOnly presetRepo presetId playlistId
 
-    member this.RunPreset(userId, presetId) = task {
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(userId.ToMusicPlatformId())
-
-      match musicPlatform with
-      | Some platform ->
-        let recommenderFactory =
-          RecommenderFactory(platform, reccoBeatsRecommender, musicaeRecommender)
-
-        return! Preset.run presetRepo logger shuffler platform recommenderFactory presetId
-      | None -> return Preset.RunError.Unauthorized |> Error
-    }
-
     member this.RemovePreset(userId, presetId) =
       presetId
       |> presetRepo.ParseId
@@ -741,13 +594,7 @@ type PresetService
         | _ -> Error Preset.GetPresetError.NotFound)
       |> TaskResult.taskTap (_.Id >> presetRepo.RemovePreset)
 
-    member this.GetPreset(userId, presetId) =
-      presetId
-      |> presetRepo.ParseId
-      |> TaskOption.taskBind presetRepo.LoadPreset
-      |> Task.map (function
-        | Some preset when preset.OwnerId = userId -> Ok preset
-        | _ -> Error Preset.GetPresetError.NotFound)
+    member this.GetPreset(userId, presetId) = Preset.get presetRepo userId presetId
 
 type UserService(userRepo: IUserRepo, presetService: IPresetService) =
   interface IUserService with

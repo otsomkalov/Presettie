@@ -223,6 +223,12 @@ module Messages =
   [<Literal>]
   let ExcludedContent = "messages.excluded-content"
 
+  [<Literal>]
+  let PresetNotFound = "messages.preset-not-found"
+
+  [<Literal>]
+  let PresetAccessForbidden = "messages.preset-access-forbidden"
+
 [<RequireQualifiedAccess>]
 module Buttons =
   [<Literal>]

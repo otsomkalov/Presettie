@@ -1,7 +1,7 @@
 ﻿module Bot.Tests.Mocks
 
-open Domain.Tests
 open Bot.Core
+open Tests.Shared
 open otsom.fs.Bot
 
 let botMessageId = BotMessageId 1

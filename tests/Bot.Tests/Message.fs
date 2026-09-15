@@ -8,6 +8,7 @@ open MusicPlatform
 open Domain.Core
 open Domain.Tests
 open Moq
+open Tests.Shared
 open Xunit
 open otsom.fs.Bot
 open otsom.fs.Resources

@@ -3,6 +3,7 @@
 open Domain.Repos
 open Domain.Tests
 open Moq
+open Tests.Shared
 open Xunit
 open Domain.Core
 open Domain.Workflows

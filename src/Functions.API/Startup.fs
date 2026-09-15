@@ -21,6 +21,7 @@ open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.ApplicationInsights
 open otsom.fs.Auth
 open otsom.fs.Auth.Spotify
+open App
 
 [<RequireQualifiedAccess>]
 module internal Settings =
@@ -38,6 +39,7 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   services
   |> Startup.addSpotifyMusicPlatform cfg
   |> Startup.addDomain cfg
+  |> Startup.addApp
   |> Startup.addInfrastructure cfg
   |> Startup.addAuthCore cfg
   |> Startup.addSpotifyAuth

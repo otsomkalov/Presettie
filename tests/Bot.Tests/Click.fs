@@ -7,6 +7,7 @@ open Bot.Resources
 open Domain.Core.PresetSettings
 open Domain.Tests
 open Moq
+open Tests.Shared
 open Xunit
 open otsom.fs.Bot
 open otsom.fs.Resources

@@ -8,6 +8,7 @@ open Domain.Tests
 open Moq
 open Bot.Constants
 open Bot.Handlers.Click
+open Tests.Shared
 open Xunit
 open otsom.fs.Bot
 open otsom.fs.Resources

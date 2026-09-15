@@ -119,12 +119,9 @@ module Preset =
 
   type Validate = Preset -> Result<Preset, ValidationError list>
 
-  type RunError =
-    | NoIncludedTracks
-    | NoPotentialTracks
-    | Unauthorized
-
-  type GetPresetError = | NotFound
+  type GetPresetError =
+    | NotFound
+    | Forbidden
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
@@ -303,18 +300,14 @@ type ISetOnlyLiked =
 type ISetAll =
   abstract SetAll: PresetId * IncludedPlaylistId -> Task<unit>
 
-type IRunPreset =
-  abstract RunPreset: UserId * PresetId -> Task<Result<Preset, Preset.RunError>>
-
 type IRemovePreset =
   abstract RemovePreset: UserId * RawPresetId -> Task<Result<Preset, Preset.GetPresetError>>
 
 type IGetPreset =
-  abstract GetPreset: UserId * RawPresetId -> Task<Result<Preset, Preset.GetPresetError>>
+  abstract GetPreset: UserId * PresetId -> Task<Result<Preset, Preset.GetPresetError>>
 
 type IPresetService =
   inherit IQueueRun
-  inherit IRunPreset
 
   inherit ISetPresetSize
   inherit ICreatePreset
@@ -365,6 +358,3 @@ type IUserService =
   inherit ISetCurrentPreset
   inherit IRemoveUserPreset
   inherit ICreateUser
-
-type IRecommenderFactory =
-  abstract Create: PresetSettings.RecommendationsEngine -> IRecommender
