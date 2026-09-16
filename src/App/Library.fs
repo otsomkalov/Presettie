@@ -29,7 +29,8 @@ module rec RunPreset =
   module private IncludedPlaylist =
     let private listPlaylistTracks (musicPlatform: #IListPlaylistTracks & #IListLikedTracks) =
       fun (playlist: IncludedPlaylist) -> task {
-        let! tracks = playlist.Id.Value |> musicPlatform.ListPlaylistTracks |> Task.map Set.ofSeq
+        let! tracks =
+          playlist.Id.Value |> musicPlatform.ListPlaylistTracks |> Task.map Set.ofSeq
 
         if playlist.LikedOnly then
           return! musicPlatform.ListLikedTracks() |> Task.map (Set.ofList >> Set.intersect tracks)
@@ -71,8 +72,11 @@ module rec RunPreset =
 
   let private listIncludedTracks (musicPlatform: #IListPlaylistTracks & #IListLikedTracks) =
     fun preset -> task {
-      let! includedByPlaylists = preset.IncludedPlaylists |> IncludedPlaylist.listTracks musicPlatform
-      let! includedByArtists = preset.IncludedArtists |> IncludedArtist.listTracks musicPlatform
+      let! includedByPlaylists =
+        preset.IncludedPlaylists |> IncludedPlaylist.listTracks musicPlatform
+
+      let! includedByArtists =
+        preset.IncludedArtists |> IncludedArtist.listTracks musicPlatform
 
       let! includedLiked =
         match preset.Settings.LikedTracksHandling with
@@ -84,7 +88,9 @@ module rec RunPreset =
 
   let private listExcludedTracks (platform: #IListLikedTracks) =
     fun preset -> task {
-      let! excludedByPlaylists = preset.ExcludedPlaylists |> ExcludedPlaylist.listTracks platform
+      let! excludedByPlaylists =
+        preset.ExcludedPlaylists |> ExcludedPlaylist.listTracks platform
+
       let! excludedByArtists = preset.ExcludedArtists |> ExcludedArtist.listTracks platform
 
       let! excludedLiked =
@@ -140,7 +146,8 @@ module rec RunPreset =
 
       do! includedTracks |> Result.requireNotEmpty Error.NoIncludedTracks
 
-      let! recommendedTracks = getRecommendations musicPlatform preset includedTracks |> Task.map shuffler
+      let! recommendedTracks =
+        getRecommendations musicPlatform preset includedTracks |> Task.map shuffler
 
       logger.LogInformation("Loaded {RecommendedTracksCount} recommended tracks", recommendedTracks.Length)
 

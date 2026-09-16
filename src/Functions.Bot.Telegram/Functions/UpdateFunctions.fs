@@ -49,14 +49,13 @@ type UpdateFunctions
   [<Function("HandleUpdateAsync")>]
   member this.HandleUpdateAsync
     ([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "telegram/update")>] request: HttpRequest, [<FromBody>] update: Update)
-    =
-    task {
-      try
-        let upd = Mappers.Update.map update
+    = task {
+    try
+      let upd = Mappers.Update.map update
 
-        match upd with
-        | Some upd -> do! updateHandler upd
-        | None -> logger.LogInformation("Unsupported update type: {UpdateType}", update.Type)
-      with e ->
-        logger.LogError(e, "Error during processing update:")
-    }
+      match upd with
+      | Some upd -> do! updateHandler upd
+      | None -> logger.LogInformation("Unsupported update type: {UpdateType}", update.Type)
+    with e ->
+      logger.LogError(e, "Error during processing update:")
+  }

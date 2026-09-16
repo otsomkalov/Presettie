@@ -7,29 +7,39 @@ open SpotifyAPI.Web
 [<RequireQualifiedAccess>]
 module Artist =
   let fromFull (artist: FullArtist) : Artist =
-    { Id = ArtistId artist.Id
-      Name = artist.Name }
+    {
+      Id = ArtistId artist.Id
+      Name = artist.Name
+    }
 
   let fromSimple (artist: SimpleArtist) : Artist =
-    { Id = ArtistId artist.Id
-      Name = artist.Name }
+    {
+      Id = ArtistId artist.Id
+      Name = artist.Name
+    }
 
 [<RequireQualifiedAccess>]
 module Track =
   let fromFull (track: FullTrack) : Track =
-    { Id = TrackId track.Id
-      Artists = track.Artists |> Seq.map Artist.fromSimple |> Set.ofSeq }
+    {
+      Id = TrackId track.Id
+      Artists = track.Artists |> Seq.map Artist.fromSimple |> Set.ofSeq
+    }
 
   let fromSimple (track: SimpleTrack) : Track =
-    { Id = TrackId track.Id
-      Artists = track.Artists |> Seq.map Artist.fromSimple |> Set.ofSeq }
+    {
+      Id = TrackId track.Id
+      Artists = track.Artists |> Seq.map Artist.fromSimple |> Set.ofSeq
+    }
 
 [<RequireQualifiedAccess>]
 module Album =
   let fromFull (album: FullAlbum) : Album =
-    { Id = AlbumId album.Id
+    {
+      Id = AlbumId album.Id
       Tracks =
         album.Tracks.Items
         |> filterValidTracks
         |> Seq.map Track.fromSimple
-        |> Seq.toList }
+        |> Seq.toList
+    }

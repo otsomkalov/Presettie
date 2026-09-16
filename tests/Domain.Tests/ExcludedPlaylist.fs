@@ -17,7 +17,8 @@ type ExcludedPlaylist() =
 
     let expected =
       { Mocks.preset with
-          ExcludedPlaylists = [] }
+          ExcludedPlaylists = []
+      }
 
     mockPresetRepo.Setup(_.SavePreset(expected)).ReturnsAsync(())
 

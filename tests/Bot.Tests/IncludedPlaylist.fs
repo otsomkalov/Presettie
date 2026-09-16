@@ -23,16 +23,19 @@ type IncludedPlaylist() =
 
   let preset =
     { Mocks.preset with
-        IncludedPlaylists = [ Mocks.includedPlaylist ] }
+        IncludedPlaylists = [ Mocks.includedPlaylist ]
+    }
 
   do
     presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some preset)
     |> ignore
 
   let createClick data : Click =
-    { Id = Mocks.clickId
+    {
+      Id = Mocks.clickId
       MessageId = Mocks.botMessageId
-      Data = data }
+      Data = data
+    }
 
   [<Fact>]
   member this.``list click should list included playlists if data match``() = task {
@@ -40,12 +43,15 @@ type IncludedPlaylist() =
 
     let click =
       createClick
-        [ CallbackQueryConstants.preset
+        [
+          CallbackQueryConstants.preset
           Mocks.preset.Id.Value
           CallbackQueryConstants.includedPlaylists
-          "0" ]
+          "0"
+        ]
 
-    let! result = listIncludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
+    let! result =
+      listIncludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(Some(), result)
 
@@ -57,7 +63,8 @@ type IncludedPlaylist() =
   member this.``list click should not list included playlists if data does not match``() = task {
     let click = createClick []
 
-    let! result = listIncludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
+    let! result =
+      listIncludedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(None, result)
 
@@ -75,11 +82,13 @@ type IncludedPlaylist() =
 
     let click =
       createClick
-        [ CallbackQueryConstants.preset
+        [
+          CallbackQueryConstants.preset
           Mocks.preset.Id.Value
           CallbackQueryConstants.includedPlaylists
           Mocks.includedPlaylistId.Value
-          "i" ]
+          "i"
+        ]
 
     let! result =
       showIncludedPlaylistClickHandler
@@ -125,20 +134,24 @@ type IncludedPlaylist() =
       .Setup(_.RemoveIncludedPlaylist(Mocks.presetId, Mocks.includedPlaylist.Id))
       .ReturnsAsync(
         { Mocks.preset with
-            IncludedPlaylists = [] }
+            IncludedPlaylists = []
+        }
       )
 
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
     let click =
       createClick
-        [ CallbackQueryConstants.preset
+        [
+          CallbackQueryConstants.preset
           Mocks.preset.Id.Value
           CallbackQueryConstants.includedPlaylists
           Mocks.includedPlaylistId.Value
-          "rm" ]
+          "rm"
+        ]
 
-    let! result = removeIncludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
+    let! result =
+      removeIncludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(Some(), result)
 
@@ -150,7 +163,8 @@ type IncludedPlaylist() =
   member this.``remove click should not delete playlist``() = task {
     let click = createClick []
 
-    let! result = removeIncludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
+    let! result =
+      removeIncludedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(None, result)
 

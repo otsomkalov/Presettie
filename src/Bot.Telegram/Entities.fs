@@ -20,6 +20,8 @@ type Chat() =
     Chat(Id = chat.Id.Value, UserId = (chat.UserId.Value))
 
   member this.ToDomain() : Core.Chat =
-    { Id = otsom.fs.Bot.ChatId this.Id
+    {
+      Id = otsom.fs.Bot.ChatId this.Id
       UserId = UserId(this.UserId)
-      Lang = this.Lang }
+      Lang = this.Lang
+    }

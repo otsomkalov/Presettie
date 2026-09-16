@@ -23,7 +23,8 @@ type ChatRepo(collection: IMongoCollection<Entities.Chat>) =
     }
 
     member this.LoadUserChat(userId) = task {
-      let! chat = collection.AsQueryable().FirstOrDefaultAsync(fun c -> c.UserId = userId.Value)
+      let! chat =
+        collection.AsQueryable().FirstOrDefaultAsync(fun c -> c.UserId = userId.Value)
 
       return chat |> Option.ofObj |> Option.map _.ToDomain()
     }

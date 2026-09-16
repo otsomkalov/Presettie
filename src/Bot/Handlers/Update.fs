@@ -11,38 +11,39 @@ open otsom.fs.Bot
 open otsom.fs.Bot.Builders
 open otsom.fs.Extensions
 
-let private buildMessageHandlers authService userRepo userService presetService presetRepo resp botService buildMusicPlatform = messageHandlers {
-  startMessageHandler userRepo presetRepo authService resp botService
+let private buildMessageHandlers authService userRepo userService presetService presetRepo resp botService buildMusicPlatform =
+  messageHandlers {
+    startMessageHandler userRepo presetRepo authService resp botService
 
-  faqMessageHandler resp botService
-  privacyMessageHandler resp botService
-  guideMessageHandler resp botService
-  helpMessageHandler resp botService
+    faqMessageHandler resp botService
+    privacyMessageHandler resp botService
+    guideMessageHandler resp botService
+    helpMessageHandler resp botService
 
-  myPresetsMessageHandler presetRepo resp botService
-  presetSettingsMessageHandler userRepo presetRepo resp botService
-  queuePresetRunMessageHandler userRepo presetService resp botService
+    myPresetsMessageHandler presetRepo resp botService
+    presetSettingsMessageHandler userRepo presetRepo resp botService
+    queuePresetRunMessageHandler userRepo presetService resp botService
 
-  createPresetMessageHandler presetService resp botService
-  createPresetButtonMessageHandler resp botService
+    createPresetMessageHandler presetService resp botService
+    createPresetButtonMessageHandler resp botService
 
-  setPresetSizeMessageButtonHandler resp botService
-  setPresetSizeMessageHandler userService userRepo presetRepo resp botService
+    setPresetSizeMessageButtonHandler resp botService
+    setPresetSizeMessageHandler userService userRepo presetRepo resp botService
 
-  includePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
-  excludePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
-  targetPlaylistButtonMessageHandler buildMusicPlatform authService resp botService
+    includePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
+    excludePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
+    targetPlaylistButtonMessageHandler buildMusicPlatform authService resp botService
 
-  excludeArtistButtonMessageHandler buildMusicPlatform authService resp botService
+    excludeArtistButtonMessageHandler buildMusicPlatform authService resp botService
 
-  includePlaylistMessageHandler userRepo presetService authService resp botService
-  includeArtistMessageHandler userRepo presetService authService resp botService
-  excludePlaylistMessageHandler userRepo presetService authService resp botService
-  excludeArtistMessageHandler userRepo presetService authService resp botService
-  targetPlaylistMessageHandler userRepo presetService authService resp botService
+    includePlaylistMessageHandler userRepo presetService authService resp botService
+    includeArtistMessageHandler userRepo presetService authService resp botService
+    excludePlaylistMessageHandler userRepo presetService authService resp botService
+    excludeArtistMessageHandler userRepo presetService authService resp botService
+    targetPlaylistMessageHandler userRepo presetService authService resp botService
 
-  backMessageButtonHandler userRepo presetRepo resp botService
-}
+    backMessageButtonHandler userRepo presetRepo resp botService
+  }
 
 let private buildClickHandlers mediator userService presetService presetRepo resp botService buildMusicPlatform = clickHandlers {
   listPresetsClickHandler presetRepo resp botService
@@ -117,7 +118,8 @@ let main
 
     match update.Data with
     | Msg msg ->
-      let! result = buildMessageHandlers authService userRepo userService presetService presetRepo resp botSvc buildMusicPlatform chat msg
+      let! result =
+        buildMessageHandlers authService userRepo userService presetService presetRepo resp botSvc buildMusicPlatform chat msg
 
       match result with
       | Some() -> return ()
@@ -126,7 +128,8 @@ let main
 
         return! botSvc.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
     | Click click ->
-      let! result = buildClickHandlers mediator userService presetService presetRepo resp botSvc buildMusicPlatform chat click
+      let! result =
+        buildClickHandlers mediator userService presetService presetRepo resp botSvc buildMusicPlatform chat click
 
       match result with
       | Some() -> return ()

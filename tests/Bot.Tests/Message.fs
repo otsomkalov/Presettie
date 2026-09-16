@@ -17,14 +17,18 @@ open otsom.fs.Auth
 open Bot.Tests
 
 let private createMessage (text: string) : Message =
-  { Id = Mocks.chatMessageId
+  {
+    Id = Mocks.chatMessageId
     Text = text
-    ReplyMessage = None }
+    ReplyMessage = None
+  }
 
 let private createMessageWithReply (text: string) (replyText: string) : Message =
-  { Id = Mocks.chatMessageId
+  {
+    Id = Mocks.chatMessageId
     Text = text
-    ReplyMessage = Some { Text = replyText } }
+    ReplyMessage = Some { Text = replyText }
+  }
 
 type StartMessageHandler() =
   let userRepo = Mock<ILoadUser>()
@@ -787,7 +791,8 @@ type SetPresetSizeMessageHandler() =
 
     let message =
       { createMessage "42" with
-          ReplyMessage = Some { Text = Messages.SendPresetSize } }
+          ReplyMessage = Some { Text = Messages.SendPresetSize }
+      }
 
     task {
       let! result = handler Mocks.chat message
@@ -823,7 +828,8 @@ type SetPresetSizeMessageHandler() =
 
     let message =
       { createMessage "1" with
-          ReplyMessage = Some { Text = Messages.SendPresetSize } }
+          ReplyMessage = Some { Text = Messages.SendPresetSize }
+      }
 
     task {
       let! result = handler Mocks.chat message
@@ -839,7 +845,8 @@ type SetPresetSizeMessageHandler() =
 
     let message =
       { createMessage "1000" with
-          ReplyMessage = Some { Text = Messages.SendPresetSize } }
+          ReplyMessage = Some { Text = Messages.SendPresetSize }
+      }
 
     task {
       let! result = handler Mocks.chat message
@@ -855,7 +862,8 @@ type SetPresetSizeMessageHandler() =
 
     let message =
       { createMessage "abc" with
-          ReplyMessage = Some { Text = Messages.SendPresetSize } }
+          ReplyMessage = Some { Text = Messages.SendPresetSize }
+      }
 
     task {
       let! result = handler Mocks.chat message
@@ -960,7 +968,8 @@ type CreatePresetMessageHandler() =
 
     let message =
       { createMessage "MyPreset" with
-          ReplyMessage = Some { Text = Messages.SendPresetName } }
+          ReplyMessage = Some { Text = Messages.SendPresetName }
+      }
 
     task {
       let! result = handler Mocks.chat message
@@ -1232,7 +1241,8 @@ type IncludePlaylistMessageHandler() =
 
     let message =
       { createMessage "raw-id" with
-          ReplyMessage = Some { Text = Messages.SendIncludedPlaylist } }
+          ReplyMessage = Some { Text = Messages.SendIncludedPlaylist }
+      }
 
     task {
       let! result = handler Mocks.chat message
@@ -1350,7 +1360,8 @@ type ExcludePlaylistMessageHandler() =
 
     let message =
       { createMessage "raw-id" with
-          ReplyMessage = Some { Text = Messages.SendExcludedPlaylist } }
+          ReplyMessage = Some { Text = Messages.SendExcludedPlaylist }
+      }
 
     task {
       let! result = handler Mocks.chat message

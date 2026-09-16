@@ -60,15 +60,19 @@ module Playlist =
         let playlist =
           if playlist.Owner.Id = currentUser.Id then
             Writable(
-              { Id = playlist.Id |> PlaylistId
+              {
+                Id = playlist.Id |> PlaylistId
                 Name = playlist.Name
-                TracksCount = playlist.Items.Total.Value }
+                TracksCount = playlist.Items.Total.Value
+              }
             )
           else
             Readable(
-              { Id = playlist.Id |> PlaylistId
+              {
+                Id = playlist.Id |> PlaylistId
                 Name = playlist.Name
-                TracksCount = playlist.Items.Total.Value }
+                TracksCount = playlist.Items.Total.Value
+              }
             )
 
         return playlist |> Ok

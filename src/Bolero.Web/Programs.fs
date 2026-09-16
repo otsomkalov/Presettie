@@ -59,7 +59,8 @@ module Preset =
       | LoadPresets -> model, Cmd.OfTask.perform env.ListPresets () PresetsLoaded
       | PresetsLoaded presets ->
         { model with
-            Presets = AsyncOp.Finished presets },
+            Presets = AsyncOp.Finished presets
+        },
         Cmd.none
 
     let view (model: Model) (dispatch: Message -> unit) =
@@ -108,7 +109,8 @@ module Preset =
         { model with Preset = AsyncOp.Loading }, Cmd.OfTask.perform env.GetPreset' parsedPresetId PresetLoaded
       | PresetLoaded preset ->
         { model with
-            Preset = AsyncOp.Finished preset },
+            Preset = AsyncOp.Finished preset
+        },
         Cmd.none
 
     let view (model: Model) dispatch =

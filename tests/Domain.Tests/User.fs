@@ -17,12 +17,14 @@ type SetCurrentPreset() =
       .Setup(_.LoadUser(Mocks.userId))
       .ReturnsAsync(
         { Mocks.user with
-            CurrentPresetId = None }
+            CurrentPresetId = None
+        }
       )
 
     let expectedUser =
       { Mocks.user with
-          CurrentPresetId = Some Mocks.presetId }
+          CurrentPresetId = Some Mocks.presetId
+      }
 
     repo.Setup(_.SaveUser(expectedUser)).ReturnsAsync(())
 

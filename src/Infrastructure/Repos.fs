@@ -82,8 +82,10 @@ type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
     member this.SavePreset(preset) = PresetRepo.save collection preset
 
     member this.QueueRun(userId, presetId) =
-      {| UserId = userId.Value
-         PresetId = presetId.Value |}
+      {|
+        UserId = userId.Value
+        PresetId = presetId.Value
+      |}
       |> JSON.serialize
       |> queueClient.SendMessageAsync
       |> Task.map ignore

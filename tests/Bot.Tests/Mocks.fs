@@ -9,6 +9,8 @@ let chatMessageId = ChatMessageId 1
 let clickId = ButtonClickId "click-id"
 
 let chat: Chat =
-  { Id = ChatId 1
+  {
+    Id = ChatId 1
     UserId = Mocks.userId
-    Lang = "en" }
+    Lang = "en"
+  }

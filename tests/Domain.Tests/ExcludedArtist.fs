@@ -17,7 +17,8 @@ type ExcludedArtist() =
 
     let expected =
       { Mocks.preset with
-          ExcludedArtists = [] }
+          ExcludedArtists = []
+      }
 
     mockPresetRepo.Setup(_.SavePreset(expected)).ReturnsAsync(())
 

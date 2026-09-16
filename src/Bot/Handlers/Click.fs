@@ -227,7 +227,10 @@ let removeIncludedPlaylistClickHandler (presetService: #IRemoveIncludedPlaylist)
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "rm" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
-        let! preset = presetService.RemoveIncludedPlaylist(presetId, (ReadablePlaylistId playlistId))
+
+        let! preset =
+          presetService.RemoveIncludedPlaylist(presetId, (ReadablePlaylistId playlistId))
+
         do! IncludedPlaylist.list resp botService click.MessageId preset (Page 0)
         return Some()
       }
@@ -256,7 +259,10 @@ let removeExcludedPlaylistClickHandler (presetService: #IRemoveExcludedPlaylist)
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludedPlaylists; playlistId; "rm" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
-        let! preset = presetService.RemoveExcludedPlaylist(presetId, (ReadablePlaylistId playlistId))
+
+        let! preset =
+          presetService.RemoveExcludedPlaylist(presetId, (ReadablePlaylistId playlistId))
+
         do! ExcludedPlaylist.list resp botService click.MessageId preset (Page 0)
         return Some()
       }
@@ -347,7 +353,10 @@ let removeTargetedPlaylistClickHandler (presetService: #IRemoveTargetedPlaylist)
     | [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "rm" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
-        let! preset = presetService.RemoveTargetedPlaylist(presetId, (WritablePlaylistId playlistId))
+
+        let! preset =
+          presetService.RemoveTargetedPlaylist(presetId, (WritablePlaylistId playlistId))
+
         do! TargetedPlaylist.list resp botService click.MessageId preset (Page 0)
         return Some()
       }
@@ -590,8 +599,10 @@ let removePresetClickHandler
         let presetId = PresetId presetId
 
         let cmd: RemovePreset.Cmd =
-          { UserId = chat.UserId
-            PresetId = presetId }
+          {
+            UserId = chat.UserId
+            PresetId = presetId
+          }
 
         match! mediator.Send cmd with
         | Ok _ ->

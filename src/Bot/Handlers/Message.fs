@@ -29,7 +29,9 @@ let startMessageHandler
       do! User.sendCurrentPreset resp userRepo presetRepo chatCtx chat.UserId
 
       return Some()
-    | { Text = CommandWithData Commands.start state } ->
+    | {
+        Text = CommandWithData Commands.start state
+      } ->
       let! user = userRepo.LoadUser chat.UserId
 
       let processSuccessfulLogin =
@@ -152,14 +154,18 @@ let setPresetSizeMessageHandler
 
   fun chat message -> task {
     match message with
-    | { Text = text
-        ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendPresetSize] ->
+    | {
+        Text = text
+        ReplyMessage = Some { Text = replyText }
+      } when replyText = resp[Messages.SendPresetSize] ->
       do!
         userService.SetCurrentPresetSize(chat.UserId, (PresetSettings.RawPresetSize text))
         |> TaskResult.taskEither (onSuccess chat.UserId) (onError >> Task.ignore)
 
       return Some()
-    | { Text = CommandWithData Commands.size text } ->
+    | {
+        Text = CommandWithData Commands.size text
+      } ->
       do!
         (userService.SetCurrentPresetSize(chat.UserId, (PresetSettings.RawPresetSize text))
          |> TaskResult.taskEither (onSuccess chat.UserId) (onError >> Task.ignore))
@@ -185,14 +191,18 @@ let createPresetMessageHandler
   : MessageHandler<Chat, Message> =
   fun chat message -> task {
     match message with
-    | { Text = text
-        ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendPresetName] ->
+    | {
+        Text = text
+        ReplyMessage = Some { Text = replyText }
+      } when replyText = resp[Messages.SendPresetName] ->
       let! preset = presetService.CreatePreset(chat.UserId, text)
 
       do! Preset.send resp chatCtx preset
 
       return Some()
-    | { Text = CommandWithData Commands.newPreset text } ->
+    | {
+        Text = CommandWithData Commands.newPreset text
+      } ->
       let! preset = presetService.CreatePreset(chat.UserId, text)
 
       do! Preset.send resp chatCtx preset
@@ -210,7 +220,8 @@ let includePlaylistButtonMessageHandler
   fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.IncludePlaylist)) ->
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
+      let! musicPlatform =
+        musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -233,7 +244,8 @@ let excludePlaylistButtonMessageHandler
   fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.ExcludePlaylist)) ->
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
+      let! musicPlatform =
+        musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -256,7 +268,8 @@ let excludeArtistButtonMessageHandler
   fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.ExcludeArtist)) ->
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
+      let! musicPlatform =
+        musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -280,7 +293,8 @@ let targetPlaylistButtonMessageHandler
     match message.Text with
     | Equals(resp.Item(Buttons.TargetPlaylist)) ->
 
-      let! musicPlatform = musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
+      let! musicPlatform =
+        musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
 
       match musicPlatform with
       | Some _ ->
@@ -303,13 +317,16 @@ let includePlaylistMessageHandler
   : MessageHandler<Chat, Message> =
   let includePlaylist =
     fun userId rawPlaylistId -> task {
-      let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+      let! currentPresetId =
+        userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let includePlaylistResult =
         presetService.IncludePlaylist(
-          { UserId = userId
+          {
+            UserId = userId
             PresetId = currentPresetId
-            PlaylistId = rawPlaylistId }
+            PlaylistId = rawPlaylistId
+          }
         )
 
       let onSuccess (playlist: IncludedPlaylist) =
@@ -329,12 +346,16 @@ let includePlaylistMessageHandler
 
   fun chat message -> task {
     match message with
-    | { Text = text
-        ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendIncludedPlaylist] ->
+    | {
+        Text = text
+        ReplyMessage = Some { Text = replyText }
+      } when replyText = resp[Messages.SendIncludedPlaylist] ->
       do! includePlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
-    | { Text = CommandWithData Commands.includePlaylist text } ->
+    | {
+        Text = CommandWithData Commands.includePlaylist text
+      } ->
       do! includePlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
@@ -350,13 +371,16 @@ let excludePlaylistMessageHandler
   : MessageHandler<Chat, Message> =
   let excludePlaylist =
     fun userId rawPlaylistId -> task {
-      let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+      let! currentPresetId =
+        userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let excludePlaylistResult =
         presetService.ExcludePlaylist
-          { ExcludePlaylist.Cmd.UserId = userId
+          {
+            ExcludePlaylist.Cmd.UserId = userId
             PresetId = currentPresetId
-            PlaylistId = rawPlaylistId }
+            PlaylistId = rawPlaylistId
+          }
 
       let onSuccess (playlist: ExcludedPlaylist) =
         chatCtx.SendMessage resp[Messages.PlaylistExcluded, [| playlist.Name |]]
@@ -375,12 +399,16 @@ let excludePlaylistMessageHandler
 
   fun chat message -> task {
     match message with
-    | { Text = text
-        ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendExcludedPlaylist] ->
+    | {
+        Text = text
+        ReplyMessage = Some { Text = replyText }
+      } when replyText = resp[Messages.SendExcludedPlaylist] ->
       do! excludePlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
-    | { Text = CommandWithData Commands.excludePlaylist text } ->
+    | {
+        Text = CommandWithData Commands.excludePlaylist text
+      } ->
       do! excludePlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
@@ -396,13 +424,16 @@ let excludeArtistMessageHandler
   : MessageHandler<Chat, Message> =
   let excludeArtist =
     fun userId rawArtistId -> task {
-      let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+      let! currentPresetId =
+        userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let excludeArtistResult =
         presetService.ExcludeArtist
-          { ExcludeArtist.Cmd.UserId = userId
+          {
+            ExcludeArtist.Cmd.UserId = userId
             PresetId = currentPresetId
-            ArtistId = rawArtistId }
+            ArtistId = rawArtistId
+          }
 
       let onSuccess (artist: ExcludedArtist) =
         chatCtx.SendMessage resp[Messages.ArtistExcluded, [| artist.Name |]]
@@ -420,12 +451,16 @@ let excludeArtistMessageHandler
 
   fun chat message -> task {
     match message with
-    | { Text = text
-        ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendExcludedArtist] ->
+    | {
+        Text = text
+        ReplyMessage = Some { Text = replyText }
+      } when replyText = resp[Messages.SendExcludedArtist] ->
       do! excludeArtist chat.UserId (Artist.RawArtistId text)
 
       return Some()
-    | { Text = CommandWithData Commands.excludeArtist text } ->
+    | {
+        Text = CommandWithData Commands.excludeArtist text
+      } ->
       do! excludeArtist chat.UserId (Artist.RawArtistId text)
 
       return Some()
@@ -441,13 +476,16 @@ let includeArtistMessageHandler
   : MessageHandler<Chat, Message> =
   let includeArtist =
     fun userId rawArtistId -> task {
-      let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+      let! currentPresetId =
+        userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let includeArtistResult =
         presetService.IncludeArtist
-          { IncludeArtist.Cmd.UserId = userId
+          {
+            IncludeArtist.Cmd.UserId = userId
             PresetId = currentPresetId
-            ArtistId = rawArtistId }
+            ArtistId = rawArtistId
+          }
 
       let onSuccess (artist: IncludedArtist) =
         chatCtx.SendMessage resp[Messages.ArtistIncluded, [| artist.Name |]]
@@ -465,12 +503,16 @@ let includeArtistMessageHandler
 
   fun chat message -> task {
     match message with
-    | { Text = text
-        ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendIncludedArtist] ->
+    | {
+        Text = text
+        ReplyMessage = Some { Text = replyText }
+      } when replyText = resp[Messages.SendIncludedArtist] ->
       do! includeArtist chat.UserId (Artist.RawArtistId text)
 
       return Some()
-    | { Text = CommandWithData Commands.includeArtist text } ->
+    | {
+        Text = CommandWithData Commands.includeArtist text
+      } ->
       do! includeArtist chat.UserId (Artist.RawArtistId text)
 
       return Some()
@@ -486,13 +528,16 @@ let targetPlaylistMessageHandler
   : MessageHandler<Chat, Message> =
   let targetPlaylist =
     fun userId rawPlaylistId -> task {
-      let! currentPresetId = userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+      let! currentPresetId =
+        userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let targetPlaylistResult =
         presetService.TargetPlaylist
-          { TargetPlaylist.Cmd.UserId = userId
+          {
+            TargetPlaylist.Cmd.UserId = userId
             PresetId = currentPresetId
-            PlaylistId = rawPlaylistId }
+            PlaylistId = rawPlaylistId
+          }
 
       let onSuccess (playlist: TargetedPlaylist) =
         chatCtx.SendMessage resp[Messages.PlaylistTargeted, [| playlist.Name |]]
@@ -512,12 +557,16 @@ let targetPlaylistMessageHandler
 
   fun chat message -> task {
     match message with
-    | { Text = text
-        ReplyMessage = Some { Text = replyText } } when replyText = resp[Messages.SendTargetedPlaylist] ->
+    | {
+        Text = text
+        ReplyMessage = Some { Text = replyText }
+      } when replyText = resp[Messages.SendTargetedPlaylist] ->
       do! targetPlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()
-    | { Text = CommandWithData Commands.targetPlaylist text } ->
+    | {
+        Text = CommandWithData Commands.targetPlaylist text
+      } ->
       do! targetPlaylist chat.UserId (Playlist.RawPlaylistId text)
 
       return Some()

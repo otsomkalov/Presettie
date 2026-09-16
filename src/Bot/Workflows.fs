@@ -80,11 +80,13 @@ let getPresetSettingsMessage (resp: IResourceProvider) =
 
     let text =
       resp[Messages.PresetSettingsInfo,
-           [| preset.Name
-              likedTracksHandlingText
-              recommendationsText
-              uniqueArtistsText
-              preset.Settings.Size.Value |]]
+           [|
+             preset.Name
+             likedTracksHandlingText
+             recommendationsText
+             uniqueArtistsText
+             preset.Settings.Size.Value
+           |]]
 
     let keyboard = seq {
       seq {
@@ -190,9 +192,11 @@ module IncludedContent =
 
       let text =
         resp[Messages.IncludedContent,
-             [| preset.Name
-                preset.IncludedPlaylists.Length
-                preset.IncludedArtists.Length |]]
+             [|
+               preset.Name
+               preset.IncludedPlaylists.Length
+               preset.IncludedArtists.Length
+             |]]
 
       do! botMessageCtx.EditMessageButtons(messageId, text, buttons)
     }
@@ -211,9 +215,11 @@ module ExcludedContent =
 
       let text =
         resp[Messages.ExcludedContent,
-             [| preset.Name
-                preset.ExcludedPlaylists.Length
-                preset.ExcludedArtists.Length |]]
+             [|
+               preset.Name
+               preset.ExcludedPlaylists.Length
+               preset.ExcludedArtists.Length
+             |]]
 
       do! botMessageCtx.EditMessageButtons(messageId, text, buttons)
     }
@@ -500,15 +506,19 @@ module Preset =
       let text = resp[Messages.PresetInfo, [| preset.Name |]]
 
       let keyboard: Keyboard =
-        [ [ KeyboardButton(resp[Buttons.RunPreset]) ]
+        [
+          [ KeyboardButton(resp[Buttons.RunPreset]) ]
           [ KeyboardButton(resp[Buttons.MyPresets]) ]
           [ KeyboardButton(resp[Buttons.CreatePreset]) ]
 
-          [ KeyboardButton(resp[Buttons.IncludePlaylist])
+          [
+            KeyboardButton(resp[Buttons.IncludePlaylist])
             KeyboardButton(resp[Buttons.ExcludePlaylist])
-            KeyboardButton(resp[Buttons.TargetPlaylist]) ]
+            KeyboardButton(resp[Buttons.TargetPlaylist])
+          ]
 
-          [ KeyboardButton(resp[Buttons.Settings]) ] ]
+          [ KeyboardButton(resp[Buttons.Settings]) ]
+        ]
 
       chatCtx.SendKeyboard(text, keyboard) |> Task.map ignore
 
@@ -543,8 +553,10 @@ module User =
         return! Preset.send resp chatCtx preset
       | None ->
         let keyboard: Keyboard =
-          [ [ KeyboardButton(resp[Buttons.MyPresets]) ]
-            [ KeyboardButton(resp[Buttons.CreatePreset]) ] ]
+          [
+            [ KeyboardButton(resp[Buttons.MyPresets]) ]
+            [ KeyboardButton(resp[Buttons.CreatePreset]) ]
+          ]
 
         do! chatCtx.SendKeyboard(resp[Messages.NoCurrentPreset], keyboard) |> Task.ignore
     }
@@ -565,8 +577,10 @@ module User =
         let text, _ = getPresetSettingsMessage resp preset
 
         let buttons: Keyboard =
-          [| [| KeyboardButton(resp[Buttons.SetPresetSize]) |]
-             [| KeyboardButton(resp[Buttons.Back]) |] |]
+          [|
+            [| KeyboardButton(resp[Buttons.SetPresetSize]) |]
+            [| KeyboardButton(resp[Buttons.Back]) |]
+          |]
 
         do! chatCtx.SendKeyboard(text, buttons) |> Task.map ignore
 
@@ -611,9 +625,11 @@ module Chat =
       let! newUser = userService.CreateUser()
 
       let newChat: Chat =
-        { Id = chatId
+        {
+          Id = chatId
           UserId = newUser.Id
-          Lang = lang |> Option.defaultValue resourceSettings.DefaultLang }
+          Lang = lang |> Option.defaultValue resourceSettings.DefaultLang
+        }
 
       do! chatRepo.SaveChat newChat
 

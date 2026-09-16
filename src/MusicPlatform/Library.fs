@@ -35,9 +35,11 @@ type Track = { Id: TrackId; Artists: Set<Artist> }
 type Album = { Id: AlbumId; Tracks: Track list }
 
 type PlaylistData =
-  { Id: PlaylistId
+  {
+    Id: PlaylistId
     Name: string
-    TracksCount: int }
+    TracksCount: int
+  }
 
 type Playlist =
   | Readable of PlaylistData

@@ -18,7 +18,8 @@ type RemovePreset() =
   member _.``keeps current Preset untouched if other was removed``() =
     let user =
       { Mocks.user with
-          CurrentPresetId = Some Mocks.otherPresetId }
+          CurrentPresetId = Some Mocks.otherPresetId
+      }
 
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(user)
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
@@ -27,8 +28,10 @@ type RemovePreset() =
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<unit, Preset.GetPresetError>.Ok(), result)
 
@@ -40,7 +43,8 @@ type RemovePreset() =
   member _.``unsets current Preset if successfully removed``() =
     let expectedUser =
       { Mocks.user with
-          CurrentPresetId = None }
+          CurrentPresetId = None
+      }
 
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
     userRepo.Setup(_.SaveUser(expectedUser)).ReturnsAsync(())
@@ -50,8 +54,10 @@ type RemovePreset() =
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<unit, Preset.GetPresetError>.Ok(), result)
 
@@ -67,8 +73,10 @@ type RemovePreset() =
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<unit, Preset.GetPresetError>.Error Preset.GetPresetError.NotFound, result)
 

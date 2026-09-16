@@ -20,8 +20,10 @@ open FsToolkit.ErrorHandling
 
 [<CLIMutable>]
 type CreatePresetRequest =
-  { [<Required; MinLength(3)>]
-    Name: string }
+  {
+    [<Required; MinLength(3)>]
+    Name: string
+  }
 
 type CreatePresetResponse = { Id: PresetId }
 
@@ -58,8 +60,10 @@ type PresetFunctions
         validationErrors
         |> List.ofSeq
         |> List.map (fun e ->
-          { Error = e.ErrorMessage
-            Member = e.MemberNames |> Seq.head })
+          {
+            Error = e.ErrorMessage
+            Member = e.MemberNames |> Seq.head
+          })
         |> RequestError.Validation
       )
 
@@ -134,8 +138,10 @@ type PresetFunctions
     let handler (token: TokenUser) =
       fun presetId -> task {
         let cmd: RemovePreset.Cmd =
-          { UserId = token.UserId
-            PresetId = presetId }
+          {
+            UserId = token.UserId
+            PresetId = presetId
+          }
 
         let! result = mediator.Send cmd
 

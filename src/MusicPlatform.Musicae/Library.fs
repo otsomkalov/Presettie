@@ -10,26 +10,36 @@ open otsom.fs.Extensions
 
 [<CLIMutable>]
 type Settings =
-  { Host: string
-    Key: string }
+  {
+    Host: string
+    Key: string
+  }
 
   static member SectionName = "Musicae"
 
 type internal ArtistResponse =
-  { Id: string
-    Name: string }
+  {
+    Id: string
+    Name: string
+  }
 
   member this.ToDomain() : Artist =
-    { Id = ArtistId this.Id
-      Name = this.Name }
+    {
+      Id = ArtistId this.Id
+      Name = this.Name
+    }
 
 type internal TrackResponse =
-  { Id: string
-    Artists: ArtistResponse list }
+  {
+    Id: string
+    Artists: ArtistResponse list
+  }
 
   member this.ToDomain() : Track =
-    { Id = TrackId this.Id
-      Artists = this.Artists |> List.map _.ToDomain() |> Set.ofList }
+    {
+      Id = TrackId this.Id
+      Artists = this.Artists |> List.map _.ToDomain() |> Set.ofList
+    }
 
 [<CLIMutable>]
 type internal Response = { Tracks: TrackResponse list }
@@ -50,8 +60,10 @@ type MusicaeRecommender(httpClientFactory: IHttpClientFactory, options: IOptions
   interface IRecommender with
     member this.Recommend(tracks) =
       let queryParams =
-        [ ("seed_tracks", String.concat "," (tracks |> List.takeSafe seedsLimit |> List.map _.Id.Value))
-          ("limit", string recommendationsLimit) ]
+        [
+          ("seed_tracks", String.concat "," (tracks |> List.takeSafe seedsLimit |> List.map _.Id.Value))
+          ("limit", string recommendationsLimit)
+        ]
         |> dict
 
       let path = QueryHelpers.AddQueryString("recommendations", queryParams)

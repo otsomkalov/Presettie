@@ -10,9 +10,11 @@ open otsom.fs.Resources
 type Page = Page of int
 
 type Chat =
-  { Id: ChatId
+  {
+    Id: ChatId
     UserId: UserId
-    Lang: string }
+    Lang: string
+  }
 
   interface IChat with
     member this.Id = this.Id
@@ -20,9 +22,11 @@ type Chat =
 type ReplyMessage = { Text: string }
 
 type Message =
-  { Id: ChatMessageId
+  {
+    Id: ChatMessageId
     Text: string
-    ReplyMessage: ReplyMessage option }
+    ReplyMessage: ReplyMessage option
+  }
 
   interface IMessage with
     member this.Id = this.Id
@@ -41,9 +45,11 @@ type UpdateData =
   | Click of Click
 
 type Update =
-  { ChatId: ChatId
+  {
+    ChatId: ChatId
     Lang: string option
-    Data: UpdateData }
+    Data: UpdateData
+  }
 
 [<RequireQualifiedAccess>]
 module Resources =

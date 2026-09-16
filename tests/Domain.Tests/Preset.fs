@@ -22,7 +22,8 @@ type IncludeArtist() =
   member _.``should return error when artist is already included``() =
     let preset =
       { Mocks.preset with
-          IncludedArtists = [ Mocks.artist1 ] }
+          IncludedArtists = [ Mocks.artist1 ]
+      }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
@@ -32,9 +33,11 @@ type IncludeArtist() =
     task {
       let! result =
         sut
-          { IncludeArtist.Cmd.UserId = Mocks.userId
+          {
+            IncludeArtist.Cmd.UserId = Mocks.userId
             PresetId = Mocks.presetId
-            ArtistId = Artist.RawArtistId Mocks.artist1.Id.Value }
+            ArtistId = Artist.RawArtistId Mocks.artist1.Id.Value
+          }
 
       match result with
       | Error(IncludeArtist.Error.Duplicate artistId) -> Assert.Equal(Mocks.artist1.Id, artistId)
@@ -53,7 +56,8 @@ type IncludeArtist() =
 
     let updatedPreset =
       { Mocks.preset with
-          IncludedArtists = Mocks.artist3 :: Mocks.preset.IncludedArtists }
+          IncludedArtists = Mocks.artist3 :: Mocks.preset.IncludedArtists
+      }
 
     presetRepo.Setup(_.SavePreset(updatedPreset)).ReturnsAsync(())
 
@@ -67,9 +71,11 @@ type IncludeArtist() =
     task {
       let! result =
         sut
-          { IncludeArtist.Cmd.UserId = Mocks.userId
+          {
+            IncludeArtist.Cmd.UserId = Mocks.userId
             PresetId = Mocks.presetId
-            ArtistId = rawArtistId }
+            ArtistId = rawArtistId
+          }
 
       Assert.Equal(Result<_, IncludeArtist.Error>.Ok Mocks.artist3, result)
 
@@ -92,9 +98,11 @@ type IncludeArtist() =
     task {
       let! result =
         sut
-          { IncludeArtist.Cmd.UserId = Mocks.userId
+          {
+            IncludeArtist.Cmd.UserId = Mocks.userId
             PresetId = Mocks.presetId
-            ArtistId = rawArtistId }
+            ArtistId = rawArtistId
+          }
 
       match result with
       | Error(IncludeArtist.Error.IdParsing(Artist.IdParsingError msg)) -> Assert.Equal("invalid", msg)
@@ -120,9 +128,11 @@ type IncludeArtist() =
     task {
       let! result =
         sut
-          { IncludeArtist.Cmd.UserId = Mocks.userId
+          {
+            IncludeArtist.Cmd.UserId = Mocks.userId
             PresetId = Mocks.presetId
-            ArtistId = rawArtistId }
+            ArtistId = rawArtistId
+          }
 
       match result with
       | Error(IncludeArtist.Error.Load Artist.LoadError.NotFound) -> ()
@@ -146,9 +156,11 @@ type IncludeArtist() =
     task {
       let! result =
         sut
-          { IncludeArtist.Cmd.UserId = Mocks.userId
+          {
+            IncludeArtist.Cmd.UserId = Mocks.userId
             PresetId = Mocks.presetId
-            ArtistId = rawArtistId }
+            ArtistId = rawArtistId
+          }
 
       match result with
       | Error IncludeArtist.Error.Unauthorized -> ()
@@ -168,7 +180,8 @@ type ExcludeArtist() =
   member _.``should return error when artist is already excluded``() =
     let preset =
       { Mocks.preset with
-          ExcludedArtists = [ Mocks.artist1 ] }
+          ExcludedArtists = [ Mocks.artist1 ]
+      }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
@@ -178,9 +191,11 @@ type ExcludeArtist() =
     task {
       let! result =
         sut
-          { ExcludeArtist.Cmd.UserId = Mocks.userId
+          {
+            ExcludeArtist.Cmd.UserId = Mocks.userId
             PresetId = Mocks.presetId
-            ArtistId = Artist.RawArtistId Mocks.artist1.Id.Value }
+            ArtistId = Artist.RawArtistId Mocks.artist1.Id.Value
+          }
 
       match result with
       | Error(ExcludeArtist.Error.Duplicate artistId) -> Assert.Equal(Mocks.artist1.Id, artistId)
@@ -201,7 +216,8 @@ type IncludePlaylist() =
   member _.``should return error when playlist is already included``() =
     let preset =
       { Mocks.preset with
-          IncludedPlaylists = [ Mocks.includedPlaylist ] }
+          IncludedPlaylists = [ Mocks.includedPlaylist ]
+      }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
@@ -211,9 +227,11 @@ type IncludePlaylist() =
     task {
       let! result =
         sut
-          { IncludePlaylist.Cmd.UserId = Mocks.userId
+          {
+            IncludePlaylist.Cmd.UserId = Mocks.userId
             PresetId = Mocks.presetId
-            PlaylistId = Playlist.RawPlaylistId Mocks.includedPlaylistId.Value }
+            PlaylistId = Playlist.RawPlaylistId Mocks.includedPlaylistId.Value
+          }
 
       match result with
       | Error(IncludePlaylist.Error.Duplicate playlistId) -> Assert.Equal(Mocks.includedPlaylistId, playlistId)
@@ -234,7 +252,8 @@ type ExcludePlaylist() =
   member _.``should return error when playlist is already excluded``() =
     let preset =
       { Mocks.preset with
-          ExcludedPlaylists = [ Mocks.excludedPlaylist ] }
+          ExcludedPlaylists = [ Mocks.excludedPlaylist ]
+      }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
@@ -244,9 +263,11 @@ type ExcludePlaylist() =
     task {
       let! result =
         sut
-          { ExcludePlaylist.Cmd.UserId = Mocks.userId
+          {
+            ExcludePlaylist.Cmd.UserId = Mocks.userId
             PresetId = Mocks.presetId
-            PlaylistId = Playlist.RawPlaylistId Mocks.excludedPlaylistId.Value }
+            PlaylistId = Playlist.RawPlaylistId Mocks.excludedPlaylistId.Value
+          }
 
       match result with
       | Error(ExcludePlaylist.Error.Duplicate playlistId) -> Assert.Equal(Mocks.excludedPlaylistId, playlistId)
@@ -273,9 +294,11 @@ type TargetPlaylist() =
     task {
       let! result =
         sut
-          { TargetPlaylist.Cmd.UserId = Mocks.userId
+          {
+            TargetPlaylist.Cmd.UserId = Mocks.userId
             PresetId = Mocks.presetId
-            PlaylistId = Playlist.RawPlaylistId Mocks.targetedPlaylistId.Value }
+            PlaylistId = Playlist.RawPlaylistId Mocks.targetedPlaylistId.Value
+          }
 
       match result with
       | Error(TargetPlaylist.Error.Duplicate playlistId) -> Assert.Equal(Mocks.targetedPlaylistId, playlistId)
