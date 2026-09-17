@@ -956,7 +956,7 @@ type removePresetClickHandler() =
     let presetId = Mocks.presetId.Value
     let click = createClick [ CallbackQueryConstants.preset; presetId; "rm" ]
 
-    mediator.Setup(_.Send(It.IsAny<RemovePreset.Cmd>())).ReturnsAsync(Result<obj, Preset.GetPresetError>.Ok(null))
+    mediator.Setup(_.Send(It.IsAny<RemovePreset.Cmd>())).ReturnsAsync(Result<unit, Preset.GetPresetError>.Ok())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
     presetRepo.Setup(_.ListUserPresets(Mocks.chat.UserId)).ReturnsAsync([ Mocks.simplePreset ])
     resourceProvider.Setup(fun x -> x[Notifications.PresetRemoved]).Returns(Notifications.PresetRemoved)
@@ -980,7 +980,7 @@ type removePresetClickHandler() =
 
     mediator
       .Setup(_.Send(It.IsAny<RemovePreset.Cmd>()))
-      .ReturnsAsync(Result<obj, Preset.GetPresetError>.Error Preset.GetPresetError.NotFound)
+      .ReturnsAsync(Result<unit, Preset.GetPresetError>.Error Preset.GetPresetError.NotFound)
 
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.PresetNotFound]).Returns(Notifications.PresetNotFound)
