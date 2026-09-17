@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.ComponentModel.DataAnnotations
 open System.Threading.Tasks
+open App
 open Functions.API.Shared
 open Domain.Core
 open Domain.Repos
@@ -19,8 +20,10 @@ open FsToolkit.ErrorHandling
 
 [<CLIMutable>]
 type CreatePresetRequest =
-  { [<Required; MinLength(3)>]
-    Name: string }
+  {
+    [<Required; MinLength(3)>]
+    Name: string
+  }
 
 type CreatePresetResponse = { Id: PresetId }
 
@@ -34,13 +37,7 @@ type RequestError<'a> =
   | OperationError of 'a
 
 type PresetFunctions
-  (
-    presetRepo: IPresetRepo,
-    presetService: IPresetService,
-    userRepo: IUserRepo,
-    authService: IAuthenticationService,
-    userService: IUserService
-  ) =
+  (presetRepo: IPresetRepo, presetService: IPresetService, userRepo: IUserRepo, authService: IAuthenticationService, mediator: IMediator) =
   let validateUser (req: HttpRequest) : Task<Result<TokenUser, RequestError<_>>> =
     authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
     |> Task.map (Option.someIf _.Succeeded)
@@ -63,8 +60,10 @@ type PresetFunctions
         validationErrors
         |> List.ofSeq
         |> List.map (fun e ->
-          { Error = e.ErrorMessage
-            Member = e.MemberNames |> Seq.head })
+          {
+            Error = e.ErrorMessage
+            Member = e.MemberNames |> Seq.head
+          })
         |> RequestError.Validation
       )
 
@@ -109,7 +108,8 @@ type PresetFunctions
       | Ok preset -> OkObjectResult(preset) :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
       | Error Unauthorized -> UnauthorizedResult() :> IActionResult
-      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult)
+      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult
+      | Error(OperationError Preset.GetPresetError.Forbidden) -> ForbidResult() :> IActionResult)
 
   [<Function("CreatePreset")>]
   member this.CreatePreset
@@ -137,17 +137,22 @@ type PresetFunctions
     : Task<IActionResult> =
     let handler (token: TokenUser) =
       fun presetId -> task {
-        let! user = userRepo.LoadUser token.UserId
+        let cmd: RemovePreset.Cmd =
+          {
+            UserId = token.UserId
+            PresetId = presetId
+          }
 
-        let! result = userService.RemoveUserPreset(user.Id, presetId)
+        let! result = mediator.Send cmd
 
         return result |> Result.mapError RequestError.OperationError
       }
 
     validateUser request
-    |> TaskResult.bind (flip handler (RawPresetId presetId))
+    |> TaskResult.bind (flip handler (PresetId presetId))
     |> Task.map (function
       | Ok _ -> NoContentResult() :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
       | Error Unauthorized -> UnauthorizedResult() :> IActionResult
-      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult)
+      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult
+      | Error(OperationError Preset.GetPresetError.Forbidden) -> ForbidResult() :> IActionResult)

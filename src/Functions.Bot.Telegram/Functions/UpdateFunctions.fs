@@ -1,5 +1,6 @@
 ﻿namespace Functions.Bot.Telegram
 
+open App
 open Bot.Core
 open Bot.Handlers
 open Bot.Repos
@@ -25,12 +26,14 @@ type UpdateFunctions
     getResp,
     chatRepo: IChatRepo,
     chatService: IChatService,
+    mediator: IMediator,
     logger: ILogger<UpdateFunctions>
   ) =
   inherit ControllerBase()
 
   let updateHandler =
     Update.main
+      mediator
       authSvc
       userRepo
       userService
@@ -46,14 +49,13 @@ type UpdateFunctions
   [<Function("HandleUpdateAsync")>]
   member this.HandleUpdateAsync
     ([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "telegram/update")>] request: HttpRequest, [<FromBody>] update: Update)
-    =
-    task {
-      try
-        let upd = Mappers.Update.map update
+    = task {
+    try
+      let upd = Mappers.Update.map update
 
-        match upd with
-        | Some upd -> do! updateHandler upd
-        | None -> logger.LogInformation("Unsupported update type: {UpdateType}", update.Type)
-      with e ->
-        logger.LogError(e, "Error during processing update:")
-    }
+      match upd with
+      | Some upd -> do! updateHandler upd
+      | None -> logger.LogInformation("Unsupported update type: {UpdateType}", update.Type)
+    with e ->
+      logger.LogError(e, "Error during processing update:")
+  }

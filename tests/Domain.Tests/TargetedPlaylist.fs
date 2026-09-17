@@ -18,15 +18,23 @@ type TargetedPlaylist() =
         Some
           { Mocks.preset with
               TargetedPlaylists =
-                [ { Mocks.targetedPlaylist with
-                      Overwrite = true } ] }
+                [
+                  { Mocks.targetedPlaylist with
+                      Overwrite = true
+                  }
+                ]
+          }
       )
 
     let expected =
       { Mocks.preset with
           TargetedPlaylists =
-            [ { Mocks.targetedPlaylist with
-                  Overwrite = false } ] }
+            [
+              { Mocks.targetedPlaylist with
+                  Overwrite = false
+              }
+            ]
+      }
 
     mock.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
@@ -47,15 +55,23 @@ type TargetedPlaylist() =
         Some
           { Mocks.preset with
               TargetedPlaylists =
-                [ { Mocks.targetedPlaylist with
-                      Overwrite = false } ] }
+                [
+                  { Mocks.targetedPlaylist with
+                      Overwrite = false
+                  }
+                ]
+          }
       )
 
     let expected =
       { Mocks.preset with
           TargetedPlaylists =
-            [ { Mocks.targetedPlaylist with
-                  Overwrite = true } ] }
+            [
+              { Mocks.targetedPlaylist with
+                  Overwrite = true
+              }
+            ]
+      }
 
     mock.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
@@ -74,7 +90,8 @@ type TargetedPlaylist() =
 
     let expected =
       { Mocks.preset with
-          TargetedPlaylists = [] }
+          TargetedPlaylists = []
+      }
 
     mock.Setup(_.SavePreset(expected)).ReturnsAsync(())
 

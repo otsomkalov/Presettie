@@ -23,8 +23,12 @@ type User() =
     presetRepo
       .Setup(_.ListUserPresets(Mocks.userId))
       .ReturnsAsync(
-        [ { Id = Mocks.presetId
-            Name = Mocks.preset.Name } ]
+        [
+          {
+            Id = Mocks.presetId
+            Name = Mocks.preset.Name
+          }
+        ]
       )
 
     task {
@@ -59,7 +63,8 @@ type User() =
       .Setup(fun m -> m.LoadUser Mocks.userId)
       .ReturnsAsync(
         { Mocks.user with
-            CurrentPresetId = None }
+            CurrentPresetId = None
+        }
       )
 
     botService.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)

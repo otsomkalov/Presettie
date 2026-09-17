@@ -16,7 +16,8 @@ type IncludedPlaylist() =
 
     let expected =
       { Mocks.preset with
-          IncludedPlaylists = [] }
+          IncludedPlaylists = []
+      }
 
     mockPresetRepo.Setup(_.SavePreset(expected)).ReturnsAsync(())
 
@@ -36,21 +37,25 @@ type IncludedPlaylist() =
 
     let inputPlaylist =
       { Mocks.includedPlaylist with
-          LikedOnly = true }
+          LikedOnly = true
+      }
 
     let inputPreset =
       { Mocks.preset with
-          IncludedPlaylists = [ inputPlaylist ] }
+          IncludedPlaylists = [ inputPlaylist ]
+      }
 
     mockPresetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some inputPreset)
 
     let expectedPlaylist =
       { Mocks.includedPlaylist with
-          LikedOnly = false }
+          LikedOnly = false
+      }
 
     let expectedPreset =
       { Mocks.preset with
-          IncludedPlaylists = [ expectedPlaylist ] }
+          IncludedPlaylists = [ expectedPlaylist ]
+      }
 
     mockPresetRepo.Setup(_.SavePreset(expectedPreset)).ReturnsAsync(())
 
@@ -69,17 +74,20 @@ type IncludedPlaylist() =
     // Arrange
     let startingPreset =
       { Mocks.preset with
-          IncludedPlaylists = [ Mocks.includedPlaylist ] }
+          IncludedPlaylists = [ Mocks.includedPlaylist ]
+      }
 
     mockPresetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some startingPreset)
 
     let expectedPlaylist =
       { Mocks.includedPlaylist with
-          LikedOnly = true }
+          LikedOnly = true
+      }
 
     let expectedPreset =
       { Mocks.preset with
-          IncludedPlaylists = [ expectedPlaylist ] }
+          IncludedPlaylists = [ expectedPlaylist ]
+      }
 
     mockPresetRepo.Setup(_.SavePreset(expectedPreset)).ReturnsAsync(())
 

@@ -11,15 +11,19 @@ open Domain.Core
 [<RequireQualifiedAccess>]
 module SimplePreset =
   let fromDb (preset: {| Id: ObjectId; Name: string |}) : SimplePreset =
-    { Id = preset.Id |> string |> PresetId
-      Name = preset.Name }
+    {
+      Id = preset.Id |> string |> PresetId
+      Name = preset.Name
+    }
 
 [<RequireQualifiedAccess>]
 module User =
   let fromDb (user: Entities.User) : User =
-    { Id = user.Id |> UserId
+    {
+      Id = user.Id |> UserId
       CurrentPresetId = user.CurrentPresetId |> Option.ofNullable |> Option.map (string >> PresetId)
-      MusicPlatforms = user.MusicPlatforms |> Seq.map MusicPlatform.UserId |> List.ofSeq }
+      MusicPlatforms = user.MusicPlatforms |> Seq.map MusicPlatform.UserId |> List.ofSeq
+    }
 
   let toDb (user: User) : Entities.User =
     Entities.User(
@@ -34,9 +38,11 @@ module User =
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
   let fromDb (playlist: Entities.IncludedPlaylist) : IncludedPlaylist =
-    { Id = playlist.Id |> PlaylistId |> ReadablePlaylistId
+    {
+      Id = playlist.Id |> PlaylistId |> ReadablePlaylistId
       Name = playlist.Name
-      LikedOnly = playlist.LikedOnly }
+      LikedOnly = playlist.LikedOnly
+    }
 
   let toDb (playlist: IncludedPlaylist) : Entities.IncludedPlaylist =
     Entities.IncludedPlaylist(Id = playlist.Id.Value.Value, Name = playlist.Name, LikedOnly = playlist.LikedOnly)
@@ -44,8 +50,10 @@ module IncludedPlaylist =
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
   let fromDb (playlist: Entities.ExcludedPlaylist) : ExcludedPlaylist =
-    { Id = playlist.Id |> PlaylistId |> ReadablePlaylistId
-      Name = playlist.Name }
+    {
+      Id = playlist.Id |> PlaylistId |> ReadablePlaylistId
+      Name = playlist.Name
+    }
 
   let toDb (playlist: ExcludedPlaylist) : Entities.ExcludedPlaylist =
     Entities.ExcludedPlaylist(Id = playlist.Id.Value.Value, Name = playlist.Name)
@@ -53,8 +61,10 @@ module ExcludedPlaylist =
 [<RequireQualifiedAccess>]
 module IncludedArtist =
   let fromDb (artist: Entities.IncludedArtist) : IncludedArtist =
-    { Id = artist.Id |> ArtistId
-      Name = artist.Name }
+    {
+      Id = artist.Id |> ArtistId
+      Name = artist.Name
+    }
 
   let toDb (artist: IncludedArtist) : Entities.IncludedArtist =
     Entities.IncludedArtist(Id = artist.Id.Value, Name = artist.Name)
@@ -62,8 +72,10 @@ module IncludedArtist =
 [<RequireQualifiedAccess>]
 module ExcludedArtist =
   let fromDb (artist: Entities.ExcludedArtist) : ExcludedArtist =
-    { Id = artist.Id |> ArtistId
-      Name = artist.Name }
+    {
+      Id = artist.Id |> ArtistId
+      Name = artist.Name
+    }
 
   let toDb (artist: ExcludedArtist) : Entities.ExcludedArtist =
     Entities.ExcludedArtist(Id = artist.Id.Value, Name = artist.Name)
@@ -71,9 +83,11 @@ module ExcludedArtist =
 [<RequireQualifiedAccess>]
 module TargetedPlaylist =
   let private fromDb (playlist: Entities.TargetedPlaylist) : TargetedPlaylist =
-    { Id = playlist.Id |> PlaylistId |> WritablePlaylistId
+    {
+      Id = playlist.Id |> PlaylistId |> WritablePlaylistId
       Name = playlist.Name
-      Overwrite = playlist.Overwrite }
+      Overwrite = playlist.Overwrite
+    }
 
   let toDb (playlist: TargetedPlaylist) : Entities.TargetedPlaylist =
     Entities.TargetedPlaylist(Id = playlist.Id.Value.Value, Name = playlist.Name, Overwrite = playlist.Overwrite)
@@ -83,7 +97,8 @@ module TargetedPlaylist =
 
 module PresetSettings =
   let fromDb (settings: Entities.Settings) : PresetSettings.PresetSettings =
-    { LikedTracksHandling =
+    {
+      LikedTracksHandling =
         (match settings.IncludeLikedTracks |> Option.ofNullable with
          | Some true -> LikedTracksHandling.Include
          | Some false -> LikedTracksHandling.Exclude
@@ -97,7 +112,8 @@ module PresetSettings =
           | Entities.RecommendationsEngine.ReccoBeats -> RecommendationsEngine.ReccoBeats
           | Entities.RecommendationsEngine.Spotify -> RecommendationsEngine.Spotify
           | Entities.RecommendationsEngine.Musicae -> RecommendationsEngine.Musicae)
-      UniqueArtists = settings.UniqueArtists }
+      UniqueArtists = settings.UniqueArtists
+    }
 
   let toDb (settings: PresetSettings.PresetSettings) : Entities.Settings =
     Entities.Settings(
@@ -132,7 +148,8 @@ module Preset =
     let mapExcludedArtist artists =
       artists |> Seq.map ExcludedArtist.fromDb |> Seq.toList
 
-    { Id = preset.Id |> string |> PresetId
+    {
+      Id = preset.Id |> string |> PresetId
       Name = preset.Name
       OwnerId = preset.OwnerId |> UserId
       IncludedPlaylists = mapIncludedPlaylist preset.IncludedPlaylists
@@ -140,7 +157,8 @@ module Preset =
       IncludedArtists = mapIncludedArtist preset.IncludedArtists
       ExcludedArtists = mapExcludedArtist preset.ExcludedArtists
       TargetedPlaylists = TargetedPlaylist.mapPlaylists preset.TargetedPlaylists
-      Settings = PresetSettings.fromDb preset.Settings }
+      Settings = PresetSettings.fromDb preset.Settings
+    }
 
   let toDb (preset: Domain.Core.Preset) : Entities.Preset =
     Entities.Preset(

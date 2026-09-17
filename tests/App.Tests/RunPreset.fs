@@ -43,11 +43,13 @@ type RunPreset() =
   member _.``takes only liked tracks from included playlists if configured``() =
     let includedPlaylist =
       { Mocks.includedPlaylist with
-          LikedOnly = true }
+          LikedOnly = true
+      }
 
     let preset =
       { Mocks.preset with
-          IncludedPlaylists = [ includedPlaylist ] }
+          IncludedPlaylists = [ includedPlaylist ]
+      }
 
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([ Mocks.includedTrack; Mocks.likedTrack ])
 
@@ -60,8 +62,10 @@ type RunPreset() =
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<Preset, RunPreset.Error>.Ok(preset), result)
 
@@ -73,7 +77,8 @@ type RunPreset() =
   member _.``includes tracks from included artists``() =
     let preset =
       { Mocks.preset with
-          IncludedArtists = [ Mocks.artist1 ] }
+          IncludedArtists = [ Mocks.artist1 ]
+      }
 
     platform.Setup(_.ListArtistTracks(Mocks.artist1.Id)).Returns(TaskSeq.singleton Mocks.includedTrack)
 
@@ -84,8 +89,10 @@ type RunPreset() =
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<Preset, RunPreset.Error>.Ok(preset), result)
 
@@ -100,8 +107,10 @@ type RunPreset() =
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<Preset, RunPreset.Error>.Error(RunPreset.Error.NoIncludedTracks), result)
 
@@ -113,7 +122,8 @@ type RunPreset() =
     let preset =
       { Mocks.preset with
           IncludedPlaylists = [ Mocks.includedPlaylist ]
-          ExcludedPlaylists = [ Mocks.excludedPlaylist ] }
+          ExcludedPlaylists = [ Mocks.excludedPlaylist ]
+      }
 
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([ Mocks.includedTrack ])
     platform.Setup(_.ListPlaylistTracks(Mocks.excludedPlaylistId)).ReturnsAsync([ Mocks.includedTrack ])
@@ -123,8 +133,10 @@ type RunPreset() =
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<Preset, RunPreset.Error>.Error(RunPreset.Error.NoPotentialTracks), result)
 
@@ -144,15 +156,18 @@ type RunPreset() =
       { Mocks.preset with
           IncludedPlaylists = [ Mocks.includedPlaylist ]
           ExcludedPlaylists = [ Mocks.excludedPlaylist ]
-          Settings.RecommendationsEngine = Some RecommendationsEngine.ReccoBeats }
+          Settings.RecommendationsEngine = Some RecommendationsEngine.ReccoBeats
+      }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<Preset, RunPreset.Error>.Ok(preset), result)
 
@@ -172,15 +187,18 @@ type RunPreset() =
       { Mocks.preset with
           IncludedPlaylists = [ Mocks.includedPlaylist ]
           ExcludedPlaylists = [ Mocks.excludedPlaylist ]
-          Settings.LikedTracksHandling = LikedTracksHandling.Include }
+          Settings.LikedTracksHandling = LikedTracksHandling.Include
+      }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<_, RunPreset.Error>.Ok(preset), result)
 
@@ -199,15 +217,18 @@ type RunPreset() =
     let preset =
       { Mocks.preset with
           IncludedPlaylists = [ Mocks.includedPlaylist ]
-          Settings.LikedTracksHandling = LikedTracksHandling.Exclude }
+          Settings.LikedTracksHandling = LikedTracksHandling.Exclude
+      }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<_, RunPreset.Error>.Ok(preset), result)
 
@@ -226,15 +247,18 @@ type RunPreset() =
     let preset =
       { Mocks.preset with
           IncludedPlaylists = [ Mocks.includedPlaylist ]
-          ExcludedPlaylists = [ Mocks.excludedPlaylist ] }
+          ExcludedPlaylists = [ Mocks.excludedPlaylist ]
+      }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<_, RunPreset.Error>.Ok(preset), result)
 
@@ -247,7 +271,8 @@ type RunPreset() =
     let preset =
       { Mocks.preset with
           IncludedPlaylists = [ Mocks.includedPlaylist ]
-          Settings.LikedTracksHandling = LikedTracksHandling.Include }
+          Settings.LikedTracksHandling = LikedTracksHandling.Include
+      }
 
     platform.Setup(_.ListPlaylistTracks(Mocks.includedPlaylistId)).ReturnsAsync([])
 
@@ -260,8 +285,10 @@ type RunPreset() =
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<_, RunPreset.Error>.Ok(preset), result)
 
@@ -276,7 +303,9 @@ type RunPreset() =
           Settings =
             { Mocks.preset.Settings with
                 RecommendationsEngine = Some RecommendationsEngine.ReccoBeats
-                LikedTracksHandling = LikedTracksHandling.Include } }
+                LikedTracksHandling = LikedTracksHandling.Include
+            }
+      }
 
     platform.Setup(_.ListLikedTracks()).ReturnsAsync([ Mocks.likedTrack ])
 
@@ -289,8 +318,10 @@ type RunPreset() =
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<_, RunPreset.Error>.Ok(preset), result)
 
@@ -307,15 +338,18 @@ type RunPreset() =
     let preset =
       { Mocks.preset with
           IncludedPlaylists = [ Mocks.includedPlaylist ]
-          ExcludedArtists = [ Mocks.artist2 ] }
+          ExcludedArtists = [ Mocks.artist2 ]
+      }
 
     presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some preset)
 
     task {
       let! result =
         sut
-          { UserId = Mocks.userId
-            PresetId = Mocks.presetId }
+          {
+            UserId = Mocks.userId
+            PresetId = Mocks.presetId
+          }
 
       Assert.Equal(Result<Preset, _>.Error(RunPreset.Error.NoPotentialTracks), result)
 

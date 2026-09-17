@@ -2,6 +2,8 @@
 
 [<CLIMutable>]
 type RedisSettings =
-  { ConnectionString: string }
+  {
+    ConnectionString: string
+  }
 
   static member SectionName = "Redis"

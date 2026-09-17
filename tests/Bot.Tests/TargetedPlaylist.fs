@@ -27,9 +27,11 @@ type TargetedPlaylist() =
     |> ignore
 
   let createClick data : Click =
-    { Id = Mocks.clickId
+    {
+      Id = Mocks.clickId
       MessageId = Mocks.botMessageId
-      Data = data }
+      Data = data
+    }
 
   [<Fact>]
   member _.``list click should list targeted playlists if data match``() = task {
@@ -38,7 +40,8 @@ type TargetedPlaylist() =
     let click =
       createClick [ CallbackQueryConstants.preset; Mocks.preset.Id.Value; "tp"; "0" ]
 
-    let! result = listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
+    let! result =
+      listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(Some(), result)
 
@@ -50,7 +53,8 @@ type TargetedPlaylist() =
   member _.``list click should not list targeted playlists if data does not match``() = task {
     let click = createClick []
 
-    let! result = listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
+    let! result =
+      listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(None, result)
 
@@ -68,11 +72,13 @@ type TargetedPlaylist() =
 
     let click =
       createClick
-        [ CallbackQueryConstants.preset
+        [
+          CallbackQueryConstants.preset
           Mocks.preset.Id.Value
           "tp"
           Mocks.targetedPlaylistId.Value
-          "i" ]
+          "i"
+        ]
 
     let! result =
       showTargetedPlaylistClickHandler
@@ -118,20 +124,24 @@ type TargetedPlaylist() =
       .Setup(_.RemoveTargetedPlaylist(Mocks.presetId, Mocks.targetedPlaylist.Id))
       .ReturnsAsync(
         { Mocks.preset with
-            TargetedPlaylists = [] }
+            TargetedPlaylists = []
+        }
       )
 
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
     let click =
       createClick
-        [ CallbackQueryConstants.preset
+        [
+          CallbackQueryConstants.preset
           Mocks.preset.Id.Value
           "tp"
           Mocks.targetedPlaylistId.Value
-          "rm" ]
+          "rm"
+        ]
 
-    let! result = removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
+    let! result =
+      removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(Some(), result)
 
@@ -143,7 +153,8 @@ type TargetedPlaylist() =
   member _.``remove click should not delete playlist``() = task {
     let click = createClick []
 
-    let! result = removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
+    let! result =
+      removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(None, result)
 

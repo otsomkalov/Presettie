@@ -20,9 +20,11 @@ type PresetSettings() =
   let resourceProvider = Mock<IResourceProvider>()
 
   let createClick data : Click =
-    { Id = Mocks.clickId
+    {
+      Id = Mocks.clickId
       MessageId = Mocks.botMessageId
-      Data = data }
+      Data = data
+    }
 
   [<Fact>]
   member this.``enableUniqueArtists should update preset and show updated if data matched``() =
@@ -35,9 +37,11 @@ type PresetSettings() =
 
     let click =
       createClick
-        [ CallbackQueryConstants.preset
+        [
+          CallbackQueryConstants.preset
           Mocks.presetId.Value
-          CallbackQueryConstants.enableUniqueArtists ]
+          CallbackQueryConstants.enableUniqueArtists
+        ]
 
     task {
       let! result = sut Mocks.chat click
@@ -73,9 +77,11 @@ type PresetSettings() =
 
     let click =
       createClick
-        [ CallbackQueryConstants.preset
+        [
+          CallbackQueryConstants.preset
           Mocks.presetId.Value
-          CallbackQueryConstants.disableUniqueArtists ]
+          CallbackQueryConstants.disableUniqueArtists
+        ]
 
     task {
       let! result = sut Mocks.chat click

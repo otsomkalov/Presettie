@@ -35,7 +35,8 @@ module PresetSettings =
       >> Task.map Option.get
       >> Task.map (fun preset ->
         { preset with
-            Settings.UniqueArtists = uniqueArtists })
+            Settings.UniqueArtists = uniqueArtists
+        })
       >> Task.bind presetRepo.SavePreset
 
   let enableUniqueArtists presetRepo = setUniqueArtists presetRepo true
@@ -48,7 +49,8 @@ module PresetSettings =
       >> Task.map Option.get
       >> Task.map (fun preset ->
         { preset with
-            Settings.RecommendationsEngine = engine })
+            Settings.RecommendationsEngine = engine
+        })
       >> Task.bind presetRepo.SavePreset
 
   let private setLikedTracksHandling (presetRepo: #ILoadPreset & #ISavePreset) =
@@ -58,7 +60,8 @@ module PresetSettings =
       |> Task.map Option.get
       |> Task.map (fun p ->
         { p with
-            Settings.LikedTracksHandling = handling })
+            Settings.LikedTracksHandling = handling
+        })
       |> Task.bind presetRepo.SavePreset
 
   let includeLikedTracks presetRepo =
@@ -81,7 +84,8 @@ module IncludedPlaylist =
 
       let updatedPreset =
         { preset with
-            IncludedPlaylists = includedPlaylists }
+            IncludedPlaylists = includedPlaylists
+        }
 
       do! presetRepo.SavePreset updatedPreset
 
@@ -97,7 +101,8 @@ module IncludedPlaylist =
 
       let updatedPlaylist =
         { includedPlaylist with
-            LikedOnly = false }
+            LikedOnly = false
+        }
 
       let includedPlaylists =
         preset.IncludedPlaylists
@@ -106,7 +111,8 @@ module IncludedPlaylist =
 
       let updatedPreset =
         { preset with
-            IncludedPlaylists = includedPlaylists }
+            IncludedPlaylists = includedPlaylists
+        }
 
       return! presetRepo.SavePreset updatedPreset
     }
@@ -120,7 +126,8 @@ module IncludedPlaylist =
 
       let updatedPlaylist =
         { includedPlaylist with
-            LikedOnly = true }
+            LikedOnly = true
+        }
 
       let includedPlaylists =
         preset.IncludedPlaylists
@@ -129,7 +136,8 @@ module IncludedPlaylist =
 
       let updatedPreset =
         { preset with
-            IncludedPlaylists = includedPlaylists }
+            IncludedPlaylists = includedPlaylists
+        }
 
       return! presetRepo.SavePreset updatedPreset
     }
@@ -145,7 +153,8 @@ module ExcludedPlaylist =
 
       let updatedPreset =
         { preset with
-            ExcludedPlaylists = excludedPlaylists }
+            ExcludedPlaylists = excludedPlaylists
+        }
 
       do! presetRepo.SavePreset updatedPreset
 
@@ -163,7 +172,8 @@ module ExcludedArtist =
 
       let updatedPreset =
         { preset with
-            ExcludedArtists = excludedArtists }
+            ExcludedArtists = excludedArtists
+        }
 
       do! presetRepo.SavePreset updatedPreset
 
@@ -181,7 +191,8 @@ module IncludedArtist =
 
       let updatedPreset =
         { preset with
-            IncludedArtists = includedArtists }
+            IncludedArtists = includedArtists
+        }
 
       do! presetRepo.SavePreset updatedPreset
 
@@ -197,12 +208,16 @@ module Preset =
       match preset.IncludedPlaylists, preset.Settings.LikedTracksHandling, preset.TargetedPlaylists with
       | [], LikedTracksHandling.Include, [] -> [ Preset.ValidationError.NoTargetedPlaylists ] |> Error
       | [], LikedTracksHandling.Exclude, [] ->
-        [ Preset.ValidationError.NoIncludedPlaylists
-          Preset.ValidationError.NoTargetedPlaylists ]
+        [
+          Preset.ValidationError.NoIncludedPlaylists
+          Preset.ValidationError.NoTargetedPlaylists
+        ]
         |> Error
       | [], LikedTracksHandling.Ignore, [] ->
-        [ Preset.ValidationError.NoIncludedPlaylists
-          Preset.ValidationError.NoTargetedPlaylists ]
+        [
+          Preset.ValidationError.NoIncludedPlaylists
+          Preset.ValidationError.NoTargetedPlaylists
+        ]
         |> Error
       | _, LikedTracksHandling.Include, [] -> [ Preset.ValidationError.NoTargetedPlaylists ] |> Error
       | _, LikedTracksHandling.Exclude, [] -> [ Preset.ValidationError.NoTargetedPlaylists ] |> Error
@@ -214,7 +229,8 @@ module Preset =
   let create (presetRepo: #ISavePreset & #IIdGenerator) =
     fun userId name -> task {
       let newPreset =
-        { Id = PresetId(presetRepo.GenerateId())
+        {
+          Id = PresetId(presetRepo.GenerateId())
           Name = name
           OwnerId = userId
           IncludedPlaylists = []
@@ -223,10 +239,13 @@ module Preset =
           ExcludedArtists = []
           TargetedPlaylists = []
           Settings =
-            { Size = Size.Size 20
+            {
+              Size = Size.Size 20
               RecommendationsEngine = None
               LikedTracksHandling = LikedTracksHandling.Include
-              UniqueArtists = false } }
+              UniqueArtists = false
+            }
+        }
 
       do! presetRepo.SavePreset newPreset
 
@@ -242,7 +261,8 @@ module Preset =
 
   let includePlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
     fun (cmd: IncludePlaylist.Cmd) -> taskResult {
-      let! playlistId = parseId cmd.PlaylistId |> Result.mapError IncludePlaylist.Error.IdParsing
+      let! playlistId =
+        parseId cmd.PlaylistId |> Result.mapError IncludePlaylist.Error.IdParsing
 
       let! preset = presetRepo.LoadPreset cmd.PresetId |> Task.map Option.get
 
@@ -263,7 +283,8 @@ module Preset =
 
       let updatedPreset =
         { preset with
-            IncludedPlaylists = playlistToInclude :: preset.IncludedPlaylists }
+            IncludedPlaylists = playlistToInclude :: preset.IncludedPlaylists
+        }
 
       do! presetRepo.SavePreset updatedPreset
 
@@ -272,7 +293,8 @@ module Preset =
 
   let excludePlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
     fun (cmd: ExcludePlaylist.Cmd) -> taskResult {
-      let! playlistId = parseId cmd.PlaylistId |> Result.mapError ExcludePlaylist.Error.IdParsing
+      let! playlistId =
+        parseId cmd.PlaylistId |> Result.mapError ExcludePlaylist.Error.IdParsing
 
       let! preset = presetRepo.LoadPreset cmd.PresetId |> Task.map Option.get
 
@@ -293,7 +315,8 @@ module Preset =
 
       let updatedPreset =
         { preset with
-            ExcludedPlaylists = playlistToExclude :: preset.ExcludedPlaylists }
+            ExcludedPlaylists = playlistToExclude :: preset.ExcludedPlaylists
+        }
 
       do! presetRepo.SavePreset updatedPreset
 
@@ -321,7 +344,8 @@ module Preset =
 
       let updatedPreset =
         { preset with
-            ExcludedArtists = artist :: preset.ExcludedArtists }
+            ExcludedArtists = artist :: preset.ExcludedArtists
+        }
 
       do! presetRepo.SavePreset updatedPreset
 
@@ -349,7 +373,8 @@ module Preset =
 
       let updatedPreset =
         { preset with
-            IncludedArtists = artist :: preset.IncludedArtists }
+            IncludedArtists = artist :: preset.IncludedArtists
+        }
 
       do! presetRepo.SavePreset updatedPreset
 
@@ -358,7 +383,8 @@ module Preset =
 
   let targetPlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
     fun (cmd: TargetPlaylist.Cmd) -> taskResult {
-      let! playlistId = parseId cmd.PlaylistId |> Result.mapError TargetPlaylist.Error.IdParsing
+      let! playlistId =
+        parseId cmd.PlaylistId |> Result.mapError TargetPlaylist.Error.IdParsing
 
       let! preset = presetRepo.LoadPreset cmd.PresetId |> Task.map Option.get
 
@@ -382,7 +408,8 @@ module Preset =
 
       let updatedPreset =
         { preset with
-            TargetedPlaylists = playlistToTarget :: preset.TargetedPlaylists }
+            TargetedPlaylists = playlistToTarget :: preset.TargetedPlaylists
+        }
 
       do! presetRepo.SavePreset updatedPreset
 
@@ -419,23 +446,9 @@ module User =
       |> userRepo.LoadUser
       |> Task.map (fun u ->
         { u with
-            CurrentPresetId = Some presetId })
+            CurrentPresetId = Some presetId
+        })
       |> Task.bind userRepo.SaveUser
-
-  let removePreset (userRepo: #ILoadUser & #ISaveUser) (presetService: #IRemovePreset) =
-    fun userId presetId ->
-      presetService.RemovePreset(userId, presetId)
-      |> Task.bind (Result.taskMap (fun preset -> userRepo.LoadUser userId |> Task.map (fun u -> (preset, u))))
-      |> TaskResult.taskMap (fun (preset, user) ->
-        match user.CurrentPresetId with
-        | Some p when p = preset.Id -> task {
-            let updatedUser = { user with CurrentPresetId = None }
-
-            do! userRepo.SaveUser updatedUser
-
-            return ()
-          }
-        | _ -> Task.FromResult())
 
   let setCurrentPresetSize (userRepo: #ILoadUser) (presetService: #ISetPresetSize) =
     fun userId size ->
@@ -449,9 +462,11 @@ module User =
       let newUserId = Guid.CreateVersion7() |> UserId
 
       let newUser: User =
-        { Id = newUserId
+        {
+          Id = newUserId
           CurrentPresetId = None
-          MusicPlatforms = [] }
+          MusicPlatforms = []
+        }
 
       do! userRepo.SaveUser newUser
 
@@ -469,14 +484,16 @@ module TargetedPlaylist =
 
       let updatedPlaylist =
         { targetPlaylist with
-            Overwrite = overwriting }
+            Overwrite = overwriting
+        }
 
       let updatedPreset =
         { preset with
             TargetedPlaylists =
               preset.TargetedPlaylists
               |> List.except [ targetPlaylist ]
-              |> List.append [ updatedPlaylist ] }
+              |> List.append [ updatedPlaylist ]
+        }
 
       return! presetRepo.SavePreset updatedPreset
     }
@@ -494,7 +511,8 @@ module TargetedPlaylist =
 
       let updatedPreset =
         { preset with
-            TargetedPlaylists = targetPlaylists }
+            TargetedPlaylists = targetPlaylists
+        }
 
       do! presetRepo.SavePreset updatedPreset
 
@@ -585,15 +603,6 @@ type PresetService
     member this.SetOnlyLiked(presetId, playlistId) =
       IncludedPlaylist.setLikedOnly presetRepo presetId playlistId
 
-    member this.RemovePreset(userId, presetId) =
-      presetId
-      |> presetRepo.ParseId
-      |> TaskOption.taskBind presetRepo.LoadPreset
-      |> Task.map (function
-        | Some preset when preset.OwnerId = userId -> Ok preset
-        | _ -> Error Preset.GetPresetError.NotFound)
-      |> TaskResult.taskTap (_.Id >> presetRepo.RemovePreset)
-
     member this.GetPreset(userId, presetId) = Preset.get presetRepo userId presetId
 
 type UserService(userRepo: IUserRepo, presetService: IPresetService) =
@@ -603,8 +612,5 @@ type UserService(userRepo: IUserRepo, presetService: IPresetService) =
 
     member this.SetCurrentPreset(userId, presetId) =
       User.setCurrentPreset userRepo userId presetId
-
-    member this.RemoveUserPreset(userId, presetId) =
-      User.removePreset userRepo presetService userId presetId
 
     member this.CreateUser() = User.create userRepo ()

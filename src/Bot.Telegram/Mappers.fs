@@ -18,26 +18,34 @@ module Update =
       let message = update.Message
 
       Some
-        { ChatId = ChatId message.Chat.Id
+        {
+          ChatId = ChatId message.Chat.Id
           Lang = mapLang message.From
           Data =
             UpdateData.Msg
-              { Id = ChatMessageId message.MessageId
+              {
+                Id = ChatMessageId message.MessageId
                 Text = message.Text
                 ReplyMessage =
                   message.ReplyToMessage
                   |> Option.ofObj
                   |> Option.bind (Option.noneIf (_.Text >> String.IsNullOrEmpty))
-                  |> Option.map (fun m -> { Text = m.Text }) } }
+                  |> Option.map (fun m -> { Text = m.Text })
+              }
+        }
     | UpdateType.CallbackQuery ->
       let callbackQuery = update.CallbackQuery
 
       Some
-        { ChatId = ChatId callbackQuery.Message.Chat.Id
+        {
+          ChatId = ChatId callbackQuery.Message.Chat.Id
           Lang = mapLang callbackQuery.From
           Data =
             UpdateData.Click
-              { Id = callbackQuery.Id |> ButtonClickId
+              {
+                Id = callbackQuery.Id |> ButtonClickId
                 MessageId = BotMessageId callbackQuery.Message.MessageId
-                Data = callbackQuery.Data.Split("|") |> List.ofArray } }
+                Data = callbackQuery.Data.Split("|") |> List.ofArray
+              }
+        }
     | _ -> None

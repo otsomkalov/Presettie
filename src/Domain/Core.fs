@@ -25,9 +25,11 @@ type WritablePlaylistId =
 type IncludedPlaylistId = ReadablePlaylistId
 
 type IncludedPlaylist =
-  { Id: IncludedPlaylistId
+  {
+    Id: IncludedPlaylistId
     Name: string
-    LikedOnly: bool }
+    LikedOnly: bool
+  }
 
 type ExcludedPlaylist =
   { Id: ReadablePlaylistId; Name: string }
@@ -39,9 +41,11 @@ type ExcludedArtist = Artist
 type TargetedPlaylistId = WritablePlaylistId
 
 type TargetedPlaylist =
-  { Id: TargetedPlaylistId
+  {
+    Id: TargetedPlaylistId
     Name: string
-    Overwrite: bool }
+    Overwrite: bool
+  }
 
 type PresetId =
   | PresetId of string
@@ -89,13 +93,16 @@ module PresetSettings =
     member this.Value = let (Size size) = this in size
 
   type PresetSettings =
-    { LikedTracksHandling: LikedTracksHandling
+    {
+      LikedTracksHandling: LikedTracksHandling
       Size: Size
       RecommendationsEngine: RecommendationsEngine option
-      UniqueArtists: bool }
+      UniqueArtists: bool
+    }
 
 type Preset =
-  { Id: PresetId
+  {
+    Id: PresetId
     Name: string
     OwnerId: UserId
     Settings: PresetSettings.PresetSettings
@@ -103,12 +110,15 @@ type Preset =
     ExcludedPlaylists: ExcludedPlaylist list
     IncludedArtists: IncludedArtist list
     ExcludedArtists: ExcludedArtist list
-    TargetedPlaylists: TargetedPlaylist list }
+    TargetedPlaylists: TargetedPlaylist list
+  }
 
 type User =
-  { Id: UserId
+  {
+    Id: UserId
     CurrentPresetId: PresetId option
-    MusicPlatforms: MusicPlatform.UserId list }
+    MusicPlatforms: MusicPlatform.UserId list
+  }
 
 [<RequireQualifiedAccess>]
 module Preset =
@@ -128,26 +138,34 @@ module IncludedPlaylist =
   let fromSpotifyPlaylist =
     function
     | Readable({ Id = id; Name = name }) ->
-      { Id = (id |> ReadablePlaylistId)
+      {
+        Id = (id |> ReadablePlaylistId)
         Name = name
-        LikedOnly = false }
+        LikedOnly = false
+      }
       : IncludedPlaylist
     | Writable({ Id = id; Name = name }) ->
-      { Id = (id |> ReadablePlaylistId)
+      {
+        Id = (id |> ReadablePlaylistId)
         Name = name
-        LikedOnly = false }
+        LikedOnly = false
+      }
 
 [<RequireQualifiedAccess>]
 module ExcludedPlaylist =
   let fromSpotifyPlaylist =
     function
     | Readable({ Id = id; Name = name }) ->
-      { Id = (id |> ReadablePlaylistId)
-        Name = name }
+      {
+        Id = (id |> ReadablePlaylistId)
+        Name = name
+      }
       : ExcludedPlaylist
     | Writable({ Id = id; Name = name }) ->
-      { Id = (id |> ReadablePlaylistId)
-        Name = name }
+      {
+        Id = (id |> ReadablePlaylistId)
+        Name = name
+      }
 
 [<RequireQualifiedAccess>]
 module TargetedPlaylist =
@@ -155,9 +173,11 @@ module TargetedPlaylist =
     function
     | Readable _ -> None
     | Writable({ Id = id; Name = name }) ->
-      { Id = (id |> WritablePlaylistId)
+      {
+        Id = (id |> WritablePlaylistId)
         Name = name
-        Overwrite = false }
+        Overwrite = false
+      }
       |> Some
 
 type ISetPresetSize =
@@ -172,9 +192,11 @@ type ICreatePreset =
 [<RequireQualifiedAccess>]
 module IncludePlaylist =
   type Cmd =
-    { UserId: UserId
+    {
+      UserId: UserId
       PresetId: PresetId
-      PlaylistId: Playlist.RawPlaylistId }
+      PlaylistId: Playlist.RawPlaylistId
+    }
 
   [<RequireQualifiedAccess>]
   type Error =
@@ -189,9 +211,11 @@ type IIncludePlaylist =
 [<RequireQualifiedAccess>]
 module ExcludePlaylist =
   type Cmd =
-    { UserId: UserId
+    {
+      UserId: UserId
       PresetId: PresetId
-      PlaylistId: Playlist.RawPlaylistId }
+      PlaylistId: Playlist.RawPlaylistId
+    }
 
   [<RequireQualifiedAccess>]
   type Error =
@@ -206,9 +230,11 @@ type IExcludePlaylist =
 [<RequireQualifiedAccess>]
 module IncludeArtist =
   type Cmd =
-    { UserId: UserId
+    {
+      UserId: UserId
       PresetId: PresetId
-      ArtistId: Artist.RawArtistId }
+      ArtistId: Artist.RawArtistId
+    }
 
   [<RequireQualifiedAccess>]
   type Error =
@@ -223,9 +249,11 @@ type IIncludeArtist =
 [<RequireQualifiedAccess>]
 module ExcludeArtist =
   type Cmd =
-    { UserId: UserId
+    {
+      UserId: UserId
       PresetId: PresetId
-      ArtistId: Artist.RawArtistId }
+      ArtistId: Artist.RawArtistId
+    }
 
   [<RequireQualifiedAccess>]
   type Error =
@@ -240,9 +268,11 @@ type IExcludeArtist =
 [<RequireQualifiedAccess>]
 module TargetPlaylist =
   type Cmd =
-    { UserId: UserId
+    {
+      UserId: UserId
       PresetId: PresetId
-      PlaylistId: Playlist.RawPlaylistId }
+      PlaylistId: Playlist.RawPlaylistId
+    }
 
   [<RequireQualifiedAccess>]
   type Error =
@@ -300,9 +330,6 @@ type ISetOnlyLiked =
 type ISetAll =
   abstract SetAll: PresetId * IncludedPlaylistId -> Task<unit>
 
-type IRemovePreset =
-  abstract RemovePreset: UserId * RawPresetId -> Task<Result<Preset, Preset.GetPresetError>>
-
 type IGetPreset =
   abstract GetPreset: UserId * PresetId -> Task<Result<Preset, Preset.GetPresetError>>
 
@@ -311,7 +338,6 @@ type IPresetService =
 
   inherit ISetPresetSize
   inherit ICreatePreset
-  inherit IRemovePreset
   inherit IGetPreset
 
   inherit IIncludePlaylist
@@ -347,14 +373,10 @@ type ISetCurrentPresetSize =
 type ISetCurrentPreset =
   abstract SetCurrentPreset: UserId * PresetId -> Task<unit>
 
-type IRemoveUserPreset =
-  abstract RemoveUserPreset: UserId * RawPresetId -> Task<Result<unit, Preset.GetPresetError>>
-
 type ICreateUser =
   abstract CreateUser: unit -> Task<User>
 
 type IUserService =
   inherit ISetCurrentPresetSize
   inherit ISetCurrentPreset
-  inherit IRemoveUserPreset
   inherit ICreateUser
