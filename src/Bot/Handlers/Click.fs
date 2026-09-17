@@ -605,7 +605,7 @@ let removePresetClickHandler
           }
 
         match! mediator.Send cmd with
-        | Ok () ->
+        | Ok() ->
           do! botService.SendNotification(click.Id, resp[Notifications.PresetRemoved])
           do! User.listPresets resp botService presetRepo click.MessageId chat.UserId
           return Some()
