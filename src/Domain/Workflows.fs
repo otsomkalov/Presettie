@@ -465,12 +465,31 @@ module User =
         {
           Id = newUserId
           CurrentPresetId = None
-          MusicPlatforms = []
+          MusicPlatformId = None
         }
 
       do! userRepo.SaveUser newUser
 
       return newUser
+    }
+
+  let loadOrCreate (userRepo: #ITryLoadUser & #ISaveUser) =
+    fun userId -> task {
+      let! existingUser = userRepo.TryLoadUser userId
+
+      match existingUser with
+      | Some user -> return user
+      | None ->
+        let newUser: User =
+          {
+            Id = userId
+            CurrentPresetId = None
+            MusicPlatformId = None
+          }
+
+        do! userRepo.SaveUser newUser
+
+        return newUser
     }
 
 [<RequireQualifiedAccess>]

@@ -2,28 +2,28 @@
 module Tests.Shared.Mocks
 
 open System
-open Domain.Core
 open MusicPlatform
+open Domain.Core
 
-let artist1 =
+let artist1: Artist =
   {
     Id = ArtistId "artist-1"
     Name = "artist-1"
   }
 
-let artist2 =
+let artist2: Artist =
   {
     Id = ArtistId "artist-2"
     Name = "artist-2"
   }
 
-let artist3 =
+let artist3: Artist =
   {
     Id = ArtistId "artist-3"
     Name = "artist-3"
   }
 
-let artist4 =
+let artist4: Artist =
   {
     Id = ArtistId "artist-4"
     Name = "artist-4"
@@ -111,8 +111,8 @@ let rawPresetId = RawPresetId "raw-preset-id"
 let presetId = PresetId("preset-id")
 let presetName = "test-preset-name"
 let otherPresetId = PresetId("other-preset-id")
-let userId = Domain.Core.UserId(Guid.NewGuid())
-let otherUserId = UserId("other-user-id")
+let userId = UserId(Guid.NewGuid())
+let otherUserId = UserId(Guid.NewGuid())
 
 let simplePreset: SimplePreset = { Id = presetId; Name = presetName }
 
@@ -133,5 +133,5 @@ let user: User =
   {
     Id = userId
     CurrentPresetId = Some presetId
-    MusicPlatforms = []
+    MusicPlatformId = Some(MusicPlatform.UserId("music-platform-id"))
   }

@@ -11,5 +11,10 @@
     "logLevel": {
       "Microsoft.IdentityModel": "Critical"
     }
+  },
+  "extensions": {
+    "http": {
+      "routePrefix": ""
+    }
   }
 }

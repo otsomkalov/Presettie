@@ -11,5 +11,5 @@ public class User
 
     public ObjectId? CurrentPresetId { get; set; }
 
-    public IEnumerable<string> MusicPlatforms { get; set; }
+    public string? MusicPlatformId { get; set; }
 }

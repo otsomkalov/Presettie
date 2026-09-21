@@ -54,14 +54,15 @@ module Preset =
     let init _ =
       { Presets = AsyncOp.Loading }, Cmd.ofMsg LoadPresets
 
-    let update (logger: ILogger) (env: #IListPresets & #IRemovePreset) (message: Message) (model: Model) : Model * Cmd<Message> =
-      match message with
-      | LoadPresets -> model, Cmd.OfTask.perform env.ListPresets () PresetsLoaded
-      | PresetsLoaded presets ->
-        { model with
-            Presets = AsyncOp.Finished presets
-        },
-        Cmd.none
+    let update (env: #IListPresets & #IRemovePreset) =
+      fun (message: Message) (model: Model) ->
+        match message with
+        | LoadPresets -> model, Cmd.OfTask.perform env.ListPresets () PresetsLoaded
+        | PresetsLoaded presets ->
+          { model with
+              Presets = AsyncOp.Finished presets
+          },
+          Cmd.none
 
     let view (model: Model) (dispatch: Message -> unit) =
       match model.Presets with
@@ -101,17 +102,18 @@ module Preset =
     let init presetId =
       fun _ -> { Preset = AsyncOp.Loading }, Cmd.ofMsg (LoadPreset presetId)
 
-    let update (logger: ILogger) (env: #IGetPreset) (message: Message) model : Model * Cmd<Message> =
-      match message with
-      | LoadPreset(RawPresetId presetId) ->
-        let parsedPresetId = PresetId presetId
+    let update (env: #IGetPreset) =
+      fun (message: Message) model ->
+        match message with
+        | LoadPreset(RawPresetId presetId) ->
+          let parsedPresetId = PresetId presetId
 
-        { model with Preset = AsyncOp.Loading }, Cmd.OfTask.perform env.GetPreset' parsedPresetId PresetLoaded
-      | PresetLoaded preset ->
-        { model with
-            Preset = AsyncOp.Finished preset
-        },
-        Cmd.none
+          { model with Preset = AsyncOp.Loading }, Cmd.OfTask.perform env.GetPreset' parsedPresetId PresetLoaded
+        | PresetLoaded preset ->
+          { model with
+              Preset = AsyncOp.Finished preset
+          },
+          Cmd.none
 
     let view (model: Model) dispatch =
       match model.Preset with
@@ -166,30 +168,25 @@ module Preset =
 
     let init = fun _ -> { Name = String.Empty }, Cmd.none
 
-    let update
-      (logger: ILogger)
-      (navigationManager: NavigationManager)
-      (env: #ICreatePreset)
-      (message: Message)
-      (model: Model)
-      : Model * Cmd<Message> =
-      match message with
-      | Message.NameChanged name -> { model with Name = name }, Cmd.none
-      | Message.CreatePreset when model.Name |> String.IsNullOrEmpty |> not ->
-        model,
-        Cmd.OfTask.either
-          env.CreatePreset
-          model.Name
-          (fun (PresetId presetId) -> Redirect(sprintf "/presets/%s" presetId))
-          CreatePresetError
-      | Message.Redirect url ->
-        navigationManager.NavigateTo url
-        model, Cmd.none
-      | Message.CreatePresetError exn ->
-        logger.LogError(exn, "Error during creating Preset:")
+    let update (env: #ICreatePreset) (navigationManager: NavigationManager) (logger: ILogger) =
+      fun (message: Message) (model: Model) ->
+        match message with
+        | Message.NameChanged name -> { model with Name = name }, Cmd.none
+        | Message.CreatePreset when model.Name |> String.IsNullOrEmpty |> not ->
+          model,
+          Cmd.OfTask.either
+            env.CreatePreset
+            model.Name
+            (fun (PresetId presetId) -> Redirect(sprintf "/presets/%s" presetId))
+            CreatePresetError
+        | Message.Redirect url ->
+          navigationManager.NavigateTo url
+          model, Cmd.none
+        | Message.CreatePresetError exn ->
+          logger.LogError(exn, "Error during creating Preset:")
 
-        model, Cmd.none
-      | _ -> model, Cmd.none
+          model, Cmd.none
+        | _ -> model, Cmd.none
 
     let view (model: Model) dispatch = div {
       attr.``class`` "container"
@@ -234,3 +231,44 @@ module Preset =
         }
       }
     }
+
+[<RequireQualifiedAccess>]
+module Profile =
+  type Model = { User: User option }
+
+  type Message =
+    | LoadProfile
+    | ProfileLoaded of User
+
+  let init (env: #IGetCurrentUser) =
+    fun _ -> { User = None }, Cmd.OfTask.perform env.GetCurrentUser () ProfileLoaded
+
+  let update (env: #IGetCurrentUser) (message: Message) (model: Model) : Model * Cmd<Message> =
+    match message with
+    | LoadProfile -> { model with User = None }, Cmd.OfTask.perform env.GetCurrentUser () ProfileLoaded
+    | ProfileLoaded user -> { model with User = Some user }, Cmd.none
+
+  let view (model: Model) dispatch = concat {
+    cond model.User
+    <| function
+      | Some user -> concat {
+          div { text (sprintf "Hello, %A!" user.Id.Value) }
+
+          cond user.MusicPlatformId
+          <| function
+            | Some musicPlatformId -> a {
+                attr.href (sprintf "https://open.spotify.com/user/%s" musicPlatformId.Value)
+
+                img {
+                  attr.src "icon/spotify-logo.svg"
+
+                  attr.width 32
+                  attr.height 32
+                }
+
+                text "Your Spotify Profile"
+              }
+            | None -> div { text "No music platform linked." }
+        }
+      | None -> div { text "Loading..." }
+  }
