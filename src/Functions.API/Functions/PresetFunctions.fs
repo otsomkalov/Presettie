@@ -1,6 +1,5 @@
 ﻿namespace Functions.API.Functions
 
-open System
 open System.Collections.Generic
 open System.ComponentModel.DataAnnotations
 open System.Threading.Tasks
@@ -8,8 +7,6 @@ open App
 open Functions.API.Shared
 open Domain.Core
 open Domain.Repos
-open Microsoft.AspNetCore.Authentication
-open Microsoft.AspNetCore.Authentication.JwtBearer
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
@@ -27,27 +24,7 @@ type CreatePresetRequest =
 
 type CreatePresetResponse = { Id: PresetId }
 
-type ValidRequest<'a> = { User: TokenUser; Body: 'a }
-
-type ValidationError = { Member: string; Error: string }
-
-type RequestError<'a> =
-  | Unauthorized
-  | Validation of ValidationError list
-  | OperationError of 'a
-
-type PresetFunctions
-  (presetRepo: IPresetRepo, presetService: IPresetService, userRepo: IUserRepo, authService: IAuthenticationService, mediator: IMediator) =
-  let validateUser (req: HttpRequest) : Task<Result<TokenUser, RequestError<_>>> =
-    authService.AuthenticateAsync(req.HttpContext, JwtBearerDefaults.AuthenticationScheme)
-    |> Task.map (Option.someIf _.Succeeded)
-    |> Task.map (Option.bind (_.Principal >> Option.ofObj))
-    |> Task.map (Option.bind (_.Identity >> Option.ofObj))
-    |> Task.map (Option.bind (_.Name >> Option.ofObj))
-    |> Task.map (Option.bind (Guid.TryParse >> Option.someIf fst >> Option.map snd))
-    |> TaskOption.map (fun userId -> { UserId = UserId userId })
-    |> Task.map (Result.requireSome RequestError.Unauthorized)
-
+type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, userRepo: IUserRepo, authnService, mediator: IMediator) =
   let validateBody (request: 'a) : Result<'a, RequestError<_>> =
     let validationCtx = ValidationContext(request, null, null)
 
@@ -68,7 +45,7 @@ type PresetFunctions
       )
 
   let validateRequest (request: HttpRequest) (body: 'a) : Task<Result<ValidRequest<'a>, RequestError<_>>> =
-    validateUser request
+    validateUser authnService request
     |> Task.map (Result.bind (fun user -> validateBody body |> Result.map (fun body -> { User = user; Body = body })))
 
   [<Function("ListPresets")>]
@@ -81,35 +58,37 @@ type PresetFunctions
       return! presetRepo.ListUserPresets user.Id
     }
 
-    validateUser request
+    validateUser authnService request
     |> Task.bind (Result.taskMap handler)
     |> Task.map (function
       | Ok presets -> OkObjectResult(presets) :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
       | Error Unauthorized -> UnauthorizedResult() :> IActionResult
-      | Error(OperationError e) -> BadRequestObjectResult(e) :> IActionResult)
+      | Error(Operation e) -> BadRequestObjectResult(e) :> IActionResult)
 
   [<Function("GetPreset")>]
   member this.GetPreset
     ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets/{presetId}")>] request: HttpRequest, presetId: string)
     : Task<IActionResult> =
     let handler (token: TokenUser) =
-      fun presetId -> task {
+      fun presetId -> taskResult {
         let! user = userRepo.LoadUser token.UserId
 
-        let! preset = presetService.GetPreset(user.Id, presetId)
+        let! preset =
+          presetService.GetPreset(user.Id, presetId)
+          |> TaskResult.mapError RequestError.Operation
 
-        return preset |> Result.mapError RequestError.OperationError
+        return preset
       }
 
-    validateUser request
+    validateUser authnService request
     |> TaskResult.bind (flip handler (PresetId presetId))
     |> Task.map (function
       | Ok preset -> OkObjectResult(preset) :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
       | Error Unauthorized -> UnauthorizedResult() :> IActionResult
-      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult
-      | Error(OperationError Preset.GetPresetError.Forbidden) -> ForbidResult() :> IActionResult)
+      | Error(Operation Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult
+      | Error(Operation Preset.GetPresetError.Forbidden) -> ForbidResult() :> IActionResult)
 
   [<Function("CreatePreset")>]
   member this.CreatePreset
@@ -129,7 +108,7 @@ type PresetFunctions
       | Ok result -> CreatedResult("presets", { Id = result.Id }) :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
       | Error Unauthorized -> UnauthorizedResult() :> IActionResult
-      | Error(OperationError e) -> BadRequestObjectResult(e) :> IActionResult)
+      | Error(Operation e) -> BadRequestObjectResult(e) :> IActionResult)
 
   [<Function("DeletePreset")>]
   member this.DeletePreset
@@ -145,14 +124,14 @@ type PresetFunctions
 
         let! result = mediator.Send cmd
 
-        return result |> Result.mapError RequestError.OperationError
+        return result |> Result.mapError RequestError.Operation
       }
 
-    validateUser request
+    validateUser authnService request
     |> TaskResult.bind (flip handler (PresetId presetId))
     |> Task.map (function
       | Ok _ -> NoContentResult() :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
       | Error Unauthorized -> UnauthorizedResult() :> IActionResult
-      | Error(OperationError Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult
-      | Error(OperationError Preset.GetPresetError.Forbidden) -> ForbidResult() :> IActionResult)
+      | Error(Operation Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult
+      | Error(Operation Preset.GetPresetError.Forbidden) -> ForbidResult() :> IActionResult)

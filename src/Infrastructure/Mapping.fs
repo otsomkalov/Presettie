@@ -22,7 +22,7 @@ module User =
     {
       Id = user.Id |> UserId
       CurrentPresetId = user.CurrentPresetId |> Option.ofNullable |> Option.map (string >> PresetId)
-      MusicPlatforms = user.MusicPlatforms |> Seq.map MusicPlatform.UserId |> List.ofSeq
+      MusicPlatformId = user.MusicPlatformId |> Option.ofObj |> Option.map MusicPlatform.UserId
     }
 
   let toDb (user: User) : Entities.User =
@@ -32,7 +32,7 @@ module User =
         (user.CurrentPresetId
          |> Option.map (_.Value >> ObjectId.Parse)
          |> Option.toNullable),
-      MusicPlatforms = (user.MusicPlatforms |> List.map _.Value)
+      MusicPlatformId = (user.MusicPlatformId |> Option.map _.Value |> Option.toObj)
     )
 
 [<RequireQualifiedAccess>]

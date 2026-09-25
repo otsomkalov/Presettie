@@ -57,6 +57,15 @@ type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
         return Unchecked.defaultof<PresetId>
     }
 
+    member this.GetCurrentUser() = task {
+      try
+        return! httpClient.GetFromJsonAsync<User>("users/current", JSON.options)
+      with e ->
+        logger.LogError(e, "Error while getting current user:")
+
+        return Unchecked.defaultof<User>
+    }
+
 type APIAuthorizationMessageHandler(accessTokenProvider: IAccessTokenProvider, navigationManager: NavigationManager, cfg: IConfiguration) =
   inherit AuthorizationMessageHandler(accessTokenProvider, navigationManager)
 

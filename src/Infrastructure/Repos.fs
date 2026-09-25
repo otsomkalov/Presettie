@@ -46,15 +46,17 @@ module PresetRepo =
 
 [<RequireQualifiedAccess>]
 module UserRepo =
-  let load (collection: IMongoCollection<Entities.User>) =
+  let tryLoad (collection: IMongoCollection<Entities.User>) =
     fun (UserId userId) ->
       let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, userId)
 
-      collection.Find(usersFilter).SingleOrDefaultAsync() |> Task.map User.fromDb
+      collection.Find(usersFilter).SingleOrDefaultAsync()
+      |> Task.map Option.ofObj
+      |> TaskOption.map User.fromDb
 
-  let loadByMusicPlatform (collection: IMongoCollection<Entities.User>) =
-    fun (MusicPlatform.UserId userId) ->
-      let usersFilter = Builders<Entities.User>.Filter.AnyEq(_.MusicPlatforms, userId)
+  let load (collection: IMongoCollection<Entities.User>) =
+    fun (UserId userId) ->
+      let usersFilter = Builders<Entities.User>.Filter.Eq(_.Id, userId)
 
       collection.Find(usersFilter).SingleOrDefaultAsync() |> Task.map User.fromDb
 
@@ -108,9 +110,7 @@ type UserRepo(db: IMongoDatabase) =
   interface IUserRepo with
     member this.LoadUser(userId) = UserRepo.load collection userId
     member this.SaveUser(user) = UserRepo.save collection user
-
-    member this.LoadUserByMusicPlatform(userId) =
-      UserRepo.loadByMusicPlatform collection userId
+    member this.TryLoadUser(userId) = UserRepo.tryLoad collection userId
 
 type RecommenderFactory
   ([<FromKeyedServices("reccobeats")>] reccoBeatsRecommender: IRecommender, [<FromKeyedServices("musicae")>] musicaeRecommender) =

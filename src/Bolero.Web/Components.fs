@@ -44,60 +44,37 @@ type About() =
 
 [<Route("profile")>]
 [<Authorize>]
-type Profile() =
-  inherit Component()
+type Profile(env: IEnv) =
+  inherit ProgramComponent<Profile.Model, Profile.Message>()
 
-  override this.Render() = comp<AuthorizeView> {
-    attr.fragmentWith "Authorized" (fun (state: AuthenticationState) -> div { sprintf "Hello %s" state.User.Identity.Name })
-    attr.fragmentWith "NotAuthorized" (fun (_: AuthenticationState) -> p { "You are not authorized" })
-  }
+  override this.Program =
+    Program.mkProgram (Profile.init env) (Profile.update env) Profile.view
 
 [<Route("presets")>]
 [<Authorize>]
-type Presets() =
+type Presets(env: IEnv) =
   inherit ProgramComponent<Preset.List.Model, Preset.List.Message>()
 
-  [<Inject>]
-  member val Env: IEnv = Unchecked.defaultof<IEnv> with get, set
-
-  [<Inject>]
-  member val Logger = Unchecked.defaultof<ILogger<Presets>> with get, set
-
   override this.Program =
-    Program.mkProgram Programs.Preset.List.init (Programs.Preset.List.update this.Logger this.Env) Programs.Preset.List.view
+    Program.mkProgram Programs.Preset.List.init (Programs.Preset.List.update env) Programs.Preset.List.view
     |> Program.withConsoleTrace
 
 [<Route("presets/create")>]
 [<Authorize>]
-type CreatePreset() =
+type CreatePreset(env: IEnv, logger: ILogger<CreatePreset>) =
   inherit ProgramComponent<Preset.Create.Model, Preset.Create.Message>()
-
-  [<Inject>]
-  member val Env: IEnv = Unchecked.defaultof<IEnv> with get, set
-
-  [<Inject>]
-  member val Logger = Unchecked.defaultof<ILogger<CreatePreset>> with get, set
-
-  [<Inject>]
-  member val NavigationManager = Unchecked.defaultof<NavigationManager> with get, set
 
   override this.Program =
     Program.mkProgram
       Programs.Preset.Create.init
-      (Programs.Preset.Create.update this.Logger this.NavigationManager this.Env)
+      (Programs.Preset.Create.update env this.NavigationManager logger)
       Programs.Preset.Create.view
     |> Program.withConsoleTrace
 
 [<Route("presets/{presetId}")>]
 [<Authorize>]
-type Preset() =
+type Preset(env: IEnv) =
   inherit ProgramComponent<Preset.Details.Model, Preset.Details.Message>()
-
-  [<Inject>]
-  member val Env: IEnv = Unchecked.defaultof<IEnv> with get, set
-
-  [<Inject>]
-  member val Logger = Unchecked.defaultof<ILogger<Preset>> with get, set
 
   [<Parameter>]
   member val PresetId = Unchecked.defaultof<string> with get, set
@@ -105,7 +82,7 @@ type Preset() =
   override this.Program =
     Program.mkProgram
       (Programs.Preset.Details.init (RawPresetId this.PresetId))
-      (Programs.Preset.Details.update this.Logger this.Env)
+      (Programs.Preset.Details.update env)
       Programs.Preset.Details.view
     |> Program.withConsoleTrace
 
@@ -119,14 +96,11 @@ type Authentication() =
 
   override this.Render() = comp<RemoteAuthenticatorView> { "Action" => this.Action }
 
-type RedirectToLogin() =
+type RedirectToLogin(navManager: NavigationManager) =
   inherit Component()
 
-  [<Inject>]
-  member val NavigationManager = Unchecked.defaultof<NavigationManager> with get, set
-
   override this.OnInitialized() =
-    this.NavigationManager.NavigateToLogin("authentication/login")
+    navManager.NavigateToLogin("authentication/login")
 
     ()
 

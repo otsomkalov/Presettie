@@ -117,7 +117,7 @@ type User =
   {
     Id: UserId
     CurrentPresetId: PresetId option
-    MusicPlatforms: MusicPlatform.UserId list
+    MusicPlatformId: MusicPlatform.UserId option
   }
 
 [<RequireQualifiedAccess>]

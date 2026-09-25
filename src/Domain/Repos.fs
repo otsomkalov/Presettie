@@ -38,16 +38,16 @@ type IPresetRepo =
 type ILoadUser =
   abstract LoadUser: userId: UserId -> Task<User>
 
-type ILoadUserByMusicPlatform =
-  abstract LoadUserByMusicPlatform: MusicPlatform.UserId -> Task<User>
+type ITryLoadUser =
+  abstract TryLoadUser: userId: UserId -> Task<User option>
 
 type ISaveUser =
   abstract SaveUser: user: User -> Task<unit>
 
 type IUserRepo =
   inherit ILoadUser
-  inherit ILoadUserByMusicPlatform
   inherit ISaveUser
+  inherit ITryLoadUser
 
 type IRecommenderFactory =
   abstract member Create: IMusicPlatform * RecommendationsEngine -> IRecommender

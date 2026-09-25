@@ -21,6 +21,7 @@
   <ItemGroup>
     <Compile Include="Shared.fs" />
     <Compile Include="Functions\PresetFunctions.fs"/>
+    <Compile Include="Functions\UserFunctions.fs" />
     <Compile Include="Startup.fs"/>
   </ItemGroup>
 

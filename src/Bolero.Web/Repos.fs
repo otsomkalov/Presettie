@@ -16,8 +16,12 @@ type IRemovePreset =
 type ICreatePreset =
   abstract CreatePreset: string -> Task<PresetId>
 
+type IGetCurrentUser =
+  abstract GetCurrentUser: unit -> Task<User>
+
 type IEnv =
   inherit IListPresets
   inherit IGetPreset
   inherit IRemovePreset
   inherit ICreatePreset
+  inherit IGetCurrentUser
