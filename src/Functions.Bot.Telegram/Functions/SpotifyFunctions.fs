@@ -2,6 +2,7 @@
 
 open System.Threading.Tasks
 open Bot.Telegram.Settings
+open FsToolkit.ErrorHandling
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
@@ -26,7 +27,7 @@ type SpotifyFunctions(_telegramOptions: IOptions<TelegramSettings>, authService:
     match request.Query["state"], request.Query["code"] with
     | QueryParam state, QueryParam code ->
       authService.FulfillAuth(State.Parse state, Code code)
-      |> TaskResult.either onSuccess onError
+      |> TaskResult.foldResult onSuccess onError
     | QueryParam _, _ -> BadRequestObjectResult("Code is empty") :> IActionResult |> Task.FromResult
     | _, QueryParam _ -> BadRequestObjectResult("State is empty") :> IActionResult |> Task.FromResult
     | _, _ ->
