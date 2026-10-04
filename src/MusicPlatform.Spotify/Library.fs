@@ -14,8 +14,6 @@ open otsom.fs.Auth
 open otsom.fs.Auth.Repo
 open otsom.fs.Auth.Settings
 open otsom.fs.Extensions
-open System.Collections.Generic
-open System.Threading.Tasks
 open FSharp.Control
 
 [<RequireQualifiedAccess>]
@@ -201,38 +199,24 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
         return Artist.NotFound |> Error
     }
 
-module Library =
+type SpotifyMusicPlatformFactory(authRepo: IAuthRepo, authOptions: IOptions<AuthSettings>, logger) =
+  let authSettings = authOptions.Value
 
-  type UserId with
-    member this.ToAccountId() = this.Value |> AccountId
-
-  let getClient (authRepo: #ILoadCompletedAuth) (authOptions: IOptions<AuthSettings>) =
-    let authSettings = authOptions.Value
-    let clients = Dictionary<UserId, ISpotifyClient>()
-
-    fun (userId: UserId) ->
-      match clients.TryGetValue(userId) with
-      | true, client -> client |> Some |> Task.FromResult
-      | false, _ ->
-        userId.ToAccountId()
-        |> authRepo.LoadCompletedAuth
-        |> TaskOption.taskMap (fun auth -> task {
-          let! tokenResponse =
-            AuthorizationCodeRefreshRequest(authSettings.ClientId, authSettings.ClientSecret, auth.Token.Value)
-            |> OAuthClient().RequestToken
-
-          let retryHandler =
-            SimpleRetryHandler(RetryAfter = TimeSpan.FromSeconds(30L), RetryTimes = 3, TooManyRequestsConsumesARetry = true)
-
-          let config =
-            SpotifyClientConfig.CreateDefault().WithRetryHandler(retryHandler).WithToken(tokenResponse.AccessToken)
-
-          return config |> SpotifyClient :> ISpotifyClient
-        })
-        |> TaskOption.tap (fun client -> clients.TryAdd(userId, client) |> ignore)
-
-type SpotifyMusicPlatformFactory(authService: IAuthRepo, authOptions, logger) =
   interface IMusicPlatformFactory with
-    member this.GetMusicPlatform(userId) =
-      Library.getClient authService authOptions userId
-      |> Task.map (Option.map (fun client -> SpotifyMusicPlatform(client, logger)))
+    member this.GetMusicPlatform(userId) = taskOption {
+      let! completedAuth = authRepo.LoadCompletedAuth(userId.ToAccountId())
+
+      let! tokenResponse =
+        AuthorizationCodeRefreshRequest(authSettings.ClientId, authSettings.ClientSecret, completedAuth.Token.Value)
+        |> OAuthClient().RequestToken
+
+      let retryHandler =
+        SimpleRetryHandler(RetryAfter = TimeSpan.FromSeconds(30L), RetryTimes = 3, TooManyRequestsConsumesARetry = true)
+
+      let config =
+        SpotifyClientConfig.CreateDefault().WithRetryHandler(retryHandler).WithToken(tokenResponse.AccessToken)
+
+      let client = config |> SpotifyClient :> ISpotifyClient
+
+      return SpotifyMusicPlatform(client, logger): IMusicPlatform
+    }
