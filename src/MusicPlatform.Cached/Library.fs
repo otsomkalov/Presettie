@@ -1,10 +1,14 @@
 ﻿namespace MusicPlatform.Cached
 
+open System.Collections.Generic
+open FSharp.Control
+open System.Collections.Concurrent
+open System.Threading.Tasks
 open Microsoft.ApplicationInsights
 open MusicPlatform
 open MusicPlatform.Spotify.Cache
 open StackExchange.Redis
-open FSharp.Control
+open FsToolkit.ErrorHandling
 
 type RedisMusicPlatform
   (musicPlatform: IMusicPlatform, telemetryClient: TelemetryClient, multiplexer: IConnectionMultiplexer, userId: UserId) =
@@ -96,11 +100,26 @@ type RedisMusicPlatformFactory
     }
 
 type MemoryCachedMusicPlatformFactory(getMusicPlatform: IMusicPlatformFactory) =
-  interface IMusicPlatformFactory with
-    member this.GetMusicPlatform(var0) = task {
-      let! musicPlatform = getMusicPlatform.GetMusicPlatform var0
+  let inFlight = ConcurrentDictionary<UserId, Lazy<Task<IMusicPlatform option>>>()
+  let cache = ConcurrentDictionary<UserId, MemoryCachedMusicPlatform>()
 
-      match musicPlatform with
-      | Some platform -> return MemoryCachedMusicPlatform(platform) :> IMusicPlatform |> Some
-      | None -> return None
+  interface IMusicPlatformFactory with
+    member this.GetMusicPlatform(userId) = task {
+      match cache.TryGetValue userId with
+      | true, platform -> return Some platform
+      | false, _ ->
+        let candidate = Lazy.Create(fun () -> getMusicPlatform.GetMusicPlatform userId)
+
+        let actual = inFlight.GetOrAdd(userId, candidate)
+
+        try
+          let! result = actual.Value |> TaskOption.map MemoryCachedMusicPlatform
+
+          match result with
+          | Some value -> cache.TryAdd(userId, value) |> ignore
+          | None -> ()
+
+          return result |> Option.map (fun p -> p :> IMusicPlatform)
+        finally
+          inFlight.TryRemove(KeyValuePair(userId, actual)) |> ignore
     }

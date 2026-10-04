@@ -19,6 +19,7 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.ApplicationInsights
 open Microsoft.Azure.Functions.Worker
+open MusicPlatform.Cached
 open MusicPlatform.Spotify
 open Telegram.Bot.AspNetCore
 
@@ -36,6 +37,7 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
 
   services
   |> Startup.addSpotifyMusicPlatform cfg
+  |> Startup.addCachedMusicPlatform cfg
   |> Startup.addDomain cfg
   |> Startup.addApp
   |> Startup.addBot cfg

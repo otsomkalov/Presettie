@@ -3,6 +3,7 @@
 open MusicPlatform
 open MusicPlatform.Spotify.Helpers
 open SpotifyAPI.Web
+open otsom.fs.Auth
 
 [<RequireQualifiedAccess>]
 module Artist =
@@ -43,3 +44,6 @@ module Album =
         |> Seq.map Track.fromSimple
         |> Seq.toList
     }
+
+type UserId with
+  member this.ToAccountId() = this.Value |> AccountId
