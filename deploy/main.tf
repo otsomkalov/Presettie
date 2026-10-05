@@ -223,14 +223,18 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
       Database__Name         = var.database-name,
       Storage__QueueName     = azurerm_storage_queue.stq-bot-requests-presettie.name,
 
-      OAuth__ReturnUri                      = var.oauth-redirect-url,
-      OAuth__Spotify__ClientId              = var.oauth-client-id,
-      OAuth__Spotify__RedirectUri           = var.oauth-redirect-url,
-      OAuth__Spotify__AuthorizationEndpoint = var.oauth-authorization-endpoint,
-      OAuth__Spotify__TokenEndpoint         = var.oauth-token-endpoint
+      Authentication__Schemes__Bearer__Authority     = var.jwt-authority
+      Authentication__Schemes__Bearer__ValidAudience = var.jwt-audience
+      Authentication__Schemes__Bearer__ValidIssuer   = var.jwt-issuer
+
+      OAuth__ReturnUri                      = var.oauth-api-return-uri,
+      OAuth__Spotify__ClientId              = var.oauth-spotify-client-id,
+      OAuth__Spotify__RedirectUri           = var.oauth-spotify-redirect-uri,
+      OAuth__Spotify__AuthorizationEndpoint = var.oauth-spotify-authorization-endpoint,
+      OAuth__Spotify__TokenEndpoint         = var.oauth-spotify-token-endpoint
     },
     {
-      for idx, scope in var.oauth-scope : "OAuth__Spotify__Scopes__${idx}" => scope
+      for idx, scope in var.oauth-spotify-scope : "OAuth__Spotify__Scope__${idx}" => scope
     }
   )
 

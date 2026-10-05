@@ -29,15 +29,7 @@ type OAuthFunctions
     ([<HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "oauth/music-platform/link")>] request: HttpRequest)
     : Task<IActionResult> =
     let handler =
-      fun (token: TokenUser) -> taskResult {
-        let! user = User.loadOrCreate userRepo token.UserId
-
-        do!
-          user.MusicPlatformId
-          |> Result.requireNone (Operation "User already has music platform connected")
-
-        return! oAuthClient.InitAuth(token.UserId.ToAccountId())
-      }
+      fun (token: TokenUser) -> taskResult { return! oAuthClient.InitAuth(token.UserId.ToAccountId()) }
 
     validateUser authnService request
     |> TaskResult.bind handler
