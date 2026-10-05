@@ -9,5 +9,3 @@ open MusicPlatform
 
 let addSpotifyMusicPlatform (cfg: IConfiguration) (services: IServiceCollection) =
   services.AddSingleton<Playlist.ParseId>(Playlist.parseId).AddSingleton<Artist.ParseId>(Artist.parseId)
-
-  services.AddSingleton<IMusicPlatformFactory, SpotifyMusicPlatformFactory>()

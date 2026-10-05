@@ -9,9 +9,11 @@ open System.Text.Json
 open System.Text.Json.Serialization
 open Azure.Identity
 open Domain
+open Functions.API.Shared
 open Infrastructure
 open Microsoft.Azure.Functions.Worker.Builder
 open Microsoft.Azure.Functions.Worker.Middleware
+open MusicPlatform
 open MusicPlatform.Spotify
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -19,8 +21,9 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.ApplicationInsights
-open otsom.fs.Auth
-open otsom.fs.Auth.Spotify
+open otsom.fs.OAuth
+open otsom.fs.OAuth.Spotify
+open otsom.fs.OAuth.Storage.Mongo
 open App
 
 [<RequireQualifiedAccess>]
@@ -36,13 +39,17 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   services.AddApplicationInsightsTelemetryWorkerService()
   services.ConfigureFunctionsApplicationInsights()
 
+  services.AddOAuth().AddMongoStore().AddSpotify(cfg)
+
+  services.Configure<AdditionalOAuthSettings>(cfg.GetSection(AdditionalOAuthSettings.SectionName))
+
+  services.AddSingleton<IMusicPlatformFactory, SpotifyOAuthMusicPlatformFactory>()
+
   services
   |> Startup.addSpotifyMusicPlatform cfg
   |> Startup.addDomain cfg
   |> Startup.addApp
   |> Startup.addInfrastructure cfg
-  |> Startup.addAuthCore cfg
-  |> Startup.addSpotifyAuth
 
   services
     .AddAuthentication()

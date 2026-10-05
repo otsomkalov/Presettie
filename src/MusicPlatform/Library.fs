@@ -8,6 +8,8 @@ type UserId =
 
   member this.Value = let (UserId id) = this in id
 
+type User = { Id: UserId }
+
 type PlaylistId =
   | PlaylistId of string
 
@@ -103,6 +105,9 @@ type IRecommender =
 type ILoadArtist =
   abstract LoadArtist: ArtistId -> Task<Result<Artist, Artist.LoadError>>
 
+type IGetMe =
+  abstract GetMe: unit -> Task<User>
+
 type IMusicPlatform =
   inherit ILoadPlaylist
   inherit IReplaceTracks
@@ -112,6 +117,7 @@ type IMusicPlatform =
   inherit IListArtistTracks
   inherit IRecommender
   inherit ILoadArtist
+  inherit IGetMe
 
 type IMusicPlatformFactory =
   abstract GetMusicPlatform: UserId -> Task<IMusicPlatform option>

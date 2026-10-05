@@ -58,6 +58,30 @@ variable "resources-default-lang" {
   type = string
 }
 
+variable "oauth-spotify-client-id" {
+  type = string
+}
+
+variable "oauth-spotify-redirect-uri" {
+  type = string
+}
+
+variable "oauth-spotify-authorization-endpoint" {
+  type = string
+}
+
+variable "oauth-spotify-token-endpoint" {
+  type = string
+}
+
+variable "oauth-spotify-scope" {
+  type = list(string)
+}
+
+variable "oauth-api-return-uri" {
+  type = string
+}
+
 variable "web-url" {
   type = string
 }

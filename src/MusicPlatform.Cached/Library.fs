@@ -64,6 +64,7 @@ type RedisMusicPlatform
 
     member this.Recommend(tracks) = musicPlatform.Recommend tracks
     member this.LoadArtist(id) = musicPlatform.LoadArtist id
+    member this.GetMe() = musicPlatform.GetMe()
 
 type MemoryCachedMusicPlatform(musicPlatform: IMusicPlatform) =
   interface IMusicPlatform with
@@ -84,22 +85,16 @@ type MemoryCachedMusicPlatform(musicPlatform: IMusicPlatform) =
     member this.ListArtistTracks(artistId) = musicPlatform.ListArtistTracks artistId
     member this.Recommend(tracks) = musicPlatform.Recommend tracks
     member this.LoadArtist(id) = musicPlatform.LoadArtist id
+    member this.GetMe() = musicPlatform.GetMe()
 
 type RedisMusicPlatformFactory
-  (getMusicPlatform: IMusicPlatformFactory, telemetryClient: TelemetryClient, multiplexer: IConnectionMultiplexer) =
+  (musicPlatformFactory: IMusicPlatformFactory, telemetryClient: TelemetryClient, multiplexer: IConnectionMultiplexer) =
   interface IMusicPlatformFactory with
-    member this.GetMusicPlatform(userId) = task {
-      let! musicPlatform = getMusicPlatform.GetMusicPlatform userId
+    member this.GetMusicPlatform(userId) =
+      musicPlatformFactory.GetMusicPlatform userId
+      |> TaskOption.map (fun mp -> RedisMusicPlatform(mp, telemetryClient, multiplexer, userId))
 
-      match musicPlatform with
-      | Some platform ->
-        return
-          RedisMusicPlatform(platform, telemetryClient, multiplexer, userId) :> IMusicPlatform
-          |> Some
-      | None -> return None
-    }
-
-type MemoryCachedMusicPlatformFactory(getMusicPlatform: IMusicPlatformFactory) =
+type MemoryCachedMusicPlatformFactory(musicPlatformFactory: IMusicPlatformFactory) =
   let inFlight = ConcurrentDictionary<UserId, Lazy<Task<IMusicPlatform option>>>()
   let cache = ConcurrentDictionary<UserId, MemoryCachedMusicPlatform>()
 
@@ -108,7 +103,7 @@ type MemoryCachedMusicPlatformFactory(getMusicPlatform: IMusicPlatformFactory) =
       match cache.TryGetValue userId with
       | true, platform -> return Some platform
       | false, _ ->
-        let candidate = Lazy.Create(fun () -> getMusicPlatform.GetMusicPlatform userId)
+        let candidate = Lazy.Create(fun () -> musicPlatformFactory.GetMusicPlatform userId)
 
         let actual = inFlight.GetOrAdd(userId, candidate)
 

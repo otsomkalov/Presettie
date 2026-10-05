@@ -68,30 +68,6 @@ resource "azurerm_key_vault_secret" "kvs-auth-callback-url" {
   depends_on = [azurerm_key_vault_access_policy.kvap-terraform]
 }
 
-resource "azurerm_key_vault_secret" "kvs-authentication-authority" {
-  key_vault_id = azurerm_key_vault.kv-presettie.id
-  name         = "Authentication--Schemes--Bearer--Authority"
-  value        = var.jwt-authority
-
-  depends_on = [azurerm_key_vault_access_policy.kvap-terraform]
-}
-
-resource "azurerm_key_vault_secret" "kvs-authentication-audience" {
-  key_vault_id = azurerm_key_vault.kv-presettie.id
-  name         = "Authentication--Schemes--Bearer--ValidAudience"
-  value        = var.jwt-audience
-
-  depends_on = [azurerm_key_vault_access_policy.kvap-terraform]
-}
-
-resource "azurerm_key_vault_secret" "kvs-authentication-issuer" {
-  key_vault_id = azurerm_key_vault.kv-presettie.id
-  name         = "Authentication--Schemes--Bearer--ValidIssuer"
-  value        = var.jwt-issuer
-
-  depends_on = [azurerm_key_vault_access_policy.kvap-terraform]
-}
-
 resource "azurerm_key_vault_secret" "kvs-database-connection-string" {
   key_vault_id = azurerm_key_vault.kv-presettie.id
   name         = "Database--ConnectionString"
