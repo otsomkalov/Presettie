@@ -45,8 +45,8 @@ type OAuthFunctions
       | Unauthorized -> UnauthorizedResult() :> IActionResult
       | Operation err -> BadRequestObjectResult(err) :> IActionResult)
 
-  [<Function("SpotifyCallback")>]
-  member this.SpotifyCallback
+  [<Function("MusicPlatformCallback")>]
+  member this.MusicPlatformCallback
     ([<HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "oauth/music-platform/callback")>] request: HttpRequest)
     : Task<IActionResult> =
 
