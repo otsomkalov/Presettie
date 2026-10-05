@@ -19,9 +19,13 @@ type ICreatePreset =
 type IGetCurrentUser =
   abstract GetCurrentUser: unit -> Task<User>
 
+type ILinkMusicPlatform =
+  abstract LinkMusicPlatform: unit -> Task<unit>
+
 type IEnv =
   inherit IListPresets
   inherit IGetPreset
   inherit IRemovePreset
   inherit ICreatePreset
   inherit IGetCurrentUser
+  inherit ILinkMusicPlatform

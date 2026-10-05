@@ -16,10 +16,15 @@
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.51.0" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.5.2" />
+    <PackageReference Include="otsom.fs.OAuth.Spotify" Version="0.2.2"/>
+    <PackageReference Include="otsom.fs.OAuth.Storage.Mongo" Version="0.2.1"/>
+    <PackageReference Include="SpotifyAPI.Web" Version="7.4.2"/>
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="Shared.fs" />
+    <Compile Include="SpotifyOAuthMusicPlatformFactory.fs" />
+    <Compile Include="Functions\OAuthFunctions.fs" />
     <Compile Include="Functions\PresetFunctions.fs"/>
     <Compile Include="Functions\UserFunctions.fs" />
     <Compile Include="Startup.fs"/>

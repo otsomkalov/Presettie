@@ -17,7 +17,7 @@ open Bolero.Web.Util
 open FsToolkit.ErrorHandling
 open BlazorBootstrap
 
-type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
+type Env(httpClientFactory: IHttpClientFactory, navManager: NavigationManager, logger: ILogger<Env>) =
   let httpClient = httpClientFactory.CreateClient(nameof Env)
 
   interface IEnv with
@@ -64,6 +64,19 @@ type Env(httpClientFactory: IHttpClientFactory, logger: ILogger<Env>) =
         logger.LogError(e, "Error while getting current user:")
 
         return Unchecked.defaultof<User>
+    }
+
+    member this.LinkMusicPlatform() = task {
+      try
+        let! redirectUri = httpClient.GetStringAsync("oauth/music-platform/link")
+
+        navManager.NavigateTo(redirectUri, true)
+
+        return ()
+      with e ->
+        logger.LogError(e, "Error while linking music platform:")
+
+        return ()
     }
 
 type APIAuthorizationMessageHandler(accessTokenProvider: IAccessTokenProvider, navigationManager: NavigationManager, cfg: IConfiguration) =

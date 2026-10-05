@@ -6,7 +6,7 @@ open Microsoft.AspNetCore.Authentication
 open Microsoft.AspNetCore.Authentication.JwtBearer
 open Microsoft.AspNetCore.Http
 open FsToolkit.ErrorHandling
-open otsom.fs.Auth
+open otsom.fs.OAuth
 open otsom.fs.Extensions
 
 type TokenUser = { UserId: UserId }
@@ -17,6 +17,14 @@ type ValidationError = { Member: string; Error: string }
 
 type UserId with
   member this.ToAccountId() = this.Value |> string |> AccountId
+
+[<CLIMutable>]
+type AdditionalOAuthSettings =
+  {
+    ReturnUri: string
+  }
+
+  static member SectionName = "OAuth"
 
 type RequestError<'a> =
   | Unauthorized

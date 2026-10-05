@@ -12,6 +12,7 @@ open Microsoft.AspNetCore.Components.Routing
 open Microsoft.AspNetCore.Components.Web
 open Microsoft.AspNetCore.Components.WebAssembly.Authentication
 open Bolero.Web.Repos
+open Microsoft.AspNetCore.Components.WebAssembly.Hosting
 open Microsoft.Extensions.Logging
 
 [<RequireQualifiedAccess>]
@@ -44,47 +45,67 @@ type About() =
 
 [<Route("profile")>]
 [<Authorize>]
-type Profile(env: IEnv) =
+type Profile(env: IEnv, hostEnv: IWebAssemblyHostEnvironment) =
   inherit ProgramComponent<Profile.Model, Profile.Message>()
 
   override this.Program =
-    Program.mkProgram (Profile.init env) (Profile.update env) Profile.view
+    let program = Program.mkProgram (Profile.init env) (Profile.update env) Profile.view
+
+    if hostEnv.IsDevelopment() then
+      program |> Program.withConsoleTrace
+    else
+      program
 
 [<Route("presets")>]
 [<Authorize>]
-type Presets(env: IEnv) =
+type Presets(env: IEnv, hostEnv: IWebAssemblyHostEnvironment) =
   inherit ProgramComponent<Preset.List.Model, Preset.List.Message>()
 
   override this.Program =
-    Program.mkProgram Programs.Preset.List.init (Programs.Preset.List.update env) Programs.Preset.List.view
-    |> Program.withConsoleTrace
+    let program =
+      Program.mkProgram Programs.Preset.List.init (Programs.Preset.List.update env) Programs.Preset.List.view
+
+    if hostEnv.IsDevelopment() then
+      program |> Program.withConsoleTrace
+    else
+      program
 
 [<Route("presets/create")>]
 [<Authorize>]
-type CreatePreset(env: IEnv, logger: ILogger<CreatePreset>) =
+type CreatePreset(env: IEnv, hostEnv: IWebAssemblyHostEnvironment, logger: ILogger<CreatePreset>) =
   inherit ProgramComponent<Preset.Create.Model, Preset.Create.Message>()
 
   override this.Program =
-    Program.mkProgram
-      Programs.Preset.Create.init
-      (Programs.Preset.Create.update env this.NavigationManager logger)
-      Programs.Preset.Create.view
-    |> Program.withConsoleTrace
+    let program =
+      Program.mkProgram
+        Programs.Preset.Create.init
+        (Programs.Preset.Create.update env this.NavigationManager logger)
+        Programs.Preset.Create.view
+
+    if hostEnv.IsDevelopment() then
+      program |> Program.withConsoleTrace
+    else
+      program
 
 [<Route("presets/{presetId}")>]
 [<Authorize>]
-type Preset(env: IEnv) =
+type Preset(env: IEnv, hostEnv: IWebAssemblyHostEnvironment) =
   inherit ProgramComponent<Preset.Details.Model, Preset.Details.Message>()
 
   [<Parameter>]
   member val PresetId = Unchecked.defaultof<string> with get, set
 
   override this.Program =
-    Program.mkProgram
-      (Programs.Preset.Details.init (RawPresetId this.PresetId))
-      (Programs.Preset.Details.update env)
-      Programs.Preset.Details.view
-    |> Program.withConsoleTrace
+    let program =
+      Program.mkProgram
+        (Programs.Preset.Details.init (RawPresetId this.PresetId))
+        (Programs.Preset.Details.update env)
+        Programs.Preset.Details.view
+
+    if hostEnv.IsDevelopment() then
+      program |> Program.withConsoleTrace
+    else
+      program
 
 [<Route("/authentication/{action}")>]
 [<AllowAnonymous>]

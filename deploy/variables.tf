@@ -58,6 +58,26 @@ variable "resources-default-lang" {
   type = string
 }
 
+variable "oauth-client-id" {
+  type = string
+}
+
+variable "oauth-redirect-url" {
+  type = string
+}
+
+variable "oauth-authorization-endpoint" {
+  type = string
+}
+
+variable "oauth-token-endpoint" {
+  type = string
+}
+
+variable "oauth-scope" {
+  type = list(string)
+}
+
 variable "web-url" {
   type = string
 }

@@ -20,12 +20,13 @@
 
     "Resources__DefaultLang": "en",
 
-    "Auth__ClientId": "<Spotify Client ID>",
-    "Auth__ClientSecret": "<Spotify Client Secret>",
-    "Auth__CallbackUrl": "http://localhost:7071/api/spotify/callback",
-    "Auth__Scopes__0": "playlist-modify-private",
-    "Auth__Scopes__1": "playlist-modify-public",
-    "Auth__Scopes__2": "user-library-read",
+    "OAuth__Spotify__ClientId": "<OAuth Client ID>",
+    "OAuth__Spotify__AuthorizationEndpoint": "<OAuth Authorization URI>",
+    "OAuth__Spotify__TokenEndpoint": "<OAuth Token URI>",
+    "OAuth__Spotify__RedirectUri": "<OAuth Callback URI>",
+    "OAuth__Spotify__Scope__0": "<OAuth Scope 1>",
+    "OAuth__Spotify__Scope__1": "<OAuth Scope 2>",
+    "OAuth__ReturnUri": "<OAuth Return URI>",
 
     "Authentication__DefaultScheme": "Bearer",
     "Authentication__Schemes__Bearer__Authority": "<Authority>",

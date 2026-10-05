@@ -52,7 +52,7 @@ module Preset =
       }
 
     let init _ =
-      { Presets = AsyncOp.Loading }, Cmd.ofMsg LoadPresets
+      { Presets = AsyncOp.Started }, Cmd.ofMsg LoadPresets
 
     let update (env: #IListPresets & #IRemovePreset) =
       fun (message: Message) (model: Model) ->
@@ -66,7 +66,7 @@ module Preset =
 
     let view (model: Model) (dispatch: Message -> unit) =
       match model.Presets with
-      | AsyncOp.Loading -> div { text "Loading presets..." }
+      | AsyncOp.Started -> div { text "Loading presets..." }
       | AsyncOp.Finished presets -> concat {
           div {
             attr.``class`` "row justify-content-end"
@@ -100,7 +100,7 @@ module Preset =
       | PresetLoaded of Preset
 
     let init presetId =
-      fun _ -> { Preset = AsyncOp.Loading }, Cmd.ofMsg (LoadPreset presetId)
+      fun _ -> { Preset = AsyncOp.Started }, Cmd.ofMsg (LoadPreset presetId)
 
     let update (env: #IGetPreset) =
       fun (message: Message) model ->
@@ -108,7 +108,7 @@ module Preset =
         | LoadPreset(RawPresetId presetId) ->
           let parsedPresetId = PresetId presetId
 
-          { model with Preset = AsyncOp.Loading }, Cmd.OfTask.perform env.GetPreset' parsedPresetId PresetLoaded
+          { model with Preset = AsyncOp.Started }, Cmd.OfTask.perform env.GetPreset' parsedPresetId PresetLoaded
         | PresetLoaded preset ->
           { model with
               Preset = AsyncOp.Finished preset
@@ -117,7 +117,7 @@ module Preset =
 
     let view (model: Model) dispatch =
       match model.Preset with
-      | AsyncOp.Loading -> div { text "Loading..." }
+      | AsyncOp.Started -> div { text "Loading..." }
       | AsyncOp.Finished preset -> div {
           h1 { text preset.Name }
 
@@ -237,38 +237,80 @@ module Profile =
   type Model = { User: User option }
 
   type Message =
-    | LoadProfile
-    | ProfileLoaded of User
+    | LoadProfile of AsyncOp<User>
+    | LinkMusicPlatform of AsyncOp<unit>
 
   let init (env: #IGetCurrentUser) =
-    fun _ -> { User = None }, Cmd.OfTask.perform env.GetCurrentUser () ProfileLoaded
+    fun _ -> { User = None }, Cmd.OfTask.perform env.GetCurrentUser () (Finished >> LoadProfile)
 
-  let update (env: #IGetCurrentUser) (message: Message) (model: Model) : Model * Cmd<Message> =
+  let update (env: #IGetCurrentUser & #ILinkMusicPlatform) (message: Message) (model: Model) : Model * Cmd<Message> =
     match message with
-    | LoadProfile -> { model with User = None }, Cmd.OfTask.perform env.GetCurrentUser () ProfileLoaded
-    | ProfileLoaded user -> { model with User = Some user }, Cmd.none
+    | LoadProfile(Started) -> { model with User = None }, Cmd.OfTask.perform env.GetCurrentUser () (Finished >> LoadProfile)
+    | LoadProfile(Finished user) -> { model with User = Some user }, Cmd.none
+    | LinkMusicPlatform(Started) -> model, Cmd.OfTask.perform env.LinkMusicPlatform () (Finished >> LinkMusicPlatform)
+    | LinkMusicPlatform(Finished()) -> model, Cmd.none
 
   let view (model: Model) dispatch = concat {
     cond model.User
     <| function
-      | Some user -> concat {
-          div { text (sprintf "Hello, %A!" user.Id.Value) }
+      | Some user -> div {
+          attr.``class`` "d-flex flex-column gap-2"
 
-          cond user.MusicPlatformId
-          <| function
-            | Some musicPlatformId -> a {
-                attr.href (sprintf "https://open.spotify.com/user/%s" musicPlatformId.Value)
+          div {
+            label {
+              attr.``for`` "userId"
+              attr.``class`` "form-label"
 
-                img {
-                  attr.src "icon/spotify-logo.svg"
+              "Your ID: "
+            }
 
-                  attr.width 32
-                  attr.height 32
+            input {
+              attr.id "userId"
+              attr.``class`` "form-control"
+              attr.disabled true
+
+              attr.value user.Id.Value
+            }
+          }
+
+          div {
+            cond user.MusicPlatformId
+            <| function
+              | Some musicPlatformId -> div {
+                  attr.``class`` "d-flex gap-1"
+
+                  a {
+                    attr.``class`` "btn btn-outline-primary"
+
+                    // TODO: Best way to set url based music platform?
+                    attr.href (sprintf "https://open.spotify.com/user/%s" musicPlatformId.Value)
+
+                    img {
+                      attr.src "icon/spotify-logo.svg"
+
+                      attr.width 24
+                      attr.height 24
+                    }
+
+                    text "Profile"
+                  }
+
+                  button {
+                    attr.``class`` "btn btn-warning"
+
+                    on.click (fun _ -> LinkMusicPlatform(Started) |> dispatch)
+
+                    text "Re-link music platform"
+                  }
                 }
+              | None -> button {
+                  attr.``class`` "btn btn-primary"
 
-                text "Your Spotify Profile"
-              }
-            | None -> div { text "No music platform linked." }
+                  on.click (fun _ -> LinkMusicPlatform(Started) |> dispatch)
+
+                  text "Link music platform"
+                }
+          }
         }
       | None -> div { text "Loading..." }
   }

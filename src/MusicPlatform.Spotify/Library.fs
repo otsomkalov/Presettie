@@ -199,6 +199,12 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
         return Artist.NotFound |> Error
     }
 
+    member this.GetMe() = task {
+      let! me = client.UserProfile.Current()
+
+      return me |> User.fromPrivate
+    }
+
 type SpotifyMusicPlatformFactory(authRepo: IAuthRepo, authOptions: IOptions<AuthSettings>, logger) =
   let authSettings = authOptions.Value
 

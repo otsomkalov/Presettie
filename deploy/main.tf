@@ -219,13 +219,18 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
     {
       KeyVaultName = azurerm_key_vault.kv-presettie.name,
 
-      Auth__CallbackUrl      = var.auth-callback-url
       Resources__DefaultLang = var.resources-default-lang
       Database__Name         = var.database-name,
-      Storage__QueueName     = azurerm_storage_queue.stq-bot-requests-presettie.name
+      Storage__QueueName     = azurerm_storage_queue.stq-bot-requests-presettie.name,
+
+      OAuth__ReturnUri                      = var.oauth-redirect-url,
+      OAuth__Spotify__ClientId              = var.oauth-client-id,
+      OAuth__Spotify__RedirectUri           = var.oauth-redirect-url,
+      OAuth__Spotify__AuthorizationEndpoint = var.oauth-authorization-endpoint,
+      OAuth__Spotify__TokenEndpoint         = var.oauth-token-endpoint
     },
     {
-      for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
+      for idx, scope in var.oauth-scope : "OAuth__Spotify__Scopes__${idx}" => scope
     }
   )
 

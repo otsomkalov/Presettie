@@ -45,5 +45,9 @@ module Album =
         |> Seq.toList
     }
 
+[<RequireQualifiedAccess>]
+module User =
+  let fromPrivate (user: PrivateUser) : User = { Id = UserId user.Id }
+
 type UserId with
   member this.ToAccountId() = this.Value |> AccountId

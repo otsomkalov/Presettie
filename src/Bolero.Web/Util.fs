@@ -4,7 +4,7 @@ open System.Text.Json
 open System.Text.Json.Serialization
 
 type AsyncOp<'r> =
-  | Loading
+  | Started
   | Finished of 'r
 
 module JSON =
