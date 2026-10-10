@@ -31,8 +31,11 @@ type Message =
     member this.Id = this.Id
 
 type UserId with
-  member this.ToOAuthAccountId() = this.Value |> string |> otsom.fs.OAuth.AccountId
-  member this.ToAuthAccountId() = this.Value |> string |> otsom.fs.Auth.AccountId
+  member this.ToOAuthAccountId() =
+    this.Value |> string |> otsom.fs.OAuth.AccountId
+
+  member this.ToAuthAccountId() =
+    this.Value |> string |> otsom.fs.Auth.AccountId
 
 type UpdateData =
   | Msg of Message

@@ -141,5 +141,7 @@ let main
     | None ->
       let! loginLink = appOAuthClient.InitAuth(update.ChatId.Value |> string |> AccountId)
 
-      return! botSvc.SendLink(resp[Messages.Login], resp[Buttons.Login], Uri(loginLink)) |> Task.ignore
+      return!
+        botSvc.SendLink(resp[Messages.Login], resp[Buttons.Login], Uri(loginLink))
+        |> Task.ignore
   }
