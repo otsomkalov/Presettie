@@ -1,5 +1,6 @@
 ﻿module Bot.Handlers.Update
 
+open System
 open Bot.Core
 open Bot.Handlers.Click
 open Bot.Handlers.Message
@@ -9,7 +10,7 @@ open FsToolkit.ErrorHandling
 open Microsoft.Extensions.Logging
 open otsom.fs.Bot
 open otsom.fs.Bot.Builders
-open otsom.fs.Extensions
+open otsom.fs.OAuth
 
 let private buildMessageHandlers authService userRepo userService presetService presetRepo resp botService buildMusicPlatform =
   messageHandlers {
@@ -105,36 +106,42 @@ let main
   buildChatContext
   getResp
   (chatRepo: IChatRepo)
-  (chatService: IChatService)
+  (appOAuthClient: IOAuthClient)
   (logger: ILogger)
   =
   fun (update: Update) -> task {
     let botSvc = buildChatContext update.ChatId
     let! resp = getResp update.Lang
 
-    let! chat =
-      chatRepo.LoadChat update.ChatId
-      |> Task.bind (Option.defaultWithTask (fun () -> chatService.CreateChat(update.ChatId, update.Lang)))
+    let! chat = chatRepo.LoadChat update.ChatId
 
-    match update.Data with
-    | Msg msg ->
-      let! result =
-        buildMessageHandlers authService userRepo userService presetService presetRepo resp botSvc buildMusicPlatform chat msg
+    match chat with
+    | Some chat ->
+      match update.Data with
+      | Msg msg ->
+        let! result =
+          buildMessageHandlers authService userRepo userService presetService presetRepo resp botSvc buildMusicPlatform chat msg
 
-      match result with
-      | Some() -> return ()
-      | None ->
-        logger.LogWarning "Message content didn't match any handler. Running default one."
+        match result with
+        | Some() -> return ()
+        | None ->
+          logger.LogWarning "Message content didn't match any handler. Running default one."
 
-        return! botSvc.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
-    | Click click ->
-      let! result =
-        buildClickHandlers mediator userService presetService presetRepo resp botSvc buildMusicPlatform chat click
+          return! botSvc.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
+      | Click click ->
+        let! result =
+          buildClickHandlers mediator userService presetService presetRepo resp botSvc buildMusicPlatform chat click
 
-      match result with
-      | Some() -> return ()
-      | None ->
-        logger.LogWarning "Button click data didn't match any handler. Running default one."
+        match result with
+        | Some() -> return ()
+        | None ->
+          logger.LogWarning "Button click data didn't match any handler. Running default one."
 
-        return! botSvc.SendNotification(click.Id, resp[Notifications.UnknownCommand])
+          return! botSvc.SendNotification(click.Id, resp[Notifications.UnknownCommand])
+    | None ->
+      let! loginLink = appOAuthClient.InitAuth(update.ChatId.Value |> string |> AccountId)
+
+      return!
+        botSvc.SendLink(resp[Messages.Login], resp[Buttons.Login], Uri(loginLink))
+        |> Task.ignore
   }

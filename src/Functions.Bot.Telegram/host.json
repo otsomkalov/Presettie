@@ -5,5 +5,10 @@
       "default": "Information",
       "Azure.Core": "Warning"
     }
+  },
+  "extensions": {
+    "http": {
+      "routePrefix": ""
+    }
   }
 }

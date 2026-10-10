@@ -82,6 +82,26 @@ variable "oauth-api-return-uri" {
   type = string
 }
 
+variable "oauth-keycloak-client-id" {
+  type = string
+}
+
+variable "oauth-keycloak-scope" {
+  type = list(string)
+}
+
+variable "oauth-keycloak-redirect-uri" {
+  type = string
+}
+
+variable "oauth-keycloak-openid-configuration-uri" {
+  type = string
+}
+
+variable "oauth-bot-return-uri" {
+  type = string
+}
+
 variable "web-url" {
   type = string
 }

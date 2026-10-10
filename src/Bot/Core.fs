@@ -3,7 +3,6 @@
 open System.Threading.Tasks
 open Domain.Core
 open Microsoft.FSharp.Core
-open otsom.fs.Auth
 open otsom.fs.Bot
 open otsom.fs.Resources
 
@@ -32,13 +31,11 @@ type Message =
     member this.Id = this.Id
 
 type UserId with
-  member this.ToAccountId() = this.Value |> string |> AccountId
+  member this.ToOAuthAccountId() =
+    this.Value |> string |> otsom.fs.OAuth.AccountId
 
-type ICreateChat =
-  abstract CreateChat: ChatId * string option -> Task<Chat>
-
-type IChatService =
-  inherit ICreateChat
+  member this.ToAuthAccountId() =
+    this.Value |> string |> otsom.fs.Auth.AccountId
 
 type UpdateData =
   | Msg of Message
