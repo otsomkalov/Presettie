@@ -18,14 +18,6 @@ type ValidationError = { Member: string; Error: string }
 type UserId with
   member this.ToAccountId() = this.Value |> string |> AccountId
 
-[<CLIMutable>]
-type AdditionalOAuthSettings =
-  {
-    ReturnUri: string
-  }
-
-  static member SectionName = "OAuth"
-
 type RequestError<'a> =
   | Unauthorized
   | Validation of ValidationError list

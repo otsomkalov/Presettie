@@ -2,6 +2,7 @@
 
 open System
 open System.Threading.Tasks
+open Infrastructure.Core
 open Microsoft.Extensions.Options
 open MusicPlatform
 open Domain.Core

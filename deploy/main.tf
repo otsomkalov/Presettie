@@ -175,9 +175,17 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
       Auth__CallbackUrl  = var.auth-callback-url
       Database__Name     = var.database-name
       Storage__QueueName = azurerm_storage_queue.stq-bot-requests-presettie.name
+
+      OAuth__ReturnUri                        = var.oauth-bot-return-uri,
+      OAuth__Keycloak__ClientId               = var.oauth-keycloak-client-id,
+      OAuth__Keycloak__RedirectUri            = var.oauth-keycloak-redirect-uri,
+      OAuth__Keycloak__OpenIdConfigurationUri = var.oauth-keycloak-openid-configuration-uri
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
+    },
+    {
+      for idx, scope in var.oauth-keycloak-scope : "OAuth__Keycloak__Scope__${idx}" => scope
     }
   )
 

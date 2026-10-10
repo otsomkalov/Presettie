@@ -15,6 +15,11 @@
     "Lang": "en"
   },
   {
+    "Key": "messages.login",
+    "Value": "Log in into an app",
+    "Lang": "en"
+  },
+  {
     "Key": "messages.send-preset-size",
     "Value": "Send me new playlist size in reply to this message",
     "Lang": "en"

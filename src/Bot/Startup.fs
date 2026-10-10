@@ -15,6 +15,4 @@ let addBot (cfg: IConfiguration) (services: IServiceCollection) =
     Resources.getResourceProvider
   )
 
-  services.AddSingleton<IChatService, ChatService>()
-
   services |> Startup.addAuthCore cfg |> Startup.addResources cfg
