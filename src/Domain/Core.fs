@@ -373,10 +373,6 @@ type ISetCurrentPresetSize =
 type ISetCurrentPreset =
   abstract SetCurrentPreset: UserId * PresetId -> Task<unit>
 
-type ICreateUser =
-  abstract CreateUser: unit -> Task<User>
-
 type IUserService =
   inherit ISetCurrentPresetSize
   inherit ISetCurrentPreset
-  inherit ICreateUser

@@ -33,6 +33,8 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   services.AddApplicationInsightsTelemetryWorkerService()
   services.ConfigureFunctionsApplicationInsights()
 
+  services.AddSingleton<IMusicPlatformFactory, SpotifyMusicPlatformFactory>()
+
   services
   |> Startup.addDomain cfg
   |> Startup.addApp
@@ -41,8 +43,6 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   |> Startup.addBot cfg
   |> Startup.addInfrastructure cfg
   |> Startup.addTelegram cfg
-
-  services.AddSingleton<IMusicPlatformFactory, SpotifyMusicPlatformFactory>()
 
   builder
 

@@ -9,8 +9,8 @@ open System.Text.Json
 open System.Text.Json.Serialization
 open Azure.Identity
 open Domain
-open Functions.API.Shared
 open Infrastructure
+open Infrastructure.Core
 open Microsoft.Azure.Functions.Worker.Builder
 open Microsoft.Azure.Functions.Worker.Middleware
 open MusicPlatform

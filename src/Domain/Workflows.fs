@@ -457,22 +457,6 @@ module User =
       |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
       |> Task.bind (fun presetId -> presetService.SetPresetSize(presetId, size))
 
-  let create (userRepo: #ISaveUser) =
-    fun () -> task {
-      let newUserId = Guid.CreateVersion7() |> UserId
-
-      let newUser: User =
-        {
-          Id = newUserId
-          CurrentPresetId = None
-          MusicPlatformId = None
-        }
-
-      do! userRepo.SaveUser newUser
-
-      return newUser
-    }
-
   let loadOrCreate (userRepo: #ITryLoadUser & #ISaveUser) =
     fun userId -> task {
       let! existingUser = userRepo.TryLoadUser userId
@@ -631,5 +615,3 @@ type UserService(userRepo: IUserRepo, presetService: IPresetService) =
 
     member this.SetCurrentPreset(userId, presetId) =
       User.setCurrentPreset userRepo userId presetId
-
-    member this.CreateUser() = User.create userRepo ()

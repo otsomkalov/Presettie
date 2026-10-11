@@ -14,6 +14,9 @@ module Messages =
   let PresetSettingsInfo = "messages.preset-settings-info"
 
   [<Literal>]
+  let Login = "messages.login"
+
+  [<Literal>]
   let LoginToSpotify = "messages.login-to-spotify"
 
   [<Literal>]

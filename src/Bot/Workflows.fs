@@ -175,7 +175,7 @@ let getArtistButtons (resp: IResourceProvider) =
 
 let sendLoginMessage (authService: #IInitAuth) (resp: IResourceProvider) (chatCtx: #ISendLink) =
   fun (userId: UserId) ->
-    authService.InitAuth(userId.ToAccountId())
+    authService.InitAuth(userId.ToAuthAccountId())
     |> Task.bind (fun uri -> chatCtx.SendLink(resp[Messages.LoginToSpotify], resp[Buttons.Login], uri))
 
 [<RequireQualifiedAccess>]
@@ -619,31 +619,8 @@ module User =
       |> TaskResult.taskEither onSuccess onError
 
 [<RequireQualifiedAccess>]
-module Chat =
-  let create (chatRepo: #ISaveChat) (userService: #ICreateUser) (resourceSettings: ResourcesSettings) =
-    fun chatId lang -> task {
-      let! newUser = userService.CreateUser()
-
-      let newChat: Chat =
-        {
-          Id = chatId
-          UserId = newUser.Id
-          Lang = lang |> Option.defaultValue resourceSettings.DefaultLang
-        }
-
-      do! chatRepo.SaveChat newChat
-
-      return newChat
-    }
-
-[<RequireQualifiedAccess>]
 module Resources =
   let getResourceProvider createResp createDefaultResp : Resources.GetResourceProvider =
     function
     | Some l -> createResp l
     | None -> createDefaultResp ()
-
-type ChatService(chatRepo: IChatRepo, userService: IUserService, resourceOptions: IOptions<ResourcesSettings>) =
-  interface IChatService with
-    member this.CreateChat(chatId, lang) =
-      Chat.create chatRepo userService resourceOptions.Value chatId lang

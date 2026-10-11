@@ -43,7 +43,7 @@ let startMessageHandler
         | CompleteError.StateDoesntBelongToUser -> chatCtx.SendMessage resp[Messages.OtherUserState]
 
       do!
-        authService.CompleteAuth(user.Id.ToAccountId(), State.Parse state)
+        authService.CompleteAuth(user.Id.ToAuthAccountId(), State.Parse state)
         |> TaskResult.taskEither processSuccessfulLogin (sendErrorMessage >> Task.ignore)
 
       return Some()

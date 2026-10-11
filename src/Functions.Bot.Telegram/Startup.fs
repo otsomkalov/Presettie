@@ -12,6 +12,7 @@ open Bot
 open Bot.Telegram
 open Domain
 open Infrastructure
+open Infrastructure.Core
 open Microsoft.Azure.Functions.Worker.Builder
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -23,6 +24,9 @@ open MusicPlatform
 open MusicPlatform.Cached
 open MusicPlatform.Spotify
 open Telegram.Bot.AspNetCore
+open otsom.fs.OAuth
+open otsom.fs.OAuth.Keycloak
+open otsom.fs.OAuth.Storage.Mongo
 
 [<RequireQualifiedAccess>]
 module KeyVault =
@@ -36,6 +40,12 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   services.AddApplicationInsightsTelemetryWorkerService()
   services.ConfigureFunctionsApplicationInsights()
 
+  services.Configure<AdditionalOAuthSettings>(cfg.GetSection(AdditionalOAuthSettings.SectionName))
+
+  services.AddOAuth().AddKeycloak(cfg).AddMongoStore()
+
+  services.AddSingleton<IMusicPlatformFactory, SpotifyMusicPlatformFactory>()
+
   services
   |> Startup.addSpotifyMusicPlatform cfg
   |> Startup.addCachedMusicPlatform cfg
@@ -44,8 +54,6 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   |> Startup.addBot cfg
   |> Startup.addInfrastructure cfg
   |> Startup.addTelegram cfg
-
-  services.AddSingleton<IMusicPlatformFactory, SpotifyMusicPlatformFactory>()
 
   services.ConfigureTelegramBotMvc()
 
