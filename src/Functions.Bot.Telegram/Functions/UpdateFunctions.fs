@@ -3,6 +3,7 @@
 open App
 open Bot.Handlers
 open Bot.Repos
+open Bot.Workflows
 open Domain.Core
 open Domain.Repos
 open Microsoft.AspNetCore.Http
@@ -27,6 +28,7 @@ type UpdateFunctions
     chatRepo: IChatRepo,
     mediator: IMediator,
     appOAuthClient: IOAuthClient,
+    apiClientFactory: IApiClientFactory,
     logger: ILogger<UpdateFunctions>
   ) =
   inherit ControllerBase()
@@ -44,6 +46,7 @@ type UpdateFunctions
       getResp
       chatRepo
       appOAuthClient
+      apiClientFactory
       logger
 
   [<Function("HandleUpdateAsync")>]

@@ -14,6 +14,7 @@ open Microsoft.AspNetCore.Components.WebAssembly.Authentication
 open Bolero.Web.Repos
 open Microsoft.AspNetCore.Components.WebAssembly.Hosting
 open Microsoft.Extensions.Logging
+open Runners.Shared
 
 [<RequireQualifiedAccess>]
 module Loading =
@@ -58,12 +59,12 @@ type Profile(env: IEnv, hostEnv: IWebAssemblyHostEnvironment) =
 
 [<Route("presets")>]
 [<Authorize>]
-type Presets(env: IEnv, hostEnv: IWebAssemblyHostEnvironment) =
+type Presets(env: IEnv, apiClient: IApiClient, hostEnv: IWebAssemblyHostEnvironment) =
   inherit ProgramComponent<Preset.List.Model, Preset.List.Message>()
 
   override this.Program =
     let program =
-      Program.mkProgram Programs.Preset.List.init (Programs.Preset.List.update env) Programs.Preset.List.view
+      Program.mkProgram Programs.Preset.List.init (Programs.Preset.List.update env apiClient) Programs.Preset.List.view
 
     if hostEnv.IsDevelopment() then
       program |> Program.withConsoleTrace

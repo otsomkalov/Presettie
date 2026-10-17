@@ -1,9 +1,12 @@
 ﻿module Bot.Workflows
 
+open System.Net.Http
+open System.Net.Http.Headers
+open System.Threading.Tasks
 open App
 open Domain.Core.PresetSettings
 open Domain.Repos
-open Microsoft.Extensions.Options
+open Microsoft.Extensions.Logging
 open MusicPlatform
 open Domain.Core
 open Domain.Workflows
@@ -11,13 +14,14 @@ open Microsoft.FSharp.Core
 open Resources
 open Bot.Constants
 open Bot.Core
-open Bot.Repos
+open Runners.Shared
 open otsom.fs.Auth
 open otsom.fs.Bot
 open otsom.fs.Extensions
 open System
 open otsom.fs.Resources
 open FsToolkit.ErrorHandling
+open otsom.fs.OAuth
 
 [<Literal>]
 let keyboardColumns = 4
@@ -173,7 +177,7 @@ let getArtistButtons (resp: IResourceProvider) =
     }
 
 
-let sendLoginMessage (authService: #IInitAuth) (resp: IResourceProvider) (chatCtx: #ISendLink) =
+let sendLoginMessage (authService: #otsom.fs.Auth.IInitAuth) (resp: IResourceProvider) (chatCtx: #ISendLink) =
   fun (userId: UserId) ->
     authService.InitAuth(userId.ToAuthAccountId())
     |> Task.bind (fun uri -> chatCtx.SendLink(resp[Messages.LoginToSpotify], resp[Buttons.Login], uri))
@@ -524,24 +528,24 @@ module Preset =
 
 [<RequireQualifiedAccess>]
 module User =
-  let private showPresets' (resp: IResourceProvider) sendOrEditButtons (presetRepo: #IListUserPresets) =
-    fun userId -> task {
-      let! presets = presetRepo.ListUserPresets userId
+  let private showPresets' (apiClient: IApiClient) (resp: IResourceProvider) sendOrEditButtons =
+    fun () -> task {
+      let! presets = apiClient.ListPresets()
 
       return! sendPresetsMessage sendOrEditButtons presets resp[Messages.YourPresets]
     }
 
-  let sendPresets resp (chatCtx: #ISendMessageButtons) presetRepo =
+  let sendPresets apiClient resp (chatCtx: #ISendMessageButtons) =
     let sendButtons text buttons =
       chatCtx.SendMessageButtons(text, buttons) |> Task.map ignore
 
-    showPresets' resp sendButtons presetRepo
+    showPresets' apiClient resp sendButtons
 
-  let listPresets resp (botMessageCtx: #IEditMessageButtons) presetRepo =
+  let listPresets resp apiClient (botMessageCtx: #IEditMessageButtons)  =
     let editButtons messageId text buttons =
       botMessageCtx.EditMessageButtons(messageId, text, buttons)
 
-    fun messageId -> showPresets' resp (editButtons messageId) presetRepo
+    fun messageId -> showPresets' apiClient resp (editButtons messageId)
 
   let sendCurrentPreset (resp: IResourceProvider) (userRepo: #ILoadUser) (presetRepo: #ILoadPreset) (chatCtx: #ISendKeyboard) =
     fun userId -> task {
@@ -624,3 +628,16 @@ module Resources =
     function
     | Some l -> createResp l
     | None -> createDefaultResp ()
+
+type IApiClientFactory =
+  abstract Create: ChatId -> Task<IApiClient option>
+
+type ApiClientFactory(httpClient: HttpClient, oAuthClient: IOAuthClient, logger: ILogger<ApiClient>) =
+  interface IApiClientFactory with
+    member this.Create(chatId) = taskOption {
+      let! completedAuth = oAuthClient.GetCompleted(chatId.ToOAuthAccountId())
+
+      httpClient.DefaultRequestHeaders.Authorization <- AuthenticationHeaderValue("Bearer", completedAuth.AccessToken.Value)
+
+      return ApiClient(httpClient, logger) :> IApiClient
+    }

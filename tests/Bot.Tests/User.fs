@@ -2,8 +2,8 @@
 
 open Domain.Core
 open Domain.Repos
-open Domain.Tests
 open Moq
+open Runners.Shared
 open Tests.Shared
 open Xunit
 open Bot.Workflows
@@ -15,13 +15,14 @@ type User() =
   let presetRepo = Mock<IPresetRepo>()
   let userRepo = Mock<IUserRepo>()
   let resp = Mock<IResourceProvider>()
+  let apiClient = Mock<IApiClient>()
 
   [<Fact>]
   member this.``should list presets``() =
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
-    presetRepo
-      .Setup(_.ListUserPresets(Mocks.userId))
+    apiClient
+      .Setup(_.ListPresets())
       .ReturnsAsync(
         [
           {
@@ -32,7 +33,7 @@ type User() =
       )
 
     task {
-      do! User.listPresets resp.Object botService.Object presetRepo.Object Mocks.botMessageId Mocks.userId
+      do! User.listPresets resp.Object apiClient.Object botService.Object Mocks.botMessageId ()
 
       botService.VerifyAll()
       presetRepo.VerifyAll()

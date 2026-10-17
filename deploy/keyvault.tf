@@ -100,6 +100,14 @@ resource "azurerm_key_vault_secret" "kvs-musicae-key" {
   depends_on = [azurerm_key_vault_access_policy.kvap-terraform]
 }
 
+resource "azurerm_key_vault_secret" "kvs-api-key" {
+  key_vault_id = azurerm_key_vault.kv-presettie.id
+  name         = "API--Key"
+  value        = var.api-key
+
+  depends_on = [azurerm_key_vault_access_policy.kvap-terraform]
+}
+
 resource "azurerm_key_vault_access_policy" "kvap-func-bot" {
   key_vault_id = azurerm_key_vault.kv-presettie.id
   tenant_id    = azurerm_function_app_flex_consumption.func-presettie-bot.identity[0].tenant_id

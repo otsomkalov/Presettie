@@ -8,6 +8,7 @@ open Bot.Resources
 open Domain.Core.PresetSettings
 open Domain.Tests
 open Moq
+open Runners.Shared
 open Tests.Shared
 open Xunit
 open otsom.fs.Bot
@@ -67,16 +68,16 @@ type presetInfoClickHandler() =
     }
 
 type listPresetsClickHandler() =
-  let presetRepo = Mock<IPresetRepo>()
   let resourceProviderMock = Mock<IResourceProvider>()
   let botServiceMock = Mock<IBotService>()
+  let apiClient = Mock<IApiClient>()
 
   let handler =
-    Click.listPresetsClickHandler presetRepo.Object resourceProviderMock.Object botServiceMock.Object
+    Click.listPresetsClickHandler apiClient.Object resourceProviderMock.Object botServiceMock.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
-    presetRepo.Setup(_.ListUserPresets(It.IsAny<UserId>())).ReturnsAsync([ Mocks.simplePreset ])
+    apiClient.Setup(_.ListPresets()).ReturnsAsync([ Mocks.simplePreset ])
     resourceProviderMock.Setup(fun x -> x[Messages.YourPresets]).Returns(Messages.YourPresets)
 
     let click = createClick [ CallbackQueryConstants.preset ]
@@ -88,7 +89,7 @@ type listPresetsClickHandler() =
       // Assert
       Assert.Equal(Some(), result)
 
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
       botServiceMock.VerifyAll()
     }
 
@@ -103,7 +104,7 @@ type listPresetsClickHandler() =
       // Assert
       Assert.Equal(None, result)
 
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
     }
 
@@ -943,13 +944,13 @@ type setAllTracksIncludedPlaylistClickHandler() =
     }
 
 type removePresetClickHandler() =
-  let presetRepo = Mock<IPresetRepo>()
+  let apiClient = Mock<IApiClient>()
   let mediator = Mock<IMediator>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.removePresetClickHandler mediator.Object presetRepo.Object resourceProvider.Object botService.Object
+    Click.removePresetClickHandler mediator.Object apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle successful remove and list presets``() =
@@ -958,7 +959,7 @@ type removePresetClickHandler() =
 
     mediator.Setup(_.Send(It.IsAny<RemovePreset.Cmd>())).ReturnsAsync(Result<unit, Preset.GetPresetError>.Ok())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    presetRepo.Setup(_.ListUserPresets(Mocks.chat.UserId)).ReturnsAsync([ Mocks.simplePreset ])
+    apiClient.Setup(_.ListPresets()).ReturnsAsync([ Mocks.simplePreset ])
     resourceProvider.Setup(fun x -> x[Notifications.PresetRemoved]).Returns(Notifications.PresetRemoved)
     resourceProvider.Setup(fun x -> x[Messages.YourPresets]).Returns(Messages.YourPresets)
     // When listing presets, the handler will call EditMessageButtons via the bot service - mock it
@@ -970,7 +971,7 @@ type removePresetClickHandler() =
 
       mediator.VerifyAll()
       botService.VerifyAll()
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
     }
 
   [<Fact>]
@@ -1004,7 +1005,7 @@ type removePresetClickHandler() =
 
       mediator.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
     }
 
 type showIncludedContentClickHandler() =

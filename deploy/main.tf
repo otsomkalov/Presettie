@@ -180,6 +180,8 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
       OAuth__Keycloak__ClientId               = var.oauth-keycloak-client-id,
       OAuth__Keycloak__RedirectUri            = var.oauth-keycloak-redirect-uri,
       OAuth__Keycloak__OpenIdConfigurationUri = var.oauth-keycloak-openid-configuration-uri
+
+      API__Url = var.api-url
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope

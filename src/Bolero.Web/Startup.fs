@@ -13,22 +13,15 @@ open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Configuration
 open Bolero.Web.Repos
 open System.Net.Http.Json
-open Bolero.Web.Util
 open FsToolkit.ErrorHandling
 open BlazorBootstrap
+open Runners.Shared
+open otsom.fs.Extensions.DependencyInjection
 
 type Env(httpClientFactory: IHttpClientFactory, navManager: NavigationManager, logger: ILogger<Env>) =
   let httpClient = httpClientFactory.CreateClient(nameof Env)
 
   interface IEnv with
-    member this.ListPresets() = task {
-      try
-        return! httpClient.GetFromJsonAsync<SimplePreset list>("presets", JSON.options)
-      with e ->
-        logger.LogError(e, "Error while fetching presets")
-        return []
-    }
-
     member this.GetPreset'(PresetId presetId) = task {
       try
         return! httpClient.GetFromJsonAsync<Preset>($"presets/{presetId}", JSON.options)
@@ -108,6 +101,8 @@ builder.Services.AddScoped<APIAuthorizationMessageHandler>()
 builder.Services.AddScoped<IEnv, Env>()
 
 builder.Services.AddHttpClient(nameof Env, configureHttpClient).AddHttpMessageHandler<APIAuthorizationMessageHandler>()
+builder.Services.AddHttpClient<ApiClient>(configureHttpClient).AddHttpMessageHandler<APIAuthorizationMessageHandler>()
+builder.Services.BuildScoped<IApiClient, ApiClient>(fun f -> f :> IApiClient)
 
 builder.Services.AddBlazorBootstrap()
 
