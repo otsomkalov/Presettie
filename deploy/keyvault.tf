@@ -103,7 +103,7 @@ resource "azurerm_key_vault_secret" "kvs-musicae-key" {
 resource "azurerm_key_vault_secret" "kvs-api-key" {
   key_vault_id = azurerm_key_vault.kv-presettie.id
   name         = "API--Key"
-  value        = var.api-key
+  value        = data.azurerm_function_app_host_keys.func-presettie-api-key.primary_key
 
   depends_on = [azurerm_key_vault_access_policy.kvap-terraform]
 }
