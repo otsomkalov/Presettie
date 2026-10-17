@@ -96,10 +96,10 @@ let myPresetsMessageHandler apiClient (resp: IResourceProvider) (chatCtx: #ISend
   fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.MyPresets)) ->
-      do! sendUserPresets()
+      do! sendUserPresets ()
       return Some()
     | Equals Commands.presets ->
-      do! sendUserPresets()
+      do! sendUserPresets ()
       return Some()
     | _ -> return None
   }

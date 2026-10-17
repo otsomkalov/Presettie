@@ -541,7 +541,7 @@ module User =
 
     showPresets' apiClient resp sendButtons
 
-  let listPresets resp apiClient (botMessageCtx: #IEditMessageButtons)  =
+  let listPresets resp apiClient (botMessageCtx: #IEditMessageButtons) =
     let editButtons messageId text buttons =
       botMessageCtx.EditMessageButtons(messageId, text, buttons)
 

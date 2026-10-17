@@ -32,8 +32,7 @@ type Message =
     member this.Id = this.Id
 
 type UserId with
-  member this.ToOAuthAccountId() =
-    this.Value |> string |> AccountId
+  member this.ToOAuthAccountId() = this.Value |> string |> AccountId
 
   member this.ToAuthAccountId() =
     this.Value |> string |> otsom.fs.Auth.AccountId
@@ -54,5 +53,4 @@ module Resources =
   type GetResourceProvider = string option -> Task<IResourceProvider>
 
 type ChatId with
-  member this.ToOAuthAccountId() =
-    this.Value |> string |> AccountId
+  member this.ToOAuthAccountId() = this.Value |> string |> AccountId

@@ -52,9 +52,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, aut
   member this.ListPresets
     ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets")>] request: HttpRequest)
     : Task<IActionResult> =
-    let handler (token: TokenUser) = task {
-      return! presetRepo.ListUserPresets token.UserId
-    }
+    let handler (token: TokenUser) = task { return! presetRepo.ListUserPresets token.UserId }
 
     validateUser authnService request
     |> Task.bind (Result.taskMap handler)
