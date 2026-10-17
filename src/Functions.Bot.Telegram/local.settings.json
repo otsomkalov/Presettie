@@ -23,6 +23,9 @@
     "Auth__Scopes__1": "playlist-modify-public",
     "Auth__Scopes__2": "user-library-read",
 
+    "API__Url": "<API URL>",
+    "API__Key": "<API Key>",
+
     "Storage__ConnectionString": "<Azure storage account connection string>",
     "Storage__QueueName": "bot-requests"
   }

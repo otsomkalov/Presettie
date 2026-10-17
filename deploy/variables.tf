@@ -106,6 +106,14 @@ variable "web-url" {
   type = string
 }
 
+variable "api-url" {
+  type = string
+}
+
+variable "api-key" {
+  type = string
+}
+
 variable "env" {
   type    = string
   default = "prd"

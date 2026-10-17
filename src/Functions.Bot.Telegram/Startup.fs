@@ -3,6 +3,7 @@ module Functions.Bot.Startup
 #nowarn "20"
 
 open System
+open System.Net.Http
 open System.Text.Json
 open System.Text.Json.Serialization
 open System.Reflection
@@ -10,6 +11,7 @@ open App
 open Azure.Identity
 open Bot
 open Bot.Telegram
+open Bot.Workflows
 open Domain
 open Infrastructure
 open Infrastructure.Core
@@ -27,11 +29,21 @@ open Telegram.Bot.AspNetCore
 open otsom.fs.OAuth
 open otsom.fs.OAuth.Keycloak
 open otsom.fs.OAuth.Storage.Mongo
+open otsom.fs.Extensions.DependencyInjection
 
 [<RequireQualifiedAccess>]
 module KeyVault =
   [<Literal>]
   let KeyVaultName = "KeyVaultName"
+
+let configureHttpClient (serviceProvider: IServiceProvider) (client: HttpClient) =
+  let cfg = serviceProvider.GetRequiredService<IConfiguration>()
+
+  client.BaseAddress <- Uri(cfg["API:Url"])
+
+  client.DefaultRequestHeaders.Add("x-functions-key", cfg["API:Key"])
+
+  ()
 
 let private configureServices (builder: FunctionsApplicationBuilder) =
 
@@ -54,6 +66,9 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   |> Startup.addBot cfg
   |> Startup.addInfrastructure cfg
   |> Startup.addTelegram cfg
+
+  builder.Services.AddHttpClient<ApiClientFactory>(configureHttpClient)
+  builder.Services.BuildScoped<IApiClientFactory, ApiClientFactory>(fun f -> f :> IApiClientFactory)
 
   services.ConfigureTelegramBotMvc()
 

@@ -3,10 +3,6 @@
 open System.Threading.Tasks
 open Domain.Core
 
-// TODO: Is it possible to share contract with BE?
-type IListPresets =
-  abstract ListPresets: unit -> Task<SimplePreset list>
-
 type IGetPreset =
   abstract GetPreset': PresetId -> Task<Preset>
 
@@ -23,7 +19,6 @@ type ILinkMusicPlatform =
   abstract LinkMusicPlatform: unit -> Task<unit>
 
 type IEnv =
-  inherit IListPresets
   inherit IGetPreset
   inherit IRemovePreset
   inherit ICreatePreset

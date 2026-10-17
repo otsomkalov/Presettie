@@ -24,7 +24,7 @@ type CreatePresetRequest =
 
 type CreatePresetResponse = { Id: PresetId }
 
-type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, userRepo: IUserRepo, authnService, mediator: IMediator) =
+type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, authnService, mediator: IMediator) =
   let validateBody (request: 'a) : Result<'a, RequestError<_>> =
     let validationCtx = ValidationContext(request, null, null)
 
@@ -52,11 +52,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, use
   member this.ListPresets
     ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets")>] request: HttpRequest)
     : Task<IActionResult> =
-    let handler (token: TokenUser) = task {
-      let! user = userRepo.LoadUser token.UserId
-
-      return! presetRepo.ListUserPresets user.Id
-    }
+    let handler (token: TokenUser) = task { return! presetRepo.ListUserPresets token.UserId }
 
     validateUser authnService request
     |> Task.bind (Result.taskMap handler)
@@ -72,10 +68,8 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, use
     : Task<IActionResult> =
     let handler (token: TokenUser) =
       fun presetId -> taskResult {
-        let! user = userRepo.LoadUser token.UserId
-
         let! preset =
-          presetService.GetPreset(user.Id, presetId)
+          presetService.GetPreset(token.UserId, presetId)
           |> TaskResult.mapError RequestError.Operation
 
         return preset
@@ -95,9 +89,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, use
     ([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets")>] request: HttpRequest, [<FromBody>] body: CreatePresetRequest)
     : Task<IActionResult> =
     let handler (token: TokenUser) (body: CreatePresetRequest) = task {
-      let! user = userRepo.LoadUser token.UserId
-
-      let! newPreset = presetService.CreatePreset(user.Id, body.Name)
+      let! newPreset = presetService.CreatePreset(token.UserId, body.Name)
 
       return newPreset
     }

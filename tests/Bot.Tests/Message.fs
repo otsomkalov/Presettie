@@ -8,6 +8,7 @@ open MusicPlatform
 open Domain.Core
 open Domain.Tests
 open Moq
+open Runners.Shared
 open Tests.Shared
 open Xunit
 open otsom.fs.Bot
@@ -442,20 +443,20 @@ type HelpMessageHandler() =
     }
 
 type MyPresetsMessageHandler() =
-  let presetRepo = Mock<IListUserPresets>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<ISendMessageButtons>()
+  let apiClient = Mock<IApiClient>()
 
   do
     resourceProvider.Setup(_.Item(Buttons.MyPresets)).Returns(Buttons.MyPresets)
     |> ignore
 
   let handler =
-    Message.myPresetsMessageHandler presetRepo.Object resourceProvider.Object chatCtx.Object
+    Message.myPresetsMessageHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle /presets command and send user presets``() =
-    presetRepo.Setup(_.ListUserPresets(Mocks.userId)).ReturnsAsync([ Mocks.simplePreset ])
+    apiClient.Setup(_.ListPresets()).ReturnsAsync([ Mocks.simplePreset ])
 
     let message = createMessage Commands.presets
 
@@ -467,7 +468,7 @@ type MyPresetsMessageHandler() =
 
   [<Fact>]
   member _.``should return Some when processing /presets command``() =
-    presetRepo.Setup(_.ListUserPresets(Mocks.userId)).ReturnsAsync([ Mocks.simplePreset ])
+    apiClient.Setup(_.ListPresets()).ReturnsAsync([ Mocks.simplePreset ])
 
     let message = createMessage Commands.presets
 
@@ -479,7 +480,7 @@ type MyPresetsMessageHandler() =
 
   [<Fact>]
   member _.``should handle My Presets button click and send user presets``() =
-    presetRepo.Setup(_.ListUserPresets(Mocks.userId)).ReturnsAsync([ Mocks.simplePreset ])
+    apiClient.Setup(_.ListPresets()).ReturnsAsync([ Mocks.simplePreset ])
 
     let message = createMessage Buttons.MyPresets
 
@@ -502,7 +503,7 @@ type MyPresetsMessageHandler() =
       resourceProvider.Verify(_.Item(Buttons.MyPresets))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
     }
 
   [<Fact>]
@@ -517,7 +518,7 @@ type MyPresetsMessageHandler() =
       resourceProvider.Verify(_.Item(Buttons.MyPresets))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
     }
 
   [<Fact>]
@@ -532,7 +533,7 @@ type MyPresetsMessageHandler() =
       resourceProvider.Verify(_.Item(Buttons.MyPresets))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
     }
 
 type BackMessageButtonHandler() =

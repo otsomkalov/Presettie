@@ -11,6 +11,7 @@ open Microsoft.AspNetCore.Components.Routing
 open Microsoft.Extensions.Logging
 open Bolero.Web.Repos
 open BlazorBootstrap
+open Runners.Shared
 
 [<RequireQualifiedAccess>]
 module Preset =
@@ -54,10 +55,10 @@ module Preset =
     let init _ =
       { Presets = AsyncOp.Started }, Cmd.ofMsg LoadPresets
 
-    let update (env: #IListPresets & #IRemovePreset) =
+    let update (env: #IRemovePreset) (apiClient: IApiClient) =
       fun (message: Message) (model: Model) ->
         match message with
-        | LoadPresets -> model, Cmd.OfTask.perform env.ListPresets () PresetsLoaded
+        | LoadPresets -> model, Cmd.OfTask.perform apiClient.ListPresets () PresetsLoaded
         | PresetsLoaded presets ->
           { model with
               Presets = AsyncOp.Finished presets

@@ -17,8 +17,8 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.51.0" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.5.2" />
     <PackageReference Include="Telegram.Bot.AspNetCore" Version="22.5.0" />
-    <PackageReference Include="otsom.fs.OAuth.Keycloak" Version="0.2.1" />
-    <PackageReference Include="otsom.fs.OAuth.Storage.Mongo" Version="0.2.1" />
+    <PackageReference Include="otsom.fs.OAuth.Keycloak" Version="0.3.1" />
+    <PackageReference Include="otsom.fs.OAuth.Storage.Mongo" Version="0.3.1" />
   </ItemGroup>
 
   <ItemGroup>

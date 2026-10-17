@@ -21,12 +21,13 @@
   <ItemGroup>
     <PackageReference Include="otsom.fs.Bot" Version="0.1.10" />
     <PackageReference Include="otsom.fs.Auth" Version="0.1.13" />
-    <PackageReference Include="otsom.fs.OAuth" Version="0.2.1" />
+    <PackageReference Include="otsom.fs.OAuth" Version="0.3.1" />
     <PackageReference Include="otsom.fs.Resources" Version="0.1.13" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\App\App.fsproj" />
+    <ProjectReference Include="..\Runners.Shared\Runners.Shared.fsproj" />
   </ItemGroup>
 
 </Project>

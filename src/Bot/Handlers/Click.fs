@@ -25,11 +25,11 @@ let presetInfoClickHandler presetRepo (resp: IResourceProvider) botService : Cli
       }
     | _ -> Task.FromResult(None)
 
-let listPresetsClickHandler userRepo (resp: IResourceProvider) botService : ClickHandler<Chat> =
+let listPresetsClickHandler apiClient (resp: IResourceProvider) botService : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset ] -> task {
-        do! User.listPresets resp botService userRepo click.MessageId chat.UserId
+        do! User.listPresets resp apiClient botService click.MessageId ()
         return Some()
       }
     | _ -> Task.FromResult(None)
@@ -589,7 +589,7 @@ let setAllTracksIncludedPlaylistClickHandler
 
 let removePresetClickHandler
   (mediator: IMediator)
-  presetRepo
+  apiClient
   (resp: IResourceProvider)
   (botService: #ISendNotification)
   : ClickHandler<Chat> =
@@ -607,7 +607,7 @@ let removePresetClickHandler
         match! mediator.Send cmd with
         | Ok() ->
           do! botService.SendNotification(click.Id, resp[Notifications.PresetRemoved])
-          do! User.listPresets resp botService presetRepo click.MessageId chat.UserId
+          do! User.listPresets resp apiClient botService click.MessageId ()
           return Some()
         | Error Preset.GetPresetError.NotFound ->
           do! botService.SendNotification(click.Id, resp[Notifications.PresetNotFound])

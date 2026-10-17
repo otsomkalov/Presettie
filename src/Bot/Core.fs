@@ -5,6 +5,7 @@ open Domain.Core
 open Microsoft.FSharp.Core
 open otsom.fs.Bot
 open otsom.fs.Resources
+open otsom.fs.OAuth
 
 type Page = Page of int
 
@@ -31,8 +32,7 @@ type Message =
     member this.Id = this.Id
 
 type UserId with
-  member this.ToOAuthAccountId() =
-    this.Value |> string |> otsom.fs.OAuth.AccountId
+  member this.ToOAuthAccountId() = this.Value |> string |> AccountId
 
   member this.ToAuthAccountId() =
     this.Value |> string |> otsom.fs.Auth.AccountId
@@ -51,3 +51,6 @@ type Update =
 [<RequireQualifiedAccess>]
 module Resources =
   type GetResourceProvider = string option -> Task<IResourceProvider>
+
+type ChatId with
+  member this.ToOAuthAccountId() = this.Value |> string |> AccountId

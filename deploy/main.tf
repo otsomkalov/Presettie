@@ -139,59 +139,6 @@ resource "azurerm_service_plan" "asp-generator-presettie" {
   tags = local.tags
 }
 
-resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
-  resource_group_name = azurerm_resource_group.rg-presettie.name
-  location            = azurerm_resource_group.rg-presettie.location
-
-  service_plan_id = azurerm_service_plan.asp-bot-presettie.id
-
-  name = "func-presettie-bot-${var.env}"
-
-  runtime_name    = "dotnet-isolated"
-  runtime_version = "10.0"
-
-  storage_authentication_type = "StorageAccountConnectionString"
-  storage_access_key          = azurerm_storage_account.st-presettie.primary_access_key
-  storage_container_endpoint  = "${azurerm_storage_account.st-presettie.primary_blob_endpoint}${azurerm_storage_container.stc-bot-deployments-presettie.name}"
-  storage_container_type      = "blobContainer"
-
-  instance_memory_in_mb  = 512
-  maximum_instance_count = 10
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  site_config {
-    application_insights_connection_string = azurerm_application_insights.appi-presettie.connection_string
-  }
-
-  app_settings = merge(
-    {
-      GeneratorSchedule      = var.generator-schedule
-      KeyVaultName           = azurerm_key_vault.kv-presettie.name
-      Resources__DefaultLang = var.resources-default-lang
-
-      Auth__CallbackUrl  = var.auth-callback-url
-      Database__Name     = var.database-name
-      Storage__QueueName = azurerm_storage_queue.stq-bot-requests-presettie.name
-
-      OAuth__ReturnUri                        = var.oauth-bot-return-uri,
-      OAuth__Keycloak__ClientId               = var.oauth-keycloak-client-id,
-      OAuth__Keycloak__RedirectUri            = var.oauth-keycloak-redirect-uri,
-      OAuth__Keycloak__OpenIdConfigurationUri = var.oauth-keycloak-openid-configuration-uri
-    },
-    {
-      for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
-    },
-    {
-      for idx, scope in var.oauth-keycloak-scope : "OAuth__Keycloak__Scope__${idx}" => scope
-    }
-  )
-
-  tags = local.tags
-}
-
 resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
   resource_group_name = azurerm_resource_group.rg-presettie.name
   location            = azurerm_resource_group.rg-presettie.location
@@ -245,6 +192,68 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
       for idx, scope in var.oauth-spotify-scope : "OAuth__Spotify__Scope__${idx}" => scope
     }
   )
+
+  tags = local.tags
+}
+
+data "azurerm_function_app_host_keys" "func-presettie-api-key" {
+  name                = azurerm_function_app_flex_consumption.func-presettie-api.name
+  resource_group_name = azurerm_resource_group.rg-presettie.name
+}
+
+resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
+  resource_group_name = azurerm_resource_group.rg-presettie.name
+  location            = azurerm_resource_group.rg-presettie.location
+
+  service_plan_id = azurerm_service_plan.asp-bot-presettie.id
+
+  name = "func-presettie-bot-${var.env}"
+
+  runtime_name    = "dotnet-isolated"
+  runtime_version = "10.0"
+
+  storage_authentication_type = "StorageAccountConnectionString"
+  storage_access_key          = azurerm_storage_account.st-presettie.primary_access_key
+  storage_container_endpoint  = "${azurerm_storage_account.st-presettie.primary_blob_endpoint}${azurerm_storage_container.stc-bot-deployments-presettie.name}"
+  storage_container_type      = "blobContainer"
+
+  instance_memory_in_mb  = 512
+  maximum_instance_count = 10
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  site_config {
+    application_insights_connection_string = azurerm_application_insights.appi-presettie.connection_string
+  }
+
+  app_settings = merge(
+    {
+      GeneratorSchedule      = var.generator-schedule
+      KeyVaultName           = azurerm_key_vault.kv-presettie.name
+      Resources__DefaultLang = var.resources-default-lang
+
+      Auth__CallbackUrl  = var.auth-callback-url
+      Database__Name     = var.database-name
+      Storage__QueueName = azurerm_storage_queue.stq-bot-requests-presettie.name
+
+      OAuth__ReturnUri                        = var.oauth-bot-return-uri,
+      OAuth__Keycloak__ClientId               = var.oauth-keycloak-client-id,
+      OAuth__Keycloak__RedirectUri            = var.oauth-keycloak-redirect-uri,
+      OAuth__Keycloak__OpenIdConfigurationUri = var.oauth-keycloak-openid-configuration-uri
+
+      API__Url = "https://${azurerm_function_app_flex_consumption.func-presettie-api.default_hostname}/"
+    },
+    {
+      for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
+    },
+    {
+      for idx, scope in var.oauth-keycloak-scope : "OAuth__Keycloak__Scope__${idx}" => scope
+    }
+  )
+
+  depends_on = [azurerm_function_app_flex_consumption.func-presettie-api]
 
   tags = local.tags
 }

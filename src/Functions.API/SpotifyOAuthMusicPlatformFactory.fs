@@ -23,7 +23,7 @@ type SpotifyOAuthMusicPlatformFactory
           oAuthSettings.ClientId,
           PKCETokenResponse(
             AccessToken = completedAuth.AccessToken.Value,
-            RefreshToken = completedAuth.RefreshToken.Value,
+            RefreshToken = (completedAuth.RefreshToken |> Option.get |> _.Value),
             Scope = (oAuthSettings.Scope |> String.concat " ")
           )
         )
