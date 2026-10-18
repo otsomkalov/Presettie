@@ -54,12 +54,9 @@ type ApiClient(httpClient: HttpClient, logger: ILogger<ApiClient>) =
         use! response = httpClient.SendAsync request
 
         match response.StatusCode with
-        | HttpStatusCode.NoContent ->
-          return ()
-        | HttpStatusCode.NotFound ->
-          return! Error(Preset.NotFound)
-        | HttpStatusCode.Forbidden ->
-          return! Error(Preset.Forbidden)
+        | HttpStatusCode.NoContent -> return ()
+        | HttpStatusCode.NotFound -> return! Error(Preset.NotFound)
+        | HttpStatusCode.Forbidden -> return! Error(Preset.Forbidden)
         | _ ->
           logger.LogWarning("Unexpected status code {StatusCode}", response.StatusCode)
 

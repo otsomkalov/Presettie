@@ -588,11 +588,7 @@ let setAllTracksIncludedPlaylistClickHandler
       }
     | _ -> Task.FromResult(None)
 
-let removePresetClickHandler
-  (apiClient: IApiClient)
-  (resp: IResourceProvider)
-  (botService: #ISendNotification)
-  : ClickHandler<Chat> =
+let removePresetClickHandler (apiClient: IApiClient) (resp: IResourceProvider) (botService: #ISendNotification) : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; "rm" ] -> task {

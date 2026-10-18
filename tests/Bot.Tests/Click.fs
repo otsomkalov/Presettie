@@ -977,9 +977,7 @@ type removePresetClickHandler() =
     let presetId = Mocks.presetId.Value
     let click = createClick [ CallbackQueryConstants.preset; presetId; "rm" ]
 
-    apiClient
-      .Setup(_.RemovePreset(Mocks.presetId))
-      .ReturnsAsync(Result<unit, Preset.GetPresetError>.Error Preset.GetPresetError.NotFound)
+    apiClient.Setup(_.RemovePreset(Mocks.presetId)).ReturnsAsync(Result<unit, Preset.GetPresetError>.Error Preset.GetPresetError.NotFound)
 
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.PresetNotFound]).Returns(Notifications.PresetNotFound)
