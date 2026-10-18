@@ -1,11 +1,13 @@
 ﻿namespace Runners.Shared
 
+open System.Net
 open System.Net.Http
 open System.Net.Http.Json
 open System.Text.Json
 open System.Text.Json.Serialization
 open System.Threading.Tasks
 open Domain.Core
+open FsToolkit.ErrorHandling
 open Microsoft.Extensions.Logging
 
 module JSON =
@@ -33,6 +35,7 @@ type CurrentUserResponse =
 
 type IApiClient =
   abstract ListPresets: unit -> Task<SimplePreset list>
+  abstract RemovePreset: PresetId -> TaskResult<unit, Preset.GetPresetError>
 
 type ApiClient(httpClient: HttpClient, logger: ILogger<ApiClient>) =
   interface IApiClient with
@@ -42,4 +45,27 @@ type ApiClient(httpClient: HttpClient, logger: ILogger<ApiClient>) =
       with e ->
         logger.LogError(e, "Error while fetching presets")
         return []
+    }
+
+    member this.RemovePreset(PresetId presetId) = taskResult {
+      use request = new HttpRequestMessage(HttpMethod.Delete, $"presets/{presetId}")
+
+      try
+        use! response = httpClient.SendAsync request
+
+        match response.StatusCode with
+        | HttpStatusCode.NoContent ->
+          return ()
+        | HttpStatusCode.NotFound ->
+          return! Error(Preset.NotFound)
+        | HttpStatusCode.Forbidden ->
+          return! Error(Preset.Forbidden)
+        | _ ->
+          logger.LogWarning("Unexpected status code {StatusCode}", response.StatusCode)
+
+          return ()
+      with e ->
+        logger.LogError(e, "Error while removing preset")
+
+        return ()
     }

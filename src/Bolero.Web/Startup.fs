@@ -30,13 +30,6 @@ type Env(httpClientFactory: IHttpClientFactory, navManager: NavigationManager, l
         return Unchecked.defaultof<Preset>
     }
 
-    member this.RemovePreset(PresetId presetId) = task {
-      try
-        do! httpClient.DeleteAsync($"presets/{presetId}") |> Task.ignore
-      with e ->
-        logger.LogError(e, "Error while removing preset")
-    }
-
     member this.CreatePreset(name) = task {
       try
         use! response = httpClient.PostAsJsonAsync("presets", {| Name = name |})

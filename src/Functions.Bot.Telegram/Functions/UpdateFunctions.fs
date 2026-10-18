@@ -26,7 +26,6 @@ type UpdateFunctions
     buildChatContext,
     getResp,
     chatRepo: IChatRepo,
-    mediator: IMediator,
     appOAuthClient: IOAuthClient,
     apiClientFactory: IApiClientFactory,
     logger: ILogger<UpdateFunctions>
@@ -35,7 +34,6 @@ type UpdateFunctions
 
   let updateHandler =
     Update.main
-      mediator
       authSvc
       userRepo
       userService

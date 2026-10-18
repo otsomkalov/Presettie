@@ -55,7 +55,7 @@ module Preset =
     let init _ =
       { Presets = AsyncOp.Started }, Cmd.ofMsg LoadPresets
 
-    let update (env: #IRemovePreset) (apiClient: IApiClient) =
+    let update (apiClient: IApiClient) =
       fun (message: Message) (model: Model) ->
         match message with
         | LoadPresets -> model, Cmd.OfTask.perform apiClient.ListPresets () PresetsLoaded
