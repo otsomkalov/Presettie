@@ -48,13 +48,13 @@ let private buildMessageHandlers authService userRepo userService presetService 
     backMessageButtonHandler userRepo presetRepo resp botService
   }
 
-let private buildClickHandlers mediator userService presetService presetRepo resp botService buildMusicPlatform (apiClient: IApiClient) =
+let private buildClickHandlers userService presetService presetRepo resp botService buildMusicPlatform (apiClient: IApiClient) =
   clickHandlers {
     listPresetsClickHandler apiClient resp botService
     presetInfoClickHandler presetRepo resp botService
     presetSettingsClickHandler presetRepo resp botService
     runPresetClickHandler presetService resp botService
-    removePresetClickHandler mediator apiClient resp botService
+    removePresetClickHandler apiClient resp botService
     setCurrentPresetClickHandler userService resp botService
 
     artistsAlbumsRecommendationsClickHandler presetRepo presetService resp botService
@@ -99,7 +99,6 @@ let private buildClickHandlers mediator userService presetService presetRepo res
   }
 
 let main
-  mediator
   authService
   userRepo
   userService
@@ -135,7 +134,7 @@ let main
           return! botSvc.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
       | Click click ->
         let! result =
-          buildClickHandlers mediator userService presetService presetRepo resp botSvc buildMusicPlatform apiClient chat click
+          buildClickHandlers userService presetService presetRepo resp botSvc buildMusicPlatform apiClient chat click
 
         match result with
         | Some() -> return ()

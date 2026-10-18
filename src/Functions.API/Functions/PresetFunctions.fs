@@ -122,7 +122,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, aut
     validateUser authnService request
     |> TaskResult.bind (flip handler (PresetId presetId))
     |> Task.map (function
-      | Ok _ -> NoContentResult() :> IActionResult
+      | Ok() -> NoContentResult() :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
       | Error Unauthorized -> UnauthorizedResult() :> IActionResult
       | Error(Operation Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult

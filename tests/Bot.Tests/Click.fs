@@ -945,20 +945,19 @@ type setAllTracksIncludedPlaylistClickHandler() =
 
 type removePresetClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let mediator = Mock<IMediator>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.removePresetClickHandler mediator.Object apiClient.Object resourceProvider.Object botService.Object
+    Click.removePresetClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle successful remove and list presets``() =
     let presetId = Mocks.presetId.Value
     let click = createClick [ CallbackQueryConstants.preset; presetId; "rm" ]
 
-    mediator.Setup(_.Send(It.IsAny<RemovePreset.Cmd>())).ReturnsAsync(Result<unit, Preset.GetPresetError>.Ok())
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    apiClient.Setup(_.RemovePreset(Mocks.presetId)).ReturnsAsync(Result<unit, Preset.GetPresetError>.Ok())
     apiClient.Setup(_.ListPresets()).ReturnsAsync([ Mocks.simplePreset ])
     resourceProvider.Setup(fun x -> x[Notifications.PresetRemoved]).Returns(Notifications.PresetRemoved)
     resourceProvider.Setup(fun x -> x[Messages.YourPresets]).Returns(Messages.YourPresets)
@@ -969,7 +968,6 @@ type removePresetClickHandler() =
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
 
-      mediator.VerifyAll()
       botService.VerifyAll()
       apiClient.VerifyAll()
     }
@@ -979,9 +977,7 @@ type removePresetClickHandler() =
     let presetId = Mocks.presetId.Value
     let click = createClick [ CallbackQueryConstants.preset; presetId; "rm" ]
 
-    mediator
-      .Setup(_.Send(It.IsAny<RemovePreset.Cmd>()))
-      .ReturnsAsync(Result<unit, Preset.GetPresetError>.Error Preset.GetPresetError.NotFound)
+    apiClient.Setup(_.RemovePreset(Mocks.presetId)).ReturnsAsync(Result<unit, Preset.GetPresetError>.Error Preset.GetPresetError.NotFound)
 
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.PresetNotFound]).Returns(Notifications.PresetNotFound)
@@ -990,7 +986,7 @@ type removePresetClickHandler() =
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
 
-      mediator.VerifyAll()
+      apiClient.VerifyAll()
       botService.VerifyAll()
     }
 
@@ -1003,7 +999,6 @@ type removePresetClickHandler() =
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
 
-      mediator.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }

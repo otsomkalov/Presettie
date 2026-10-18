@@ -22,6 +22,7 @@ module Preset =
     type Message =
       | LoadPresets
       | PresetsLoaded of SimplePreset list
+      | RemovePreset of PresetId
 
     [<RequireQualifiedAccess>]
     module private PresetTile =
@@ -46,6 +47,8 @@ module Preset =
             button {
               attr.``class`` "btn btn-danger"
 
+              on.click (fun _ -> RemovePreset preset.Id |> dispatch)
+
               "Delete"
             }
           }
@@ -55,7 +58,7 @@ module Preset =
     let init _ =
       { Presets = AsyncOp.Started }, Cmd.ofMsg LoadPresets
 
-    let update (env: #IRemovePreset) (apiClient: IApiClient) =
+    let update (apiClient: IApiClient) =
       fun (message: Message) (model: Model) ->
         match message with
         | LoadPresets -> model, Cmd.OfTask.perform apiClient.ListPresets () PresetsLoaded
@@ -64,6 +67,7 @@ module Preset =
               Presets = AsyncOp.Finished presets
           },
           Cmd.none
+        | RemovePreset presetId -> model, Cmd.OfTask.perform apiClient.RemovePreset presetId (fun _ -> LoadPresets)
 
     let view (model: Model) (dispatch: Message -> unit) =
       match model.Presets with

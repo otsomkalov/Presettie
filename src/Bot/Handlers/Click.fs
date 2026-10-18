@@ -8,6 +8,7 @@ open MusicPlatform
 open Bot.Constants
 open Bot.Core
 open Bot.Workflows
+open Runners.Shared
 open otsom.fs.Bot
 open System
 open otsom.fs.Extensions
@@ -587,24 +588,13 @@ let setAllTracksIncludedPlaylistClickHandler
       }
     | _ -> Task.FromResult(None)
 
-let removePresetClickHandler
-  (mediator: IMediator)
-  apiClient
-  (resp: IResourceProvider)
-  (botService: #ISendNotification)
-  : ClickHandler<Chat> =
+let removePresetClickHandler (apiClient: IApiClient) (resp: IResourceProvider) (botService: #ISendNotification) : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; "rm" ] -> task {
         let presetId = PresetId presetId
 
-        let cmd: RemovePreset.Cmd =
-          {
-            UserId = chat.UserId
-            PresetId = presetId
-          }
-
-        match! mediator.Send cmd with
+        match! apiClient.RemovePreset(presetId) with
         | Ok() ->
           do! botService.SendNotification(click.Id, resp[Notifications.PresetRemoved])
           do! User.listPresets resp apiClient botService click.MessageId ()
