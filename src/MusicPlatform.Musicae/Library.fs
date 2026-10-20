@@ -2,10 +2,10 @@
 
 open System.Net.Http
 open System.Net.Http.Json
-open System.Text.Json.Serialization
 open Microsoft.AspNetCore.WebUtilities
 open Microsoft.Extensions.Options
 open MusicPlatform
+open Shared
 open otsom.fs.Extensions
 
 [<CLIMutable>]
@@ -51,10 +51,6 @@ type MusicaeRecommender(httpClientFactory: IHttpClientFactory, options: IOptions
   [<Literal>]
   let recommendationsLimit = 100
 
-  let jsonSettings = JsonFSharpOptions.Default().ToJsonSerializerOptions()
-
-  do jsonSettings.PropertyNameCaseInsensitive <- true
-
   let settings = options.Value
 
   interface IRecommender with
@@ -79,7 +75,7 @@ type MusicaeRecommender(httpClientFactory: IHttpClientFactory, options: IOptions
 
         do response.EnsureSuccessStatusCode() |> ignore
 
-        let! responseContent = response.Content.ReadFromJsonAsync<Response>(jsonSettings)
+        let! responseContent = response.Content.ReadFromJsonAsync<Response>(JSON.options)
 
         return responseContent.Tracks |> List.map _.ToDomain()
       }

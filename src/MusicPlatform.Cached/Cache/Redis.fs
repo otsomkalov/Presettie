@@ -2,7 +2,7 @@
 
 open System
 open System.Net
-open System.Text.Json
+open Shared
 open Microsoft.ApplicationInsights
 open Microsoft.ApplicationInsights.DataContracts
 open MusicPlatform
@@ -78,10 +78,10 @@ let private listLength (telemetryClient: TelemetryClient) (cache: IDatabase) =
 let listCachedTracks telemetryClient cache =
   fun key ->
     loadList telemetryClient cache key
-    |> Task.map (List.ofArray >> List.map (string >> JsonSerializer.Deserialize<Track>))
+    |> Task.map (List.ofArray >> List.map (string >> JSON.deserialize<Track>))
 
 let internal serializeTracks tracks =
-  tracks |> List.map (JsonSerializer.Serialize >> RedisValue)
+  tracks |> List.map (JSON.serialize >> RedisValue)
 
 [<RequireQualifiedAccess>]
 module UserRepo =
