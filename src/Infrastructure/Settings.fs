@@ -15,6 +15,7 @@ type StorageSettings =
   {
     ConnectionString: string
     QueueName: string
+    NotificationsQueueName: string
   }
 
   static member SectionName = "Storage"

@@ -176,7 +176,6 @@ let getArtistButtons (resp: IResourceProvider) =
       yield seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|%s|%i" presetId.Value artistType 0) }
     }
 
-
 let sendLoginMessage (authService: #otsom.fs.Auth.IInitAuth) (resp: IResourceProvider) (chatCtx: #ISendLink) =
   fun (userId: UserId) ->
     authService.InitAuth(userId.ToAuthAccountId())
@@ -481,29 +480,6 @@ module Preset =
       presetRepo.LoadPreset
       >> Task.map Option.get
       >> Task.bind (show' (editButtons messageId) resp)
-
-  let run (mediator: IMediator) (resp: IResourceProvider) (chatCtx: #ISendMessage & #IEditMessage) =
-    fun (userId, presetId) ->
-      let onSuccess =
-        fun (preset: Preset) -> chatCtx.SendMessage resp[Messages.PresetExecuted, [| preset.Name |]]
-
-      let onError messageId =
-        function
-        | RunPreset.Error.NoIncludedTracks -> chatCtx.EditMessage(messageId, resp[Messages.NoIncludedTracks])
-        | RunPreset.Error.NoPotentialTracks -> chatCtx.EditMessage(messageId, resp[Messages.NoPotentialTracks])
-        | RunPreset.Error.NoMusicPlatform -> chatCtx.EditMessage(messageId, resp[Messages.NotAuthorized])
-        | RunPreset.Error.Preset Preset.GetPresetError.NotFound -> chatCtx.EditMessage(messageId, resp[Messages.PresetNotFound])
-        | RunPreset.Error.Preset Preset.GetPresetError.Forbidden -> chatCtx.EditMessage(messageId, resp[Messages.PresetAccessForbidden])
-
-      task {
-        let! sentMessageId = chatCtx.SendMessage(resp[Messages.RunningPreset])
-
-        let cmd: RunPreset.Cmd = { UserId = userId; PresetId = presetId }
-
-        return!
-          mediator.Send cmd
-          |> TaskResult.taskEither (onSuccess >> Task.ignore) (onError sentMessageId)
-      }
 
   let send (resp: IResourceProvider) (chatCtx: #ISendKeyboard) =
     fun preset ->

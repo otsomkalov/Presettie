@@ -6,6 +6,7 @@ open System.Text.Json.Serialization
 open Microsoft.AspNetCore.WebUtilities
 open MusicPlatform
 open MusicPlatform.ReccoBeats
+open Shared
 open otsom.fs.Extensions
 
 [<CLIMutable>]
@@ -49,10 +50,6 @@ type ReccoBeatsRecommender(httpClientFactory: IHttpClientFactory) =
   [<Literal>]
   let recommendationsLimit = 100
 
-  let jsonSettings = JsonFSharpOptions.Default().ToJsonSerializerOptions()
-
-  do jsonSettings.PropertyNameCaseInsensitive <- true
-
   interface IRecommender with
     member this.Recommend(tracks) =
       let queryParams =
@@ -67,7 +64,7 @@ type ReccoBeatsRecommender(httpClientFactory: IHttpClientFactory) =
       task {
         use httpClient = httpClientFactory.CreateClient(Settings.SectionName)
 
-        let! response = httpClient.GetFromJsonAsync<Response>(path, jsonSettings)
+        let! response = httpClient.GetFromJsonAsync<Response>(path, JSON.options)
 
         return response.Content |> List.map _.ToDomain()
       }

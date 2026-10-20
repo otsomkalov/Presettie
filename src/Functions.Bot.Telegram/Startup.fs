@@ -8,6 +8,7 @@ open System.Text.Json
 open System.Text.Json.Serialization
 open System.Reflection
 open App
+open Azure.Core.Serialization
 open Azure.Identity
 open Bot
 open Bot.Telegram
@@ -25,6 +26,7 @@ open Microsoft.Azure.Functions.Worker
 open MusicPlatform
 open MusicPlatform.Cached
 open MusicPlatform.Spotify
+open Shared
 open Telegram.Bot.AspNetCore
 open otsom.fs.OAuth
 open otsom.fs.OAuth.Keycloak
@@ -48,6 +50,11 @@ let configureHttpClient (serviceProvider: IServiceProvider) (client: HttpClient)
 let private configureServices (builder: FunctionsApplicationBuilder) =
 
   let services, cfg = (builder.Services, builder.Configuration)
+
+  services.Configure<WorkerOptions>(fun (opts: WorkerOptions) ->
+    opts.Serializer <- JsonObjectSerializer(JSON.options)
+
+    ())
 
   services.AddApplicationInsightsTelemetryWorkerService()
   services.ConfigureFunctionsApplicationInsights()

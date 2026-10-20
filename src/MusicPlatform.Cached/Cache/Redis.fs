@@ -2,10 +2,10 @@
 
 open System
 open System.Net
+open Shared
 open Microsoft.ApplicationInsights
 open Microsoft.ApplicationInsights.DataContracts
 open MusicPlatform
-open MusicPlatform.Cached.Helpers
 open StackExchange.Redis
 open System.Threading.Tasks
 open FsToolkit.ErrorHandling
