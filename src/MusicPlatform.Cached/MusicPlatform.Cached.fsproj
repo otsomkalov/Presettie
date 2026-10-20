@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Helpers.fs"/>
     <Compile Include="Cache\Memory.fs"/>
     <Compile Include="Cache\Redis.fs"/>
     <Compile Include="Settings.fs" />

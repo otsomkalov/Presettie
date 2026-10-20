@@ -2,6 +2,7 @@
 
 #nowarn "20"
 
+open App
 open Azure.Storage.Queues
 open Domain.Repos
 open Infrastructure.Repos
@@ -13,11 +14,7 @@ open MongoDB.Driver
 open MusicPlatform.Musicae
 open MusicPlatform.ReccoBeats
 open otsom.fs.Extensions.DependencyInjection
-
-let private configureQueueClient (options: IOptions<StorageSettings>) =
-  let settings = options.Value
-
-  QueueClient(settings.ConnectionString, settings.QueueName)
+open otsom.fs.Auth.Spotify
 
 let private configureMongoClient (options: IOptions<DatabaseSettings>) =
   let settings = options.Value
@@ -33,14 +30,15 @@ let addInfrastructure (configuration: IConfiguration) (services: IServiceCollect
   services.Configure<DatabaseSettings>(configuration.GetSection(DatabaseSettings.SectionName))
   services.Configure<StorageSettings>(configuration.GetSection(StorageSettings.SectionName))
 
-  services.BuildSingleton<QueueClient, IOptions<StorageSettings>>(configureQueueClient)
-
   services.AddSingleton<IRecommenderFactory, RecommenderFactory>()
+
+  services.AddSingleton<INotificationSender, AzureStorageQueueNotificationSender>()
 
   services.BuildSingleton<IMongoClient, IOptions<DatabaseSettings>>(configureMongoClient)
   services.BuildSingleton<IMongoDatabase, IOptions<DatabaseSettings>, IMongoClient>(configureMongoDatabase)
 
   services
+  |> Startup.addSpotifyAuth
   |> Startup.addReccoBeatsMusicPlatform configuration
   |> Startup.addMusicaeMusicPlatform configuration
 

@@ -8,6 +8,7 @@
     <UserSecretsId>2b4fd603-ad1c-4128-a0b7-5329666f1b20</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Azure.Storage.Queues" Version="12.28.1" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.52.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.1.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.5.4"/>
@@ -32,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bot.Telegram\Bot.Telegram.fsproj" />
+    <ProjectReference Include="..\App\App.fsproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.fsproj"/>
   </ItemGroup>
 </Project>

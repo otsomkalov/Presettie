@@ -6,8 +6,6 @@ open System
 open System.Reflection
 open App
 open Azure.Identity
-open Bot
-open Bot.Telegram
 open Domain
 open Infrastructure
 open Microsoft.Azure.Functions.Worker.Builder
@@ -20,6 +18,7 @@ open Microsoft.Azure.Functions.Worker
 open MusicPlatform
 open MusicPlatform.Cached
 open MusicPlatform.Spotify
+open otsom.fs.Auth
 
 [<RequireQualifiedAccess>]
 module KeyVault =
@@ -38,11 +37,10 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   services
   |> Startup.addDomain cfg
   |> Startup.addApp
+  |> Startup.addAuthCore cfg
   |> Startup.addSpotifyMusicPlatform cfg
   |> Startup.addCachedMusicPlatform cfg
-  |> Startup.addBot cfg
   |> Startup.addInfrastructure cfg
-  |> Startup.addTelegram cfg
 
   builder
 

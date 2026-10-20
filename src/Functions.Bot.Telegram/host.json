@@ -9,6 +9,10 @@
   "extensions": {
     "http": {
       "routePrefix": ""
+    },
+    "queues": {
+      "maxDequeueCount": 1,
+      "messageEncoding": "none"
     }
   }
 }

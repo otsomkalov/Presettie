@@ -1,20 +1,23 @@
 ﻿module internal Infrastructure.Repos
 
+open App
 open Azure.Storage.Queues
 open Domain.Core.PresetSettings
 open Domain.Repos
 open Domain.Workflows
+open Infrastructure.Settings
 open Microsoft.Extensions.DependencyInjection
+open Microsoft.Extensions.Options
 open MongoDB.Bson
 open MongoDB.Driver
 open Database
 open MusicPlatform
-open MusicPlatform.Cached.Helpers
 open Infrastructure.Mapping
 open System.Linq
 open MongoDB.Driver.Linq
 open FsToolkit.ErrorHandling
 open Domain.Core
+open Shared
 
 [<RequireQualifiedAccess>]
 module PresetRepo =
@@ -76,8 +79,11 @@ module UserRepo =
 
       task { do! collection.InsertOneAsync(dbUser) }
 
-type PresetRepo(db: IMongoDatabase, queueClient: QueueClient) =
+type PresetRepo(db: IMongoDatabase, options: IOptions<StorageSettings>) =
   let collection = db.GetCollection<Entities.Preset> "presets"
+  let settings = options.Value
+
+  let queueClient = QueueClient(settings.ConnectionString, settings.QueueName)
 
   interface IPresetRepo with
     member this.LoadPreset(presetId) = PresetRepo.load collection presetId
@@ -121,3 +127,14 @@ type RecommenderFactory
       | RecommendationsEngine.ReccoBeats -> reccoBeatsRecommender
       | RecommendationsEngine.Spotify -> musicPlatform
       | RecommendationsEngine.Musicae -> musicaeRecommender
+
+type AzureStorageQueueNotificationSender(options: IOptions<StorageSettings>) =
+  let settings = options.Value
+
+  let queueClient =
+    QueueClient(settings.ConnectionString, settings.NotificationsQueueName)
+
+  interface INotificationSender with
+    member this.Send(event) =
+      let serialize = event |> JSON.serialize
+      serialize |> queueClient.SendMessageAsync |> Task.ignore

@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.fsproj" />
+    <ProjectReference Include="..\Shared.Tests\Shared.Tests.fsproj" />
   </ItemGroup>
 
 </Project>

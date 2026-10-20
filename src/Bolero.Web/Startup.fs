@@ -16,6 +16,7 @@ open System.Net.Http.Json
 open FsToolkit.ErrorHandling
 open BlazorBootstrap
 open Runners.Shared
+open Shared
 open otsom.fs.Extensions.DependencyInjection
 
 type Env(httpClientFactory: IHttpClientFactory, navManager: NavigationManager, logger: ILogger<Env>) =

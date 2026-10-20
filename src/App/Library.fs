@@ -13,6 +13,8 @@ open Domain.Repos
 open FsToolkit.ErrorHandling
 open otsom.fs.Extensions
 
+type DomainEvent<'a> = { UserId: UserId; Data: 'a }
+
 [<RequireQualifiedAccess>]
 module rec RunPreset =
   type Cmd = { UserId: UserId; PresetId: PresetId }
@@ -23,6 +25,11 @@ module rec RunPreset =
     | NoMusicPlatform
     | NoIncludedTracks
     | NoPotentialTracks
+
+  [<RequireQualifiedAccess>]
+  type Event =
+    | Started
+    | Finished of Result<PresetId, Error>
 
   type Handler = Cmd -> TaskResult<Preset, Error>
 
@@ -204,3 +211,6 @@ type Mediator(sp: IServiceProvider) =
       let handler = sp.GetRequiredService<'cmd -> Task<'result>>()
 
       handler cmd
+
+type INotificationSender =
+  abstract Send: DomainEvent<'a> -> Task<unit>

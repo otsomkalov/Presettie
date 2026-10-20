@@ -90,6 +90,12 @@ resource "azurerm_storage_queue" "stq-api-requests-presettie" {
   name = "api-requests"
 }
 
+resource "azurerm_storage_queue" "stq-bot-notifications-presettie" {
+  storage_account_id = azurerm_storage_account.st-presettie.id
+
+  name = "notifications"
+}
+
 # Identity
 
 resource "azurerm_user_assigned_identity" "ui-ado-pipeline" {
@@ -172,20 +178,20 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
 
   app_settings = merge(
     {
-      KeyVaultName = azurerm_key_vault.kv-presettie.name,
+      KeyVaultName = azurerm_key_vault.kv-presettie.name
 
       Resources__DefaultLang = var.resources-default-lang
-      Database__Name         = var.database-name,
-      Storage__QueueName     = azurerm_storage_queue.stq-bot-requests-presettie.name,
+      Database__Name         = var.database-name
+      Storage__QueueName     = azurerm_storage_queue.stq-bot-requests-presettie.name
 
       Authentication__Schemes__Bearer__Authority     = var.jwt-authority
       Authentication__Schemes__Bearer__ValidAudience = var.jwt-audience
       Authentication__Schemes__Bearer__ValidIssuer   = var.jwt-issuer
 
-      OAuth__ReturnUri                      = var.oauth-api-return-uri,
-      OAuth__Spotify__ClientId              = var.oauth-spotify-client-id,
-      OAuth__Spotify__RedirectUri           = var.oauth-spotify-redirect-uri,
-      OAuth__Spotify__AuthorizationEndpoint = var.oauth-spotify-authorization-endpoint,
+      OAuth__ReturnUri                      = var.oauth-api-return-uri
+      OAuth__Spotify__ClientId              = var.oauth-spotify-client-id
+      OAuth__Spotify__RedirectUri           = var.oauth-spotify-redirect-uri
+      OAuth__Spotify__AuthorizationEndpoint = var.oauth-spotify-authorization-endpoint
       OAuth__Spotify__TokenEndpoint         = var.oauth-spotify-token-endpoint
     },
     {
@@ -230,17 +236,21 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
 
   app_settings = merge(
     {
-      GeneratorSchedule      = var.generator-schedule
-      KeyVaultName           = azurerm_key_vault.kv-presettie.name
+      GeneratorSchedule = var.generator-schedule
+      KeyVaultName      = azurerm_key_vault.kv-presettie.name
+
       Resources__DefaultLang = var.resources-default-lang
 
-      Auth__CallbackUrl  = var.auth-callback-url
-      Database__Name     = var.database-name
-      Storage__QueueName = azurerm_storage_queue.stq-bot-requests-presettie.name
+      Auth__CallbackUrl = var.auth-callback-url
 
-      OAuth__ReturnUri                        = var.oauth-bot-return-uri,
-      OAuth__Keycloak__ClientId               = var.oauth-keycloak-client-id,
-      OAuth__Keycloak__RedirectUri            = var.oauth-keycloak-redirect-uri,
+      Database__Name = var.database-name
+
+      Storage__QueueName              = azurerm_storage_queue.stq-bot-requests-presettie.name
+      Storage__NotificationsQueueName = azurerm_storage_queue.stq-bot-notifications-presettie.name
+
+      OAuth__ReturnUri                        = var.oauth-bot-return-uri
+      OAuth__Keycloak__ClientId               = var.oauth-keycloak-client-id
+      OAuth__Keycloak__RedirectUri            = var.oauth-keycloak-redirect-uri
       OAuth__Keycloak__OpenIdConfigurationUri = var.oauth-keycloak-openid-configuration-uri
 
       API__Url = "https://${azurerm_function_app_flex_consumption.func-presettie-api.default_hostname}/"
@@ -287,13 +297,18 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-generator" {
 
   app_settings = merge(
     {
-      KeyVaultName = azurerm_key_vault.kv-presettie.name,
+      KeyVaultName = azurerm_key_vault.kv-presettie.name
 
-      ReccoBeats__Url        = "https://api.reccobeats.com/v1/"
-      Musicae__Host          = "spotify-extended-audio-features-api.p.rapidapi.com"
+      ReccoBeats__Url = "https://api.reccobeats.com/v1/"
+
+      Musicae__Host = "spotify-extended-audio-features-api.p.rapidapi.com"
+
       Resources__DefaultLang = var.resources-default-lang
-      Database__Name         = var.database-name,
-      Storage__QueueName     = azurerm_storage_queue.stq-bot-requests-presettie.name
+
+      Database__Name = var.database-name
+
+      Storage__QueueName              = azurerm_storage_queue.stq-bot-requests-presettie.name
+      Storage__NotificationsQueueName = azurerm_storage_queue.stq-bot-notifications-presettie.name
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope

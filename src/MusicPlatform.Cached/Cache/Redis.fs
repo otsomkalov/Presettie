@@ -2,10 +2,10 @@
 
 open System
 open System.Net
+open System.Text.Json
 open Microsoft.ApplicationInsights
 open Microsoft.ApplicationInsights.DataContracts
 open MusicPlatform
-open MusicPlatform.Cached.Helpers
 open StackExchange.Redis
 open System.Threading.Tasks
 open FsToolkit.ErrorHandling
@@ -78,10 +78,10 @@ let private listLength (telemetryClient: TelemetryClient) (cache: IDatabase) =
 let listCachedTracks telemetryClient cache =
   fun key ->
     loadList telemetryClient cache key
-    |> Task.map (List.ofArray >> List.map (string >> JSON.deserialize<Track>))
+    |> Task.map (List.ofArray >> List.map (string >> JsonSerializer.Deserialize<Track>))
 
 let internal serializeTracks tracks =
-  tracks |> List.map (JSON.serialize >> RedisValue)
+  tracks |> List.map (JsonSerializer.Serialize >> RedisValue)
 
 [<RequireQualifiedAccess>]
 module UserRepo =
