@@ -5,7 +5,14 @@ open System.Text.Json.Serialization
 
 module JSON =
   let settings =
-    JsonFSharpOptions.Default().WithUnionInternalTag().WithUnionUnwrapRecordCases().WithUnionUnwrapSingleFieldCases()
+    JsonFSharpOptions
+      .Default()
+      .WithUnionInternalTag()
+      .WithUnionUnwrapRecordCases()
+      .WithUnionUnwrapSingleFieldCases()
+      .WithUnionUnwrapFieldlessTags()
+      .WithUnionTagName("$type")
+      .WithUnionAllowUnorderedTag()
 
   let options =
     let options = settings.ToJsonSerializerOptions()
