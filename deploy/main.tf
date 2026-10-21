@@ -186,8 +186,7 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
     custom_oidc_v2 {
       name                          = "keycloak"
       client_id                     = var.oauth-keycloak-api-client-id
-      openid_configuration_endpoint = "KEYCLOAK_OPENID_CONFIGURATION"
-      scopes                        = ["openid", "profile", "email"]
+      openid_configuration_endpoint = var.oauth-keycloak-api-configuration-endpoint
     }
 
     login {
@@ -197,7 +196,6 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
 
   app_settings = merge(
     {
-      KEYCLOAK_OPENID_CONFIGURATION           = var.oauth-keycloak-api-configuration-endpoint
       KEYCLOAK_PROVIDER_AUTHENTICATION_SECRET = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.kvs-oauth-api-keycloak-client-secret.versionless_id})"
 
       KeyVaultName = azurerm_key_vault.kv-presettie.name
@@ -205,10 +203,6 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
       Resources__DefaultLang = var.resources-default-lang
       Database__Name         = var.database-name
       Storage__QueueName     = azurerm_storage_queue.stq-bot-requests-presettie.name
-
-      Authentication__Schemes__Bearer__Authority     = var.jwt-authority
-      Authentication__Schemes__Bearer__ValidAudience = var.jwt-audience
-      Authentication__Schemes__Bearer__ValidIssuer   = var.jwt-issuer
 
       OAuth__ReturnUri                      = var.oauth-api-return-uri
       OAuth__Spotify__ClientId              = var.oauth-spotify-client-id

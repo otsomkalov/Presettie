@@ -61,13 +61,6 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   |> Startup.addApp
   |> Startup.addInfrastructure cfg
 
-  services
-    .AddAuthentication()
-    .AddJwtBearer(fun opts ->
-      opts.TokenValidationParameters.NameClaimType <- ClaimTypes.NameIdentifier
-
-      ())
-
   services.AddMvcCore().AddJsonOptions(_.JsonSerializerOptions >> JSON.settings.AddToJsonSerializerOptions)
 
   builder
