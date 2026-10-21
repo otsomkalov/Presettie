@@ -1,14 +1,26 @@
 ﻿###
+POST {{api.url}}presets/{{presetId}}/run
+Authorization: Bearer {{token}}
+X-MS-CLIENT-PRINCIPAL-ID: {{user-id}}
+x-functions-key: {{api.key}}
+
+###
 GET {{api.url}}presets
-Authorization: Bearer {{web.token}}
+Authorization: Bearer {{token}}
+X-MS-CLIENT-PRINCIPAL-ID: {{user-id}}
+x-functions-key: {{api.key}}
 
 ###
 GET {{api.url}}presets/{{presetId}}
-Authorization: Bearer {{web.token}}
+Authorization: Bearer {{token}}
+X-MS-CLIENT-PRINCIPAL-ID: {{user-id}}
+x-functions-key: {{api.key}}
 
 ###
 POST {{api.url}}presets
-Authorization: Bearer {{web.token}}
+Authorization: Bearer {{token}}
+X-MS-CLIENT-PRINCIPAL-ID: {{user-id}}
+x-functions-key: {{api.key}}
 Content-Type: application/json
 
 {
@@ -17,4 +29,6 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost:7071/api/presets/{{presetId}}
-Authorization: Bearer {{web.token}}
+Authorization: Bearer {{token}}
+X-MS-CLIENT-PRINCIPAL-ID: {{user-id}}
+x-functions-key: {{api.key}}

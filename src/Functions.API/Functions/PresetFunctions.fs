@@ -43,6 +43,20 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
         |> RequestError.Validation
       )
 
+  [<Function("RunPreset")>]
+  member this.RunPreset
+    ([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets/{presetId}/run")>] request: HttpRequest, presetId: string)
+    : Task<IActionResult> =
+    let handler (userId: UserId) = task {
+      return!
+        presetService.QueueRun(userId, PresetId presetId)
+        |> TaskResult.mapError Operation
+    }
+
+    handler request.UserId
+    |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
+      | Operation errors -> BadRequestObjectResult(errors) :> IActionResult)
+
   [<Function("ListPresets")>]
   member this.ListPresets
     ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets")>] request: HttpRequest)
