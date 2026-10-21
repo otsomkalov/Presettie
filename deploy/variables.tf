@@ -18,18 +18,6 @@ variable "auth-callback-url" {
   type = string
 }
 
-variable "jwt-audience" {
-  type = string
-}
-
-variable "jwt-authority" {
-  type = string
-}
-
-variable "jwt-issuer" {
-  type = string
-}
-
 variable "auth-scopes" {
   type = list(string)
 }
@@ -111,6 +99,18 @@ variable "api-url" {
 }
 
 variable "api-key" {
+  type = string
+}
+
+variable "oauth-keycloak-api-configuration-endpoint" {
+  type = string
+}
+
+variable "oauth-keycloak-api-client-id" {
+  type = string
+}
+
+variable "oauth-keycloak-api-client-secret" {
   type = string
 }
 

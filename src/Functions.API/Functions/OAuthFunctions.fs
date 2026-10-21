@@ -26,12 +26,12 @@ type OAuthFunctions
 
   [<Function("LinkMusicPlatform")>]
   member this.LinkMusicPlatform
-    ([<HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "oauth/music-platform/link")>] request: HttpRequest, ctx: FunctionContext)
+    ([<HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "oauth/music-platform/link")>] request: HttpRequest)
     : Task<IActionResult> =
     let handler =
       fun (userId: UserId) -> taskResult { return! oAuthClient.InitAuth(userId.ToAccountId()) }
 
-    handler ctx.UserId
+    handler request.UserId
     |> TaskResult.foldResult (fun redirectUri -> OkObjectResult(redirectUri) :> IActionResult) (function
       | Operation err -> BadRequestObjectResult(err) :> IActionResult)
 

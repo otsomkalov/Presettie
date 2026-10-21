@@ -1,7 +1,8 @@
 ﻿module Functions.API.Shared
 
+open System
 open Domain.Core
-open Microsoft.Azure.Functions.Worker
+open Microsoft.AspNetCore.Http
 open otsom.fs.OAuth
 
 type ValidationError = { Member: string; Error: string }
@@ -14,5 +15,5 @@ type RequestError<'a> =
   | Validation of ValidationError list
   | Operation of 'a
 
-type FunctionContext with
-  member this.UserId = this.Items[nameof UserId] :?> UserId
+type HttpRequest with
+  member this.UserId = this.Headers["X-MS-CLIENT-PRINCIPAL-ID"] |> Guid.Parse |> UserId

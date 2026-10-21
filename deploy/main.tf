@@ -176,23 +176,41 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
     }
   }
 
+  auth_settings_v2 {
+    auth_enabled           = true
+    require_authentication = true
+
+    unauthenticated_action = "Return401"
+    default_provider       = "keycloak"
+
+    custom_oidc_v2 {
+      name                          = "keycloak"
+      client_id                     = var.oauth-keycloak-api-client-id
+      openid_configuration_endpoint = var.oauth-keycloak-api-configuration-endpoint
+    }
+
+    login {
+      token_store_enabled = true
+    }
+  }
+
   app_settings = merge(
     {
+      KEYCLOAK_PROVIDER_AUTHENTICATION_SECRET = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.kvs-oauth-api-keycloak-client-secret.versionless_id})"
+
       KeyVaultName = azurerm_key_vault.kv-presettie.name
 
       Resources__DefaultLang = var.resources-default-lang
       Database__Name         = var.database-name
       Storage__QueueName     = azurerm_storage_queue.stq-bot-requests-presettie.name
 
-      Authentication__Schemes__Bearer__Authority     = var.jwt-authority
-      Authentication__Schemes__Bearer__ValidAudience = var.jwt-audience
-      Authentication__Schemes__Bearer__ValidIssuer   = var.jwt-issuer
-
       OAuth__ReturnUri                      = var.oauth-api-return-uri
       OAuth__Spotify__ClientId              = var.oauth-spotify-client-id
       OAuth__Spotify__RedirectUri           = var.oauth-spotify-redirect-uri
       OAuth__Spotify__AuthorizationEndpoint = var.oauth-spotify-authorization-endpoint
       OAuth__Spotify__TokenEndpoint         = var.oauth-spotify-token-endpoint
+
+      "Logging__LogLevel__Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler" = "Warning"
     },
     {
       for idx, scope in var.oauth-spotify-scope : "OAuth__Spotify__Scope__${idx}" => scope

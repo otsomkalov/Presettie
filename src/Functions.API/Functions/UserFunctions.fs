@@ -11,14 +11,11 @@ open Microsoft.Azure.Functions.Worker
 
 type UserFunctions(userRepo: IUserRepo) =
   [<Function("User")>]
-  member _.GetCurrent
-    ([<HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "users/current")>] request: HttpRequest, ctx: FunctionContext)
-    =
-
+  member _.GetCurrent([<HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "users/current")>] request: HttpRequest) =
     let handler =
       fun (userId: UserId) -> taskResult { return! User.loadOrCreate userRepo userId }
 
-    handler ctx.UserId
+    handler request.UserId
     |> TaskResult.foldResult (fun user -> OkObjectResult(user) :> IActionResult) (function
       | Operation err -> BadRequestObjectResult(err) :> IActionResult
       | Validation errors -> BadRequestObjectResult(errors) :> IActionResult)

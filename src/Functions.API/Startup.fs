@@ -61,47 +61,9 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   |> Startup.addApp
   |> Startup.addInfrastructure cfg
 
-  services
-    .AddAuthentication()
-    .AddJwtBearer(fun opts ->
-      opts.TokenValidationParameters.NameClaimType <- ClaimTypes.NameIdentifier
-
-      ())
-
   services.AddMvcCore().AddJsonOptions(_.JsonSerializerOptions >> JSON.settings.AddToJsonSerializerOptions)
 
   builder
-
-type AuthenticationMiddleware() =
-  interface IFunctionsWorkerMiddleware with
-    member this.Invoke(context, next) = task {
-      match context.GetHttpContext() |> Option.ofObj with
-      | Some httpContext ->
-        let authnService =
-          context.InstanceServices.GetRequiredService<IAuthenticationService>()
-
-        let! userId =
-          authnService.AuthenticateAsync(httpContext, JwtBearerDefaults.AuthenticationScheme)
-          |> Task.map (Option.someIf _.Succeeded)
-          |> Task.map (Option.bind (_.Principal >> Option.ofObj))
-          |> Task.map (Option.bind (_.Identity >> Option.ofObj))
-          |> Task.map (Option.bind (_.Name >> Option.ofObj))
-          |> Task.map (Option.bind (Guid.TryParse >> Option.someIf fst >> Option.map snd))
-          |> TaskOption.map UserId
-
-        match userId with
-        | Some userId ->
-          context.Items[nameof UserId] <- userId
-
-          return! next.Invoke context
-        | None ->
-          httpContext.Response.StatusCode <- int HttpStatusCode.Unauthorized
-
-          ()
-      | None ->
-        // Non HTTP function
-        return! next.Invoke context
-    }
 
 type BindingErrorHandlerMiddleware(logger: ILogger<BindingErrorHandlerMiddleware>) =
   interface IFunctionsWorkerMiddleware with
@@ -126,7 +88,6 @@ type BindingErrorHandlerMiddleware(logger: ILogger<BindingErrorHandlerMiddleware
     }
 
 let private configureFunctionsWebApp (builder: FunctionsApplicationBuilder) =
-  builder.UseMiddleware<AuthenticationMiddleware>()
   builder.UseMiddleware<BindingErrorHandlerMiddleware>()
 
   builder

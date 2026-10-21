@@ -45,20 +45,17 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
 
   [<Function("ListPresets")>]
   member this.ListPresets
-    ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets")>] request: HttpRequest, ctx: FunctionContext)
+    ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets")>] request: HttpRequest)
     : Task<IActionResult> =
     let handler (userId: UserId) = task { return! presetRepo.ListUserPresets userId }
 
-    handler ctx.UserId
+    handler request.UserId
     |> Task.map (fun presets -> OkObjectResult(presets) :> IActionResult)
 
   [<Function("GetPreset")>]
   member this.GetPreset
-    (
-      [<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets/{presetId}")>] request: HttpRequest,
-      presetId: string,
-      ctx: FunctionContext
-    ) : Task<IActionResult> =
+    ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets/{presetId}")>] request: HttpRequest, presetId: string)
+    : Task<IActionResult> =
     let handler (userId: UserId) =
       fun presetId -> taskResult {
         let! preset =
@@ -68,7 +65,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
         return preset
       }
 
-    handler ctx.UserId (PresetId presetId)
+    handler request.UserId (PresetId presetId)
     |> Task.map (function
       | Ok preset -> OkObjectResult(preset) :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
@@ -77,11 +74,8 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
 
   [<Function("CreatePreset")>]
   member this.CreatePreset
-    (
-      [<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets")>] request: HttpRequest,
-      [<FromBody>] body: CreatePresetRequest,
-      ctx: FunctionContext
-    ) : Task<IActionResult> =
+    ([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets")>] request: HttpRequest, [<FromBody>] body: CreatePresetRequest)
+    : Task<IActionResult> =
     let handler (userId: UserId) (body: CreatePresetRequest) = task {
       let! newPreset = presetService.CreatePreset(userId, body.Name)
 
@@ -89,7 +83,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     }
 
     validateBody body
-    |> Result.taskMap (fun body -> handler ctx.UserId body)
+    |> Result.taskMap (fun body -> handler request.UserId body)
     |> Task.map (function
       | Ok result -> CreatedResult("presets", { Id = result.Id }) :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
@@ -97,11 +91,8 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
 
   [<Function("DeletePreset")>]
   member this.DeletePreset
-    (
-      [<HttpTrigger(AuthorizationLevel.Function, "DELETE", Route = "presets/{presetId}")>] request: HttpRequest,
-      presetId: string,
-      ctx: FunctionContext
-    ) : Task<IActionResult> =
+    ([<HttpTrigger(AuthorizationLevel.Function, "DELETE", Route = "presets/{presetId}")>] request: HttpRequest, presetId: string)
+    : Task<IActionResult> =
     let handler (userId: UserId) =
       fun presetId -> task {
         let cmd: RemovePreset.Cmd = { UserId = userId; PresetId = presetId }
@@ -111,7 +102,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
         return result |> Result.mapError RequestError.Operation
       }
 
-    handler ctx.UserId (PresetId presetId)
+    handler request.UserId (PresetId presetId)
     |> Task.map (function
       | Ok() -> NoContentResult() :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
