@@ -12,7 +12,6 @@ open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
 open otsom.fs.Extensions
-open Domain.Extensions
 open FsToolkit.ErrorHandling
 
 [<CLIMutable>]
@@ -24,7 +23,7 @@ type CreatePresetRequest =
 
 type CreatePresetResponse = { Id: PresetId }
 
-type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, authnService, mediator: IMediator) =
+type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, mediator: IMediator) =
   let validateBody (request: 'a) : Result<'a, RequestError<_>> =
     let validationCtx = ValidationContext(request, null, null)
 
@@ -44,86 +43,77 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, aut
         |> RequestError.Validation
       )
 
-  let validateRequest (request: HttpRequest) (body: 'a) : Task<Result<ValidRequest<'a>, RequestError<_>>> =
-    validateUser authnService request
-    |> Task.map (Result.bind (fun user -> validateBody body |> Result.map (fun body -> { User = user; Body = body })))
-
   [<Function("ListPresets")>]
   member this.ListPresets
-    ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets")>] request: HttpRequest)
+    ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets")>] request: HttpRequest, ctx: FunctionContext)
     : Task<IActionResult> =
-    let handler (token: TokenUser) = task { return! presetRepo.ListUserPresets token.UserId }
+    let handler (userId: UserId) = task { return! presetRepo.ListUserPresets userId }
 
-    validateUser authnService request
-    |> Task.bind (Result.taskMap handler)
-    |> Task.map (function
-      | Ok presets -> OkObjectResult(presets) :> IActionResult
-      | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
-      | Error Unauthorized -> UnauthorizedResult() :> IActionResult
-      | Error(Operation e) -> BadRequestObjectResult(e) :> IActionResult)
+    handler ctx.UserId
+    |> Task.map (fun presets -> OkObjectResult(presets) :> IActionResult)
 
   [<Function("GetPreset")>]
   member this.GetPreset
-    ([<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets/{presetId}")>] request: HttpRequest, presetId: string)
-    : Task<IActionResult> =
-    let handler (token: TokenUser) =
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "GET", Route = "presets/{presetId}")>] request: HttpRequest,
+      presetId: string,
+      ctx: FunctionContext
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) =
       fun presetId -> taskResult {
         let! preset =
-          presetService.GetPreset(token.UserId, presetId)
+          presetService.GetPreset(userId, presetId)
           |> TaskResult.mapError RequestError.Operation
 
         return preset
       }
 
-    validateUser authnService request
-    |> TaskResult.bind (flip handler (PresetId presetId))
+    handler ctx.UserId (PresetId presetId)
     |> Task.map (function
       | Ok preset -> OkObjectResult(preset) :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
-      | Error Unauthorized -> UnauthorizedResult() :> IActionResult
       | Error(Operation Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult
       | Error(Operation Preset.GetPresetError.Forbidden) -> ForbidResult() :> IActionResult)
 
   [<Function("CreatePreset")>]
   member this.CreatePreset
-    ([<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets")>] request: HttpRequest, [<FromBody>] body: CreatePresetRequest)
-    : Task<IActionResult> =
-    let handler (token: TokenUser) (body: CreatePresetRequest) = task {
-      let! newPreset = presetService.CreatePreset(token.UserId, body.Name)
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets")>] request: HttpRequest,
+      [<FromBody>] body: CreatePresetRequest,
+      ctx: FunctionContext
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) (body: CreatePresetRequest) = task {
+      let! newPreset = presetService.CreatePreset(userId, body.Name)
 
       return newPreset
     }
 
-    validateRequest request body
-    |> TaskResult.taskMap (fun { User = user; Body = body } -> handler user body)
+    validateBody body
+    |> Result.taskMap (fun body -> handler ctx.UserId body)
     |> Task.map (function
       | Ok result -> CreatedResult("presets", { Id = result.Id }) :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
-      | Error Unauthorized -> UnauthorizedResult() :> IActionResult
       | Error(Operation e) -> BadRequestObjectResult(e) :> IActionResult)
 
   [<Function("DeletePreset")>]
   member this.DeletePreset
-    ([<HttpTrigger(AuthorizationLevel.Function, "DELETE", Route = "presets/{presetId}")>] request: HttpRequest, presetId: string)
-    : Task<IActionResult> =
-    let handler (token: TokenUser) =
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "DELETE", Route = "presets/{presetId}")>] request: HttpRequest,
+      presetId: string,
+      ctx: FunctionContext
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) =
       fun presetId -> task {
-        let cmd: RemovePreset.Cmd =
-          {
-            UserId = token.UserId
-            PresetId = presetId
-          }
+        let cmd: RemovePreset.Cmd = { UserId = userId; PresetId = presetId }
 
         let! result = mediator.Send cmd
 
         return result |> Result.mapError RequestError.Operation
       }
 
-    validateUser authnService request
-    |> TaskResult.bind (flip handler (PresetId presetId))
+    handler ctx.UserId (PresetId presetId)
     |> Task.map (function
       | Ok() -> NoContentResult() :> IActionResult
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
-      | Error Unauthorized -> UnauthorizedResult() :> IActionResult
       | Error(Operation Preset.GetPresetError.NotFound) -> NotFoundResult() :> IActionResult
       | Error(Operation Preset.GetPresetError.Forbidden) -> ForbidResult() :> IActionResult)

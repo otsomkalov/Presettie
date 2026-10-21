@@ -1,24 +1,24 @@
 ﻿namespace Functions.API.Functions
 
+open Domain.Core
 open Domain.Repos
 open Domain.Workflows
 open FsToolkit.ErrorHandling
 open Functions.API.Shared
-open Microsoft.AspNetCore.Authentication
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
 
-type UserFunctions(authnService: IAuthenticationService, userRepo: IUserRepo) =
+type UserFunctions(userRepo: IUserRepo) =
   [<Function("User")>]
-  member _.GetCurrent([<HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "users/current")>] request: HttpRequest) =
+  member _.GetCurrent
+    ([<HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "users/current")>] request: HttpRequest, ctx: FunctionContext)
+    =
 
     let handler =
-      fun (token: TokenUser) -> taskResult { return! User.loadOrCreate userRepo token.UserId }
+      fun (userId: UserId) -> taskResult { return! User.loadOrCreate userRepo userId }
 
-    validateUser authnService request
-    |> TaskResult.bind handler
+    handler ctx.UserId
     |> TaskResult.foldResult (fun user -> OkObjectResult(user) :> IActionResult) (function
-      | Unauthorized -> UnauthorizedResult() :> IActionResult
       | Operation err -> BadRequestObjectResult(err) :> IActionResult
       | Validation errors -> BadRequestObjectResult(errors) :> IActionResult)

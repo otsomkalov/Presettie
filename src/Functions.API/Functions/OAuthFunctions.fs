@@ -17,7 +17,6 @@ open otsom.fs.OAuth
 
 type OAuthFunctions
   (
-    authnService,
     oAuthClient: IOAuthClient,
     additionalOAuthOptions: IOptions<AdditionalOAuthSettings>,
     userRepo: IUserRepo,
@@ -27,15 +26,13 @@ type OAuthFunctions
 
   [<Function("LinkMusicPlatform")>]
   member this.LinkMusicPlatform
-    ([<HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "oauth/music-platform/link")>] request: HttpRequest)
+    ([<HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "oauth/music-platform/link")>] request: HttpRequest, ctx: FunctionContext)
     : Task<IActionResult> =
     let handler =
-      fun (token: TokenUser) -> taskResult { return! oAuthClient.InitAuth(token.UserId.ToAccountId()) }
+      fun (userId: UserId) -> taskResult { return! oAuthClient.InitAuth(userId.ToAccountId()) }
 
-    validateUser authnService request
-    |> TaskResult.bind handler
+    handler ctx.UserId
     |> TaskResult.foldResult (fun redirectUri -> OkObjectResult(redirectUri) :> IActionResult) (function
-      | Unauthorized -> UnauthorizedResult() :> IActionResult
       | Operation err -> BadRequestObjectResult(err) :> IActionResult)
 
   [<Function("MusicPlatformCallback")>]
@@ -57,7 +54,7 @@ type OAuthFunctions
 
         let! musicPlatform =
           musicPlatformFactory.GetMusicPlatform(user.Id.ToMusicPlatformId())
-          |> TaskResult.requireSome Unauthorized
+          |> TaskResult.requireSome Forbidden
 
         let! musicPlatformUser = musicPlatform.GetMe()
 
@@ -73,5 +70,5 @@ type OAuthFunctions
 
     handler request
     |> TaskResult.foldResult (fun _ -> RedirectResult(additionalOAuthSettings.ReturnUri, true) :> IActionResult) (function
-      | Unauthorized -> UnauthorizedResult() :> IActionResult
+      | Forbidden -> ForbidResult() :> IActionResult
       | Operation err -> BadRequestObjectResult(err) :> IActionResult)

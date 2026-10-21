@@ -3,24 +3,34 @@
 #nowarn "20"
 
 open System
+open System.Net
 open System.Reflection
 open System.Security.Claims
 open System.Text.Json
 open System.Text.Json.Serialization
+open Azure.Core.Serialization
 open Azure.Identity
-open Domain
-open Infrastructure
-open Infrastructure.Core
-open Microsoft.Azure.Functions.Worker.Builder
-open Microsoft.Azure.Functions.Worker.Middleware
+open Microsoft.AspNetCore.Http
+open Microsoft.Azure.Functions.Worker.Http
 open MusicPlatform
 open MusicPlatform.Spotify
+open Domain
+open Domain.Core
+open FsToolkit.ErrorHandling
+open Infrastructure
+open Infrastructure.Core
+open Microsoft.AspNetCore.Authentication
+open Microsoft.AspNetCore.Authentication.JwtBearer
+open Microsoft.Azure.Functions.Worker.Builder
+open Microsoft.Azure.Functions.Worker.Middleware
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.ApplicationInsights
+open Shared
+open otsom.fs.Extensions
 open otsom.fs.OAuth
 open otsom.fs.OAuth.Spotify
 open otsom.fs.OAuth.Storage.Mongo
@@ -58,35 +68,65 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
 
       ())
 
-  services
-    .AddMvcCore()
-    .AddJsonOptions(fun opts ->
-      JsonFSharpOptions.Default().WithUnionUnwrapFieldlessTags().AddToJsonSerializerOptions(opts.JsonSerializerOptions))
+  services.AddMvcCore().AddJsonOptions(_.JsonSerializerOptions >> JSON.settings.AddToJsonSerializerOptions)
 
   builder
+
+type AuthenticationMiddleware() =
+  interface IFunctionsWorkerMiddleware with
+    member this.Invoke(context, next) = task {
+      match context.GetHttpContext() |> Option.ofObj with
+      | Some httpContext ->
+        let authnService =
+          context.InstanceServices.GetRequiredService<IAuthenticationService>()
+
+        let! userId =
+          authnService.AuthenticateAsync(httpContext, JwtBearerDefaults.AuthenticationScheme)
+          |> Task.map (Option.someIf _.Succeeded)
+          |> Task.map (Option.bind (_.Principal >> Option.ofObj))
+          |> Task.map (Option.bind (_.Identity >> Option.ofObj))
+          |> Task.map (Option.bind (_.Name >> Option.ofObj))
+          |> Task.map (Option.bind (Guid.TryParse >> Option.someIf fst >> Option.map snd))
+          |> TaskOption.map UserId
+
+        match userId with
+        | Some userId ->
+          context.Items[nameof UserId] <- userId
+
+          return! next.Invoke context
+        | None ->
+          httpContext.Response.StatusCode <- int HttpStatusCode.Unauthorized
+
+          ()
+      | None ->
+        // Non HTTP function
+        return! next.Invoke context
+    }
 
 type BindingErrorHandlerMiddleware(logger: ILogger<BindingErrorHandlerMiddleware>) =
   interface IFunctionsWorkerMiddleware with
     member this.Invoke(context, next) = task {
-      try
+      match context.GetHttpContext() |> Option.ofObj with
+      | Some httpContext ->
+
+        try
+          return! next.Invoke context
+        with
+        | :? InvalidOperationException as ioe ->
+          logger.LogWarning(ioe, String.Empty)
+
+          httpContext.Response.StatusCode <- int HttpStatusCode.BadRequest
+          httpContext.Response.WriteAsJsonAsync({| Error = ioe.Message |}, JSON.options)
+
+          ()
+        | e -> logger.LogError(e, "Error")
+      | None ->
+        // Non HTTP function
         return! next.Invoke context
-      with
-      | :? InvalidOperationException as ioe ->
-        logger.LogWarning(ioe, String.Empty)
-
-        let! request = context.GetHttpRequestDataAsync()
-        let response = request.CreateResponse()
-
-        response.StatusCode <- System.Net.HttpStatusCode.BadRequest
-        response.Headers.Add("Content-Type", "application/json")
-
-        do! JsonSerializer.SerializeAsync(response.Body, {| Error = ioe.Message |})
-
-        ()
-      | e -> logger.LogError(e, "Error")
     }
 
 let private configureFunctionsWebApp (builder: FunctionsApplicationBuilder) =
+  builder.UseMiddleware<AuthenticationMiddleware>()
   builder.UseMiddleware<BindingErrorHandlerMiddleware>()
 
   builder
@@ -102,14 +142,6 @@ let private configureAppConfiguration (builder: FunctionsApplicationBuilder) =
     do builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly())
 
   builder
-
-let private configureWebApp (builder: IFunctionsWorkerApplicationBuilder) =
-  builder.Services.Configure<JsonSerializerOptions>(fun opts ->
-    // JsonFSharpOptions.Default().WithUnionUntagged().AddToJsonSerializerOptions(opts)
-
-    ())
-
-  ()
 
 let private configureLogging (builder: FunctionsApplicationBuilder) =
   builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Information)
