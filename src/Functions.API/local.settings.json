@@ -26,12 +26,7 @@
     "OAuth__Spotify__RedirectUri": "<OAuth Callback URI>",
     "OAuth__Spotify__Scope__0": "<OAuth Scope 1>",
     "OAuth__Spotify__Scope__1": "<OAuth Scope 2>",
-    "OAuth__ReturnUri": "<OAuth Return URI>",
-
-    "Authentication__DefaultScheme": "Bearer",
-    "Authentication__Schemes__Bearer__Authority": "<Authority>",
-    "Authentication__Schemes__Bearer__ValidAudience": "<ValidAudience>",
-    "Authentication__Schemes__Bearer__ValidIssuer": "<ValidIssuer>"
+    "OAuth__ReturnUri": "<OAuth Return URI>"
   },
   "Host": {
     "CORS": "*"
