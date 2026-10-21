@@ -31,9 +31,7 @@
     "Authentication__DefaultScheme": "Bearer",
     "Authentication__Schemes__Bearer__Authority": "<Authority>",
     "Authentication__Schemes__Bearer__ValidAudience": "<ValidAudience>",
-    "Authentication__Schemes__Bearer__ValidIssuer": "<ValidIssuer>",
-
-    "Logging__LogLevel__Microsoft.IdentityModel": "Critical"
+    "Authentication__Schemes__Bearer__ValidIssuer": "<ValidIssuer>"
   },
   "Host": {
     "CORS": "*"

@@ -114,6 +114,18 @@ variable "api-key" {
   type = string
 }
 
+variable "oauth-keycloak-api-configuration-endpoint" {
+  type = string
+}
+
+variable "oauth-keycloak-api-client-id" {
+  type = string
+}
+
+variable "oauth-keycloak-api-client-secret" {
+  type = string
+}
+
 variable "env" {
   type    = string
   default = "prd"
