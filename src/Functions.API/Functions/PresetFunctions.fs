@@ -124,6 +124,28 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
+  [<Function("ExcludeArtist")>]
+  member this.ExcludeArtist
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets/{presetId}/excluded-artists")>] request: HttpRequest,
+      presetId: string,
+      [<FromBody>] body: ExcludeArtistRequest
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) = taskResult {
+      let cmd: ExcludeArtist.Cmd =
+        {
+          UserId = userId
+          PresetId = PresetId presetId
+          ArtistId = body.Id
+        }
+
+      return! presetService.ExcludeArtist(cmd) |> TaskResult.mapError Operation
+    }
+
+    handler request.UserId
+    |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
+      | Operation error -> BadRequestObjectResult(error) :> IActionResult)
+
 
   [<Function("ListPresets")>]
   member this.ListPresets
