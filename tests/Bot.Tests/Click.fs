@@ -1197,16 +1197,16 @@ type showExcludedArtistClickHandler() =
     }
 
 type removeExcludedArtistClickHandler() =
-  let presetService = Mock<IRemoveExcludedArtist>()
+  let apiClient = Mock<IApiClient>()
   let resourceProviderMock = Mock<IResourceProvider>()
   let botServiceMock = Mock<IEditMessageButtons>()
 
   let handler =
-    Click.removeExcludedArtistClickHandler presetService.Object resourceProviderMock.Object botServiceMock.Object
+    Click.removeExcludedArtistClickHandler apiClient.Object resourceProviderMock.Object botServiceMock.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
-    presetService.Setup(_.RemoveExcludedArtist(It.IsAny<PresetId>(), It.IsAny<ArtistId>())).ReturnsAsync(Mocks.preset)
+    apiClient.Setup(_.RemoveExcludedArtist(It.IsAny<PresetId>(), It.IsAny<ArtistId>())).ReturnsAsync(Mocks.preset)
     resourceProviderMock.Setup(fun x -> x[Notifications.ExcludedArtistRemoved]).Returns(Notifications.ExcludedArtistRemoved)
 
     let click =
@@ -1226,7 +1226,7 @@ type removeExcludedArtistClickHandler() =
       // Assert
       Assert.Equal(Some(), result)
 
-      presetService.VerifyAll()
+      apiClient.VerifyAll()
       botServiceMock.VerifyAll()
     }
 
@@ -1241,7 +1241,7 @@ type removeExcludedArtistClickHandler() =
       // Assert
       Assert.Equal(None, result)
 
-      presetService.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
       botServiceMock.VerifyNoOtherCalls()
     }
 

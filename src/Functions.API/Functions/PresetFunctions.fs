@@ -188,6 +188,18 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
+  [<Function("RemoveExcludedArtist")>]
+  member this.RemoveExcludedArtist
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "DELETE", Route = "presets/{presetId}/excluded-artists/{artistId}")>] request: HttpRequest,
+      presetId: string,
+      artistId: string
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) = task { return! presetService.RemoveExcludedArtist(PresetId presetId, MusicPlatform.ArtistId artistId) }
+
+    handler request.UserId
+    |> Task.map (fun preset -> OkObjectResult(preset) :> IActionResult)
+
   [<Function("TargetPlaylist")>]
   member this.TargetPlaylist
     (
