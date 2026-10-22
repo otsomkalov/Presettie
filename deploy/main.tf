@@ -210,7 +210,7 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
       OAuth__Spotify__AuthorizationEndpoint = var.oauth-spotify-authorization-endpoint
       OAuth__Spotify__TokenEndpoint         = var.oauth-spotify-token-endpoint
 
-      "Logging__LogLevel__Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler" = "Warning"
+      "Logging__LogLevel__Microsoft.Hosting" = "Warning"
     },
     {
       for idx, scope in var.oauth-spotify-scope : "OAuth__Spotify__Scope__${idx}" => scope
@@ -272,6 +272,8 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
       OAuth__Keycloak__OpenIdConfigurationUri = var.oauth-keycloak-openid-configuration-uri
 
       API__Url = "https://${azurerm_function_app_flex_consumption.func-presettie-api.default_hostname}/"
+
+      "Logging__LogLevel__Microsoft.Hosting" = "Warning"
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
@@ -325,6 +327,8 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-generator" {
 
       Storage__QueueName              = azurerm_storage_queue.stq-bot-requests-presettie.name
       Storage__NotificationsQueueName = azurerm_storage_queue.stq-bot-notifications-presettie.name
+
+      "Logging__LogLevel__Microsoft.Hosting" = "Warning"
     },
     {
       for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope

@@ -80,6 +80,28 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
+  [<Function("IncludePlaylist")>]
+  member this.IncludePlaylist
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets/{presetId}/included-playlists")>] request: HttpRequest,
+      presetId: string,
+      [<FromBody>] body: IncludePlaylistRequest
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) = taskResult {
+      let cmd: IncludePlaylist.Cmd =
+        {
+          UserId = userId
+          PresetId = PresetId presetId
+          PlaylistId = body.Id
+        }
+
+      return! presetService.IncludePlaylist(cmd) |> TaskResult.mapError Operation
+    }
+
+    handler request.UserId
+    |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
+      | Operation error -> BadRequestObjectResult(error) :> IActionResult)
+
 
   [<Function("ListPresets")>]
   member this.ListPresets

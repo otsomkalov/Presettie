@@ -10,6 +10,7 @@ open MusicPlatform
 open Shared
 
 type IncludeArtistRequest = { Id: Artist.RawArtistId }
+type IncludePlaylistRequest = { Id: Playlist.RawPlaylistId }
 
 type CurrentUserResponse =
   {
@@ -23,6 +24,7 @@ type IApiClient =
   abstract RemovePreset: PresetId -> TaskResult<unit, Preset.GetPresetError>
   abstract RunPreset: PresetId -> TaskResult<SimplePreset, Preset.ValidationError list>
   abstract IncludeArtist: PresetId * IncludeArtistRequest -> TaskResult<IncludedArtist, IncludeArtist.Error>
+  abstract IncludePlaylist: PresetId * IncludePlaylistRequest -> TaskResult<IncludedPlaylist, IncludePlaylist.Error>
 
 type ApiClient(httpClient: HttpClient) =
   interface IApiClient with
@@ -61,6 +63,18 @@ type ApiClient(httpClient: HttpClient) =
       | HttpStatusCode.OK -> return! response.Content.ReadFromJsonAsync<IncludedArtist>(JSON.options)
       | HttpStatusCode.BadRequest ->
         let! errors = response.Content.ReadFromJsonAsync<IncludeArtist.Error>(JSON.options)
+
+        return! Error errors
+    }
+
+    member this.IncludePlaylist(PresetId presetId, request) = taskResult {
+      use! response =
+        httpClient.PostAsJsonAsync($"presets/{presetId}/included-playlists", request, JSON.options)
+
+      match response.StatusCode with
+      | HttpStatusCode.OK -> return! response.Content.ReadFromJsonAsync<IncludedPlaylist>(JSON.options)
+      | HttpStatusCode.BadRequest ->
+        let! errors = response.Content.ReadFromJsonAsync<IncludePlaylist.Error>(JSON.options)
 
         return! Error errors
     }
