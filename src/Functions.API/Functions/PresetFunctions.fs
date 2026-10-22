@@ -83,14 +83,11 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
   [<Function("RemoveIncludedArtist")>]
   member this.RemoveIncludedArtist
     (
-      [<HttpTrigger(AuthorizationLevel.Function, "DELETE", Route = "presets/{presetId}/included-artists/{artistId}")>] request:
-        HttpRequest,
+      [<HttpTrigger(AuthorizationLevel.Function, "DELETE", Route = "presets/{presetId}/included-artists/{artistId}")>] request: HttpRequest,
       presetId: string,
       artistId: string
     ) : Task<IActionResult> =
-    let handler (userId: UserId) = task {
-      return! presetService.RemoveIncludedArtist(PresetId presetId, MusicPlatform.ArtistId artistId)
-    }
+    let handler (userId: UserId) = task { return! presetService.RemoveIncludedArtist(PresetId presetId, MusicPlatform.ArtistId artistId) }
 
     handler request.UserId
     |> Task.map (fun preset -> OkObjectResult(preset) :> IActionResult)
