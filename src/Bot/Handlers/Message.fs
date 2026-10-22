@@ -470,7 +470,7 @@ let excludeArtistMessageHandler
 
 let includeArtistMessageHandler
   (userRepo: #ILoadUser)
-  (presetService: #IIncludeArtist)
+  (apiClient: IApiClient)
   authService
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
@@ -481,12 +481,7 @@ let includeArtistMessageHandler
         userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let includeArtistResult =
-        presetService.IncludeArtist
-          {
-            IncludeArtist.Cmd.UserId = userId
-            PresetId = currentPresetId
-            ArtistId = rawArtistId
-          }
+        apiClient.IncludeArtist(currentPresetId, { Id = rawArtistId })
 
       let onSuccess (artist: IncludedArtist) =
         chatCtx.SendMessage resp[Messages.ArtistIncluded, [| artist.Name |]]

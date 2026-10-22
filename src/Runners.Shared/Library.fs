@@ -6,7 +6,10 @@ open System.Net.Http.Json
 open System.Threading.Tasks
 open Domain.Core
 open FsToolkit.ErrorHandling
+open MusicPlatform
 open Shared
+
+type IncludeArtistRequest = { Id: Artist.RawArtistId }
 
 type CurrentUserResponse =
   {
@@ -19,6 +22,7 @@ type IApiClient =
   abstract ListPresets: unit -> Task<SimplePreset list>
   abstract RemovePreset: PresetId -> TaskResult<unit, Preset.GetPresetError>
   abstract RunPreset: PresetId -> TaskResult<SimplePreset, Preset.ValidationError list>
+  abstract IncludeArtist: PresetId * IncludeArtistRequest -> TaskResult<IncludedArtist, IncludeArtist.Error>
 
 type ApiClient(httpClient: HttpClient) =
   interface IApiClient with
@@ -45,6 +49,18 @@ type ApiClient(httpClient: HttpClient) =
       | HttpStatusCode.BadRequest ->
         let! errors =
           response.Content.ReadFromJsonAsync<Preset.ValidationError list>(JSON.options)
+
+        return! Error errors
+    }
+
+    member this.IncludeArtist(PresetId presetId, request) = taskResult {
+      use! response =
+        httpClient.PostAsJsonAsync($"presets/{presetId}/included-artists", request, JSON.options)
+
+      match response.StatusCode with
+      | HttpStatusCode.OK -> return! response.Content.ReadFromJsonAsync<IncludedArtist>(JSON.options)
+      | HttpStatusCode.BadRequest ->
+        let! errors = response.Content.ReadFromJsonAsync<IncludeArtist.Error>(JSON.options)
 
         return! Error errors
     }

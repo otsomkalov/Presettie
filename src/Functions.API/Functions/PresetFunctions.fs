@@ -11,6 +11,7 @@ open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
+open Runners.Shared
 open otsom.fs.Extensions
 open FsToolkit.ErrorHandling
 
@@ -56,6 +57,29 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     handler request.UserId
     |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
       | Operation errors -> BadRequestObjectResult(errors) :> IActionResult)
+
+  [<Function("IncludeArtist")>]
+  member this.IncludeArtist
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets/{presetId}/included-artists")>] request: HttpRequest,
+      presetId: string,
+      [<FromBody>] body: IncludeArtistRequest
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) = taskResult {
+      let cmd: IncludeArtist.Cmd =
+        {
+          UserId = userId
+          PresetId = PresetId presetId
+          ArtistId = body.Id
+        }
+
+      return! presetService.IncludeArtist(cmd) |> TaskResult.mapError Operation
+    }
+
+    handler request.UserId
+    |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
+      | Operation error -> BadRequestObjectResult(error) :> IActionResult)
+
 
   [<Function("ListPresets")>]
   member this.ListPresets

@@ -40,7 +40,7 @@ let private buildMessageHandlers authService userRepo userService presetService 
     excludeArtistButtonMessageHandler buildMusicPlatform authService resp botService
 
     includePlaylistMessageHandler userRepo presetService authService resp botService
-    includeArtistMessageHandler userRepo presetService authService resp botService
+    includeArtistMessageHandler userRepo apiClient authService resp botService
     excludePlaylistMessageHandler userRepo presetService authService resp botService
     excludeArtistMessageHandler userRepo presetService authService resp botService
     targetPlaylistMessageHandler userRepo presetService authService resp botService
