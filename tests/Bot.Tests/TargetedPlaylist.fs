@@ -8,6 +8,7 @@ open Domain.Repos
 open Moq
 open MusicPlatform
 open Bot.Handlers.Click
+open Runners.Shared
 open Tests.Shared
 open Xunit
 open otsom.fs.Bot
@@ -21,6 +22,7 @@ type TargetedPlaylist() =
   let musicPlatform = Mock<IMusicPlatform>()
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let presetService = Mock<IPresetService>()
+  let apiClient = Mock<IApiClient>()
 
   do
     presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some Mocks.preset)
@@ -120,8 +122,8 @@ type TargetedPlaylist() =
 
   [<Fact>]
   member _.``remove click should delete targeted playlist and show excluded playlists``() = task {
-    presetService
-      .Setup(_.RemoveTargetedPlaylist(Mocks.presetId, Mocks.targetedPlaylist.Id))
+    apiClient
+      .Setup(_.RemoveTargetedPlaylist(Mocks.presetId, Mocks.targetedPlaylistId))
       .ReturnsAsync(
         { Mocks.preset with
             TargetedPlaylists = []
@@ -141,12 +143,12 @@ type TargetedPlaylist() =
         ]
 
     let! result =
-      removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
+      removeTargetedPlaylistClickHandler apiClient.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(Some(), result)
 
     botService.VerifyAll()
-    presetService.VerifyAll()
+    apiClient.VerifyAll()
   }
 
   [<Fact>]
@@ -154,10 +156,10 @@ type TargetedPlaylist() =
     let click = createClick []
 
     let! result =
-      removeTargetedPlaylistClickHandler presetService.Object resourceProvider.Object botService.Object Mocks.chat click
+      removeTargetedPlaylistClickHandler apiClient.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(None, result)
 
     botService.VerifyAll()
-    presetService.VerifyAll()
+    apiClient.VerifyAll()
   }

@@ -95,7 +95,7 @@ let private buildClickHandlers userService presetService presetRepo resp botServ
 
     removeIncludedPlaylistClickHandler apiClient resp botService
     removeExcludedPlaylistClickHandler apiClient resp botService
-    removeTargetedPlaylistClickHandler presetService resp botService
+    removeTargetedPlaylistClickHandler apiClient resp botService
   }
 
 let main
