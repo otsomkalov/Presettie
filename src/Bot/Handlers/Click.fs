@@ -315,13 +315,13 @@ let showIncludedArtistClickHandler
       }
     | _ -> Task.FromResult(None)
 
-let removeIncludedArtistClickHandler (presetService: #IRemoveIncludedArtist) (resp: IResourceProvider) botService : ClickHandler<Chat> =
+let removeIncludedArtistClickHandler (apiClient: IApiClient) (resp: IResourceProvider) botService : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedArtists; artistId; "rm" ] -> task {
         let presetId = PresetId presetId
-        let playlistId = ArtistId artistId
-        let! preset = presetService.RemoveIncludedArtist(presetId, playlistId)
+        let artistId = ArtistId artistId
+        let! preset = apiClient.RemoveIncludedArtist(presetId, artistId)
 
         do! IncludedArtist.list resp botService click.MessageId preset (Page 0)
 
