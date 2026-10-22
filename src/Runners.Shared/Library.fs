@@ -6,7 +6,6 @@ open System.Net.Http.Json
 open System.Threading.Tasks
 open Domain.Core
 open FsToolkit.ErrorHandling
-open Microsoft.Extensions.Logging
 open Shared
 
 type CurrentUserResponse =
@@ -19,33 +18,32 @@ type CurrentUserResponse =
 type IApiClient =
   abstract ListPresets: unit -> Task<SimplePreset list>
   abstract RemovePreset: PresetId -> TaskResult<unit, Preset.GetPresetError>
+  abstract RunPreset: PresetId -> TaskResult<SimplePreset, Preset.ValidationError list>
 
-type ApiClient(httpClient: HttpClient, logger: ILogger<ApiClient>) =
+type ApiClient(httpClient: HttpClient) =
   interface IApiClient with
-    member this.ListPresets() = task {
-      try
-        return! httpClient.GetFromJsonAsync<SimplePreset list>("presets", JSON.options)
-      with e ->
-        logger.LogError(e, "Error while fetching presets")
-        return []
-    }
+    member this.ListPresets() = task { return! httpClient.GetFromJsonAsync<SimplePreset list>("presets", JSON.options) }
 
     member this.RemovePreset(PresetId presetId) = taskResult {
       use request = new HttpRequestMessage(HttpMethod.Delete, $"presets/{presetId}")
 
-      try
-        use! response = httpClient.SendAsync request
+      use! response = httpClient.SendAsync request
 
-        match response.StatusCode with
-        | HttpStatusCode.NoContent -> return ()
-        | HttpStatusCode.NotFound -> return! Error(Preset.NotFound)
-        | HttpStatusCode.Forbidden -> return! Error(Preset.Forbidden)
-        | _ ->
-          logger.LogWarning("Unexpected status code {StatusCode}", response.StatusCode)
+      match response.StatusCode with
+      | HttpStatusCode.NoContent -> return ()
+      | HttpStatusCode.NotFound -> return! Error(Preset.NotFound)
+      | HttpStatusCode.Forbidden -> return! Error(Preset.Forbidden)
+    }
 
-          return ()
-      with e ->
-        logger.LogError(e, "Error while removing preset")
+    member this.RunPreset(PresetId presetId) = taskResult {
+      use request = new HttpRequestMessage(HttpMethod.Post, $"presets/{presetId}/run")
 
-        return ()
+      use! response = httpClient.SendAsync request
+
+      match response.StatusCode with
+      | HttpStatusCode.OK -> return! response.Content.ReadFromJsonAsync<SimplePreset>()
+      | HttpStatusCode.BadRequest ->
+        let! errors = response.Content.ReadFromJsonAsync<Preset.ValidationError list>()
+
+        return! Error errors
     }

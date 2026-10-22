@@ -9,7 +9,9 @@
       "enableLiveMetricsFilters": true
     },
     "logLevel": {
-      "Microsoft.IdentityModel": "Critical"
+      "Host.Startup": "Warning",
+      "Microsoft.Azure.WebJobs": "Warning",
+      "Host": "Warning"
     }
   },
   "extensions": {

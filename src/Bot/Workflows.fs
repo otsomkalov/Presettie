@@ -576,8 +576,8 @@ module User =
         return ()
     }
 
-  let queueCurrentPresetRun (resp: IResourceProvider) (userRepo: #ILoadUser) (chatCtx: #ISendMessage) (presetService: #IQueueRun) =
-    let onSuccess (preset: Preset) =
+  let queueCurrentPresetRun (resp: IResourceProvider) (userRepo: #ILoadUser) (chatCtx: #ISendMessage) (apiClient: IApiClient) =
+    let onSuccess (preset: SimplePreset) =
       chatCtx.SendMessage resp[Messages.PresetQueued, [| preset.Name |]]
       |> Task.ignore
 
@@ -595,7 +595,7 @@ module User =
       userId
       |> userRepo.LoadUser
       |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
-      |> Task.bind (fun p -> presetService.QueueRun(userId, p))
+      |> Task.bind apiClient.RunPreset
       |> TaskResult.taskEither onSuccess onError
 
 [<RequireQualifiedAccess>]
@@ -608,12 +608,12 @@ module Resources =
 type IApiClientFactory =
   abstract Create: ChatId -> Task<IApiClient option>
 
-type ApiClientFactory(httpClient: HttpClient, oAuthClient: IOAuthClient, logger: ILogger<ApiClient>) =
+type ApiClientFactory(httpClient: HttpClient, oAuthClient: IOAuthClient) =
   interface IApiClientFactory with
     member this.Create(chatId) = taskOption {
       let! completedAuth = oAuthClient.GetCompleted(chatId.ToOAuthAccountId())
 
       httpClient.DefaultRequestHeaders.Authorization <- AuthenticationHeaderValue("Bearer", completedAuth.AccessToken.Value)
 
-      return ApiClient(httpClient, logger) :> IApiClient
+      return ApiClient(httpClient) :> IApiClient
     }

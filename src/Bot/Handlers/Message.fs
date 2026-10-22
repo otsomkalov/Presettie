@@ -3,6 +3,7 @@
 open Domain.Repos
 open MusicPlatform
 open Bot.Constants
+open Runners.Shared
 open otsom.fs.Auth
 open otsom.fs.Bot
 open otsom.fs.Extensions.String
@@ -573,8 +574,8 @@ let targetPlaylistMessageHandler
     | _ -> return None
   }
 
-let queuePresetRunMessageHandler userRepo presetService (resp: IResourceProvider) chatCtx : MessageHandler<Chat, Message> =
-  let queueRun = User.queueCurrentPresetRun resp userRepo chatCtx presetService
+let queuePresetRunMessageHandler userRepo apiClient (resp: IResourceProvider) chatCtx : MessageHandler<Chat, Message> =
+  let queueRun = User.queueCurrentPresetRun resp userRepo chatCtx apiClient
 
   fun chat message -> task {
     match message.Text with

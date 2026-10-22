@@ -184,7 +184,7 @@ type ISetPresetSize =
   abstract SetPresetSize: PresetId * PresetSettings.RawPresetSize -> Task<Result<unit, PresetSettings.ParsingError>>
 
 type IQueueRun =
-  abstract QueueRun: UserId * PresetId -> Task<Result<Preset, Preset.ValidationError list>>
+  abstract QueueRun: UserId * PresetId -> Task<Result<SimplePreset, Preset.ValidationError list>>
 
 type ICreatePreset =
   abstract CreatePreset: UserId * string -> Task<Preset>

@@ -1,5 +1,5 @@
 ﻿###
-POST {{api.url}}presets/{{presetId}}/run
+POST {{api.url}}presets/{{preset-id}}/run
 Authorization: Bearer {{token}}
 X-MS-CLIENT-PRINCIPAL-ID: {{user-id}}
 x-functions-key: {{api.key}}
@@ -11,7 +11,7 @@ X-MS-CLIENT-PRINCIPAL-ID: {{user-id}}
 x-functions-key: {{api.key}}
 
 ###
-GET {{api.url}}presets/{{presetId}}
+GET {{api.url}}presets/{{preset-id}}
 Authorization: Bearer {{token}}
 X-MS-CLIENT-PRINCIPAL-ID: {{user-id}}
 x-functions-key: {{api.key}}
@@ -28,7 +28,7 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:7071/api/presets/{{presetId}}
+DELETE http://localhost:7071/api/presets/{{preset-id}}
 Authorization: Bearer {{token}}
 X-MS-CLIENT-PRINCIPAL-ID: {{user-id}}
 x-functions-key: {{api.key}}

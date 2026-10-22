@@ -6,7 +6,6 @@ open Bot.Handlers
 open Bot.Resources
 open MusicPlatform
 open Domain.Core
-open Domain.Tests
 open Moq
 open Runners.Shared
 open Tests.Shared
@@ -1862,6 +1861,7 @@ type TargetPlaylistMessageHandler() =
 type QueuePresetRunMessageHandler() =
   let userRepo = Mock<ILoadUser>()
   let presetService = Mock<Domain.Core.IQueueRun>()
+  let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -1870,13 +1870,13 @@ type QueuePresetRunMessageHandler() =
     |> ignore
 
   let handler =
-    Message.queuePresetRunMessageHandler userRepo.Object presetService.Object resourceProvider.Object chatCtx.Object
+    Message.queuePresetRunMessageHandler userRepo.Object apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle /runpreset command and queue preset run``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.QueueRun(Mocks.userId, Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
+    apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.simplePreset)
 
     resourceProvider.Setup(_.Item(Messages.PresetQueued, It.IsAny())).Returns(Messages.PresetQueued)
 
@@ -1896,7 +1896,7 @@ type QueuePresetRunMessageHandler() =
   member _.``should handle RunPreset button and queue preset run``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.QueueRun(Mocks.userId, Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
+    apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.simplePreset)
 
     resourceProvider.Setup(_.Item(Messages.PresetQueued, It.IsAny())).Returns(Messages.PresetQueued)
 

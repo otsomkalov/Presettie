@@ -1,6 +1,5 @@
 ﻿module Bot.Tests.Click
 
-open App
 open Bot.Constants
 open Bot.Core
 open Bot.Handlers
@@ -695,19 +694,19 @@ type appendToTargetedPlaylistClickHandler() =
     }
 
 type runPresetClickHandler() =
-  let presetService = Mock<Domain.Core.IQueueRun>()
+  let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.runPresetClickHandler presetService.Object resourceProvider.Object botService.Object
+    Click.runPresetClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data and queue preset successfully``() =
     let presetId = Mocks.presetId.Value
     let click = createClick [ CallbackQueryConstants.preset; presetId; "r" ]
 
-    presetService.Setup(_.QueueRun(Mocks.chat.UserId, Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
+    apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.simplePreset)
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
     botService.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
     resourceProvider.Setup(fun x -> x[Notifications.PresetQueued, It.IsAny<obj array>()]).Returns(Notifications.PresetQueued)
@@ -716,7 +715,7 @@ type runPresetClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
+      apiClient.VerifyAll()
       botService.VerifyAll()
     }
 
@@ -725,14 +724,14 @@ type runPresetClickHandler() =
     let presetId = Mocks.presetId.Value
     let click = createClick [ CallbackQueryConstants.preset; presetId; "r" ]
 
-    presetService.Setup(_.QueueRun(Mocks.chat.UserId, Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoIncludedPlaylists ])
+    apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoIncludedPlaylists ])
     botService.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
     resourceProvider.Setup(fun x -> x[Messages.NoIncludedPlaylists]).Returns(Messages.NoIncludedPlaylists)
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
+      apiClient.VerifyAll()
       botService.VerifyAll()
     }
 
@@ -741,14 +740,14 @@ type runPresetClickHandler() =
     let presetId = Mocks.presetId.Value
     let click = createClick [ CallbackQueryConstants.preset; presetId; "r" ]
 
-    presetService.Setup(_.QueueRun(Mocks.chat.UserId, Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoTargetedPlaylists ])
+    apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoTargetedPlaylists ])
     botService.Setup(_.SendMessage(It.IsAny<string>())).ReturnsAsync(Mocks.botMessageId)
     resourceProvider.Setup(fun x -> x[Messages.NoTargetedPlaylists]).Returns(Messages.NoTargetedPlaylists)
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
+      apiClient.VerifyAll()
       botService.VerifyAll()
     }
 
@@ -760,7 +759,7 @@ type runPresetClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      presetService.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
 
