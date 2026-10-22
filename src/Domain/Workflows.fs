@@ -258,6 +258,7 @@ module Preset =
       >> Task.map Option.get
       >> Task.map validate
       >> TaskResult.taskTap (fun p -> presetRepo.QueueRun(userId, p.Id))
+      >> TaskResult.map (fun p -> { Id = p.Id; Name = p.Name })
 
   let includePlaylist (parseId: Playlist.ParseId) (presetRepo: #ILoadPreset & #ISavePreset) (musicPlatformFactory: IMusicPlatformFactory) =
     fun (cmd: IncludePlaylist.Cmd) -> taskResult {

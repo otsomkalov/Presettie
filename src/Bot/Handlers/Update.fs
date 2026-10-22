@@ -25,7 +25,7 @@ let private buildMessageHandlers authService userRepo userService presetService 
 
     myPresetsMessageHandler apiClient resp botService
     presetSettingsMessageHandler userRepo presetRepo resp botService
-    queuePresetRunMessageHandler userRepo presetService resp botService
+    queuePresetRunMessageHandler userRepo apiClient resp botService
 
     createPresetMessageHandler presetService resp botService
     createPresetButtonMessageHandler resp botService
@@ -53,7 +53,7 @@ let private buildClickHandlers userService presetService presetRepo resp botServ
     listPresetsClickHandler apiClient resp botService
     presetInfoClickHandler presetRepo resp botService
     presetSettingsClickHandler presetRepo resp botService
-    runPresetClickHandler presetService resp botService
+    runPresetClickHandler apiClient resp botService
     removePresetClickHandler apiClient resp botService
     setCurrentPresetClickHandler userService resp botService
 

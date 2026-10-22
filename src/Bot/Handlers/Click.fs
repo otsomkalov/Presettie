@@ -402,12 +402,12 @@ let overwriteTargetedPlaylistClickHandler
     | _ -> Task.FromResult(None)
 
 let runPresetClickHandler
-  (presetService: #Domain.Core.IQueueRun)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
   (botService: #ISendMessage & #ISendNotification)
   : ClickHandler<Chat> =
   let onSuccess clickId =
-    fun (preset: Preset) -> task {
+    fun (preset: SimplePreset) -> task {
       do! botService.SendNotification(clickId, resp[Notifications.PresetQueued, [| preset.Name |]])
 
       do!
@@ -432,7 +432,7 @@ let runPresetClickHandler
         let presetId = PresetId presetId
 
         do!
-          presetService.QueueRun(chat.UserId, presetId)
+          apiClient.RunPreset(presetId)
           |> TaskResult.taskEither (onSuccess click.Id) onError
 
         return Some()
