@@ -146,6 +146,28 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
+  [<Function("TargetPlaylist")>]
+  member this.TargetPlaylist
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "POST", Route = "presets/{presetId}/targeted-playlists")>] request: HttpRequest,
+      presetId: string,
+      [<FromBody>] body: TargetPlaylistRequest
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) = taskResult {
+      let cmd: TargetPlaylist.Cmd =
+        {
+          UserId = userId
+          PresetId = PresetId presetId
+          PlaylistId = body.Id
+        }
+
+      return! presetService.TargetPlaylist(cmd) |> TaskResult.mapError Operation
+    }
+
+    handler request.UserId
+    |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
+      | Operation error -> BadRequestObjectResult(error) :> IActionResult)
+
 
   [<Function("ListPresets")>]
   member this.ListPresets

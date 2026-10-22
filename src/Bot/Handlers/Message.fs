@@ -501,7 +501,7 @@ let includeArtistMessageHandler
 
 let targetPlaylistMessageHandler
   (userRepo: #ILoadUser)
-  (presetService: #ITargetPlaylist)
+  (apiClient: IApiClient)
   authService
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
@@ -512,12 +512,7 @@ let targetPlaylistMessageHandler
         userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let targetPlaylistResult =
-        presetService.TargetPlaylist
-          {
-            TargetPlaylist.Cmd.UserId = userId
-            PresetId = currentPresetId
-            PlaylistId = rawPlaylistId
-          }
+        apiClient.TargetPlaylist(currentPresetId, { Id = rawPlaylistId })
 
       let onSuccess (playlist: TargetedPlaylist) =
         chatCtx.SendMessage resp[Messages.PlaylistTargeted, [| playlist.Name |]]

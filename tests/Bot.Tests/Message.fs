@@ -1848,7 +1848,7 @@ type IncludeArtistMessageHandler() =
 
 type TargetPlaylistMessageHandler() =
   let userRepo = Mock<ILoadUser>()
-  let presetService = Mock<ITargetPlaylist>()
+  let apiClient = Mock<IApiClient>()
   let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
@@ -1858,13 +1858,22 @@ type TargetPlaylistMessageHandler() =
     |> ignore
 
   let handler =
-    Message.targetPlaylistMessageHandler userRepo.Object presetService.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.targetPlaylistMessageHandler userRepo.Object apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with targeted playlist and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>())).ReturnsAsync(Ok Mocks.targetedPlaylist)
+    apiClient
+      .Setup(
+        _.TargetPlaylist(
+          Mocks.presetId,
+          {
+            Id = Playlist.RawPlaylistId "playlist-url"
+          }
+        )
+      )
+      .ReturnsAsync(Ok Mocks.targetedPlaylist)
 
     resourceProvider.Setup(_.Item(Messages.PlaylistTargeted, It.IsAny())).Returns(Messages.PlaylistTargeted)
 
@@ -1876,15 +1885,26 @@ type TargetPlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-
-      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+      userRepo.VerifyAll()
+      apiClient.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
     }
 
   [<Fact>]
   member _.``should handle /targetplaylist command and send message``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>())).ReturnsAsync(Ok Mocks.targetedPlaylist)
+    apiClient
+      .Setup(
+        _.TargetPlaylist(
+          Mocks.presetId,
+          {
+            Id = Playlist.RawPlaylistId "playlist-url"
+          }
+        )
+      )
+      .ReturnsAsync(Ok Mocks.targetedPlaylist)
 
     resourceProvider.Setup(_.Item(Messages.PlaylistTargeted, It.IsAny())).Returns(Messages.PlaylistTargeted)
 
@@ -1896,16 +1916,25 @@ type TargetPlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-
-      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+      userRepo.VerifyAll()
+      apiClient.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
     }
 
   [<Fact>]
   member _.``should send IdCannotBeParsed on id parsing error``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>()))
+    apiClient
+      .Setup(
+        _.TargetPlaylist(
+          Mocks.presetId,
+          {
+            Id = Playlist.RawPlaylistId "invalid-id"
+          }
+        )
+      )
       .ReturnsAsync(Error(TargetPlaylist.Error.IdParsing(Playlist.IdParsingError "invalid-id")))
 
     resourceProvider.Setup(_.Item(Messages.PlaylistIdCannotBeParsed, It.IsAny())).Returns(Messages.PlaylistIdCannotBeParsed)
@@ -1918,16 +1947,25 @@ type TargetPlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-
-      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+      userRepo.VerifyAll()
+      apiClient.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
     }
 
   [<Fact>]
   member _.``should send NotFound when playlist not found``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService
-      .Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>()))
+    apiClient
+      .Setup(
+        _.TargetPlaylist(
+          Mocks.presetId,
+          {
+            Id = Playlist.RawPlaylistId "playlist-url"
+          }
+        )
+      )
       .ReturnsAsync(Error(TargetPlaylist.Error.Load(Playlist.LoadError.NotFound)))
 
     resourceProvider.Setup(_.Item(Messages.PlaylistNotFoundInSpotify, It.IsAny())).Returns("Not found")
@@ -1940,15 +1978,26 @@ type TargetPlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-
-      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+      userRepo.VerifyAll()
+      apiClient.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
     }
 
   [<Fact>]
   member _.``should send PlaylistIsReadonly on access error``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>())).ReturnsAsync(Error(TargetPlaylist.Error.AccessError))
+    apiClient
+      .Setup(
+        _.TargetPlaylist(
+          Mocks.presetId,
+          {
+            Id = Playlist.RawPlaylistId "playlist-url"
+          }
+        )
+      )
+      .ReturnsAsync(Error TargetPlaylist.Error.AccessError)
 
     resourceProvider.Setup(_.Item(Messages.PlaylistIsReadonly)).Returns(Messages.PlaylistIsReadonly)
 
@@ -1960,15 +2009,26 @@ type TargetPlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-
-      chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+      userRepo.VerifyAll()
+      apiClient.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
     }
 
   [<Fact>]
   member _.``should trigger login when unauthorized``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.TargetPlaylist(It.IsAny<TargetPlaylist.Cmd>())).ReturnsAsync(Error TargetPlaylist.Error.Unauthorized)
+    apiClient
+      .Setup(
+        _.TargetPlaylist(
+          Mocks.presetId,
+          {
+            Id = Playlist.RawPlaylistId "playlist-url"
+          }
+        )
+      )
+      .ReturnsAsync(Error TargetPlaylist.Error.Unauthorized)
 
     chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
@@ -1978,8 +2038,10 @@ type TargetPlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-
-      chatCtx.Verify(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny()))
+      userRepo.VerifyAll()
+      apiClient.VerifyAll()
+      chatCtx.VerifyAll()
+      chatCtx.VerifyNoOtherCalls()
     }
 
   [<Fact>]
@@ -1991,7 +2053,7 @@ type TargetPlaylistMessageHandler() =
 
       Assert.Equal(None, result)
       userRepo.VerifyNoOtherCalls()
-      presetService.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
     }
 
