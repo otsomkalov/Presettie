@@ -93,7 +93,7 @@ let private buildClickHandlers userService presetService presetRepo resp botServ
     removeIncludedArtistClickHandler presetService resp botService
     removeExcludedArtistClickHandler presetService resp botService
 
-    removeIncludedPlaylistClickHandler presetService resp botService
+    removeIncludedPlaylistClickHandler apiClient resp botService
     removeExcludedPlaylistClickHandler presetService resp botService
     removeTargetedPlaylistClickHandler presetService resp botService
   }
