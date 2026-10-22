@@ -1860,7 +1860,6 @@ type TargetPlaylistMessageHandler() =
 
 type QueuePresetRunMessageHandler() =
   let userRepo = Mock<ILoadUser>()
-  let presetService = Mock<Domain.Core.IQueueRun>()
   let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
@@ -1873,7 +1872,7 @@ type QueuePresetRunMessageHandler() =
     Message.queuePresetRunMessageHandler userRepo.Object apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
-  member _.``should handle /runpreset command and queue preset run``() =
+  member _.``should handle /run command and queue preset run``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
     apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.simplePreset)
@@ -1890,6 +1889,7 @@ type QueuePresetRunMessageHandler() =
       Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+      apiClient.VerifyAll()
     }
 
   [<Fact>]
@@ -1910,13 +1910,13 @@ type QueuePresetRunMessageHandler() =
       Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+      apiClient.VerifyAll()
     }
 
   [<Fact>]
   member _.``should send error message when no included playlists``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
-
-    presetService.Setup(_.QueueRun(Mocks.userId, Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoIncludedPlaylists ])
+    apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoIncludedPlaylists ])
 
     resourceProvider.Setup(_.Item(Messages.NoIncludedPlaylists)).Returns(Messages.NoIncludedPlaylists)
 
@@ -1930,13 +1930,14 @@ type QueuePresetRunMessageHandler() =
       Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+      apiClient.VerifyAll()
     }
 
   [<Fact>]
   member _.``should send error message when no targeted playlists``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
 
-    presetService.Setup(_.QueueRun(Mocks.userId, Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoTargetedPlaylists ])
+    apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoTargetedPlaylists ])
 
     resourceProvider.Setup(_.Item(Messages.NoTargetedPlaylists)).Returns(Messages.NoTargetedPlaylists)
 
@@ -1950,6 +1951,7 @@ type QueuePresetRunMessageHandler() =
       Assert.Equal(Some(), result)
 
       chatCtx.Verify(_.SendMessage(It.IsAny<string>()))
+      apiClient.VerifyAll()
     }
 
   [<Fact>]
@@ -1961,6 +1963,6 @@ type QueuePresetRunMessageHandler() =
 
       Assert.Equal(None, result)
       userRepo.VerifyNoOtherCalls()
-      presetService.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
     }
