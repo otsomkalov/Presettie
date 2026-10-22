@@ -91,7 +91,7 @@ let private buildClickHandlers userService presetService presetRepo resp botServ
     showTargetedPlaylistClickHandler presetRepo buildMusicPlatform resp botService
 
     removeIncludedArtistClickHandler apiClient resp botService
-    removeExcludedArtistClickHandler presetService resp botService
+    removeExcludedArtistClickHandler apiClient resp botService
 
     removeIncludedPlaylistClickHandler apiClient resp botService
     removeExcludedPlaylistClickHandler apiClient resp botService
