@@ -253,15 +253,14 @@ let showExcludedPlaylistClickHandler
       }
     | _ -> Task.FromResult(None)
 
-let removeExcludedPlaylistClickHandler (presetService: #IRemoveExcludedPlaylist) (resp: IResourceProvider) botService : ClickHandler<Chat> =
+let removeExcludedPlaylistClickHandler (apiClient: IApiClient) (resp: IResourceProvider) botService : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludedPlaylists; playlistId; "rm" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId
 
-        let! preset =
-          presetService.RemoveExcludedPlaylist(presetId, (ReadablePlaylistId playlistId))
+        let! preset = apiClient.RemoveExcludedPlaylist(presetId, playlistId)
 
         do! ExcludedPlaylist.list resp botService click.MessageId preset (Page 0)
         return Some()
