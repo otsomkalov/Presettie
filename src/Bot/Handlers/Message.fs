@@ -359,7 +359,7 @@ let includePlaylistMessageHandler
 
 let excludePlaylistMessageHandler
   (userRepo: #ILoadUser)
-  (presetService: #IExcludePlaylist)
+  (apiClient: IApiClient)
   authService
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
@@ -370,12 +370,7 @@ let excludePlaylistMessageHandler
         userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let excludePlaylistResult =
-        presetService.ExcludePlaylist
-          {
-            ExcludePlaylist.Cmd.UserId = userId
-            PresetId = currentPresetId
-            PlaylistId = rawPlaylistId
-          }
+        apiClient.ExcludePlaylist(currentPresetId, { Id = rawPlaylistId })
 
       let onSuccess (playlist: ExcludedPlaylist) =
         chatCtx.SendMessage resp[Messages.PlaylistExcluded, [| playlist.Name |]]
