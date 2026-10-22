@@ -27,6 +27,7 @@ type IApiClient =
   abstract RemovePreset: PresetId -> TaskResult<unit, Preset.GetPresetError>
   abstract RunPreset: PresetId -> TaskResult<SimplePreset, Preset.ValidationError list>
   abstract IncludeArtist: PresetId * IncludeArtistRequest -> TaskResult<IncludedArtist, IncludeArtist.Error>
+  abstract RemoveIncludedArtist: PresetId * ArtistId -> Task<Preset>
   abstract IncludePlaylist: PresetId * IncludePlaylistRequest -> TaskResult<IncludedPlaylist, IncludePlaylist.Error>
   abstract RemoveIncludedPlaylist: PresetId * PlaylistId -> Task<Preset>
   abstract ExcludePlaylist: PresetId * ExcludePlaylistRequest -> TaskResult<ExcludedPlaylist, ExcludePlaylist.Error>
@@ -74,6 +75,13 @@ type ApiClient(httpClient: HttpClient) =
         let! errors = response.Content.ReadFromJsonAsync<IncludeArtist.Error>(JSON.options)
 
         return! Error errors
+    }
+
+    member this.RemoveIncludedArtist(PresetId presetId, ArtistId artistId) = task {
+      use! response =
+        httpClient.DeleteAsync($"presets/{presetId}/included-artists/{artistId}")
+
+      return! response.Content.ReadFromJsonAsync<Preset>(JSON.options)
     }
 
     member this.IncludePlaylist(PresetId presetId, request) = taskResult {
