@@ -102,6 +102,21 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
+  [<Function("RemoveIncludedPlaylist")>]
+  member this.RemoveIncludedPlaylist
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "DELETE", Route = "presets/{presetId}/included-playlists/{playlistId}")>] request:
+        HttpRequest,
+      presetId: string,
+      playlistId: string
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) = task {
+      return! presetService.RemoveIncludedPlaylist(PresetId presetId, MusicPlatform.PlaylistId playlistId |> ReadablePlaylistId)
+    }
+
+    handler request.UserId
+    |> Task.map (fun preset -> OkObjectResult(preset) :> IActionResult)
+
   [<Function("ExcludePlaylist")>]
   member this.ExcludePlaylist
     (
