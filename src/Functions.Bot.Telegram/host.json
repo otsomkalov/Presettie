@@ -7,8 +7,7 @@
       "Host": "Warning",
       "Microsoft.AspNetCore.DataProtection.Repositories": "Warning",
       "Microsoft.AspNetCore.DataProtection.KeyManagement": "Warning",
-      "Microsoft.AspNetCore.Server": "Warning",
-      "Microsoft.Hosting": "Warning"
+      "Microsoft.AspNetCore.Server": "Warning"
     }
   },
   "extensions": {
