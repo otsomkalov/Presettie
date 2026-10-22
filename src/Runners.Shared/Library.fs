@@ -41,9 +41,10 @@ type ApiClient(httpClient: HttpClient) =
       use! response = httpClient.SendAsync request
 
       match response.StatusCode with
-      | HttpStatusCode.OK -> return! response.Content.ReadFromJsonAsync<SimplePreset>()
+      | HttpStatusCode.OK -> return! response.Content.ReadFromJsonAsync<SimplePreset>(JSON.options)
       | HttpStatusCode.BadRequest ->
-        let! errors = response.Content.ReadFromJsonAsync<Preset.ValidationError list>()
+        let! errors =
+          response.Content.ReadFromJsonAsync<Preset.ValidationError list>(JSON.options)
 
         return! Error errors
     }

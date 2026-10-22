@@ -2,8 +2,9 @@
   "version": "2.0",
   "logging": {
     "logLevel": {
-      "default": "Information",
-      "Azure.Core": "Warning"
+      "Host.Startup": "Warning",
+      "Microsoft.Azure.WebJobs": "Warning",
+      "Host": "Warning"
     }
   },
   "extensions": {
