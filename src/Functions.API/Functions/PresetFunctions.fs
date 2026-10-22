@@ -198,6 +198,21 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
+  [<Function("RemoveTargetedPlaylist")>]
+  member this.RemoveTargetedPlaylist
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "DELETE", Route = "presets/{presetId}/targeted-playlists/{playlistId}")>] request:
+        HttpRequest,
+      presetId: string,
+      playlistId: string
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) = task {
+      return! presetService.RemoveTargetedPlaylist(PresetId presetId, MusicPlatform.PlaylistId playlistId |> WritablePlaylistId)
+    }
+
+    handler request.UserId
+    |> Task.map (fun preset -> OkObjectResult(preset) :> IActionResult)
+
 
   [<Function("ListPresets")>]
   member this.ListPresets
