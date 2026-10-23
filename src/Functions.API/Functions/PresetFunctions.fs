@@ -15,13 +15,6 @@ open Runners.Shared
 open otsom.fs.Extensions
 open FsToolkit.ErrorHandling
 
-[<CLIMutable>]
-type CreatePresetRequest =
-  {
-    [<Required; MinLength(3)>]
-    Name: string
-  }
-
 type CreatePresetResponse = { Id: PresetId }
 
 type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, mediator: IMediator) =

@@ -453,7 +453,7 @@ module PresetSettings =
 [<RequireQualifiedAccess>]
 module Preset =
   let show' showButtons (resp: IResourceProvider) =
-    fun preset -> task {
+    fun (preset: Preset) -> task {
       let text = resp[Messages.PresetInfo, [| preset.Name |]]
 
       let keyboardMarkup = seq {
@@ -482,7 +482,7 @@ module Preset =
       >> Task.bind (show' (editButtons messageId) resp)
 
   let send (resp: IResourceProvider) (chatCtx: #ISendKeyboard) =
-    fun preset ->
+    fun (preset: Preset) ->
       let text = resp[Messages.PresetInfo, [| preset.Name |]]
 
       let keyboard: Keyboard =

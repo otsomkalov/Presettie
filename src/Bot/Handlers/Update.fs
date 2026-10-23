@@ -14,39 +14,38 @@ open otsom.fs.Bot
 open otsom.fs.Bot.Builders
 open otsom.fs.OAuth
 
-let private buildMessageHandlers authService userRepo userService presetService presetRepo resp botService buildMusicPlatform apiClient =
-  messageHandlers {
-    startMessageHandler userRepo presetRepo authService resp botService
+let private buildMessageHandlers authService userRepo userService presetRepo resp botService buildMusicPlatform apiClient = messageHandlers {
+  startMessageHandler userRepo presetRepo authService resp botService
 
-    faqMessageHandler resp botService
-    privacyMessageHandler resp botService
-    guideMessageHandler resp botService
-    helpMessageHandler resp botService
+  faqMessageHandler resp botService
+  privacyMessageHandler resp botService
+  guideMessageHandler resp botService
+  helpMessageHandler resp botService
 
-    myPresetsMessageHandler apiClient resp botService
-    presetSettingsMessageHandler userRepo presetRepo resp botService
-    queuePresetRunMessageHandler userRepo apiClient resp botService
+  myPresetsMessageHandler apiClient resp botService
+  presetSettingsMessageHandler userRepo presetRepo resp botService
+  queuePresetRunMessageHandler userRepo apiClient resp botService
 
-    createPresetMessageHandler presetService resp botService
-    createPresetButtonMessageHandler resp botService
+  createPresetMessageHandler apiClient resp botService
+  createPresetButtonMessageHandler resp botService
 
-    setPresetSizeMessageButtonHandler resp botService
-    setPresetSizeMessageHandler userService userRepo presetRepo resp botService
+  setPresetSizeMessageButtonHandler resp botService
+  setPresetSizeMessageHandler userService userRepo presetRepo resp botService
 
-    includePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
-    excludePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
-    targetPlaylistButtonMessageHandler buildMusicPlatform authService resp botService
+  includePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
+  excludePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
+  targetPlaylistButtonMessageHandler buildMusicPlatform authService resp botService
 
-    excludeArtistButtonMessageHandler buildMusicPlatform authService resp botService
+  excludeArtistButtonMessageHandler buildMusicPlatform authService resp botService
 
-    includePlaylistMessageHandler userRepo apiClient authService resp botService
-    includeArtistMessageHandler userRepo apiClient authService resp botService
-    excludePlaylistMessageHandler userRepo apiClient authService resp botService
-    excludeArtistMessageHandler userRepo apiClient authService resp botService
-    targetPlaylistMessageHandler userRepo apiClient authService resp botService
+  includePlaylistMessageHandler userRepo apiClient authService resp botService
+  includeArtistMessageHandler userRepo apiClient authService resp botService
+  excludePlaylistMessageHandler userRepo apiClient authService resp botService
+  excludeArtistMessageHandler userRepo apiClient authService resp botService
+  targetPlaylistMessageHandler userRepo apiClient authService resp botService
 
-    backMessageButtonHandler userRepo presetRepo resp botService
-  }
+  backMessageButtonHandler userRepo presetRepo resp botService
+}
 
 let private buildClickHandlers userService presetService presetRepo resp botService buildMusicPlatform (apiClient: IApiClient) =
   clickHandlers {
@@ -124,7 +123,7 @@ let main
       match update.Data with
       | Msg msg ->
         let! result =
-          buildMessageHandlers authService userRepo userService presetService presetRepo resp botSvc buildMusicPlatform apiClient chat msg
+          buildMessageHandlers authService userRepo userService presetRepo resp botSvc buildMusicPlatform apiClient chat msg
 
         match result with
         | Some() -> return ()

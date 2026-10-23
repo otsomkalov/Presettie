@@ -1,5 +1,6 @@
 ﻿namespace Runners.Shared
 
+open System.ComponentModel.DataAnnotations
 open System.Net
 open System.Net.Http
 open System.Net.Http.Json
@@ -14,6 +15,13 @@ type IncludePlaylistRequest = { Id: Playlist.RawPlaylistId }
 type ExcludePlaylistRequest = { Id: Playlist.RawPlaylistId }
 type ExcludeArtistRequest = { Id: Artist.RawArtistId }
 type TargetPlaylistRequest = { Id: Playlist.RawPlaylistId }
+
+[<CLIMutable>]
+type CreatePresetRequest =
+  {
+    [<Required; MinLength(3)>]
+    Name: string
+  }
 
 type CurrentUserResponse =
   {
@@ -36,6 +44,7 @@ type IApiClient =
   abstract RemoveExcludedArtist: PresetId * ArtistId -> Task<Preset>
   abstract TargetPlaylist: PresetId * TargetPlaylistRequest -> TaskResult<TargetedPlaylist, TargetPlaylist.Error>
   abstract RemoveTargetedPlaylist: PresetId * PlaylistId -> Task<Preset>
+  abstract CreatePreset: CreatePresetRequest -> Task<Preset>
 
 type ApiClient(httpClient: HttpClient) =
   interface IApiClient with
@@ -159,4 +168,11 @@ type ApiClient(httpClient: HttpClient) =
         httpClient.DeleteAsync($"presets/{presetId}/targeted-playlists/{playlistId}")
 
       return! response.Content.ReadFromJsonAsync<Preset>(JSON.options)
+    }
+
+    member this.CreatePreset(request) = task {
+      use! response = httpClient.PostAsJsonAsync($"presets", request, JSON.options)
+
+      match response.StatusCode with
+      | HttpStatusCode.OK -> return! response.Content.ReadFromJsonAsync<Preset>(JSON.options)
     }
