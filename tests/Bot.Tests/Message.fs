@@ -950,7 +950,7 @@ type CreatePresetButtonMessageHandler() =
     }
 
 type CreatePresetMessageHandler() =
-  let presetService = Mock<IPresetService>()
+  let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -959,11 +959,11 @@ type CreatePresetMessageHandler() =
     |> ignore
 
   let handler =
-    Message.createPresetMessageHandler presetService.Object resourceProvider.Object chatCtx.Object
+    Message.createPresetMessageHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with preset name and create preset``() =
-    presetService.Setup(_.CreatePreset(Mocks.userId, "MyPreset")).ReturnsAsync(Mocks.preset)
+    apiClient.Setup(_.CreatePreset({ Name = "MyPreset" })).ReturnsAsync(Mocks.preset)
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
     let message =
@@ -976,13 +976,13 @@ type CreatePresetMessageHandler() =
 
       Assert.Equal(Some(), result)
 
-      presetService.VerifyAll()
+      apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
 
   [<Fact>]
   member _.``should handle /newpreset command and create preset``() =
-    presetService.Setup(_.CreatePreset(Mocks.userId, "Another")).ReturnsAsync(Mocks.preset)
+    apiClient.Setup(_.CreatePreset({ Name = "Another" })).ReturnsAsync(Mocks.preset)
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
     let message = createMessage $"{Commands.newPreset} Another"
@@ -992,7 +992,7 @@ type CreatePresetMessageHandler() =
 
       Assert.Equal(Some(), result)
 
-      presetService.VerifyAll()
+      apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
 
@@ -1005,7 +1005,7 @@ type CreatePresetMessageHandler() =
 
       Assert.Equal(None, result)
 
-      presetService.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
     }
 

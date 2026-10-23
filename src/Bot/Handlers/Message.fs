@@ -185,18 +185,14 @@ let createPresetButtonMessageHandler (resp: IResourceProvider) (chatCtx: #IAskFo
     | _ -> return None
   }
 
-let createPresetMessageHandler
-  (presetService: IPresetService)
-  (resp: IResourceProvider)
-  (chatCtx: #ISendMessage)
-  : MessageHandler<Chat, Message> =
+let createPresetMessageHandler (apiClient: IApiClient) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler<Chat, Message> =
   fun chat message -> task {
     match message with
     | {
         Text = text
         ReplyMessage = Some { Text = replyText }
       } when replyText = resp[Messages.SendPresetName] ->
-      let! preset = presetService.CreatePreset(chat.UserId, text)
+      let! preset = apiClient.CreatePreset({ Name = text })
 
       do! Preset.send resp chatCtx preset
 
@@ -204,7 +200,7 @@ let createPresetMessageHandler
     | {
         Text = CommandWithData Commands.newPreset text
       } ->
-      let! preset = presetService.CreatePreset(chat.UserId, text)
+      let! preset = apiClient.CreatePreset({ Name = text })
 
       do! Preset.send resp chatCtx preset
 
