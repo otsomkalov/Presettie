@@ -13,6 +13,7 @@ open Runners.Shared
 open otsom.fs.Bot
 open otsom.fs.Bot.Builders
 open otsom.fs.OAuth
+open otsom.fs.Resources
 
 let private buildMessageHandlers authService userRepo userService presetRepo resp botService buildMusicPlatform apiClient = messageHandlers {
   startMessageHandler userRepo presetRepo authService resp botService
@@ -97,6 +98,87 @@ let private buildClickHandlers userService presetService presetRepo resp botServ
     removeTargetedPlaylistClickHandler apiClient resp botService
   }
 
+let private exceptionHandlingMiddleware (logger: ILogger) : BotMiddleware<Update> =
+  fun next context -> task {
+    try
+      do! next context
+    with e ->
+      logger.LogError(e, "Error processing an update")
+  }
+
+let private authenticationMiddleware
+  (buildDefaultResp: CreateDefaultResourceProvider)
+  (appOAuthClient: IOAuthClient)
+  (chatRepo: IChatRepo)
+  (apiClientFactory: IApiClientFactory)
+  : BotMiddleware<Update> =
+  fun next context -> task {
+    let! chat = chatRepo.LoadChat context.Update.ChatId
+    let! apiClient = apiClientFactory.Create context.Update.ChatId
+
+    match chat, apiClient with
+    | Some chat, Some apiClient ->
+      context.SetFeature chat
+      context.SetFeature apiClient
+
+      do! next context
+    | _ ->
+      let! resp = buildDefaultResp ()
+
+      let! loginLink =
+        appOAuthClient.InitAuth(context.Update.ChatId.Value |> string |> AccountId)
+
+      return!
+        context.Client.SendLink(resp[Messages.Login], resp[Buttons.Login], Uri(loginLink))
+        |> Task.ignore
+  }
+
+let private resourceProviderEnricher (buildResp: CreateResourceProvider) : BotContextEnricher<Update> =
+  fun context -> task {
+    let chat = context.GetFeature<Chat>()
+    let! resp = buildResp chat.Lang
+
+    context.SetFeature resp
+  }
+
+let private contextEnricherMiddleware (enrichers: BotContextEnricher<Update> list) : BotMiddleware<Update> =
+  fun next context -> task {
+    for enricher in enrichers do
+      do! enricher context
+
+    do! next context
+  }
+
+let private router (logger: ILogger) buildMusicPlatform userService authService userRepo presetRepo presetService : BotHandler<Update> =
+  fun context ->
+    let chat = context.GetFeature<Chat>()
+    let resp = context.GetFeature<IResourceProvider>()
+    let apiClient = context.GetFeature<IApiClient>()
+
+    task {
+      match context.Update.Data with
+      | Msg msg ->
+        let! result =
+          buildMessageHandlers authService userRepo userService presetRepo resp context.Client buildMusicPlatform apiClient chat msg
+
+        match result with
+        | Some() -> return ()
+        | None ->
+          logger.LogWarning "Message content didn't match any handler. Running default one."
+
+          return! context.Client.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
+      | Click click ->
+        let! result =
+          buildClickHandlers userService presetService presetRepo resp context.Client buildMusicPlatform apiClient chat click
+
+        match result with
+        | Some() -> return ()
+        | None ->
+          logger.LogWarning "Button click data didn't match any handler. Running default one."
+
+          return! context.Client.SendNotification(click.Id, resp[Notifications.UnknownCommand])
+    }
+
 let main
   authService
   userRepo
@@ -104,47 +186,23 @@ let main
   presetService
   presetRepo
   buildMusicPlatform
-  buildChatContext
-  getResp
-  (chatRepo: IChatRepo)
-  (appOAuthClient: IOAuthClient)
-  (apiClientFactory: IApiClientFactory)
-  (logger: ILogger)
+  buildBotClient
+  chatRepo
+  appOAuthClient
+  apiClientFactory
+  buildDefaultResp
+  buildResp
+  logger
   =
   fun (update: Update) -> task {
-    let botSvc = buildChatContext update.ChatId
-    let! resp = getResp update.Lang
+    let botSvc = buildBotClient update.ChatId
+    let botCtx = BotContext(update, botSvc)
 
-    let! chat = chatRepo.LoadChat update.ChatId
-    let! apiClient = apiClientFactory.Create update.ChatId
+    let pipeline =
+      exceptionHandlingMiddleware logger
+      << authenticationMiddleware buildDefaultResp appOAuthClient chatRepo apiClientFactory
+      << contextEnricherMiddleware [ resourceProviderEnricher buildResp ]
+      <| router logger buildMusicPlatform userService authService userRepo presetRepo presetService
 
-    match (chat, apiClient) with
-    | Some chat, Some apiClient ->
-      match update.Data with
-      | Msg msg ->
-        let! result =
-          buildMessageHandlers authService userRepo userService presetRepo resp botSvc buildMusicPlatform apiClient chat msg
-
-        match result with
-        | Some() -> return ()
-        | None ->
-          logger.LogWarning "Message content didn't match any handler. Running default one."
-
-          return! botSvc.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
-      | Click click ->
-        let! result =
-          buildClickHandlers userService presetService presetRepo resp botSvc buildMusicPlatform apiClient chat click
-
-        match result with
-        | Some() -> return ()
-        | None ->
-          logger.LogWarning "Button click data didn't match any handler. Running default one."
-
-          return! botSvc.SendNotification(click.Id, resp[Notifications.UnknownCommand])
-    | _ ->
-      let! loginLink = appOAuthClient.InitAuth(update.ChatId.Value |> string |> AccountId)
-
-      return!
-        botSvc.SendLink(resp[Messages.Login], resp[Buttons.Login], Uri(loginLink))
-        |> Task.ignore
+    do! pipeline botCtx
   }

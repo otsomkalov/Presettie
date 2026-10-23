@@ -11,8 +11,4 @@ open otsom.fs.Resources
 #nowarn "20"
 
 let addBot (cfg: IConfiguration) (services: IServiceCollection) =
-  services.BuildSingleton<Resources.GetResourceProvider, CreateResourceProvider, CreateDefaultResourceProvider>(
-    Resources.getResourceProvider
-  )
-
   services |> Startup.addAuthCore cfg |> Startup.addResources cfg

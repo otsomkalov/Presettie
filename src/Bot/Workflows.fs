@@ -598,13 +598,6 @@ module User =
       |> Task.bind apiClient.RunPreset
       |> TaskResult.taskEither onSuccess onError
 
-[<RequireQualifiedAccess>]
-module Resources =
-  let getResourceProvider createResp createDefaultResp : Resources.GetResourceProvider =
-    function
-    | Some l -> createResp l
-    | None -> createDefaultResp ()
-
 type IApiClientFactory =
   abstract Create: ChatId -> Task<IApiClient option>
 
