@@ -3,10 +3,8 @@
 open System.Net.Http
 open System.Net.Http.Headers
 open System.Threading.Tasks
-open App
 open Domain.Core.PresetSettings
 open Domain.Repos
-open Microsoft.Extensions.Logging
 open MusicPlatform
 open Domain.Core
 open Domain.Workflows
@@ -15,7 +13,6 @@ open Resources
 open Bot.Constants
 open Bot.Core
 open Runners.Shared
-open otsom.fs.Auth
 open otsom.fs.Bot
 open otsom.fs.Extensions
 open System
@@ -475,9 +472,7 @@ module PresetSettings =
           let text, keyboard = getPresetSettingsMessage resp preset
 
           botService.EditMessageButtons(messageId, text, keyboard))
-        (function
-         | Preset.GetPresetError.Forbidden -> botService.SendNotification(clickId, resp[Messages.PresetAccessForbidden])
-         | Preset.GetPresetError.NotFound -> botService.SendNotification(clickId, resp[Messages.PresetNotFound]))
+        (sendPresetErrorNotification resp botService clickId)
       >> Task.ignore
 
 [<RequireQualifiedAccess>]
@@ -508,9 +503,7 @@ module Preset =
 
     fun clickId messageId ->
       apiClient.GetPreset
-      >> TaskResult.foldResult (show' (editButtons messageId) resp) (function
-        | Preset.GetPresetError.NotFound -> botService.SendNotification(clickId, resp[Messages.PresetNotFound])
-        | Preset.GetPresetError.Forbidden -> botService.SendNotification(clickId, resp[Messages.PresetAccessForbidden]))
+      >> TaskResult.foldResult (show' (editButtons messageId) resp) (sendPresetErrorNotification resp botService clickId)
       >> Task.ignore
 
   let send (resp: IResourceProvider) (chatCtx: #ISendKeyboard) =

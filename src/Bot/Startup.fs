@@ -2,10 +2,7 @@
 
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
-open Bot.Core
-open Bot.Workflows
 open otsom.fs.Auth
-open otsom.fs.Extensions.DependencyInjection
 open otsom.fs.Resources
 
 #nowarn "20"

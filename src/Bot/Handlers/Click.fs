@@ -1,9 +1,7 @@
 ﻿module Bot.Handlers.Click
 
 open System.Threading.Tasks
-open App
 open Domain.Core
-open Domain.Repos
 open MusicPlatform
 open Bot.Constants
 open Bot.Core
