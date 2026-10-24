@@ -561,12 +561,9 @@ module User =
 
       match user.CurrentPresetId with
       | Some presetId ->
-        match! apiClient.GetPreset presetId
-        with
-        | Ok preset ->
-          return! Preset.send resp chatCtx preset
-        | Error e ->
-          return! sendPresetErrorMessage resp chatCtx messageId e
+        match! apiClient.GetPreset presetId with
+        | Ok preset -> return! Preset.send resp chatCtx preset
+        | Error e -> return! sendPresetErrorMessage resp chatCtx messageId e
       | None ->
         let keyboard: Keyboard =
           [
@@ -602,8 +599,7 @@ module User =
           do! chatCtx.SendKeyboard(text, buttons) |> Task.map ignore
 
           return ()
-        | Error e ->
-          return! sendPresetErrorMessage resp chatCtx messageId e
+        | Error e -> return! sendPresetErrorMessage resp chatCtx messageId e
       | None ->
         let sendButtons text buttons =
           chatCtx.SendMessageButtons(text, buttons) |> Task.map ignore

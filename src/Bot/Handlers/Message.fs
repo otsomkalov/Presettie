@@ -109,7 +109,7 @@ let backMessageButtonHandler loadUser apiClient (resp: IResourceProvider) (chatC
   fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.Back)) ->
-      do! User.sendCurrentPreset resp loadUser apiClient chatCtx  message.Id chat.UserId
+      do! User.sendCurrentPreset resp loadUser apiClient chatCtx message.Id chat.UserId
 
       return Some()
     | _ -> return None
@@ -122,7 +122,7 @@ let presetSettingsMessageHandler userRepo apiClient (resp: IResourceProvider) ch
   fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.Settings)) ->
-      do! sendSettingsMessage  message.Id chat.UserId
+      do! sendSettingsMessage message.Id chat.UserId
 
       return Some()
     | _ -> return None

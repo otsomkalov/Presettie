@@ -73,9 +73,7 @@ type ExcludedPlaylist() =
 
   [<Fact>]
   member _.``show click should send excluded playlist details``() = task {
-    do
-      apiClient.Setup(_.GetPreset(Mocks.preset.Id)).ReturnsAsync(Ok preset)
-      |> ignore
+    do apiClient.Setup(_.GetPreset(Mocks.preset.Id)).ReturnsAsync(Ok preset) |> ignore
 
     musicPlatform.Setup(_.LoadPlaylist(Mocks.excludedPlaylistId)).ReturnsAsync(Ok Mocks.readablePlatformPlaylist)
 

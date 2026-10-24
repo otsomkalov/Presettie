@@ -48,55 +48,54 @@ let private buildMessageHandlers authService userRepo userService resp botServic
   backMessageButtonHandler userRepo apiClient resp botService
 }
 
-let private buildClickHandlers userService presetService resp botService buildMusicPlatform (apiClient: IApiClient) =
-  clickHandlers {
-    listPresetsClickHandler apiClient resp botService
-    presetInfoClickHandler apiClient resp botService
-    presetSettingsClickHandler apiClient resp botService
-    runPresetClickHandler apiClient resp botService
-    removePresetClickHandler apiClient resp botService
-    setCurrentPresetClickHandler userService resp botService
+let private buildClickHandlers userService presetService resp botService buildMusicPlatform (apiClient: IApiClient) = clickHandlers {
+  listPresetsClickHandler apiClient resp botService
+  presetInfoClickHandler apiClient resp botService
+  presetSettingsClickHandler apiClient resp botService
+  runPresetClickHandler apiClient resp botService
+  removePresetClickHandler apiClient resp botService
+  setCurrentPresetClickHandler userService resp botService
 
-    artistsAlbumsRecommendationsClickHandler apiClient presetService resp botService
-    reccoBeatsRecommendationsClickHandler apiClient presetService resp botService
-    musicaeRecommendationsClickHandler apiClient presetService resp botService
-    spotifyRecommendationsClickHandler apiClient presetService resp botService
-    disableRecommendationsClickHandler apiClient presetService resp botService
+  artistsAlbumsRecommendationsClickHandler apiClient presetService resp botService
+  reccoBeatsRecommendationsClickHandler apiClient presetService resp botService
+  musicaeRecommendationsClickHandler apiClient presetService resp botService
+  spotifyRecommendationsClickHandler apiClient presetService resp botService
+  disableRecommendationsClickHandler apiClient presetService resp botService
 
-    enableUniqueArtistsClickHandler apiClient presetService resp botService
-    disableUniqueArtistsClickHandler apiClient presetService resp botService
+  enableUniqueArtistsClickHandler apiClient presetService resp botService
+  disableUniqueArtistsClickHandler apiClient presetService resp botService
 
-    includeLikedTracksClickHandler apiClient presetService resp botService
-    excludeLikedTracksClickHandler apiClient presetService resp botService
-    ignoreLikedTracksClickHandler apiClient presetService resp botService
+  includeLikedTracksClickHandler apiClient presetService resp botService
+  excludeLikedTracksClickHandler apiClient presetService resp botService
+  ignoreLikedTracksClickHandler apiClient presetService resp botService
 
-    appendToTargetedPlaylistClickHandler apiClient presetService buildMusicPlatform resp botService
-    overwriteTargetedPlaylistClickHandler apiClient presetService buildMusicPlatform resp botService
+  appendToTargetedPlaylistClickHandler apiClient presetService buildMusicPlatform resp botService
+  overwriteTargetedPlaylistClickHandler apiClient presetService buildMusicPlatform resp botService
 
-    showIncludedContentClickHandler apiClient resp botService
-    showExcludedContentClickHandler apiClient resp botService
+  showIncludedContentClickHandler apiClient resp botService
+  showExcludedContentClickHandler apiClient resp botService
 
-    listIncludedArtistsClickHandler apiClient resp botService
-    listExcludedArtistsClickHandler apiClient resp botService
+  listIncludedArtistsClickHandler apiClient resp botService
+  listExcludedArtistsClickHandler apiClient resp botService
 
-    showIncludedArtistClickHandler apiClient resp botService
-    showExcludedArtistClickHandler apiClient resp botService
+  showIncludedArtistClickHandler apiClient resp botService
+  showExcludedArtistClickHandler apiClient resp botService
 
-    listIncludedPlaylistsClickHandler apiClient resp botService
-    listExcludedPlaylistsClickHandler apiClient resp botService
-    listTargetedPlaylistsClickHandler apiClient resp botService
+  listIncludedPlaylistsClickHandler apiClient resp botService
+  listExcludedPlaylistsClickHandler apiClient resp botService
+  listTargetedPlaylistsClickHandler apiClient resp botService
 
-    showIncludedPlaylistClickHandler apiClient buildMusicPlatform resp botService
-    showExcludedPlaylistClickHandler apiClient buildMusicPlatform resp botService
-    showTargetedPlaylistClickHandler apiClient buildMusicPlatform resp botService
+  showIncludedPlaylistClickHandler apiClient buildMusicPlatform resp botService
+  showExcludedPlaylistClickHandler apiClient buildMusicPlatform resp botService
+  showTargetedPlaylistClickHandler apiClient buildMusicPlatform resp botService
 
-    removeIncludedArtistClickHandler apiClient resp botService
-    removeExcludedArtistClickHandler apiClient resp botService
+  removeIncludedArtistClickHandler apiClient resp botService
+  removeExcludedArtistClickHandler apiClient resp botService
 
-    removeIncludedPlaylistClickHandler apiClient resp botService
-    removeExcludedPlaylistClickHandler apiClient resp botService
-    removeTargetedPlaylistClickHandler apiClient resp botService
-  }
+  removeIncludedPlaylistClickHandler apiClient resp botService
+  removeExcludedPlaylistClickHandler apiClient resp botService
+  removeTargetedPlaylistClickHandler apiClient resp botService
+}
 
 let private exceptionHandlingMiddleware (logger: ILogger) : BotMiddleware<Update> =
   fun next context -> task {
