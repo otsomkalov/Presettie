@@ -3,18 +3,17 @@
 #nowarn "20"
 
 open Domain.Core
-open Domain.Repos
-open Domain.Tests
 open Moq
 open Bot.Constants
 open Bot.Handlers.Click
+open Runners.Shared
 open Tests.Shared
 open Xunit
 open otsom.fs.Bot
 open otsom.fs.Resources
 
 type PresetSettings() =
-  let presetRepo = Mock<IPresetRepo>()
+  let apiClient = Mock<IApiClient>()
   let presetService = Mock<IPresetService>()
   let botService = Mock<IBotService>()
   let resourceProvider = Mock<IResourceProvider>()
@@ -28,12 +27,12 @@ type PresetSettings() =
 
   [<Fact>]
   member this.``enableUniqueArtists should update preset and show updated if data matched``() =
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     presetService.Setup(_.EnableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
     let sut =
-      enableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
+      enableUniqueArtistsClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
 
     let click =
       createClick
@@ -46,7 +45,7 @@ type PresetSettings() =
     task {
       let! result = sut Mocks.chat click
       Assert.Equal(Some(), result)
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
       botService.VerifyAll()
       presetService.VerifyAll()
     }
@@ -54,26 +53,26 @@ type PresetSettings() =
   [<Fact>]
   member this.``enableUniqueArtists should not update preset if data does not match``() =
     let sut =
-      enableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
+      enableUniqueArtistsClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
 
     let click = createClick []
 
     task {
       let! result = sut Mocks.chat click
       Assert.Equal(None, result)
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
       botService.VerifyAll()
       presetService.VerifyAll()
     }
 
   [<Fact>]
   member this.``disableUniqueArtists should update preset and show updated if data matched``() =
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     presetService.Setup(_.DisableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
     let sut =
-      disableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
+      disableUniqueArtistsClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
 
     let click =
       createClick
@@ -86,7 +85,7 @@ type PresetSettings() =
     task {
       let! result = sut Mocks.chat click
       Assert.Equal(Some(), result)
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
       botService.VerifyAll()
       presetService.VerifyAll()
     }
@@ -94,14 +93,14 @@ type PresetSettings() =
   [<Fact>]
   member this.``disableUniqueArtists should not update preset if data does not match``() =
     let sut =
-      disableUniqueArtistsClickHandler presetRepo.Object presetService.Object resourceProvider.Object botService.Object
+      disableUniqueArtistsClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
 
     let click = createClick []
 
     task {
       let! result = sut Mocks.chat click
       Assert.Equal(None, result)
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
       botService.VerifyAll()
       presetService.VerifyAll()
     }

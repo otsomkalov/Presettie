@@ -37,7 +37,7 @@ type UserId with
   member this.ToAuthAccountId() =
     this.Value |> string |> otsom.fs.Auth.AccountId
 
-type UpdateData =
+type UpdateContent =
   | Msg of Message
   | Click of Click
 
@@ -45,7 +45,7 @@ type Update =
   {
     ChatId: ChatId
     Lang: string option
-    Data: UpdateData
+    Data: UpdateContent
   }
 
 type ChatId with

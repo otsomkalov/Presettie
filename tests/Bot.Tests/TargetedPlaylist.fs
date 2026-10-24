@@ -4,7 +4,6 @@
 
 open Bot.Constants
 open Domain.Core
-open Domain.Repos
 open Moq
 open MusicPlatform
 open Bot.Handlers.Click
@@ -12,21 +11,14 @@ open Runners.Shared
 open Tests.Shared
 open Xunit
 open otsom.fs.Bot
-open Domain.Tests
 open otsom.fs.Resources
 
 type TargetedPlaylist() =
-  let presetRepo = Mock<IPresetRepo>()
   let botService = Mock<IBotService>()
   let resourceProvider = Mock<IResourceProvider>()
   let musicPlatform = Mock<IMusicPlatform>()
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
-  let presetService = Mock<IPresetService>()
   let apiClient = Mock<IApiClient>()
-
-  do
-    presetRepo.Setup(_.LoadPreset(Mocks.preset.Id)).ReturnsAsync(Some Mocks.preset)
-    |> ignore
 
   let createClick data : Click =
     {
@@ -37,35 +29,47 @@ type TargetedPlaylist() =
 
   [<Fact>]
   member _.``list click should list targeted playlists if data match``() = task {
+    do
+      apiClient.Setup(_.GetPreset(Mocks.preset.Id)).ReturnsAsync(Ok Mocks.preset)
+      |> ignore
+
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
 
     let click =
       createClick [ CallbackQueryConstants.preset; Mocks.preset.Id.Value; "tp"; "0" ]
 
     let! result =
-      listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
+      listTargetedPlaylistsClickHandler apiClient.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(Some(), result)
 
-    presetRepo.VerifyAll()
+    apiClient.VerifyAll()
     botService.VerifyAll()
   }
 
   [<Fact>]
   member _.``list click should not list targeted playlists if data does not match``() = task {
+    do
+      apiClient.Setup(_.GetPreset(Mocks.preset.Id)).ReturnsAsync(Ok Mocks.preset)
+      |> ignore
+
     let click = createClick []
 
     let! result =
-      listTargetedPlaylistsClickHandler presetRepo.Object resourceProvider.Object botService.Object Mocks.chat click
+      listTargetedPlaylistsClickHandler apiClient.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(None, result)
 
-    presetRepo.VerifyNoOtherCalls()
+    apiClient.VerifyNoOtherCalls()
     botService.VerifyNoOtherCalls()
   }
 
   [<Fact>]
   member _.``show click should send targeted playlist details``() = task {
+    do
+      apiClient.Setup(_.GetPreset(Mocks.preset.Id)).ReturnsAsync(Ok Mocks.preset)
+      |> ignore
+
     musicPlatform.Setup(_.LoadPlaylist(Mocks.targetedPlaylistId)).ReturnsAsync(Ok Mocks.writablePlatformPlaylist)
 
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
@@ -84,7 +88,7 @@ type TargetedPlaylist() =
 
     let! result =
       showTargetedPlaylistClickHandler
-        presetRepo.Object
+        apiClient.Object
         musicPlatformFactory.Object
         resourceProvider.Object
         botService.Object
@@ -93,20 +97,24 @@ type TargetedPlaylist() =
 
     Assert.Equal(Some(), result)
 
-    presetRepo.VerifyAll()
+    apiClient.VerifyAll()
     botService.VerifyAll()
     musicPlatform.VerifyAll()
   }
 
   [<Fact>]
   member _.``show click should not send playlist details if data does not match``() = task {
+    do
+      apiClient.Setup(_.GetPreset(Mocks.preset.Id)).ReturnsAsync(Ok Mocks.preset)
+      |> ignore
+
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
 
     let click = createClick []
 
     let! result =
       showTargetedPlaylistClickHandler
-        presetRepo.Object
+        apiClient.Object
         musicPlatformFactory.Object
         resourceProvider.Object
         botService.Object
@@ -115,7 +123,7 @@ type TargetedPlaylist() =
 
     Assert.Equal(None, result)
 
-    presetRepo.VerifyNoOtherCalls()
+    apiClient.VerifyNoOtherCalls()
     botService.VerifyNoOtherCalls()
     musicPlatform.VerifyNoOtherCalls()
   }

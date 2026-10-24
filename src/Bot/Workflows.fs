@@ -181,50 +181,65 @@ let sendLoginMessage (authService: #otsom.fs.Auth.IInitAuth) (resp: IResourcePro
     authService.InitAuth(userId.ToAuthAccountId())
     |> Task.bind (fun uri -> chatCtx.SendLink(resp[Messages.LoginToSpotify], resp[Buttons.Login], uri))
 
+let sendPresetErrorMessage (resp: IResourceProvider) (botClient: #IReplyToMessage) messageId =
+  function
+  | Preset.GetPresetError.Forbidden -> botClient.ReplyToMessage(messageId, resp[Messages.PresetAccessForbidden])
+  | Preset.GetPresetError.NotFound -> botClient.ReplyToMessage(messageId, resp[Messages.PresetNotFound])
+  >> Task.ignore
+
+let sendPresetErrorNotification (resp: IResourceProvider) (botClient: #ISendNotification) clickId =
+  function
+  | Preset.GetPresetError.Forbidden -> botClient.SendNotification(clickId, resp[Notifications.PresetAccessForbidden])
+  | Preset.GetPresetError.NotFound -> botClient.SendNotification(clickId, resp[Notifications.PresetNotFound])
+
 [<RequireQualifiedAccess>]
 module IncludedContent =
-  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (presetRepo: #ILoadPreset) =
-    fun messageId presetId -> task {
-      let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
+  let show (resp: IResourceProvider) (botClient: #IEditMessageButtons) (apiClient: IApiClient) =
+    fun clickId messageId presetId -> task {
+      match! apiClient.GetPreset(presetId) with
+      | Ok preset ->
 
-      let buttons = seq {
-        seq { MessageButton(resp[Buttons.Playlists], sprintf "p|%s|%s|0" preset.Id.Value CallbackQueryConstants.includedPlaylists) }
-        seq { MessageButton(resp[Buttons.Artists], sprintf "p|%s|%s|0" preset.Id.Value CallbackQueryConstants.includedArtists) }
-        seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" preset.Id.Value) }
-      }
+        let buttons = seq {
+          seq { MessageButton(resp[Buttons.Playlists], sprintf "p|%s|%s|0" preset.Id.Value CallbackQueryConstants.includedPlaylists) }
+          seq { MessageButton(resp[Buttons.Artists], sprintf "p|%s|%s|0" preset.Id.Value CallbackQueryConstants.includedArtists) }
+          seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" preset.Id.Value) }
+        }
 
-      let text =
-        resp[Messages.IncludedContent,
-             [|
-               preset.Name
-               preset.IncludedPlaylists.Length
-               preset.IncludedArtists.Length
-             |]]
+        let text =
+          resp[Messages.IncludedContent,
+               [|
+                 preset.Name
+                 preset.IncludedPlaylists.Length
+                 preset.IncludedArtists.Length
+               |]]
 
-      do! botMessageCtx.EditMessageButtons(messageId, text, buttons)
+        do! botClient.EditMessageButtons(messageId, text, buttons)
+      | Error e -> do! sendPresetErrorNotification resp botClient clickId e
     }
 
 [<RequireQualifiedAccess>]
 module ExcludedContent =
-  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (presetRepo: #ILoadPreset) =
-    fun messageId presetId -> task {
-      let! preset = presetRepo.LoadPreset(presetId) |> Task.map Option.get
+  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (apiClient: IApiClient) =
+    fun clickId messageId presetId -> task {
+      match! apiClient.GetPreset(presetId) with
+      | Ok preset ->
 
-      let buttons = seq {
-        seq { MessageButton(resp[Buttons.Playlists], sprintf "p|%s|%s|0" presetId.Value CallbackQueryConstants.excludedPlaylists) }
-        seq { MessageButton(resp[Buttons.Artists], sprintf "p|%s|%s|0" presetId.Value CallbackQueryConstants.excludedArtists) }
-        seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId.Value) }
-      }
+        let buttons = seq {
+          seq { MessageButton(resp[Buttons.Playlists], sprintf "p|%s|%s|0" presetId.Value CallbackQueryConstants.excludedPlaylists) }
+          seq { MessageButton(resp[Buttons.Artists], sprintf "p|%s|%s|0" presetId.Value CallbackQueryConstants.excludedArtists) }
+          seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|i" presetId.Value) }
+        }
 
-      let text =
-        resp[Messages.ExcludedContent,
-             [|
-               preset.Name
-               preset.ExcludedPlaylists.Length
-               preset.ExcludedArtists.Length
-             |]]
+        let text =
+          resp[Messages.ExcludedContent,
+               [|
+                 preset.Name
+                 preset.ExcludedPlaylists.Length
+                 preset.ExcludedArtists.Length
+               |]]
 
-      do! botMessageCtx.EditMessageButtons(messageId, text, buttons)
+        do! botMessageCtx.EditMessageButtons(messageId, text, buttons)
+      | Error e -> do! sendPresetErrorNotification resp botMessageCtx clickId e
     }
 
 [<RequireQualifiedAccess>]
@@ -242,44 +257,45 @@ module IncludedPlaylist =
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.IncludedPlaylists, [| preset.Name |]], replyMarkup)
     }
 
-  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (presetRepo: #ILoadPreset) (mp: #ILoadPlaylist option) =
-    fun messageId presetId playlistId -> task {
-      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (apiClient: IApiClient) (mp: #ILoadPlaylist option) =
+    fun clickId messageId presetId playlistId -> task {
+      match! apiClient.GetPreset presetId with
+      | Ok preset ->
+        let includedPlaylist =
+          preset.IncludedPlaylists
+          |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
 
-      let includedPlaylist =
-        preset.IncludedPlaylists
-        |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
-
-      let! playlistTracksCount =
-        mp
-        |> Option.taskMap (fun m -> m.LoadPlaylist playlistId)
-        |> Task.map (
-          Option.map (
-            Result.map (function
-              | Writable p -> p.TracksCount
-              | Readable r -> r.TracksCount)
-            >> Result.defaultValue 0
+        let! playlistTracksCount =
+          mp
+          |> Option.taskMap (fun m -> m.LoadPlaylist playlistId)
+          |> Task.map (
+            Option.map (
+              Result.map (function
+                | Writable p -> p.TracksCount
+                | Readable r -> r.TracksCount)
+              >> Result.defaultValue 0
+            )
+            >> Option.defaultValue 0
           )
-          >> Option.defaultValue 0
-        )
 
-      let messageText =
-        resp[Messages.IncludedPlaylistDetails, [| includedPlaylist.Name; playlistTracksCount; includedPlaylist.LikedOnly |]]
+        let messageText =
+          resp[Messages.IncludedPlaylistDetails, [| includedPlaylist.Name; playlistTracksCount; includedPlaylist.LikedOnly |]]
 
-      let buttonText, buttonDataBuilder =
-        if includedPlaylist.LikedOnly then
-          (resp[Buttons.IncludedPlaylistAll], sprintf "p|%s|ip|%s|a")
-        else
-          (resp[Buttons.IncludedPlaylistLikedOnly], sprintf "p|%s|ip|%s|o")
+        let buttonText, buttonDataBuilder =
+          if includedPlaylist.LikedOnly then
+            (resp[Buttons.IncludedPlaylistAll], sprintf "p|%s|ip|%s|a")
+          else
+            (resp[Buttons.IncludedPlaylistLikedOnly], sprintf "p|%s|ip|%s|o")
 
-      let buttonData = buttonDataBuilder presetId.Value playlistId.Value
+        let buttonData = buttonDataBuilder presetId.Value playlistId.Value
 
-      let additionalButtons = Seq.singleton (MessageButton(buttonText, buttonData))
+        let additionalButtons = Seq.singleton (MessageButton(buttonText, buttonData))
 
-      let buttons =
-        getPlaylistButtons resp presetId playlistId CallbackQueryConstants.includedPlaylists additionalButtons
+        let buttons =
+          getPlaylistButtons resp presetId playlistId CallbackQueryConstants.includedPlaylists additionalButtons
 
-      do! botMessageCtx.EditMessageButtons(messageId, messageText, buttons)
+        do! botMessageCtx.EditMessageButtons(messageId, messageText, buttons)
+      | Error e -> do! sendPresetErrorNotification resp botMessageCtx clickId e
     }
 
 [<RequireQualifiedAccess>]
@@ -297,34 +313,35 @@ module ExcludedPlaylist =
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.ExcludedPlaylists, [| preset.Name |]], replyMarkup)
     }
 
-  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (presetRepo: #ILoadPreset) (mp: #ILoadPlaylist option) =
-    fun messageId presetId playlistId -> task {
-      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (apiClient: IApiClient) (mp: #ILoadPlaylist option) =
+    fun clickId messageId presetId playlistId -> task {
+      match! apiClient.GetPreset presetId with
+      | Ok preset ->
+        let excludedPlaylist =
+          preset.ExcludedPlaylists
+          |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
 
-      let excludedPlaylist =
-        preset.ExcludedPlaylists
-        |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
-
-      let! playlistTracksCount =
-        mp
-        |> Option.taskMap (fun m -> m.LoadPlaylist playlistId)
-        |> Task.map (
-          Option.map (
-            Result.map (function
-              | Writable p -> p.TracksCount
-              | Readable r -> r.TracksCount)
-            >> Result.defaultValue 0
+        let! playlistTracksCount =
+          mp
+          |> Option.taskMap (fun m -> m.LoadPlaylist playlistId)
+          |> Task.map (
+            Option.map (
+              Result.map (function
+                | Writable p -> p.TracksCount
+                | Readable r -> r.TracksCount)
+              >> Result.defaultValue 0
+            )
+            >> Option.defaultValue 0
           )
-          >> Option.defaultValue 0
-        )
 
-      let messageText =
-        resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name; playlistTracksCount |]]
+        let messageText =
+          resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name; playlistTracksCount |]]
 
-      let buttons =
-        getPlaylistButtons resp presetId playlistId CallbackQueryConstants.excludedPlaylists Seq.empty
+        let buttons =
+          getPlaylistButtons resp presetId playlistId CallbackQueryConstants.excludedPlaylists Seq.empty
 
-      do! botService.EditMessageButtons(messageId, messageText, buttons)
+        do! botService.EditMessageButtons(messageId, messageText, buttons)
+      | Error e -> do! sendPresetErrorNotification resp botService clickId e
     }
 
 [<RequireQualifiedAccess>]
@@ -342,18 +359,20 @@ module ExcludedArtist =
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.ExcludedArtists, [| preset.Name |]], replyMarkup)
     }
 
-  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (presetRepo: #ILoadPreset) =
-    fun messageId presetId artistId -> task {
-      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (apiClient: IApiClient) =
+    fun clickId messageId presetId artistId -> task {
+      match! apiClient.GetPreset presetId with
+      | Ok preset ->
 
-      let excludedArtist = preset.ExcludedArtists |> List.find (fun p -> p.Id = artistId)
+        let excludedArtist = preset.ExcludedArtists |> List.find (fun p -> p.Id = artistId)
 
-      let messageText = resp[Messages.ExcludedArtistDetails, [| excludedArtist.Name |]]
+        let messageText = resp[Messages.ExcludedArtistDetails, [| excludedArtist.Name |]]
 
-      let buttons =
-        getArtistButtons resp presetId artistId CallbackQueryConstants.excludedArtists Seq.empty
+        let buttons =
+          getArtistButtons resp presetId artistId CallbackQueryConstants.excludedArtists Seq.empty
 
-      do! botService.EditMessageButtons(messageId, messageText, buttons)
+        do! botService.EditMessageButtons(messageId, messageText, buttons)
+      | Error e -> do! sendPresetErrorNotification resp botService clickId e
     }
 
 [<RequireQualifiedAccess>]
@@ -371,18 +390,19 @@ module IncludedArtist =
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.IncludedArtists, [| preset.Name |]], replyMarkup)
     }
 
-  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (presetRepo: #ILoadPreset) =
-    fun messageId presetId artistId -> task {
-      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (apiClient: IApiClient) =
+    fun clickId messageId presetId artistId -> task {
+      match! apiClient.GetPreset presetId with
+      | Ok preset ->
+        let includedArtist = preset.IncludedArtists |> List.find (fun p -> p.Id = artistId)
 
-      let includedArtist = preset.IncludedArtists |> List.find (fun p -> p.Id = artistId)
+        let messageText = resp[Messages.IncludedArtistDetails, [| includedArtist.Name |]]
 
-      let messageText = resp[Messages.IncludedArtistDetails, [| includedArtist.Name |]]
+        let buttons =
+          getArtistButtons resp presetId artistId CallbackQueryConstants.includedArtists Seq.empty
 
-      let buttons =
-        getArtistButtons resp presetId artistId CallbackQueryConstants.includedArtists Seq.empty
-
-      do! botService.EditMessageButtons(messageId, messageText, buttons)
+        do! botService.EditMessageButtons(messageId, messageText, buttons)
+      | Error e -> do! sendPresetErrorNotification resp botService clickId e
     }
 
 [<RequireQualifiedAccess>]
@@ -400,55 +420,65 @@ module TargetedPlaylist =
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.TargetedPlaylists, [| preset.Name |]], replyMarkup)
     }
 
-  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (presetRepo: #ILoadPreset) (mp: #ILoadPlaylist option) =
-    fun messageId presetId playlistId -> task {
-      let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+  let show
+    (resp: IResourceProvider)
+    (botClient: #IEditMessageButtons & #ISendNotification)
+    (apiClient: IApiClient)
+    (mp: #ILoadPlaylist option)
+    =
+    fun clickId messageId presetId playlistId -> task {
+      match! apiClient.GetPreset presetId with
+      | Ok preset ->
+        let targetedPlaylist =
+          preset.TargetedPlaylists |> List.find (fun p -> p.Id = playlistId)
 
-      let targetedPlaylist =
-        preset.TargetedPlaylists |> List.find (fun p -> p.Id = playlistId)
-
-      let! playlistTracksCount =
-        mp
-        |> Option.taskMap (fun m -> m.LoadPlaylist playlistId.Value)
-        |> Task.map (
-          Option.map (
-            Result.map (function
-              | Writable p -> p.TracksCount
-              | Readable r -> r.TracksCount)
-            >> Result.defaultValue 0
+        let! playlistTracksCount =
+          mp
+          |> Option.taskMap (fun m -> m.LoadPlaylist playlistId.Value)
+          |> Task.map (
+            Option.map (
+              Result.map (function
+                | Writable p -> p.TracksCount
+                | Readable r -> r.TracksCount)
+              >> Result.defaultValue 0
+            )
+            >> Option.defaultValue 0
           )
-          >> Option.defaultValue 0
-        )
 
-      let messageText =
-        resp[Messages.TargetedPlaylistDetails, [| targetedPlaylist.Name; playlistTracksCount; targetedPlaylist.Overwrite |]]
+        let messageText =
+          resp[Messages.TargetedPlaylistDetails, [| targetedPlaylist.Name; playlistTracksCount; targetedPlaylist.Overwrite |]]
 
-      let buttonText, buttonDataBuilder =
-        if targetedPlaylist.Overwrite then
-          (resp[Buttons.Append], sprintf "p|%s|tp|%s|a")
-        else
-          (resp[Buttons.Overwrite], sprintf "p|%s|tp|%s|o")
+        let buttonText, buttonDataBuilder =
+          if targetedPlaylist.Overwrite then
+            (resp[Buttons.Append], sprintf "p|%s|tp|%s|a")
+          else
+            (resp[Buttons.Overwrite], sprintf "p|%s|tp|%s|o")
 
-      let buttonData = buttonDataBuilder presetId.Value playlistId.Value.Value
+        let buttonData = buttonDataBuilder presetId.Value playlistId.Value.Value
 
-      let additionalButtons = Seq.singleton (MessageButton(buttonText, buttonData))
+        let additionalButtons = Seq.singleton (MessageButton(buttonText, buttonData))
 
-      let buttons =
-        getPlaylistButtons resp presetId playlistId.Value "tp" additionalButtons
+        let buttons =
+          getPlaylistButtons resp presetId playlistId.Value "tp" additionalButtons
 
-      do! botMessageCtx.EditMessageButtons(messageId, messageText, buttons)
+        do! botClient.EditMessageButtons(messageId, messageText, buttons)
+      | Error e -> do! sendPresetErrorNotification resp botClient clickId e
     }
 
 [<RequireQualifiedAccess>]
 module PresetSettings =
-  let show (presetRepo: #ILoadPreset) (botService: #IEditMessageButtons) (resp: IResourceProvider) =
-    fun messageId ->
-      presetRepo.LoadPreset
-      >> Task.map Option.get
-      >> Task.bind (fun preset ->
-        let text, keyboard = getPresetSettingsMessage resp preset
+  let show (apiClient: IApiClient) (botService: #IEditMessageButtons & #ISendNotification) (resp: IResourceProvider) =
+    fun clickId messageId ->
+      apiClient.GetPreset
+      >> TaskResult.foldResult
+        (fun preset ->
+          let text, keyboard = getPresetSettingsMessage resp preset
 
-        botService.EditMessageButtons(messageId, text, keyboard))
+          botService.EditMessageButtons(messageId, text, keyboard))
+        (function
+         | Preset.GetPresetError.Forbidden -> botService.SendNotification(clickId, resp[Messages.PresetAccessForbidden])
+         | Preset.GetPresetError.NotFound -> botService.SendNotification(clickId, resp[Messages.PresetNotFound]))
+      >> Task.ignore
 
 [<RequireQualifiedAccess>]
 module Preset =
@@ -472,14 +502,16 @@ module Preset =
       do! showButtons text keyboardMarkup
     }
 
-  let show (presetRepo: #ILoadPreset) (botService: #IEditMessageButtons) (resp: IResourceProvider) =
+  let show (apiClient: IApiClient) (botService: #IEditMessageButtons & #ISendNotification) (resp: IResourceProvider) =
     let editButtons messageId text buttons =
       botService.EditMessageButtons(messageId, text, buttons)
 
-    fun messageId ->
-      presetRepo.LoadPreset
-      >> Task.map Option.get
-      >> Task.bind (show' (editButtons messageId) resp)
+    fun clickId messageId ->
+      apiClient.GetPreset
+      >> TaskResult.foldResult (show' (editButtons messageId) resp) (function
+        | Preset.GetPresetError.NotFound -> botService.SendNotification(clickId, resp[Messages.PresetNotFound])
+        | Preset.GetPresetError.Forbidden -> botService.SendNotification(clickId, resp[Messages.PresetAccessForbidden]))
+      >> Task.ignore
 
   let send (resp: IResourceProvider) (chatCtx: #ISendKeyboard) =
     fun (preset: Preset) ->
@@ -523,14 +555,18 @@ module User =
 
     fun messageId -> showPresets' apiClient resp (editButtons messageId)
 
-  let sendCurrentPreset (resp: IResourceProvider) (userRepo: #ILoadUser) (presetRepo: #ILoadPreset) (chatCtx: #ISendKeyboard) =
+  let sendCurrentPreset (resp: IResourceProvider) (userRepo: #ILoadUser) (apiClient: IApiClient) (chatCtx: #ISendKeyboard) messageId =
     fun userId -> task {
       let! user = userId |> userRepo.LoadUser
 
       match user.CurrentPresetId with
       | Some presetId ->
-        let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
-        return! Preset.send resp chatCtx preset
+        match! apiClient.GetPreset presetId
+        with
+        | Ok preset ->
+          return! Preset.send resp chatCtx preset
+        | Error e ->
+          return! sendPresetErrorMessage resp chatCtx messageId e
       | None ->
         let keyboard: Keyboard =
           [
@@ -544,32 +580,35 @@ module User =
   let sendCurrentPresetSettings
     (resp: IResourceProvider)
     (userRepo: #ILoadUser)
-    (presetRepo: #ILoadPreset & #IListUserPresets)
+    (apiClient: IApiClient)
     (chatCtx: #ISendKeyboard & #ISendMessageButtons)
+    messageId
     =
     fun userId -> task {
       let! user = userRepo.LoadUser userId
 
       match user.CurrentPresetId with
       | Some presetId ->
-        let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
+        match! apiClient.GetPreset presetId with
+        | Ok preset ->
+          let text, _ = getPresetSettingsMessage resp preset
 
-        let text, _ = getPresetSettingsMessage resp preset
+          let buttons: Keyboard =
+            [|
+              [| KeyboardButton(resp[Buttons.SetPresetSize]) |]
+              [| KeyboardButton(resp[Buttons.Back]) |]
+            |]
 
-        let buttons: Keyboard =
-          [|
-            [| KeyboardButton(resp[Buttons.SetPresetSize]) |]
-            [| KeyboardButton(resp[Buttons.Back]) |]
-          |]
+          do! chatCtx.SendKeyboard(text, buttons) |> Task.map ignore
 
-        do! chatCtx.SendKeyboard(text, buttons) |> Task.map ignore
-
-        return ()
+          return ()
+        | Error e ->
+          return! sendPresetErrorMessage resp chatCtx messageId e
       | None ->
         let sendButtons text buttons =
           chatCtx.SendMessageButtons(text, buttons) |> Task.map ignore
 
-        let! presets = presetRepo.ListUserPresets userId
+        let! presets = apiClient.ListPresets()
 
         do! sendPresetsMessage sendButtons presets (resp[Messages.NoCurrentPreset])
 

@@ -19,7 +19,7 @@ open FsToolkit.ErrorHandling
 
 let startMessageHandler
   (userRepo: #ILoadUser)
-  (presetRepo: #ILoadPreset)
+  (apiClient: IApiClient)
   (authService: #ICompleteAuth)
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
@@ -27,7 +27,7 @@ let startMessageHandler
   fun chat message -> task {
     match message with
     | { Text = Equals Commands.start } ->
-      do! User.sendCurrentPreset resp userRepo presetRepo chatCtx chat.UserId
+      do! User.sendCurrentPreset resp userRepo apiClient chatCtx message.Id chat.UserId
 
       return Some()
     | {
@@ -105,24 +105,24 @@ let myPresetsMessageHandler apiClient (resp: IResourceProvider) (chatCtx: #ISend
     | _ -> return None
   }
 
-let backMessageButtonHandler loadUser getPreset (resp: IResourceProvider) (chatCtx: #ISendKeyboard) : MessageHandler<Chat, Message> =
+let backMessageButtonHandler loadUser apiClient (resp: IResourceProvider) (chatCtx: #ISendKeyboard) : MessageHandler<Chat, Message> =
   fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.Back)) ->
-      do! User.sendCurrentPreset resp loadUser getPreset chatCtx chat.UserId
+      do! User.sendCurrentPreset resp loadUser apiClient chatCtx  message.Id chat.UserId
 
       return Some()
     | _ -> return None
   }
 
-let presetSettingsMessageHandler userRepo presetRepo (resp: IResourceProvider) chatCtx : MessageHandler<Chat, Message> =
+let presetSettingsMessageHandler userRepo apiClient (resp: IResourceProvider) chatCtx : MessageHandler<Chat, Message> =
   let sendSettingsMessage =
-    User.sendCurrentPresetSettings resp userRepo presetRepo chatCtx
+    User.sendCurrentPresetSettings resp userRepo apiClient chatCtx
 
   fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.Settings)) ->
-      do! sendSettingsMessage chat.UserId
+      do! sendSettingsMessage  message.Id chat.UserId
 
       return Some()
     | _ -> return None
@@ -140,12 +140,12 @@ let setPresetSizeMessageButtonHandler (resp: IResourceProvider) (chatCtx: #IAskF
 let setPresetSizeMessageHandler
   (userService: #ISetCurrentPresetSize)
   userRepo
-  presetRepo
+  apiClient
   (resp: IResourceProvider)
   (chatCtx: #ISendMessage)
   : MessageHandler<Chat, Message> =
-  let onSuccess chat =
-    fun () -> User.sendCurrentPresetSettings resp userRepo presetRepo chatCtx chat
+  let onSuccess messageId userId =
+    fun () -> User.sendCurrentPresetSettings resp userRepo apiClient chatCtx messageId userId
 
   let onError =
     function
@@ -161,7 +161,7 @@ let setPresetSizeMessageHandler
       } when replyText = resp[Messages.SendPresetSize] ->
       do!
         userService.SetCurrentPresetSize(chat.UserId, (PresetSettings.RawPresetSize text))
-        |> TaskResult.taskEither (onSuccess chat.UserId) (onError >> Task.ignore)
+        |> TaskResult.taskEither (onSuccess message.Id chat.UserId) (onError >> Task.ignore)
 
       return Some()
     | {
@@ -169,7 +169,7 @@ let setPresetSizeMessageHandler
       } ->
       do!
         (userService.SetCurrentPresetSize(chat.UserId, (PresetSettings.RawPresetSize text))
-         |> TaskResult.taskEither (onSuccess chat.UserId) (onError >> Task.ignore))
+         |> TaskResult.taskEither (onSuccess message.Id chat.UserId) (onError >> Task.ignore))
 
       return Some()
     | _ -> return None

@@ -22,7 +22,7 @@ module Update =
           ChatId = ChatId message.Chat.Id
           Lang = mapLang message.From
           Data =
-            UpdateData.Msg
+            UpdateContent.Msg
               {
                 Id = ChatMessageId message.MessageId
                 Text = message.Text
@@ -41,7 +41,7 @@ module Update =
           ChatId = ChatId callbackQuery.Message.Chat.Id
           Lang = mapLang callbackQuery.From
           Data =
-            UpdateData.Click
+            UpdateContent.Click
               {
                 Id = callbackQuery.Id |> ButtonClickId
                 MessageId = BotMessageId callbackQuery.Message.MessageId

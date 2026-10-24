@@ -32,19 +32,19 @@ let private createMessageWithReply (text: string) (replyText: string) : Message 
 
 type StartMessageHandler() =
   let userRepo = Mock<ILoadUser>()
-  let presetRepo = Mock<ILoadPreset>()
+  let apiClient = Mock<IApiClient>()
   let authService = Mock<ICompleteAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
   let handler =
-    Message.startMessageHandler userRepo.Object presetRepo.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.startMessageHandler userRepo.Object apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle /start command and send current preset``() =
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
 
     let message = createMessage Commands.start
 
@@ -54,7 +54,7 @@ type StartMessageHandler() =
       Assert.Equal(Some(), result)
 
       userRepo.VerifyAll()
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
 
@@ -62,7 +62,7 @@ type StartMessageHandler() =
   member _.``should return Some when processing /start command``() =
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
 
     let message = createMessage Commands.start
 
@@ -140,7 +140,7 @@ type StartMessageHandler() =
       Assert.Equal(None, result)
 
       userRepo.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
       authService.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
     }
@@ -537,19 +537,19 @@ type MyPresetsMessageHandler() =
 
 type BackMessageButtonHandler() =
   let userRepo = Mock<ILoadUser>()
-  let presetRepo = Mock<ILoadPreset>()
+  let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
-  let chatCtx = Mock<ISendKeyboard>()
+  let chatCtx = Mock<IBotService>()
 
   do resourceProvider.Setup(_.Item(Buttons.Back)).Returns(Buttons.Back) |> ignore
 
   let handler =
-    Message.backMessageButtonHandler userRepo.Object presetRepo.Object resourceProvider.Object chatCtx.Object
+    Message.backMessageButtonHandler userRepo.Object apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle Back button and send current preset``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
     let message = createMessage Buttons.Back
@@ -560,7 +560,7 @@ type BackMessageButtonHandler() =
       Assert.Equal(Some(), result)
 
       userRepo.VerifyAll()
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
 
@@ -577,7 +577,7 @@ type BackMessageButtonHandler() =
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
       userRepo.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
     }
 
   [<Fact>]
@@ -593,7 +593,7 @@ type BackMessageButtonHandler() =
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
       userRepo.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
     }
 
   [<Fact>]
@@ -609,13 +609,13 @@ type BackMessageButtonHandler() =
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
       userRepo.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
     }
 
 
 type PresetSettingsMessageHandler() =
   let userRepo = Mock<ILoadUser>()
-  let presetRepo = Mock<IPresetRepo>()
+  let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -624,12 +624,12 @@ type PresetSettingsMessageHandler() =
     |> ignore
 
   let handler =
-    Message.presetSettingsMessageHandler userRepo.Object presetRepo.Object resourceProvider.Object chatCtx.Object
+    Message.presetSettingsMessageHandler userRepo.Object apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle Settings button and send preset settings``() =
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
     let message = createMessage Buttons.Settings
@@ -640,7 +640,7 @@ type PresetSettingsMessageHandler() =
       Assert.Equal(Some(), result)
 
       userRepo.VerifyAll()
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
 
@@ -657,7 +657,7 @@ type PresetSettingsMessageHandler() =
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
       userRepo.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
     }
 
   [<Fact>]
@@ -673,7 +673,7 @@ type PresetSettingsMessageHandler() =
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
       userRepo.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
     }
 
   [<Fact>]
@@ -689,7 +689,7 @@ type PresetSettingsMessageHandler() =
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
       userRepo.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
     }
 
 type SetPresetSizeMessageButtonHandler() =
@@ -755,7 +755,7 @@ type SetPresetSizeMessageButtonHandler() =
 type SetPresetSizeMessageHandler() =
   let userService = Mock<IUserService>()
   let userRepo = Mock<ILoadUser>()
-  let presetRepo = Mock<IPresetRepo>()
+  let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -780,14 +780,14 @@ type SetPresetSizeMessageHandler() =
     |> ignore
 
   let handler =
-    Message.setPresetSizeMessageHandler userService.Object userRepo.Object presetRepo.Object resourceProvider.Object chatCtx.Object
+    Message.setPresetSizeMessageHandler userService.Object userRepo.Object apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with valid size and call onSuccess``() =
     userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Ok())
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
 
     let message =
       { createMessage "42" with
@@ -800,7 +800,7 @@ type SetPresetSizeMessageHandler() =
       userService.VerifyAll()
       chatCtx.VerifyAll()
       userRepo.VerifyAll()
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
     }
 
   [<Fact>]
@@ -808,7 +808,7 @@ type SetPresetSizeMessageHandler() =
     userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Ok())
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
-    presetRepo.Setup(_.LoadPreset(Mocks.presetId)).ReturnsAsync(Some Mocks.preset)
+    apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
 
     let message = createMessage $"{Commands.size} 42"
 
@@ -818,7 +818,7 @@ type SetPresetSizeMessageHandler() =
       userService.VerifyAll()
       chatCtx.VerifyAll()
       userRepo.VerifyAll()
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
     }
 
   [<Fact>]
@@ -882,7 +882,7 @@ type SetPresetSizeMessageHandler() =
       userService.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
       userRepo.VerifyNoOtherCalls()
-      presetRepo.VerifyNoOtherCalls()
+      apiClient.VerifyNoOtherCalls()
     }
 
 type CreatePresetButtonMessageHandler() =
