@@ -277,6 +277,24 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
       | Error(Validation errors) -> BadRequestObjectResult(errors) :> IActionResult
       | Error(Operation e) -> BadRequestObjectResult(e) :> IActionResult)
 
+  [<Function("PatchPresetSettings")>]
+  member this.PatchPresetSettings
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "PATCH", Route = "presets/{presetId}/settings")>] request: HttpRequest,
+      presetId: string,
+      [<FromBody>] body: PatchPresetSettingsCommand list
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) (patches: PatchPresetSettingsCommand list) = task {
+      return!
+        presetService.PatchSettings(userId, PresetId presetId, patches)
+        |> TaskResult.mapError Operation
+    }
+
+    handler request.UserId body
+    |> Task.map (function
+      | Ok result -> OkObjectResult(result) :> IActionResult
+      | Error(Operation e) -> BadRequestObjectResult(e) :> IActionResult)
+
   [<Function("DeletePreset")>]
   member this.DeletePreset
     ([<HttpTrigger(AuthorizationLevel.Function, "DELETE", Route = "presets/{presetId}")>] request: HttpRequest, presetId: string)

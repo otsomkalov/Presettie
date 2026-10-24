@@ -1,16 +1,12 @@
 ﻿module Domain.Workflows
 
-open System
 open System.Threading.Tasks
 open Domain.Core.PresetSettings
 open Domain.Repos
 open FSharp.Control
-open Microsoft.Extensions.DependencyInjection
-open Microsoft.Extensions.Logging
 open Microsoft.FSharp.Core
 open MusicPlatform
 open otsom.fs.Extensions
-open Domain.Extensions
 open FsToolkit.ErrorHandling
 open Domain.Core
 
@@ -72,6 +68,23 @@ module PresetSettings =
 
   let ignoreLikedTracks presetRepo =
     setLikedTracksHandling presetRepo LikedTracksHandling.Ignore
+
+  let patch settings patches =
+    let applyPatch =
+      fun settings patch ->
+        match patch with
+        | PatchUniqueArtists value -> { settings with UniqueArtists = value }
+        | PatchRecommendationsEngine engine ->
+          { settings with
+              RecommendationsEngine = engine
+          }
+        | PatchLikedTracksHandling handling ->
+          { settings with
+              LikedTracksHandling = handling
+          }
+        | PatchSize size -> { settings with Size = Size.Size size }
+
+    patches |> List.fold applyPatch settings
 
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
@@ -608,6 +621,19 @@ type PresetService
       IncludedPlaylist.setLikedOnly presetRepo presetId playlistId
 
     member this.GetPreset(userId, presetId) = Preset.get presetRepo userId presetId
+
+    member this.PatchSettings(userId, presetId, patches) = taskResult {
+      let! preset = Preset.get presetRepo userId presetId
+
+      let updatedPreset =
+        { preset with
+            Settings = PresetSettings.patch preset.Settings patches
+        }
+
+      do! presetRepo.SavePreset updatedPreset
+
+      return updatedPreset
+    }
 
 type UserService(userRepo: IUserRepo, presetService: IPresetService) =
   interface IUserService with
