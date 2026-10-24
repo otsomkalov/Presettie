@@ -22,7 +22,6 @@ type UpdateFunctions
     userRepo: IUserRepo,
     userService: IUserService,
     presetService,
-    presetRepo: IPresetRepo,
     buildMusicPlatform,
     buildChatContext,
     chatRepo: IChatRepo,
@@ -40,7 +39,6 @@ type UpdateFunctions
       userRepo
       userService
       presetService
-      presetRepo
       buildMusicPlatform
       buildChatContext
       chatRepo

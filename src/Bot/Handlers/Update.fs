@@ -15,8 +15,8 @@ open otsom.fs.Bot.Builders
 open otsom.fs.OAuth
 open otsom.fs.Resources
 
-let private buildMessageHandlers authService userRepo userService presetRepo resp botService buildMusicPlatform apiClient = messageHandlers {
-  startMessageHandler userRepo presetRepo authService resp botService
+let private buildMessageHandlers authService userRepo userService resp botService buildMusicPlatform apiClient = messageHandlers {
+  startMessageHandler userRepo apiClient authService resp botService
 
   faqMessageHandler resp botService
   privacyMessageHandler resp botService
@@ -24,14 +24,14 @@ let private buildMessageHandlers authService userRepo userService presetRepo res
   helpMessageHandler resp botService
 
   myPresetsMessageHandler apiClient resp botService
-  presetSettingsMessageHandler userRepo presetRepo resp botService
+  presetSettingsMessageHandler userRepo apiClient resp botService
   queuePresetRunMessageHandler userRepo apiClient resp botService
 
   createPresetMessageHandler apiClient resp botService
   createPresetButtonMessageHandler resp botService
 
   setPresetSizeMessageButtonHandler resp botService
-  setPresetSizeMessageHandler userService userRepo presetRepo resp botService
+  setPresetSizeMessageHandler userService userRepo apiClient resp botService
 
   includePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
   excludePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
@@ -45,58 +45,57 @@ let private buildMessageHandlers authService userRepo userService presetRepo res
   excludeArtistMessageHandler userRepo apiClient authService resp botService
   targetPlaylistMessageHandler userRepo apiClient authService resp botService
 
-  backMessageButtonHandler userRepo presetRepo resp botService
+  backMessageButtonHandler userRepo apiClient resp botService
 }
 
-let private buildClickHandlers userService presetService presetRepo resp botService buildMusicPlatform (apiClient: IApiClient) =
-  clickHandlers {
-    listPresetsClickHandler apiClient resp botService
-    presetInfoClickHandler presetRepo resp botService
-    presetSettingsClickHandler presetRepo resp botService
-    runPresetClickHandler apiClient resp botService
-    removePresetClickHandler apiClient resp botService
-    setCurrentPresetClickHandler userService resp botService
+let private buildClickHandlers userService presetService resp botService buildMusicPlatform (apiClient: IApiClient) = clickHandlers {
+  listPresetsClickHandler apiClient resp botService
+  presetInfoClickHandler apiClient resp botService
+  presetSettingsClickHandler apiClient resp botService
+  runPresetClickHandler apiClient resp botService
+  removePresetClickHandler apiClient resp botService
+  setCurrentPresetClickHandler userService resp botService
 
-    artistsAlbumsRecommendationsClickHandler presetRepo presetService resp botService
-    reccoBeatsRecommendationsClickHandler presetRepo presetService resp botService
-    musicaeRecommendationsClickHandler presetRepo presetService resp botService
-    spotifyRecommendationsClickHandler presetRepo presetService resp botService
-    disableRecommendationsClickHandler presetRepo presetService resp botService
+  artistsAlbumsRecommendationsClickHandler apiClient presetService resp botService
+  reccoBeatsRecommendationsClickHandler apiClient presetService resp botService
+  musicaeRecommendationsClickHandler apiClient presetService resp botService
+  spotifyRecommendationsClickHandler apiClient presetService resp botService
+  disableRecommendationsClickHandler apiClient presetService resp botService
 
-    enableUniqueArtistsClickHandler presetRepo presetService resp botService
-    disableUniqueArtistsClickHandler presetRepo presetService resp botService
+  enableUniqueArtistsClickHandler apiClient presetService resp botService
+  disableUniqueArtistsClickHandler apiClient presetService resp botService
 
-    includeLikedTracksClickHandler presetRepo presetService resp botService
-    excludeLikedTracksClickHandler presetRepo presetService resp botService
-    ignoreLikedTracksClickHandler presetRepo presetService resp botService
+  includeLikedTracksClickHandler apiClient presetService resp botService
+  excludeLikedTracksClickHandler apiClient presetService resp botService
+  ignoreLikedTracksClickHandler apiClient presetService resp botService
 
-    appendToTargetedPlaylistClickHandler presetRepo presetService buildMusicPlatform resp botService
-    overwriteTargetedPlaylistClickHandler presetRepo presetService buildMusicPlatform resp botService
+  appendToTargetedPlaylistClickHandler apiClient presetService buildMusicPlatform resp botService
+  overwriteTargetedPlaylistClickHandler apiClient presetService buildMusicPlatform resp botService
 
-    showIncludedContentClickHandler presetRepo resp botService
-    showExcludedContentClickHandler presetRepo resp botService
+  showIncludedContentClickHandler apiClient resp botService
+  showExcludedContentClickHandler apiClient resp botService
 
-    listIncludedArtistsClickHandler presetRepo resp botService
-    listExcludedArtistsClickHandler presetRepo resp botService
+  listIncludedArtistsClickHandler apiClient resp botService
+  listExcludedArtistsClickHandler apiClient resp botService
 
-    showIncludedArtistClickHandler presetRepo resp botService
-    showExcludedArtistClickHandler presetRepo resp botService
+  showIncludedArtistClickHandler apiClient resp botService
+  showExcludedArtistClickHandler apiClient resp botService
 
-    listIncludedPlaylistsClickHandler presetRepo resp botService
-    listExcludedPlaylistsClickHandler presetRepo resp botService
-    listTargetedPlaylistsClickHandler presetRepo resp botService
+  listIncludedPlaylistsClickHandler apiClient resp botService
+  listExcludedPlaylistsClickHandler apiClient resp botService
+  listTargetedPlaylistsClickHandler apiClient resp botService
 
-    showIncludedPlaylistClickHandler presetRepo buildMusicPlatform resp botService
-    showExcludedPlaylistClickHandler presetRepo buildMusicPlatform resp botService
-    showTargetedPlaylistClickHandler presetRepo buildMusicPlatform resp botService
+  showIncludedPlaylistClickHandler apiClient buildMusicPlatform resp botService
+  showExcludedPlaylistClickHandler apiClient buildMusicPlatform resp botService
+  showTargetedPlaylistClickHandler apiClient buildMusicPlatform resp botService
 
-    removeIncludedArtistClickHandler apiClient resp botService
-    removeExcludedArtistClickHandler apiClient resp botService
+  removeIncludedArtistClickHandler apiClient resp botService
+  removeExcludedArtistClickHandler apiClient resp botService
 
-    removeIncludedPlaylistClickHandler apiClient resp botService
-    removeExcludedPlaylistClickHandler apiClient resp botService
-    removeTargetedPlaylistClickHandler apiClient resp botService
-  }
+  removeIncludedPlaylistClickHandler apiClient resp botService
+  removeExcludedPlaylistClickHandler apiClient resp botService
+  removeTargetedPlaylistClickHandler apiClient resp botService
+}
 
 let private exceptionHandlingMiddleware (logger: ILogger) : BotMiddleware<Update> =
   fun next context -> task {
@@ -149,7 +148,7 @@ let private contextEnricherMiddleware (enrichers: BotContextEnricher<Update> lis
     do! next context
   }
 
-let private router (logger: ILogger) buildMusicPlatform userService authService userRepo presetRepo presetService : BotHandler<Update> =
+let private router (logger: ILogger) buildMusicPlatform userService authService userRepo presetService : BotHandler<Update> =
   fun context ->
     let chat = context.GetFeature<Chat>()
     let resp = context.GetFeature<IResourceProvider>()
@@ -159,7 +158,7 @@ let private router (logger: ILogger) buildMusicPlatform userService authService 
       match context.Update.Data with
       | Msg msg ->
         let! result =
-          buildMessageHandlers authService userRepo userService presetRepo resp context.Client buildMusicPlatform apiClient chat msg
+          buildMessageHandlers authService userRepo userService resp context.Client buildMusicPlatform apiClient chat msg
 
         match result with
         | Some() -> return ()
@@ -169,7 +168,7 @@ let private router (logger: ILogger) buildMusicPlatform userService authService 
           return! context.Client.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
       | Click click ->
         let! result =
-          buildClickHandlers userService presetService presetRepo resp context.Client buildMusicPlatform apiClient chat click
+          buildClickHandlers userService presetService resp context.Client buildMusicPlatform apiClient chat click
 
         match result with
         | Some() -> return ()
@@ -184,7 +183,6 @@ let main
   userRepo
   userService
   presetService
-  presetRepo
   buildMusicPlatform
   buildBotClient
   chatRepo
@@ -202,7 +200,7 @@ let main
       exceptionHandlingMiddleware logger
       << authenticationMiddleware buildDefaultResp appOAuthClient chatRepo apiClientFactory
       << contextEnricherMiddleware [ resourceProviderEnricher buildResp ]
-      <| router logger buildMusicPlatform userService authService userRepo presetRepo presetService
+      <| router logger buildMusicPlatform userService authService userRepo presetService
 
     do! pipeline botCtx
   }

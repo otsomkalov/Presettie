@@ -32,6 +32,7 @@ type CurrentUserResponse =
 
 type IApiClient =
   abstract ListPresets: unit -> Task<SimplePreset list>
+  abstract GetPreset: PresetId -> TaskResult<Preset, Preset.GetPresetError>
   abstract RemovePreset: PresetId -> TaskResult<unit, Preset.GetPresetError>
   abstract RunPreset: PresetId -> TaskResult<SimplePreset, Preset.ValidationError list>
   abstract IncludeArtist: PresetId * IncludeArtistRequest -> TaskResult<IncludedArtist, IncludeArtist.Error>
@@ -175,4 +176,8 @@ type ApiClient(httpClient: HttpClient) =
 
       match response.StatusCode with
       | HttpStatusCode.OK -> return! response.Content.ReadFromJsonAsync<Preset>(JSON.options)
+    }
+
+    member this.GetPreset(PresetId presetId) = taskResult {
+      return! httpClient.GetFromJsonAsync<Preset>($"presets/{presetId}", JSON.options)
     }

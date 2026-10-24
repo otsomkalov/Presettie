@@ -12,7 +12,6 @@ open otsom.fs.Resources
 
 type User() =
   let botService = Mock<IBotService>()
-  let presetRepo = Mock<IPresetRepo>()
   let userRepo = Mock<IUserRepo>()
   let resp = Mock<IResourceProvider>()
   let apiClient = Mock<IApiClient>()
@@ -36,25 +35,25 @@ type User() =
       do! User.listPresets resp.Object apiClient.Object botService.Object Mocks.botMessageId ()
 
       botService.VerifyAll()
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
     }
 
   [<Fact>]
   member this.``sendCurrentPreset should show current preset details with actions keyboard if current preset is set``() =
     userRepo.Setup(fun m -> m.LoadUser Mocks.userId).ReturnsAsync(Mocks.user)
 
-    presetRepo.Setup(fun m -> m.LoadPreset Mocks.presetId).ReturnsAsync(Some Mocks.preset)
+    apiClient.Setup(fun m -> m.GetPreset Mocks.presetId).ReturnsAsync(Ok Mocks.preset)
 
     botService.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
     let sut =
-      User.sendCurrentPreset resp.Object userRepo.Object presetRepo.Object botService.Object
+      User.sendCurrentPreset resp.Object userRepo.Object apiClient.Object botService.Object
 
     task {
-      do! sut Mocks.userId
+      do! sut Mocks.chatMessageId Mocks.userId
 
       userRepo.VerifyAll()
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
       botService.VerifyAll()
     }
 
@@ -71,12 +70,12 @@ type User() =
     botService.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
     let sut =
-      User.sendCurrentPreset resp.Object userRepo.Object presetRepo.Object botService.Object
+      User.sendCurrentPreset resp.Object userRepo.Object apiClient.Object botService.Object
 
     task {
-      do! sut Mocks.userId
+      do! sut Mocks.chatMessageId Mocks.userId
 
       userRepo.VerifyAll()
-      presetRepo.VerifyAll()
+      apiClient.VerifyAll()
       botService.VerifyAll()
     }

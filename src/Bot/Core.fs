@@ -1,10 +1,8 @@
 ﻿module Bot.Core
 
-open System.Threading.Tasks
 open Domain.Core
 open Microsoft.FSharp.Core
 open otsom.fs.Bot
-open otsom.fs.Resources
 open otsom.fs.OAuth
 
 type Page = Page of int
