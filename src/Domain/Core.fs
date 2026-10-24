@@ -2,6 +2,7 @@
 
 open System
 open System.Threading.Tasks
+open FsToolkit.ErrorHandling
 open MusicPlatform
 
 type UserId =
@@ -333,12 +334,22 @@ type ISetAll =
 type IGetPreset =
   abstract GetPreset: UserId * PresetId -> Task<Result<Preset, Preset.GetPresetError>>
 
+type PatchPresetSettingsCommand =
+  | PatchLikedTracksHandling of PresetSettings.LikedTracksHandling
+  | PatchUniqueArtists of bool
+  | PatchRecommendationsEngine of PresetSettings.RecommendationsEngine option
+  | PatchSize of int
+
+type IPatchPresetSettings =
+  abstract PatchSettings: UserId * PresetId * PatchPresetSettingsCommand list -> TaskResult<Preset, Preset.GetPresetError>
+
 type IPresetService =
   inherit IQueueRun
 
   inherit ISetPresetSize
   inherit ICreatePreset
   inherit IGetPreset
+  inherit IPatchPresetSettings
 
   inherit IIncludePlaylist
   inherit IExcludePlaylist
