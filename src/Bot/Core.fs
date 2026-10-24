@@ -48,9 +48,5 @@ type Update =
     Data: UpdateData
   }
 
-[<RequireQualifiedAccess>]
-module Resources =
-  type GetResourceProvider = string option -> Task<IResourceProvider>
-
 type ChatId with
   member this.ToOAuthAccountId() = this.Value |> string |> AccountId

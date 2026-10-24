@@ -14,6 +14,7 @@ open Microsoft.Extensions.Logging
 open Telegram.Bot.Types
 open otsom.fs.Auth
 open otsom.fs.OAuth
+open otsom.fs.Resources
 
 type UpdateFunctions
   (
@@ -24,10 +25,11 @@ type UpdateFunctions
     presetRepo: IPresetRepo,
     buildMusicPlatform,
     buildChatContext,
-    getResp,
     chatRepo: IChatRepo,
     appOAuthClient: IOAuthClient,
     apiClientFactory: IApiClientFactory,
+    createDefaultResp: CreateDefaultResourceProvider,
+    createResp: CreateResourceProvider,
     logger: ILogger<UpdateFunctions>
   ) =
   inherit ControllerBase()
@@ -41,10 +43,11 @@ type UpdateFunctions
       presetRepo
       buildMusicPlatform
       buildChatContext
-      getResp
       chatRepo
       appOAuthClient
       apiClientFactory
+      createDefaultResp
+      createResp
       logger
 
   [<Function("HandleUpdateAsync")>]
