@@ -185,7 +185,7 @@ type ApiClient(httpClient: HttpClient) =
 
     member this.PatchPresetSettings(PresetId presetId, patches) = taskResult {
       use! response =
-        httpClient.PatchAsJsonAsync($"presets/{presetId}", patches, JSON.options)
+        httpClient.PatchAsJsonAsync($"presets/{presetId}/settings", patches, JSON.options)
 
       match response.StatusCode with
       | HttpStatusCode.OK -> return! response.Content.ReadFromJsonAsync<Preset>(JSON.options)
