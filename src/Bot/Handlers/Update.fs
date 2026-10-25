@@ -15,8 +15,8 @@ open otsom.fs.Bot.Builders
 open otsom.fs.OAuth
 open otsom.fs.Resources
 
-let private buildMessageHandlers authService userRepo resp botService buildMusicPlatform apiClient = messageHandlers {
-  startMessageHandler userRepo apiClient authService resp botService
+let private buildMessageHandlers authService resp botService buildMusicPlatform apiClient = messageHandlers {
+  startMessageHandler apiClient authService resp botService
 
   faqMessageHandler resp botService
   privacyMessageHandler resp botService
@@ -24,14 +24,14 @@ let private buildMessageHandlers authService userRepo resp botService buildMusic
   helpMessageHandler resp botService
 
   myPresetsMessageHandler apiClient resp botService
-  presetSettingsMessageHandler userRepo apiClient resp botService
-  queuePresetRunMessageHandler userRepo apiClient resp botService
+  presetSettingsMessageHandler apiClient resp botService
+  queuePresetRunMessageHandler apiClient resp botService
 
   createPresetMessageHandler apiClient resp botService
   createPresetButtonMessageHandler resp botService
 
   setPresetSizeMessageButtonHandler resp botService
-  setPresetSizeMessageHandler userRepo apiClient resp botService
+  setPresetSizeMessageHandler apiClient resp botService
 
   includePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
   excludePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
@@ -39,13 +39,13 @@ let private buildMessageHandlers authService userRepo resp botService buildMusic
 
   excludeArtistButtonMessageHandler buildMusicPlatform authService resp botService
 
-  includePlaylistMessageHandler userRepo apiClient authService resp botService
-  includeArtistMessageHandler userRepo apiClient authService resp botService
-  excludePlaylistMessageHandler userRepo apiClient authService resp botService
-  excludeArtistMessageHandler userRepo apiClient authService resp botService
-  targetPlaylistMessageHandler userRepo apiClient authService resp botService
+  includePlaylistMessageHandler apiClient authService resp botService
+  includeArtistMessageHandler apiClient authService resp botService
+  excludePlaylistMessageHandler apiClient authService resp botService
+  excludeArtistMessageHandler apiClient authService resp botService
+  targetPlaylistMessageHandler apiClient authService resp botService
 
-  backMessageButtonHandler userRepo apiClient resp botService
+  backMessageButtonHandler apiClient resp botService
 }
 
 let private buildClickHandlers userService presetService resp botService buildMusicPlatform (apiClient: IApiClient) = clickHandlers {
@@ -148,7 +148,7 @@ let private contextEnricherMiddleware (enrichers: BotContextEnricher<Update> lis
     do! next context
   }
 
-let private router (logger: ILogger) buildMusicPlatform userService authService userRepo presetService : BotHandler<Update> =
+let private router (logger: ILogger) buildMusicPlatform userService authService presetService : BotHandler<Update> =
   fun context ->
     let chat = context.GetFeature<Chat>()
     let resp = context.GetFeature<IResourceProvider>()
@@ -158,7 +158,7 @@ let private router (logger: ILogger) buildMusicPlatform userService authService 
       match context.Update.Data with
       | Msg msg ->
         let! result =
-          buildMessageHandlers authService userRepo resp context.Client buildMusicPlatform apiClient chat msg
+          buildMessageHandlers authService resp context.Client buildMusicPlatform apiClient chat msg
 
         match result with
         | Some() -> return ()
@@ -180,7 +180,6 @@ let private router (logger: ILogger) buildMusicPlatform userService authService 
 
 let main
   authService
-  userRepo
   userService
   presetService
   buildMusicPlatform
@@ -200,7 +199,7 @@ let main
       exceptionHandlingMiddleware logger
       << authenticationMiddleware buildDefaultResp appOAuthClient chatRepo apiClientFactory
       << contextEnricherMiddleware [ resourceProviderEnricher buildResp ]
-      <| router logger buildMusicPlatform userService authService userRepo presetService
+      <| router logger buildMusicPlatform userService authService presetService
 
     do! pipeline botCtx
   }

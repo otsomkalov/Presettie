@@ -548,9 +548,9 @@ module User =
 
     fun messageId -> showPresets' apiClient resp (editButtons messageId)
 
-  let sendCurrentPreset (resp: IResourceProvider) (userRepo: #ILoadUser) (apiClient: IApiClient) (chatCtx: #ISendKeyboard) messageId =
-    fun userId -> task {
-      let! user = userId |> userRepo.LoadUser
+  let sendCurrentPreset (resp: IResourceProvider) (apiClient: IApiClient) (chatCtx: #ISendKeyboard) messageId =
+    fun () -> task {
+      let! user = apiClient.GetCurrentUser()
 
       match user.CurrentPresetId with
       | Some presetId ->
@@ -569,13 +569,12 @@ module User =
 
   let sendCurrentPresetSettings
     (resp: IResourceProvider)
-    (userRepo: #ILoadUser)
     (apiClient: IApiClient)
     (chatCtx: #ISendKeyboard & #ISendMessageButtons)
     messageId
     =
-    fun userId -> task {
-      let! user = userRepo.LoadUser userId
+    fun () -> task {
+      let! user = apiClient.GetCurrentUser()
 
       match user.CurrentPresetId with
       | Some presetId ->
@@ -604,7 +603,7 @@ module User =
         return ()
     }
 
-  let queueCurrentPresetRun (resp: IResourceProvider) (userRepo: #ILoadUser) (chatCtx: #ISendMessage) (apiClient: IApiClient) =
+  let queueCurrentPresetRun (resp: IResourceProvider) (chatCtx: #ISendMessage) (apiClient: IApiClient) =
     let onSuccess (preset: SimplePreset) =
       chatCtx.SendMessage resp[Messages.PresetQueued, [| preset.Name |]]
       |> Task.ignore
@@ -619,9 +618,8 @@ module User =
 
       chatCtx.SendMessage errorsText |> Task.ignore
 
-    fun userId ->
-      userId
-      |> userRepo.LoadUser
+    fun () ->
+      apiClient.GetCurrentUser()
       |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
       |> Task.bind apiClient.RunPreset
       |> TaskResult.taskEither onSuccess onError
