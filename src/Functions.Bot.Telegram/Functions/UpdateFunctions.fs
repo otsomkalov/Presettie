@@ -19,7 +19,6 @@ open otsom.fs.Resources
 type UpdateFunctions
   (
     authSvc: IAuthService,
-    userService: IUserService,
     presetService,
     buildMusicPlatform,
     buildChatContext,
@@ -35,7 +34,6 @@ type UpdateFunctions
   let updateHandler =
     Update.main
       authSvc
-      userService
       presetService
       buildMusicPlatform
       buildChatContext

@@ -1,15 +1,16 @@
 ﻿namespace Domain.Tests.User
 
 open Domain.Repos
-open Domain.Tests
 open Moq
 open Tests.Shared
 open Xunit
 open Domain.Core
 open Domain.Workflows
 
-type SetCurrentPreset() =
+type PatchUser() =
   let repo = Mock<IUserRepo>()
+
+  let sut: IUserService = UserService(repo.Object)
 
   [<Fact>]
   member _.``updates User.CurrentPresetId``() =
@@ -28,10 +29,12 @@ type SetCurrentPreset() =
 
     repo.Setup(_.SaveUser(expectedUser)).ReturnsAsync(())
 
-    let sut = User.setCurrentPreset repo.Object
 
     task {
-      do! sut Mocks.userId Mocks.presetId
+      let! updatedUser =
+        sut.PatchUser(Mocks.userId, [ PatchCurrentPreset(Some Mocks.presetId) ])
+
+      Assert.Equal(expectedUser, updatedUser)
 
       repo.VerifyAll()
     }

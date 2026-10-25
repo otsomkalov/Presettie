@@ -454,15 +454,13 @@ module Preset =
 
 [<RequireQualifiedAccess>]
 module User =
-  let setCurrentPreset (userRepo: #ILoadUser & #ISaveUser) =
-    fun userId presetId ->
-      userId
-      |> userRepo.LoadUser
-      |> Task.map (fun u ->
-        { u with
-            CurrentPresetId = Some presetId
-        })
-      |> Task.bind userRepo.SaveUser
+  let patch user patches =
+    List.fold
+      (fun user patch ->
+        match patch with
+        | PatchCurrentPreset presetId -> { user with CurrentPresetId = presetId })
+      user
+      patches
 
   let loadOrCreate (userRepo: #ITryLoadUser & #ISaveUser) =
     fun userId -> task {
@@ -611,5 +609,12 @@ type PresetService
 
 type UserService(userRepo: IUserRepo) =
   interface IUserService with
-    member this.SetCurrentPreset(userId, presetId) =
-      User.setCurrentPreset userRepo userId presetId
+    member this.PatchUser(userId, patches) = task {
+      let! user = userRepo.LoadUser userId
+
+      let updatedUser = User.patch user patches
+
+      do! userRepo.SaveUser updatedUser
+
+      return updatedUser
+    }
