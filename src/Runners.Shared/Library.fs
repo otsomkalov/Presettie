@@ -41,6 +41,7 @@ type IApiClient =
   abstract CreatePreset: CreatePresetRequest -> Task<Preset>
   abstract PatchPresetSettings: PresetId * PatchPresetSettingsCommand list -> TaskResult<Preset, Preset.GetPresetError>
   abstract GetCurrentUser: unit -> Task<User>
+  abstract PatchCurrentUser: PatchUserCommand list -> Task<User>
 
 type ApiClient(httpClient: HttpClient) =
   interface IApiClient with
@@ -188,3 +189,9 @@ type ApiClient(httpClient: HttpClient) =
     }
 
     member this.GetCurrentUser() = task { return! httpClient.GetFromJsonAsync<User>("users/current", JSON.options) }
+
+    member this.PatchCurrentUser(patches) = task {
+      use! response = httpClient.PatchAsJsonAsync("users/current", patches, JSON.options)
+
+      return! response.Content.ReadFromJsonAsync<User>(JSON.options)
+    }

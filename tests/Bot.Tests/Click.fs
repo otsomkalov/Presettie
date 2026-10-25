@@ -585,26 +585,28 @@ type overwriteTargetedPlaylistClickHandler() =
     }
 
 type setCurrentPresetClickHandler() =
-  let userService = Mock<ISetCurrentPreset>()
+  let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<ISendNotification>()
 
   let handler =
-    Click.setCurrentPresetClickHandler userService.Object resourceProvider.Object botService.Object
+    Click.setCurrentPresetClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
     let presetId = Mocks.presetId.Value
     let click = createClick [ CallbackQueryConstants.preset; presetId; "c" ]
 
-    userService.Setup(_.SetCurrentPreset(Mocks.chat.UserId, Mocks.presetId)).ReturnsAsync(())
+    apiClient.Setup(_.PatchCurrentUser([ PatchCurrentPreset(Some Mocks.presetId) ])).ReturnsAsync(Mocks.user)
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.CurrentPresetSet]).Returns(Notifications.CurrentPresetSet)
 
     task {
       let! result = handler Mocks.chat click
+
       Assert.Equal(Some(), result)
-      userService.VerifyAll()
+
+      apiClient.VerifyAll()
       botService.VerifyAll()
     }
 
@@ -615,8 +617,10 @@ type setCurrentPresetClickHandler() =
 
     task {
       let! result = handler Mocks.chat click
+
       Assert.Equal(None, result)
-      userService.VerifyNoOtherCalls()
+
+      apiClient.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
 

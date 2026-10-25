@@ -70,7 +70,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     }
 
     handler request.UserId
-    |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
+    |> TaskResult.foldResult (fun artist -> OkObjectResult(artist) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
   [<Function("RemoveIncludedArtist")>]
@@ -104,7 +104,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     }
 
     handler request.UserId
-    |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
+    |> TaskResult.foldResult (fun playlist -> OkObjectResult(playlist) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
   [<Function("RemoveIncludedPlaylist")>]
@@ -141,7 +141,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     }
 
     handler request.UserId
-    |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
+    |> TaskResult.foldResult (fun playlist -> OkObjectResult(playlist) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
   [<Function("RemoveExcludedPlaylist")>]
@@ -178,7 +178,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     }
 
     handler request.UserId
-    |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
+    |> TaskResult.foldResult (fun artist -> OkObjectResult(artist) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
   [<Function("RemoveExcludedArtist")>]
@@ -212,7 +212,7 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     }
 
     handler request.UserId
-    |> TaskResult.foldResult (fun preset -> OkObjectResult(preset) :> IActionResult) (function
+    |> TaskResult.foldResult (fun playlist -> OkObjectResult(playlist) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
   [<Function("RemoveTargetedPlaylist")>]

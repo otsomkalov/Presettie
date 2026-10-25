@@ -48,13 +48,13 @@ let private buildMessageHandlers authService resp botService buildMusicPlatform 
   backMessageButtonHandler apiClient resp botService
 }
 
-let private buildClickHandlers userService presetService resp botService buildMusicPlatform (apiClient: IApiClient) = clickHandlers {
+let private buildClickHandlers presetService resp botService buildMusicPlatform (apiClient: IApiClient) = clickHandlers {
   listPresetsClickHandler apiClient resp botService
   presetInfoClickHandler apiClient resp botService
   presetSettingsClickHandler apiClient resp botService
   runPresetClickHandler apiClient resp botService
   removePresetClickHandler apiClient resp botService
-  setCurrentPresetClickHandler userService resp botService
+  setCurrentPresetClickHandler apiClient resp botService
 
   artistsAlbumsRecommendationsClickHandler apiClient resp botService
   reccoBeatsRecommendationsClickHandler apiClient resp botService
@@ -148,7 +148,7 @@ let private contextEnricherMiddleware (enrichers: BotContextEnricher<Update> lis
     do! next context
   }
 
-let private router (logger: ILogger) buildMusicPlatform userService authService presetService : BotHandler<Update> =
+let private router (logger: ILogger) buildMusicPlatform authService presetService : BotHandler<Update> =
   fun context ->
     let chat = context.GetFeature<Chat>()
     let resp = context.GetFeature<IResourceProvider>()
@@ -168,7 +168,7 @@ let private router (logger: ILogger) buildMusicPlatform userService authService 
           return! context.Client.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
       | Click click ->
         let! result =
-          buildClickHandlers userService presetService resp context.Client buildMusicPlatform apiClient chat click
+          buildClickHandlers presetService resp context.Client buildMusicPlatform apiClient chat click
 
         match result with
         | Some() -> return ()
@@ -180,7 +180,6 @@ let private router (logger: ILogger) buildMusicPlatform userService authService 
 
 let main
   authService
-  userService
   presetService
   buildMusicPlatform
   buildBotClient
@@ -199,7 +198,7 @@ let main
       exceptionHandlingMiddleware logger
       << authenticationMiddleware buildDefaultResp appOAuthClient chatRepo apiClientFactory
       << contextEnricherMiddleware [ resourceProviderEnricher buildResp ]
-      <| router logger buildMusicPlatform userService authService presetService
+      <| router logger buildMusicPlatform authService presetService
 
     do! pipeline botCtx
   }

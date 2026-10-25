@@ -484,16 +484,12 @@ let runPresetClickHandler
       }
     | _ -> Task.FromResult(None)
 
-let setCurrentPresetClickHandler
-  (userService: #ISetCurrentPreset)
-  (resp: IResourceProvider)
-  (chatService: #ISendNotification)
-  : ClickHandler<Chat> =
+let setCurrentPresetClickHandler (apiClient: IApiClient) (resp: IResourceProvider) (chatService: #ISendNotification) : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; id; "c" ] -> task {
         let presetId = PresetId id
-        do! userService.SetCurrentPreset(chat.UserId, presetId)
+        do! apiClient.PatchCurrentUser([ PatchCurrentPreset(Some presetId) ]) |> Task.ignore
         do! chatService.SendNotification(click.Id, resp[Notifications.CurrentPresetSet])
         return Some()
       }

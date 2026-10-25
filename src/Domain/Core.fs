@@ -313,6 +313,8 @@ type ISetAll =
 type IGetPreset =
   abstract GetPreset: UserId * PresetId -> Task<Result<Preset, Preset.GetPresetError>>
 
+type PatchUserCommand = PatchCurrentPreset of PresetId option
+
 type PatchPresetSettingsCommand =
   | PatchLikedTracksHandling of PresetSettings.LikedTracksHandling
   | PatchUniqueArtists of bool
@@ -347,8 +349,5 @@ type IPresetService =
   inherit ISetOnlyLiked
   inherit ISetAll
 
-type ISetCurrentPreset =
-  abstract SetCurrentPreset: UserId * PresetId -> Task<unit>
-
 type IUserService =
-  inherit ISetCurrentPreset
+  abstract PatchUser: UserId * PatchUserCommand list -> Task<User>
