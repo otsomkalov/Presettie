@@ -753,8 +753,7 @@ type SetPresetSizeMessageButtonHandler() =
     }
 
 type SetPresetSizeMessageHandler() =
-  let userService = Mock<IUserService>()
-  let userRepo = Mock<ILoadUser>()
+  let userRepo = Mock<IUserRepo>()
   let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
@@ -780,14 +779,15 @@ type SetPresetSizeMessageHandler() =
     |> ignore
 
   let handler =
-    Message.setPresetSizeMessageHandler userService.Object userRepo.Object apiClient.Object resourceProvider.Object chatCtx.Object
+    Message.setPresetSizeMessageHandler userRepo.Object apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with valid size and call onSuccess``() =
-    userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Ok())
-    chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
-    apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
+    apiClient.Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchSize 42 ])).ReturnsAsync(Ok Mocks.preset)
+    chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+    resourceProvider.Setup(_.Item(Buttons.SetPresetSize)).Returns(Buttons.SetPresetSize)
+    resourceProvider.Setup(_.Item(Buttons.Back)).Returns(Buttons.Back)
 
     let message =
       { createMessage "42" with
@@ -797,34 +797,35 @@ type SetPresetSizeMessageHandler() =
     task {
       let! result = handler Mocks.chat message
       Assert.Equal(Some(), result)
-      userService.VerifyAll()
-      chatCtx.VerifyAll()
       userRepo.VerifyAll()
       apiClient.VerifyAll()
+      chatCtx.VerifyAll()
     }
 
   [<Fact>]
   member _.``should handle /size command and call onSuccess``() =
-    userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Ok())
-    chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
     userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
-    apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
+    apiClient.Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchSize 42 ])).ReturnsAsync(Ok Mocks.preset)
+    chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
+    resourceProvider.Setup(_.Item(Buttons.SetPresetSize)).Returns(Buttons.SetPresetSize)
+    resourceProvider.Setup(_.Item(Buttons.Back)).Returns(Buttons.Back)
 
     let message = createMessage $"{Commands.size} 42"
 
     task {
       let! result = handler Mocks.chat message
       Assert.Equal(Some(), result)
-      userService.VerifyAll()
-      chatCtx.VerifyAll()
       userRepo.VerifyAll()
       apiClient.VerifyAll()
+      chatCtx.VerifyAll()
     }
 
   [<Fact>]
-  member _.``should handle reply with too small size and call onError``() =
-    userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Error PresetSettings.ParsingError.TooSmall)
-    chatCtx.Setup(_.SendMessage(Messages.PresetSizeTooSmall)).ReturnsAsync(Mocks.botMessageId)
+  member _.``should handle reply with not found and call sendPresetErrorMessage``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchSize 1 ])).ReturnsAsync(Error Preset.GetPresetError.NotFound)
+    chatCtx.Setup(_.ReplyToMessage(Mocks.chatMessageId, Messages.PresetNotFound)).ReturnsAsync(Mocks.botMessageId)
+    resourceProvider.Setup(_.Item(Messages.PresetNotFound)).Returns(Messages.PresetNotFound)
 
     let message =
       { createMessage "1" with
@@ -834,14 +835,17 @@ type SetPresetSizeMessageHandler() =
     task {
       let! result = handler Mocks.chat message
       Assert.Equal(Some(), result)
-      userService.VerifyAll()
+      userRepo.VerifyAll()
+      apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
 
   [<Fact>]
-  member _.``should handle reply with too big size and call onError``() =
-    userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Error PresetSettings.ParsingError.TooBig)
-    chatCtx.Setup(_.SendMessage(Messages.PresetSizeTooBig)).ReturnsAsync(Mocks.botMessageId)
+  member _.``should handle reply with forbidden and call sendPresetErrorMessage``() =
+    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchSize 1000 ])).ReturnsAsync(Error Preset.GetPresetError.Forbidden)
+    chatCtx.Setup(_.ReplyToMessage(Mocks.chatMessageId, Messages.PresetAccessForbidden)).ReturnsAsync(Mocks.botMessageId)
+    resourceProvider.Setup(_.Item(Messages.PresetAccessForbidden)).Returns(Messages.PresetAccessForbidden)
 
     let message =
       { createMessage "1000" with
@@ -851,24 +855,8 @@ type SetPresetSizeMessageHandler() =
     task {
       let! result = handler Mocks.chat message
       Assert.Equal(Some(), result)
-      userService.VerifyAll()
-      chatCtx.VerifyAll()
-    }
-
-  [<Fact>]
-  member _.``should handle reply with not a number and call onError``() =
-    userService.Setup(_.SetCurrentPresetSize(Mocks.userId, It.IsAny())).ReturnsAsync(Error PresetSettings.ParsingError.NotANumber)
-    chatCtx.Setup(_.SendMessage(Messages.PresetSizeNotANumber)).ReturnsAsync(Mocks.botMessageId)
-
-    let message =
-      { createMessage "abc" with
-          ReplyMessage = Some { Text = Messages.SendPresetSize }
-      }
-
-    task {
-      let! result = handler Mocks.chat message
-      Assert.Equal(Some(), result)
-      userService.VerifyAll()
+      userRepo.VerifyAll()
+      apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
 
@@ -879,7 +867,6 @@ type SetPresetSizeMessageHandler() =
     task {
       let! result = handler Mocks.chat message
       Assert.Equal(None, result)
-      userService.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
       userRepo.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()

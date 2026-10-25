@@ -34,172 +34,222 @@ let listPresetsClickHandler apiClient (resp: IResourceProvider) botService : Cli
     | _ -> Task.FromResult(None)
 
 let artistsAlbumsRecommendationsClickHandler
-  apiClient
-  (presetService: #ISetRecommendationsEngine)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
-  (botService: #ISendNotification)
+  (botClient: #ISendNotification & #IEditMessageButtons)
   : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.artistsAlbumsRecommendations ] -> task {
         let presetId = PresetId presetId
-        do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ArtistAlbums)
-        do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-        do! PresetSettings.show apiClient botService resp click.Id click.MessageId presetId
-        return Some()
+
+        match! apiClient.PatchPresetSettings(presetId, [ PatchRecommendationsEngine(Some RecommendationsEngine.ArtistAlbums) ]) with
+        | Ok preset ->
+          do! botClient.SendNotification(click.Id, resp[Notifications.Updated])
+          let text, keyboard = getPresetSettingsMessage resp preset
+          do! botClient.EditMessageButtons(click.MessageId, text, keyboard)
+          return Some()
+        | Error e ->
+          do! sendPresetErrorNotification resp botClient click.Id e
+          return Some()
       }
     | _ -> Task.FromResult(None)
 
 let reccoBeatsRecommendationsClickHandler
-  apiClient
-  (presetService: #ISetRecommendationsEngine)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
-  (botService: #ISendNotification)
+  (botClient: #ISendNotification & #IEditMessageButtons)
   : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.reccoBeatsRecommendations ] -> task {
         let presetId = PresetId presetId
-        do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.ReccoBeats)
-        do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-        do! PresetSettings.show apiClient botService resp click.Id click.MessageId presetId
-        return Some()
+
+        match! apiClient.PatchPresetSettings(presetId, [ PatchRecommendationsEngine(Some RecommendationsEngine.ReccoBeats) ]) with
+        | Ok preset ->
+          do! botClient.SendNotification(click.Id, resp[Notifications.Updated])
+          let text, keyboard = getPresetSettingsMessage resp preset
+          do! botClient.EditMessageButtons(click.MessageId, text, keyboard)
+          return Some()
+        | Error e ->
+          do! sendPresetErrorNotification resp botClient click.Id e
+          return Some()
       }
     | _ -> Task.FromResult(None)
 
 let musicaeRecommendationsClickHandler
-  apiClient
-  (presetService: #ISetRecommendationsEngine)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
-  (botService: #ISendNotification)
+  (botClient: #ISendNotification & #IEditMessageButtons)
   : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.musicaeRecommendations ] -> task {
         let presetId = PresetId presetId
-        do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.Musicae)
-        do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-        do! PresetSettings.show apiClient botService resp click.Id click.MessageId presetId
-        return Some()
+
+        match! apiClient.PatchPresetSettings(presetId, [ PatchRecommendationsEngine(Some RecommendationsEngine.Musicae) ]) with
+        | Ok preset ->
+          do! botClient.SendNotification(click.Id, resp[Notifications.Updated])
+          let text, keyboard = getPresetSettingsMessage resp preset
+          do! botClient.EditMessageButtons(click.MessageId, text, keyboard)
+          return Some()
+        | Error e ->
+          do! sendPresetErrorNotification resp botClient click.Id e
+          return Some()
       }
     | _ -> Task.FromResult(None)
 
 let spotifyRecommendationsClickHandler
-  apiClient
-  (presetService: #ISetRecommendationsEngine)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
-  (botService: #ISendNotification)
+  (botClient: #ISendNotification & #IEditMessageButtons)
   : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.spotifyRecommendations ] -> task {
         let presetId = PresetId presetId
-        do! presetService.SetRecommendationsEngine(presetId, Some RecommendationsEngine.Spotify)
-        do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-        do! PresetSettings.show apiClient botService resp click.Id click.MessageId presetId
-        return Some()
+
+        match! apiClient.PatchPresetSettings(presetId, [ PatchRecommendationsEngine(Some RecommendationsEngine.Spotify) ]) with
+        | Ok preset ->
+          do! botClient.SendNotification(click.Id, resp[Notifications.Updated])
+          let text, keyboard = getPresetSettingsMessage resp preset
+          do! botClient.EditMessageButtons(click.MessageId, text, keyboard)
+          return Some()
+        | Error e ->
+          do! sendPresetErrorNotification resp botClient click.Id e
+          return Some()
       }
     | _ -> Task.FromResult(None)
 
 let disableRecommendationsClickHandler
-  apiClient
-  (presetService: #ISetRecommendationsEngine)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
-  (botService: #ISendNotification)
+  (botClient: #ISendNotification & #IEditMessageButtons)
   : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.disableRecommendations ] -> task {
         let presetId = PresetId presetId
-        do! presetService.SetRecommendationsEngine(presetId, None)
-        do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-        do! PresetSettings.show apiClient botService resp click.Id click.MessageId presetId
-        return Some()
+
+        match! apiClient.PatchPresetSettings(presetId, [ PatchRecommendationsEngine(None) ]) with
+        | Ok preset ->
+          do! botClient.SendNotification(click.Id, resp[Notifications.Updated])
+          let text, keyboard = getPresetSettingsMessage resp preset
+          do! botClient.EditMessageButtons(click.MessageId, text, keyboard)
+          return Some()
+        | Error e ->
+          do! sendPresetErrorNotification resp botClient click.Id e
+          return Some()
       }
     | _ -> Task.FromResult(None)
 
 let enableUniqueArtistsClickHandler
-  apiClient
-  (presetService: #IEnableUniqueArtists)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
-  (botService: #ISendNotification)
+  (botClient: #ISendNotification & #IEditMessageButtons)
   : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.enableUniqueArtists ] -> task {
         let presetId = PresetId presetId
-        do! presetService.EnableUniqueArtists presetId
-        do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-        do! PresetSettings.show apiClient botService resp click.Id click.MessageId presetId
-        return Some()
+
+        match! apiClient.PatchPresetSettings(presetId, [ PatchUniqueArtists(true) ]) with
+        | Ok preset ->
+          do! botClient.SendNotification(click.Id, resp[Notifications.Updated])
+          let text, keyboard = getPresetSettingsMessage resp preset
+          do! botClient.EditMessageButtons(click.MessageId, text, keyboard)
+          return Some()
+        | Error e ->
+          do! sendPresetErrorNotification resp botClient click.Id e
+          return Some()
       }
     | _ -> Task.FromResult(None)
 
 let disableUniqueArtistsClickHandler
-  apiClient
-  (presetService: #IDisableUniqueArtists)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
-  (botService: #ISendNotification)
+  (botClient: #ISendNotification & #IEditMessageButtons)
   : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.disableUniqueArtists ] -> task {
         let presetId = PresetId presetId
-        do! presetService.DisableUniqueArtists presetId
-        do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-        do! PresetSettings.show apiClient botService resp click.Id click.MessageId presetId
-        return Some()
+
+        match! apiClient.PatchPresetSettings(presetId, [ PatchUniqueArtists(false) ]) with
+        | Ok preset ->
+          do! botClient.SendNotification(click.Id, resp[Notifications.Updated])
+          let text, keyboard = getPresetSettingsMessage resp preset
+          do! botClient.EditMessageButtons(click.MessageId, text, keyboard)
+          return Some()
+        | Error e ->
+          do! sendPresetErrorNotification resp botClient click.Id e
+          return Some()
       }
     | _ -> Task.FromResult(None)
 
 let includeLikedTracksClickHandler
-  apiClient
-  (presetService: #IIncludeLikedTracks)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
-  (botService: #ISendNotification)
+  (botClient: #ISendNotification & #IEditMessageButtons)
   : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includeLikedTracks ] -> task {
         let presetId = (PresetId presetId)
-        do! presetService.IncludeLikedTracks presetId
-        do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-        do! PresetSettings.show apiClient botService resp click.Id click.MessageId presetId
-        return Some()
+
+        match! apiClient.PatchPresetSettings(presetId, [ PatchLikedTracksHandling(LikedTracksHandling.Include) ]) with
+        | Ok preset ->
+          do! botClient.SendNotification(click.Id, resp[Notifications.Updated])
+          let text, keyboard = getPresetSettingsMessage resp preset
+          do! botClient.EditMessageButtons(click.MessageId, text, keyboard)
+          return Some()
+        | Error e ->
+          do! sendPresetErrorNotification resp botClient click.Id e
+          return Some()
       }
     | _ -> Task.FromResult(None)
 
 let excludeLikedTracksClickHandler
-  apiClient
-  (presetService: #IExcludeLikedTracks)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
-  (botService: #ISendNotification)
+  (botClient: #ISendNotification & #IEditMessageButtons)
   : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.excludeLikedTracks ] -> task {
         let presetId = (PresetId presetId)
-        do! presetService.ExcludeLikedTracks presetId
-        do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-        do! PresetSettings.show apiClient botService resp click.Id click.MessageId presetId
-        return Some()
+
+        match! apiClient.PatchPresetSettings(presetId, [ PatchLikedTracksHandling(LikedTracksHandling.Exclude) ]) with
+        | Ok preset ->
+          do! botClient.SendNotification(click.Id, resp[Notifications.Updated])
+          let text, keyboard = getPresetSettingsMessage resp preset
+          do! botClient.EditMessageButtons(click.MessageId, text, keyboard)
+          return Some()
+        | Error e ->
+          do! sendPresetErrorNotification resp botClient click.Id e
+          return Some()
       }
     | _ -> Task.FromResult(None)
 
 let ignoreLikedTracksClickHandler
-  apiClient
-  (presetService: #IIgnoreLikedTracks)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
-  (botService: #ISendNotification)
+  (botClient: #ISendNotification & #IEditMessageButtons)
   : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.ignoreLikedTracks ] -> task {
         let presetId = (PresetId presetId)
-        do! presetService.IgnoreLikedTracks presetId
-        do! botService.SendNotification(click.Id, resp[Notifications.Updated])
-        do! PresetSettings.show apiClient botService resp click.Id click.MessageId presetId
-        return Some()
+
+        match! apiClient.PatchPresetSettings(presetId, [ PatchLikedTracksHandling(LikedTracksHandling.Ignore) ]) with
+        | Ok preset ->
+          do! botClient.SendNotification(click.Id, resp[Notifications.Updated])
+          let text, keyboard = getPresetSettingsMessage resp preset
+          do! botClient.EditMessageButtons(click.MessageId, text, keyboard)
+          return Some()
+        | Error e ->
+          do! sendPresetErrorNotification resp botClient click.Id e
+          return Some()
       }
     | _ -> Task.FromResult(None)
 

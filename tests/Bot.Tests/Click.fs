@@ -108,12 +108,11 @@ type listPresetsClickHandler() =
 
 type artistsAlbumsRecommendationsClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let presetService = Mock<ISetRecommendationsEngine>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.artistsAlbumsRecommendationsClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
+    Click.artistsAlbumsRecommendationsClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -127,18 +126,17 @@ type artistsAlbumsRecommendationsClickHandler() =
           CallbackQueryConstants.artistsAlbumsRecommendations
         ]
 
-    presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.ArtistAlbums)).ReturnsAsync(())
-    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    apiClient.Setup(_.GetPreset(PresetId presetId)).ReturnsAsync(Ok Mocks.preset)
-    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
+    apiClient
+      .Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchRecommendationsEngine(Some RecommendationsEngine.ArtistAlbums) ]))
+      .ReturnsAsync(Ok Mocks.preset)
 
-    // PresetSettings.show is called, but we don't need to mock its internals for this test
+    botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
+    resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-
-      presetService.VerifyAll()
       botService.VerifyAll()
       apiClient.VerifyAll()
     }
@@ -152,19 +150,17 @@ type artistsAlbumsRecommendationsClickHandler() =
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
 
-      presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
 type reccoBeatsRecommendationsClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let presetService = Mock<ISetRecommendationsEngine>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.reccoBeatsRecommendationsClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
+    Click.reccoBeatsRecommendationsClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -178,15 +174,17 @@ type reccoBeatsRecommendationsClickHandler() =
           CallbackQueryConstants.reccoBeatsRecommendations
         ]
 
-    presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.ReccoBeats)).ReturnsAsync(())
+    apiClient
+      .Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchRecommendationsEngine(Some RecommendationsEngine.ReccoBeats) ]))
+      .ReturnsAsync(Ok Mocks.preset)
+
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    apiClient.Setup(_.GetPreset(PresetId presetId)).ReturnsAsync(Ok Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
       botService.VerifyAll()
       apiClient.VerifyAll()
     }
@@ -199,19 +197,17 @@ type reccoBeatsRecommendationsClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
 type spotifyRecommendationsClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let presetService = Mock<ISetRecommendationsEngine>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.spotifyRecommendationsClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
+    Click.spotifyRecommendationsClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -225,15 +221,17 @@ type spotifyRecommendationsClickHandler() =
           CallbackQueryConstants.spotifyRecommendations
         ]
 
-    presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, Some RecommendationsEngine.Spotify)).ReturnsAsync(())
+    apiClient
+      .Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchRecommendationsEngine(Some RecommendationsEngine.Spotify) ]))
+      .ReturnsAsync(Ok Mocks.preset)
+
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    apiClient.Setup(_.GetPreset(PresetId presetId)).ReturnsAsync(Ok Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
       botService.VerifyAll()
       apiClient.VerifyAll()
     }
@@ -246,19 +244,17 @@ type spotifyRecommendationsClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
 type disableRecommendationsClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let presetService = Mock<ISetRecommendationsEngine>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.disableRecommendationsClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
+    Click.disableRecommendationsClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -272,15 +268,14 @@ type disableRecommendationsClickHandler() =
           CallbackQueryConstants.disableRecommendations
         ]
 
-    presetService.Setup(_.SetRecommendationsEngine(Mocks.presetId, None)).ReturnsAsync(())
+    apiClient.Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchRecommendationsEngine(None) ])).ReturnsAsync(Ok Mocks.preset)
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    apiClient.Setup(_.GetPreset(PresetId presetId)).ReturnsAsync(Ok Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
       botService.VerifyAll()
       apiClient.VerifyAll()
     }
@@ -293,19 +288,17 @@ type disableRecommendationsClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
 type enableUniqueArtistsClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let presetService = Mock<IEnableUniqueArtists>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.enableUniqueArtistsClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
+    Click.enableUniqueArtistsClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -319,15 +312,14 @@ type enableUniqueArtistsClickHandler() =
           CallbackQueryConstants.enableUniqueArtists
         ]
 
-    presetService.Setup(_.EnableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
+    apiClient.Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchUniqueArtists(true) ])).ReturnsAsync(Ok Mocks.preset)
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    apiClient.Setup(_.GetPreset(PresetId presetId)).ReturnsAsync(Ok Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
       botService.VerifyAll()
       apiClient.VerifyAll()
     }
@@ -340,19 +332,17 @@ type enableUniqueArtistsClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
 type disableUniqueArtistsClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let presetService = Mock<IDisableUniqueArtists>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.disableUniqueArtistsClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
+    Click.disableUniqueArtistsClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -366,15 +356,14 @@ type disableUniqueArtistsClickHandler() =
           CallbackQueryConstants.disableUniqueArtists
         ]
 
-    presetService.Setup(_.DisableUniqueArtists(Mocks.presetId)).ReturnsAsync(())
+    apiClient.Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchUniqueArtists(false) ])).ReturnsAsync(Ok Mocks.preset)
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    apiClient.Setup(_.GetPreset(PresetId presetId)).ReturnsAsync(Ok Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
       botService.VerifyAll()
       apiClient.VerifyAll()
     }
@@ -387,19 +376,17 @@ type disableUniqueArtistsClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
 type includeLikedTracksClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let presetService = Mock<IIncludeLikedTracks>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.includeLikedTracksClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
+    Click.includeLikedTracksClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -413,15 +400,17 @@ type includeLikedTracksClickHandler() =
           CallbackQueryConstants.includeLikedTracks
         ]
 
-    presetService.Setup(_.IncludeLikedTracks(Mocks.presetId)).ReturnsAsync(())
+    apiClient
+      .Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchLikedTracksHandling(LikedTracksHandling.Include) ]))
+      .ReturnsAsync(Ok Mocks.preset)
+
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    apiClient.Setup(_.GetPreset(PresetId presetId)).ReturnsAsync(Ok Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
       botService.VerifyAll()
       apiClient.VerifyAll()
     }
@@ -434,19 +423,17 @@ type includeLikedTracksClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
 type excludeLikedTracksClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let presetService = Mock<IExcludeLikedTracks>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.excludeLikedTracksClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
+    Click.excludeLikedTracksClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -460,15 +447,17 @@ type excludeLikedTracksClickHandler() =
           CallbackQueryConstants.excludeLikedTracks
         ]
 
-    presetService.Setup(_.ExcludeLikedTracks(Mocks.presetId)).ReturnsAsync(())
+    apiClient
+      .Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchLikedTracksHandling(LikedTracksHandling.Exclude) ]))
+      .ReturnsAsync(Ok Mocks.preset)
+
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    apiClient.Setup(_.GetPreset(PresetId presetId)).ReturnsAsync(Ok Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
       botService.VerifyAll()
       apiClient.VerifyAll()
     }
@@ -481,7 +470,6 @@ type excludeLikedTracksClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
@@ -491,12 +479,11 @@ open MusicPlatform
 
 type ignoreLikedTracksClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let presetService = Mock<IIgnoreLikedTracks>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.ignoreLikedTracksClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
+    Click.ignoreLikedTracksClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -510,15 +497,17 @@ type ignoreLikedTracksClickHandler() =
           CallbackQueryConstants.ignoreLikedTracks
         ]
 
-    presetService.Setup(_.IgnoreLikedTracks(Mocks.presetId)).ReturnsAsync(())
+    apiClient
+      .Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchLikedTracksHandling(LikedTracksHandling.Ignore) ]))
+      .ReturnsAsync(Ok Mocks.preset)
+
     botService.Setup(_.SendNotification(Mocks.clickId, It.IsAny<string>())).ReturnsAsync(())
-    apiClient.Setup(_.GetPreset(PresetId presetId)).ReturnsAsync(Ok Mocks.preset)
+    botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
     resourceProvider.Setup(fun x -> x[Notifications.Updated]).Returns(Notifications.Updated)
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
       botService.VerifyAll()
       apiClient.VerifyAll()
     }
@@ -531,7 +520,6 @@ type ignoreLikedTracksClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      presetService.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }

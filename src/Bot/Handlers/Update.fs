@@ -15,7 +15,7 @@ open otsom.fs.Bot.Builders
 open otsom.fs.OAuth
 open otsom.fs.Resources
 
-let private buildMessageHandlers authService userRepo userService resp botService buildMusicPlatform apiClient = messageHandlers {
+let private buildMessageHandlers authService userRepo resp botService buildMusicPlatform apiClient = messageHandlers {
   startMessageHandler userRepo apiClient authService resp botService
 
   faqMessageHandler resp botService
@@ -31,7 +31,7 @@ let private buildMessageHandlers authService userRepo userService resp botServic
   createPresetButtonMessageHandler resp botService
 
   setPresetSizeMessageButtonHandler resp botService
-  setPresetSizeMessageHandler userService userRepo apiClient resp botService
+  setPresetSizeMessageHandler userRepo apiClient resp botService
 
   includePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
   excludePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
@@ -56,18 +56,18 @@ let private buildClickHandlers userService presetService resp botService buildMu
   removePresetClickHandler apiClient resp botService
   setCurrentPresetClickHandler userService resp botService
 
-  artistsAlbumsRecommendationsClickHandler apiClient presetService resp botService
-  reccoBeatsRecommendationsClickHandler apiClient presetService resp botService
-  musicaeRecommendationsClickHandler apiClient presetService resp botService
-  spotifyRecommendationsClickHandler apiClient presetService resp botService
-  disableRecommendationsClickHandler apiClient presetService resp botService
+  artistsAlbumsRecommendationsClickHandler apiClient resp botService
+  reccoBeatsRecommendationsClickHandler apiClient resp botService
+  musicaeRecommendationsClickHandler apiClient resp botService
+  spotifyRecommendationsClickHandler apiClient resp botService
+  disableRecommendationsClickHandler apiClient resp botService
 
-  enableUniqueArtistsClickHandler apiClient presetService resp botService
-  disableUniqueArtistsClickHandler apiClient presetService resp botService
+  enableUniqueArtistsClickHandler apiClient resp botService
+  disableUniqueArtistsClickHandler apiClient resp botService
 
-  includeLikedTracksClickHandler apiClient presetService resp botService
-  excludeLikedTracksClickHandler apiClient presetService resp botService
-  ignoreLikedTracksClickHandler apiClient presetService resp botService
+  includeLikedTracksClickHandler apiClient resp botService
+  excludeLikedTracksClickHandler apiClient resp botService
+  ignoreLikedTracksClickHandler apiClient resp botService
 
   appendToTargetedPlaylistClickHandler apiClient presetService buildMusicPlatform resp botService
   overwriteTargetedPlaylistClickHandler apiClient presetService buildMusicPlatform resp botService
@@ -158,7 +158,7 @@ let private router (logger: ILogger) buildMusicPlatform userService authService 
       match context.Update.Data with
       | Msg msg ->
         let! result =
-          buildMessageHandlers authService userRepo userService resp context.Client buildMusicPlatform apiClient chat msg
+          buildMessageHandlers authService userRepo resp context.Client buildMusicPlatform apiClient chat msg
 
         match result with
         | Some() -> return ()

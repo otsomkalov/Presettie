@@ -1,5 +1,6 @@
 ﻿module Bot.Handlers.Message
 
+open System
 open Domain.Repos
 open MusicPlatform
 open Bot.Constants
@@ -138,20 +139,43 @@ let setPresetSizeMessageButtonHandler (resp: IResourceProvider) (chatCtx: #IAskF
   }
 
 let setPresetSizeMessageHandler
-  (userService: #ISetCurrentPresetSize)
-  userRepo
-  apiClient
+  (userRepo: IUserRepo)
+  (apiClient: IApiClient)
   (resp: IResourceProvider)
-  (chatCtx: #ISendMessage)
+  (botClient: #ISendMessage & #ISendKeyboard)
   : MessageHandler<Chat, Message> =
-  let onSuccess messageId userId =
-    fun () -> User.sendCurrentPresetSettings resp userRepo apiClient chatCtx messageId userId
+  let onSuccess =
+    fun preset -> task {
+      let text, _ = getPresetSettingsMessage resp preset
+
+      let buttons: Keyboard =
+        [|
+          [| KeyboardButton(resp[Buttons.SetPresetSize]) |]
+          [| KeyboardButton(resp[Buttons.Back]) |]
+        |]
+
+      do! botClient.SendKeyboard(text, buttons) |> Task.map ignore
+
+      return ()
+    }
 
   let onError =
     function
-    | PresetSettings.ParsingError.TooSmall -> chatCtx.SendMessage resp[Messages.PresetSizeTooSmall]
-    | PresetSettings.ParsingError.TooBig -> chatCtx.SendMessage resp[Messages.PresetSizeTooBig]
-    | PresetSettings.ParsingError.NotANumber -> chatCtx.SendMessage resp[Messages.PresetSizeNotANumber]
+    | PresetSettings.ParsingError.TooSmall -> botClient.SendMessage resp[Messages.PresetSizeTooSmall]
+    | PresetSettings.ParsingError.TooBig -> botClient.SendMessage resp[Messages.PresetSizeTooBig]
+    | PresetSettings.ParsingError.NotANumber -> botClient.SendMessage resp[Messages.PresetSizeNotANumber]
+
+  let patchSize messageId =
+    fun userId size -> task {
+      let! user = userRepo.LoadUser userId
+
+      match user.CurrentPresetId with
+      | Some presetId ->
+        do!
+          apiClient.PatchPresetSettings(presetId, [ PatchSize size ])
+          |> TaskResult.taskEither onSuccess (sendPresetErrorMessage resp botClient messageId)
+      | None -> do! botClient.SendMessage(resp[Messages.NoCurrentPreset]) |> Task.ignore
+    }
 
   fun chat message -> task {
     match message with
@@ -159,17 +183,13 @@ let setPresetSizeMessageHandler
         Text = text
         ReplyMessage = Some { Text = replyText }
       } when replyText = resp[Messages.SendPresetSize] ->
-      do!
-        userService.SetCurrentPresetSize(chat.UserId, (PresetSettings.RawPresetSize text))
-        |> TaskResult.taskEither (onSuccess message.Id chat.UserId) (onError >> Task.ignore)
+      do! patchSize message.Id chat.UserId (Int32.Parse text)
 
       return Some()
     | {
         Text = CommandWithData Commands.size text
       } ->
-      do!
-        (userService.SetCurrentPresetSize(chat.UserId, (PresetSettings.RawPresetSize text))
-         |> TaskResult.taskEither (onSuccess message.Id chat.UserId) (onError >> Task.ignore))
+      do! patchSize message.Id chat.UserId (Int32.Parse text)
 
       return Some()
     | _ -> return None

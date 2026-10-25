@@ -464,13 +464,6 @@ module User =
         })
       |> Task.bind userRepo.SaveUser
 
-  let setCurrentPresetSize (userRepo: #ILoadUser) (presetService: #ISetPresetSize) =
-    fun userId size ->
-      userId
-      |> userRepo.LoadUser
-      |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
-      |> Task.bind (fun presetId -> presetService.SetPresetSize(presetId, size))
-
   let loadOrCreate (userRepo: #ITryLoadUser & #ISaveUser) =
     fun userId -> task {
       let! existingUser = userRepo.TryLoadUser userId
@@ -557,11 +550,7 @@ type PresetService
     member this.QueueRun(userId, presetId) =
       Preset.queueRun presetRepo userId presetId
 
-    member this.SetPresetSize(presetId, size) = Preset.setSize presetRepo presetId size
     member this.CreatePreset(userId, name) = Preset.create presetRepo userId name
-
-    member this.SetRecommendationsEngine(presetId, engine) =
-      PresetSettings.setRecommendationsEngine presetRepo engine presetId
 
     member this.IncludePlaylist(cmd) =
       Preset.includePlaylist parsePlaylistId presetRepo musicPlatformFactory cmd
@@ -577,21 +566,6 @@ type PresetService
 
     member this.TargetPlaylist(cmd) =
       Preset.targetPlaylist parsePlaylistId presetRepo musicPlatformFactory cmd
-
-    member this.EnableUniqueArtists(presetId) =
-      PresetSettings.enableUniqueArtists presetRepo presetId
-
-    member this.DisableUniqueArtists(presetId) =
-      PresetSettings.disableUniqueArtists presetRepo presetId
-
-    member this.IncludeLikedTracks(presetId) =
-      PresetSettings.includeLikedTracks presetRepo presetId
-
-    member this.ExcludeLikedTracks(presetId) =
-      PresetSettings.excludeLikedTracks presetRepo presetId
-
-    member this.IgnoreLikedTracks(presetId) =
-      PresetSettings.ignoreLikedTracks presetRepo presetId
 
     member this.AppendToTargetedPlaylist(presetId, playlistId) =
       TargetedPlaylist.appendTracks presetRepo presetId playlistId
@@ -635,10 +609,7 @@ type PresetService
       return updatedPreset
     }
 
-type UserService(userRepo: IUserRepo, presetService: IPresetService) =
+type UserService(userRepo: IUserRepo) =
   interface IUserService with
-    member this.SetCurrentPresetSize(userId, size) =
-      User.setCurrentPresetSize userRepo presetService userId size
-
     member this.SetCurrentPreset(userId, presetId) =
       User.setCurrentPreset userRepo userId presetId
