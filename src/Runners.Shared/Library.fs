@@ -46,6 +46,7 @@ type IApiClient =
   abstract TargetPlaylist: PresetId * TargetPlaylistRequest -> TaskResult<TargetedPlaylist, TargetPlaylist.Error>
   abstract RemoveTargetedPlaylist: PresetId * PlaylistId -> Task<Preset>
   abstract CreatePreset: CreatePresetRequest -> Task<Preset>
+  abstract PatchPresetSettings: PresetId * PatchPresetSettingsCommand list -> TaskResult<Preset, Preset.GetPresetError>
 
 type ApiClient(httpClient: HttpClient) =
   interface IApiClient with
@@ -180,4 +181,14 @@ type ApiClient(httpClient: HttpClient) =
 
     member this.GetPreset(PresetId presetId) = taskResult {
       return! httpClient.GetFromJsonAsync<Preset>($"presets/{presetId}", JSON.options)
+    }
+
+    member this.PatchPresetSettings(PresetId presetId, patches) = taskResult {
+      use! response =
+        httpClient.PatchAsJsonAsync($"presets/{presetId}/settings", patches, JSON.options)
+
+      match response.StatusCode with
+      | HttpStatusCode.OK -> return! response.Content.ReadFromJsonAsync<Preset>(JSON.options)
+      | HttpStatusCode.NotFound -> return! Error Preset.GetPresetError.NotFound
+      | HttpStatusCode.Forbidden -> return! Error Preset.GetPresetError.Forbidden
     }

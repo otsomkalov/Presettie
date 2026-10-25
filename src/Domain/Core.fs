@@ -181,9 +181,6 @@ module TargetedPlaylist =
       }
       |> Some
 
-type ISetPresetSize =
-  abstract SetPresetSize: PresetId * PresetSettings.RawPresetSize -> Task<Result<unit, PresetSettings.ParsingError>>
-
 type IQueueRun =
   abstract QueueRun: UserId * PresetId -> Task<Result<SimplePreset, Preset.ValidationError list>>
 
@@ -286,24 +283,6 @@ module TargetPlaylist =
 type ITargetPlaylist =
   abstract TargetPlaylist: TargetPlaylist.Cmd -> Task<Result<TargetedPlaylist, TargetPlaylist.Error>>
 
-type ISetRecommendationsEngine =
-  abstract SetRecommendationsEngine: PresetId * PresetSettings.RecommendationsEngine option -> Task<unit>
-
-type IEnableUniqueArtists =
-  abstract EnableUniqueArtists: PresetId -> Task<unit>
-
-type IDisableUniqueArtists =
-  abstract DisableUniqueArtists: PresetId -> Task<unit>
-
-type IIncludeLikedTracks =
-  abstract IncludeLikedTracks: PresetId -> Task<unit>
-
-type IExcludeLikedTracks =
-  abstract ExcludeLikedTracks: PresetId -> Task<unit>
-
-type IIgnoreLikedTracks =
-  abstract IgnoreLikedTracks: PresetId -> Task<unit>
-
 type IAppendToTargetedPlaylist =
   abstract AppendToTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<unit>
 
@@ -346,7 +325,6 @@ type IPatchPresetSettings =
 type IPresetService =
   inherit IQueueRun
 
-  inherit ISetPresetSize
   inherit ICreatePreset
   inherit IGetPreset
   inherit IPatchPresetSettings
@@ -356,15 +334,6 @@ type IPresetService =
   inherit IIncludeArtist
   inherit IExcludeArtist
   inherit ITargetPlaylist
-
-  inherit ISetRecommendationsEngine
-
-  inherit IEnableUniqueArtists
-  inherit IDisableUniqueArtists
-
-  inherit IIncludeLikedTracks
-  inherit IExcludeLikedTracks
-  inherit IIgnoreLikedTracks
 
   inherit IAppendToTargetedPlaylist
   inherit IOverwriteTargetedPlaylist
@@ -378,12 +347,8 @@ type IPresetService =
   inherit ISetOnlyLiked
   inherit ISetAll
 
-type ISetCurrentPresetSize =
-  abstract SetCurrentPresetSize: UserId * PresetSettings.RawPresetSize -> Task<Result<unit, PresetSettings.ParsingError>>
-
 type ISetCurrentPreset =
   abstract SetCurrentPreset: UserId * PresetId -> Task<unit>
 
 type IUserService =
-  inherit ISetCurrentPresetSize
   inherit ISetCurrentPreset
