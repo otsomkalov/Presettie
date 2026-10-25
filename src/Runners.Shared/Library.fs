@@ -1,5 +1,6 @@
 ﻿namespace Runners.Shared
 
+open MusicPlatform
 open System.ComponentModel.DataAnnotations
 open System.Net
 open System.Net.Http
@@ -7,7 +8,6 @@ open System.Net.Http.Json
 open System.Threading.Tasks
 open Domain.Core
 open FsToolkit.ErrorHandling
-open MusicPlatform
 open Shared
 
 type IncludeArtistRequest = { Id: Artist.RawArtistId }
@@ -21,13 +21,6 @@ type CreatePresetRequest =
   {
     [<Required; MinLength(3)>]
     Name: string
-  }
-
-type CurrentUserResponse =
-  {
-    Id: UserId
-    CurrentPresetId: PresetId option
-    MusicPlatformId: MusicPlatform.UserId option
   }
 
 type IApiClient =
@@ -47,6 +40,7 @@ type IApiClient =
   abstract RemoveTargetedPlaylist: PresetId * PlaylistId -> Task<Preset>
   abstract CreatePreset: CreatePresetRequest -> Task<Preset>
   abstract PatchPresetSettings: PresetId * PatchPresetSettingsCommand list -> TaskResult<Preset, Preset.GetPresetError>
+  abstract GetCurrentUser: unit -> Task<User>
 
 type ApiClient(httpClient: HttpClient) =
   interface IApiClient with
@@ -192,3 +186,5 @@ type ApiClient(httpClient: HttpClient) =
       | HttpStatusCode.NotFound -> return! Error Preset.GetPresetError.NotFound
       | HttpStatusCode.Forbidden -> return! Error Preset.GetPresetError.Forbidden
     }
+
+    member this.GetCurrentUser() = task { return! httpClient.GetFromJsonAsync<User>("users/current", JSON.options) }

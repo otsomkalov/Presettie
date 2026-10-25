@@ -31,19 +31,18 @@ let private createMessageWithReply (text: string) (replyText: string) : Message 
   }
 
 type StartMessageHandler() =
-  let userRepo = Mock<ILoadUser>()
   let apiClient = Mock<IApiClient>()
   let authService = Mock<ICompleteAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
   let handler =
-    Message.startMessageHandler userRepo.Object apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.startMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle /start command and send current preset``() =
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
 
     let message = createMessage Commands.start
@@ -53,7 +52,6 @@ type StartMessageHandler() =
 
       Assert.Equal(Some(), result)
 
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
@@ -61,7 +59,7 @@ type StartMessageHandler() =
   [<Fact>]
   member _.``should return Some when processing /start command``() =
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
 
     let message = createMessage Commands.start
@@ -74,7 +72,7 @@ type StartMessageHandler() =
 
   [<Fact>]
   member _.``should handle /start command with state and complete auth successfully``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     chatCtx.Setup(_.SendMessage(It.IsAny())).ReturnsAsync(Mocks.botMessageId)
     authService.Setup(_.CompleteAuth(It.IsAny<AccountId>(), It.IsAny<State>())).ReturnsAsync(Ok())
 
@@ -86,14 +84,14 @@ type StartMessageHandler() =
 
       Assert.Equal(Some(), result)
 
-      userRepo.VerifyAll()
+      apiClient.VerifyAll()
       chatCtx.VerifyAll()
       authService.VerifyAll()
     }
 
   [<Fact>]
   member _.``should handle /start command with invalid state and send StateNotFound error``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     chatCtx.Setup(_.SendMessage(It.IsAny())).ReturnsAsync(Mocks.botMessageId)
     authService.Setup(_.CompleteAuth(It.IsAny<AccountId>(), It.IsAny<State>())).ReturnsAsync(Error CompleteError.StateNotFound)
 
@@ -105,14 +103,14 @@ type StartMessageHandler() =
 
       Assert.Equal(Some(), result)
 
-      userRepo.VerifyAll()
+      apiClient.VerifyAll()
       chatCtx.VerifyAll()
       authService.VerifyAll()
     }
 
   [<Fact>]
   member _.``should handle /start command with state that doesn't belong to user``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     chatCtx.Setup(_.SendMessage(It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
     authService.Setup(_.CompleteAuth(It.IsAny<AccountId>(), It.IsAny<State>())).ReturnsAsync(Error CompleteError.StateDoesntBelongToUser)
@@ -125,7 +123,7 @@ type StartMessageHandler() =
 
       Assert.Equal(Some(), result)
 
-      userRepo.VerifyAll()
+      apiClient.VerifyAll()
       chatCtx.VerifyAll()
       authService.VerifyAll()
     }
@@ -139,7 +137,6 @@ type StartMessageHandler() =
 
       Assert.Equal(None, result)
 
-      userRepo.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
       authService.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
@@ -536,7 +533,6 @@ type MyPresetsMessageHandler() =
     }
 
 type BackMessageButtonHandler() =
-  let userRepo = Mock<ILoadUser>()
   let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
@@ -544,11 +540,11 @@ type BackMessageButtonHandler() =
   do resourceProvider.Setup(_.Item(Buttons.Back)).Returns(Buttons.Back) |> ignore
 
   let handler =
-    Message.backMessageButtonHandler userRepo.Object apiClient.Object resourceProvider.Object chatCtx.Object
+    Message.backMessageButtonHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle Back button and send current preset``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
@@ -559,7 +555,6 @@ type BackMessageButtonHandler() =
 
       Assert.Equal(Some(), result)
 
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
@@ -576,7 +571,6 @@ type BackMessageButtonHandler() =
       resourceProvider.Verify(_.Item(Buttons.Back))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
-      userRepo.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
@@ -592,7 +586,6 @@ type BackMessageButtonHandler() =
       resourceProvider.Verify(_.Item(Buttons.Back))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
-      userRepo.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
@@ -608,13 +601,11 @@ type BackMessageButtonHandler() =
       resourceProvider.Verify(_.Item(Buttons.Back))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
-      userRepo.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
 
 type PresetSettingsMessageHandler() =
-  let userRepo = Mock<ILoadUser>()
   let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
@@ -624,11 +615,11 @@ type PresetSettingsMessageHandler() =
     |> ignore
 
   let handler =
-    Message.presetSettingsMessageHandler userRepo.Object apiClient.Object resourceProvider.Object chatCtx.Object
+    Message.presetSettingsMessageHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle Settings button and send preset settings``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
@@ -639,7 +630,6 @@ type PresetSettingsMessageHandler() =
 
       Assert.Equal(Some(), result)
 
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
@@ -656,7 +646,6 @@ type PresetSettingsMessageHandler() =
       resourceProvider.Verify(_.Item(Buttons.Settings))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
-      userRepo.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
@@ -672,7 +661,6 @@ type PresetSettingsMessageHandler() =
       resourceProvider.Verify(_.Item(Buttons.Settings))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
-      userRepo.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
@@ -688,7 +676,6 @@ type PresetSettingsMessageHandler() =
       resourceProvider.Verify(_.Item(Buttons.Settings))
       resourceProvider.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
-      userRepo.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
@@ -753,7 +740,6 @@ type SetPresetSizeMessageButtonHandler() =
     }
 
 type SetPresetSizeMessageHandler() =
-  let userRepo = Mock<IUserRepo>()
   let apiClient = Mock<IApiClient>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
@@ -779,11 +765,11 @@ type SetPresetSizeMessageHandler() =
     |> ignore
 
   let handler =
-    Message.setPresetSizeMessageHandler userRepo.Object apiClient.Object resourceProvider.Object chatCtx.Object
+    Message.setPresetSizeMessageHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with valid size and call onSuccess``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     apiClient.Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchSize 42 ])).ReturnsAsync(Ok Mocks.preset)
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
     resourceProvider.Setup(_.Item(Buttons.SetPresetSize)).Returns(Buttons.SetPresetSize)
@@ -797,14 +783,13 @@ type SetPresetSizeMessageHandler() =
     task {
       let! result = handler Mocks.chat message
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
 
   [<Fact>]
   member _.``should handle /size command and call onSuccess``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     apiClient.Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchSize 42 ])).ReturnsAsync(Ok Mocks.preset)
     chatCtx.Setup(_.SendKeyboard(It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
     resourceProvider.Setup(_.Item(Buttons.SetPresetSize)).Returns(Buttons.SetPresetSize)
@@ -815,14 +800,13 @@ type SetPresetSizeMessageHandler() =
     task {
       let! result = handler Mocks.chat message
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
 
   [<Fact>]
   member _.``should handle reply with not found and call sendPresetErrorMessage``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     apiClient.Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchSize 1 ])).ReturnsAsync(Error Preset.GetPresetError.NotFound)
     chatCtx.Setup(_.ReplyToMessage(Mocks.chatMessageId, Messages.PresetNotFound)).ReturnsAsync(Mocks.botMessageId)
     resourceProvider.Setup(_.Item(Messages.PresetNotFound)).Returns(Messages.PresetNotFound)
@@ -835,14 +819,13 @@ type SetPresetSizeMessageHandler() =
     task {
       let! result = handler Mocks.chat message
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
 
   [<Fact>]
   member _.``should handle reply with forbidden and call sendPresetErrorMessage``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     apiClient.Setup(_.PatchPresetSettings(Mocks.presetId, [ PatchSize 1000 ])).ReturnsAsync(Error Preset.GetPresetError.Forbidden)
     chatCtx.Setup(_.ReplyToMessage(Mocks.chatMessageId, Messages.PresetAccessForbidden)).ReturnsAsync(Mocks.botMessageId)
     resourceProvider.Setup(_.Item(Messages.PresetAccessForbidden)).Returns(Messages.PresetAccessForbidden)
@@ -855,7 +838,6 @@ type SetPresetSizeMessageHandler() =
     task {
       let! result = handler Mocks.chat message
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
     }
@@ -868,7 +850,6 @@ type SetPresetSizeMessageHandler() =
       let! result = handler Mocks.chat message
       Assert.Equal(None, result)
       chatCtx.VerifyNoOtherCalls()
-      userRepo.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
     }
 
@@ -1205,7 +1186,6 @@ type TargetPlaylistButtonMessageHandler() =
     }
 
 type IncludePlaylistMessageHandler() =
-  let userRepo = Mock<ILoadUser>()
   let apiClient = Mock<IApiClient>()
   let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
@@ -1216,11 +1196,11 @@ type IncludePlaylistMessageHandler() =
     |> ignore
 
   let handler =
-    Message.includePlaylistMessageHandler userRepo.Object apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.includePlaylistMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with included playlist and send message``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1244,7 +1224,6 @@ type IncludePlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1252,7 +1231,7 @@ type IncludePlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should handle /includeplaylist command and send message``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1276,7 +1255,6 @@ type IncludePlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1284,7 +1262,7 @@ type IncludePlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should send IdCannotBeParsed on id parsing error``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1307,7 +1285,6 @@ type IncludePlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1315,7 +1292,7 @@ type IncludePlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should send NotFound when playlist not found``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1338,7 +1315,6 @@ type IncludePlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1346,7 +1322,7 @@ type IncludePlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should trigger login when unauthorized``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1367,14 +1343,12 @@ type IncludePlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
     }
 
 type ExcludePlaylistMessageHandler() =
-  let userRepo = Mock<ILoadUser>()
   let apiClient = Mock<IApiClient>()
   let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
@@ -1385,11 +1359,11 @@ type ExcludePlaylistMessageHandler() =
     |> ignore
 
   let handler =
-    Message.excludePlaylistMessageHandler userRepo.Object apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.excludePlaylistMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with excluded playlist and send message``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1413,7 +1387,6 @@ type ExcludePlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1421,7 +1394,7 @@ type ExcludePlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should handle /excludeplaylist command and send message``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1445,7 +1418,6 @@ type ExcludePlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1453,7 +1425,7 @@ type ExcludePlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should send IdCannotBeParsed on id parsing error``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1476,7 +1448,6 @@ type ExcludePlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1484,7 +1455,7 @@ type ExcludePlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should send NotFound when playlist not found``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1507,7 +1478,6 @@ type ExcludePlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1515,7 +1485,7 @@ type ExcludePlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should trigger login when unauthorized``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1536,14 +1506,12 @@ type ExcludePlaylistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
     }
 
 type ExcludeArtistMessageHandler() =
-  let userRepo = Mock<ILoadUser>()
   let apiClient = Mock<IApiClient>()
   let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
@@ -1554,11 +1522,12 @@ type ExcludeArtistMessageHandler() =
     |> ignore
 
   let handler =
-    Message.excludeArtistMessageHandler userRepo.Object apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.excludeArtistMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with excluded artist and send message``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient.Setup(_.ExcludeArtist(Mocks.presetId, { Id = Artist.RawArtistId "artist123" })).ReturnsAsync(Ok(Mocks.artist2))
 
@@ -1572,7 +1541,6 @@ type ExcludeArtistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1580,7 +1548,7 @@ type ExcludeArtistMessageHandler() =
 
   [<Fact>]
   member _.``should handle /excludeartist command and send message``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient.Setup(_.ExcludeArtist(Mocks.presetId, { Id = Artist.RawArtistId "artist456" })).ReturnsAsync(Ok(Mocks.artist2))
 
@@ -1594,7 +1562,6 @@ type ExcludeArtistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1602,7 +1569,7 @@ type ExcludeArtistMessageHandler() =
 
   [<Fact>]
   member _.``should send IdCannotBeParsed on id parsing error``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(_.ExcludeArtist(Mocks.presetId, { Id = Artist.RawArtistId "invalid-id" }))
@@ -1618,7 +1585,6 @@ type ExcludeArtistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1626,7 +1592,7 @@ type ExcludeArtistMessageHandler() =
 
   [<Fact>]
   member _.``should send NotFound when artist not found``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1650,7 +1616,6 @@ type ExcludeArtistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1658,7 +1623,7 @@ type ExcludeArtistMessageHandler() =
 
   [<Fact>]
   member _.``should trigger login when unauthorized``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(_.ExcludeArtist(Mocks.presetId, { Id = Artist.RawArtistId "artist789" }))
@@ -1672,7 +1637,6 @@ type ExcludeArtistMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
       apiClient.VerifyAll()
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
@@ -1690,11 +1654,11 @@ type IncludeArtistMessageHandler() =
     |> ignore
 
   let handler =
-    Message.includeArtistMessageHandler userRepo.Object apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.includeArtistMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with included artist and send message``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1726,7 +1690,7 @@ type IncludeArtistMessageHandler() =
 
   [<Fact>]
   member _.``should handle /includeartist command and send message``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1757,7 +1721,7 @@ type IncludeArtistMessageHandler() =
 
   [<Fact>]
   member _.``should send IdCannotBeParsed on id parsing error``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(_.IncludeArtist(Mocks.presetId, { Id = Artist.RawArtistId "invalid-id" }))
@@ -1781,7 +1745,7 @@ type IncludeArtistMessageHandler() =
 
   [<Fact>]
   member _.``should send NotFound when artist not found``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1813,7 +1777,7 @@ type IncludeArtistMessageHandler() =
 
   [<Fact>]
   member _.``should trigger login when unauthorized``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(_.IncludeArtist(Mocks.presetId, { Id = Artist.RawArtistId "artist789" }))
@@ -1845,11 +1809,11 @@ type TargetPlaylistMessageHandler() =
     |> ignore
 
   let handler =
-    Message.targetPlaylistMessageHandler userRepo.Object apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.targetPlaylistMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with targeted playlist and send message``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1880,7 +1844,7 @@ type TargetPlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should handle /targetplaylist command and send message``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1911,7 +1875,7 @@ type TargetPlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should send IdCannotBeParsed on id parsing error``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1942,7 +1906,7 @@ type TargetPlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should send NotFound when playlist not found``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -1973,7 +1937,7 @@ type TargetPlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should send PlaylistIsReadonly on access error``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -2004,7 +1968,7 @@ type TargetPlaylistMessageHandler() =
 
   [<Fact>]
   member _.``should trigger login when unauthorized``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient
       .Setup(
@@ -2055,11 +2019,11 @@ type QueuePresetRunMessageHandler() =
     |> ignore
 
   let handler =
-    Message.queuePresetRunMessageHandler userRepo.Object apiClient.Object resourceProvider.Object chatCtx.Object
+    Message.queuePresetRunMessageHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle /run command and queue preset run``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.simplePreset)
 
@@ -2080,7 +2044,7 @@ type QueuePresetRunMessageHandler() =
 
   [<Fact>]
   member _.``should handle RunPreset button and queue preset run``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.simplePreset)
 
@@ -2101,7 +2065,7 @@ type QueuePresetRunMessageHandler() =
 
   [<Fact>]
   member _.``should send error message when no included playlists``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
     apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoIncludedPlaylists ])
 
     resourceProvider.Setup(_.Item(Messages.NoIncludedPlaylists)).Returns(Messages.NoIncludedPlaylists)
@@ -2121,7 +2085,7 @@ type QueuePresetRunMessageHandler() =
 
   [<Fact>]
   member _.``should send error message when no targeted playlists``() =
-    userRepo.Setup(_.LoadUser(Mocks.userId)).ReturnsAsync(Mocks.user)
+    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
 
     apiClient.Setup(_.RunPreset(Mocks.presetId)).ReturnsAsync(Error [ Preset.ValidationError.NoTargetedPlaylists ])
 

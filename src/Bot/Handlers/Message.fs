@@ -19,7 +19,6 @@ open Bot.Resources
 open FsToolkit.ErrorHandling
 
 let startMessageHandler
-  (userRepo: #ILoadUser)
   (apiClient: IApiClient)
   (authService: #ICompleteAuth)
   (resp: IResourceProvider)
@@ -28,13 +27,13 @@ let startMessageHandler
   fun chat message -> task {
     match message with
     | { Text = Equals Commands.start } ->
-      do! User.sendCurrentPreset resp userRepo apiClient chatCtx message.Id chat.UserId
+      do! User.sendCurrentPreset resp apiClient chatCtx message.Id ()
 
       return Some()
     | {
         Text = CommandWithData Commands.start state
       } ->
-      let! user = userRepo.LoadUser chat.UserId
+      let! user = apiClient.GetCurrentUser()
 
       let processSuccessfulLogin =
         fun () -> chatCtx.SendMessage resp[Messages.SuccessfulLogin] |> Task.map ignore
@@ -106,24 +105,23 @@ let myPresetsMessageHandler apiClient (resp: IResourceProvider) (chatCtx: #ISend
     | _ -> return None
   }
 
-let backMessageButtonHandler loadUser apiClient (resp: IResourceProvider) (chatCtx: #ISendKeyboard) : MessageHandler<Chat, Message> =
+let backMessageButtonHandler apiClient (resp: IResourceProvider) (chatCtx: #ISendKeyboard) : MessageHandler<Chat, Message> =
   fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.Back)) ->
-      do! User.sendCurrentPreset resp loadUser apiClient chatCtx message.Id chat.UserId
+      do! User.sendCurrentPreset resp apiClient chatCtx message.Id ()
 
       return Some()
     | _ -> return None
   }
 
-let presetSettingsMessageHandler userRepo apiClient (resp: IResourceProvider) chatCtx : MessageHandler<Chat, Message> =
-  let sendSettingsMessage =
-    User.sendCurrentPresetSettings resp userRepo apiClient chatCtx
+let presetSettingsMessageHandler apiClient (resp: IResourceProvider) chatCtx : MessageHandler<Chat, Message> =
+  let sendSettingsMessage = User.sendCurrentPresetSettings resp apiClient chatCtx
 
   fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.Settings)) ->
-      do! sendSettingsMessage message.Id chat.UserId
+      do! sendSettingsMessage message.Id ()
 
       return Some()
     | _ -> return None
@@ -139,7 +137,6 @@ let setPresetSizeMessageButtonHandler (resp: IResourceProvider) (chatCtx: #IAskF
   }
 
 let setPresetSizeMessageHandler
-  (userRepo: IUserRepo)
   (apiClient: IApiClient)
   (resp: IResourceProvider)
   (botClient: #ISendMessage & #ISendKeyboard)
@@ -167,7 +164,7 @@ let setPresetSizeMessageHandler
 
   let patchSize messageId =
     fun userId size -> task {
-      let! user = userRepo.LoadUser userId
+      let! user = apiClient.GetCurrentUser()
 
       match user.CurrentPresetId with
       | Some presetId ->
@@ -326,7 +323,6 @@ let targetPlaylistButtonMessageHandler
   }
 
 let includePlaylistMessageHandler
-  (userRepo: #ILoadUser)
   (apiClient: IApiClient)
   authService
   (resp: IResourceProvider)
@@ -335,7 +331,8 @@ let includePlaylistMessageHandler
   let includePlaylist =
     fun userId rawPlaylistId -> task {
       let! currentPresetId =
-        userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+        apiClient.GetCurrentUser()
+        |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let includePlaylistResult =
         apiClient.IncludePlaylist(currentPresetId, { Id = rawPlaylistId })
@@ -374,7 +371,6 @@ let includePlaylistMessageHandler
   }
 
 let excludePlaylistMessageHandler
-  (userRepo: #ILoadUser)
   (apiClient: IApiClient)
   authService
   (resp: IResourceProvider)
@@ -383,7 +379,8 @@ let excludePlaylistMessageHandler
   let excludePlaylist =
     fun userId rawPlaylistId -> task {
       let! currentPresetId =
-        userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+        apiClient.GetCurrentUser()
+        |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let excludePlaylistResult =
         apiClient.ExcludePlaylist(currentPresetId, { Id = rawPlaylistId })
@@ -422,7 +419,6 @@ let excludePlaylistMessageHandler
   }
 
 let excludeArtistMessageHandler
-  (userRepo: #ILoadUser)
   (apiClient: IApiClient)
   authService
   (resp: IResourceProvider)
@@ -431,7 +427,8 @@ let excludeArtistMessageHandler
   let excludeArtist =
     fun userId rawArtistId -> task {
       let! currentPresetId =
-        userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+        apiClient.GetCurrentUser()
+        |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let excludeArtistResult =
         apiClient.ExcludeArtist(currentPresetId, { Id = rawArtistId })
@@ -469,7 +466,6 @@ let excludeArtistMessageHandler
   }
 
 let includeArtistMessageHandler
-  (userRepo: #ILoadUser)
   (apiClient: IApiClient)
   authService
   (resp: IResourceProvider)
@@ -478,7 +474,8 @@ let includeArtistMessageHandler
   let includeArtist =
     fun userId rawArtistId -> task {
       let! currentPresetId =
-        userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+        apiClient.GetCurrentUser()
+        |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let includeArtistResult =
         apiClient.IncludeArtist(currentPresetId, { Id = rawArtistId })
@@ -516,7 +513,6 @@ let includeArtistMessageHandler
   }
 
 let targetPlaylistMessageHandler
-  (userRepo: #ILoadUser)
   (apiClient: IApiClient)
   authService
   (resp: IResourceProvider)
@@ -525,7 +521,8 @@ let targetPlaylistMessageHandler
   let targetPlaylist =
     fun userId rawPlaylistId -> task {
       let! currentPresetId =
-        userRepo.LoadUser userId |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
+        apiClient.GetCurrentUser()
+        |> Task.map (fun u -> u.CurrentPresetId |> Option.get)
 
       let targetPlaylistResult =
         apiClient.TargetPlaylist(currentPresetId, { Id = rawPlaylistId })
@@ -564,16 +561,16 @@ let targetPlaylistMessageHandler
     | _ -> return None
   }
 
-let queuePresetRunMessageHandler userRepo apiClient (resp: IResourceProvider) chatCtx : MessageHandler<Chat, Message> =
-  let queueRun = User.queueCurrentPresetRun resp userRepo chatCtx apiClient
+let queuePresetRunMessageHandler apiClient (resp: IResourceProvider) chatCtx : MessageHandler<Chat, Message> =
+  let queueRun = User.queueCurrentPresetRun resp chatCtx apiClient
 
   fun chat message -> task {
     match message.Text with
     | Equals Commands.runPreset ->
-      do! queueRun chat.UserId
+      do! queueRun ()
       return Some()
     | Equals(resp.Item(Buttons.RunPreset)) ->
-      do! queueRun chat.UserId
+      do! queueRun ()
       return Some()
     | _ -> return None
   }
