@@ -218,7 +218,12 @@ type SpotifyOAuthMusicPlatformFactory
           PKCETokenResponse(
             AccessToken = completedAuth.AccessToken.Value,
             RefreshToken = (completedAuth.RefreshToken |> Option.get |> _.Value),
-            Scope = (oAuthSettings.Scope |> String.concat " ")
+            Scope = (oAuthSettings.Scope |> String.concat " "),
+            ExpiresIn =
+              (completedAuth.AccessToken.ExpiresAt - DateTime.UtcNow
+               |> _.TotalSeconds
+               |> Math.Floor
+               |> int)
           )
         )
 

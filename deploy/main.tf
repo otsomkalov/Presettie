@@ -327,6 +327,11 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-generator" {
       Storage__QueueName              = azurerm_storage_queue.stq-bot-requests-presettie.name
       Storage__NotificationsQueueName = azurerm_storage_queue.stq-bot-notifications-presettie.name
 
+      OAuth__Spotify__ClientId              = var.oauth-spotify-client-id
+      OAuth__Spotify__RedirectUri           = var.oauth-spotify-redirect-uri
+      OAuth__Spotify__AuthorizationEndpoint = var.oauth-spotify-authorization-endpoint
+      OAuth__Spotify__TokenEndpoint         = var.oauth-spotify-token-endpoint
+
       "Logging__LogLevel__Microsoft.Hosting" = "Warning"
     },
     {
