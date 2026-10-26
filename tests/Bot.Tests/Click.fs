@@ -531,11 +531,7 @@ type overwriteTargetedPlaylistClickHandler() =
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.overwriteTargetedPlaylistClickHandler
-      apiClient.Object
-      musicPlatformFactory.Object
-      resourceProvider.Object
-      botService.Object
+    Click.overwriteTargetedPlaylistClickHandler apiClient.Object musicPlatformFactory.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -548,6 +544,7 @@ type overwriteTargetedPlaylistClickHandler() =
     apiClient
       .Setup(_.PatchTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId), [ PatchOverwrite true ]))
       .ReturnsAsync(Ok Mocks.targetedPlaylist)
+
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
@@ -629,11 +626,7 @@ type appendToTargetedPlaylistClickHandler() =
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.appendToTargetedPlaylistClickHandler
-      apiClient.Object
-      musicPlatformFactory.Object
-      resourceProvider.Object
-      botService.Object
+    Click.appendToTargetedPlaylistClickHandler apiClient.Object musicPlatformFactory.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -646,6 +639,7 @@ type appendToTargetedPlaylistClickHandler() =
     apiClient
       .Setup(_.PatchTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId), [ PatchOverwrite false ]))
       .ReturnsAsync(Ok Mocks.targetedPlaylist)
+
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
