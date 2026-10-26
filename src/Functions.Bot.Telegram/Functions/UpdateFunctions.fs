@@ -19,7 +19,6 @@ open otsom.fs.Resources
 type UpdateFunctions
   (
     authSvc: IAuthService,
-    presetService,
     buildMusicPlatform,
     buildChatContext,
     chatRepo: IChatRepo,
@@ -32,17 +31,7 @@ type UpdateFunctions
   inherit ControllerBase()
 
   let updateHandler =
-    Update.main
-      authSvc
-      presetService
-      buildMusicPlatform
-      buildChatContext
-      chatRepo
-      appOAuthClient
-      apiClientFactory
-      createDefaultResp
-      createResp
-      logger
+    Update.main authSvc buildMusicPlatform buildChatContext chatRepo appOAuthClient apiClientFactory createDefaultResp createResp logger
 
   [<Function("HandleUpdateAsync")>]
   member this.HandleUpdateAsync

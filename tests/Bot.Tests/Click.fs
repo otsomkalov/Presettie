@@ -526,7 +526,6 @@ type ignoreLikedTracksClickHandler() =
 
 type overwriteTargetedPlaylistClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let presetService = Mock<IPresetService>()
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
@@ -534,7 +533,6 @@ type overwriteTargetedPlaylistClickHandler() =
   let handler =
     Click.overwriteTargetedPlaylistClickHandler
       apiClient.Object
-      presetService.Object
       musicPlatformFactory.Object
       resourceProvider.Object
       botService.Object
@@ -547,7 +545,9 @@ type overwriteTargetedPlaylistClickHandler() =
     let click =
       createClick [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "o" ]
 
-    presetService.Setup(_.OverwriteTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId))).ReturnsAsync(())
+    apiClient
+      .Setup(_.PatchTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId), [ PatchOverwrite true ]))
+      .ReturnsAsync(Ok Mocks.targetedPlaylist)
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
@@ -557,7 +557,6 @@ type overwriteTargetedPlaylistClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
       musicPlatformFactory.VerifyAll()
       apiClient.VerifyAll()
       botService.VerifyAll()
@@ -578,7 +577,6 @@ type overwriteTargetedPlaylistClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      presetService.VerifyNoOtherCalls()
       musicPlatformFactory.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
@@ -626,7 +624,6 @@ type setCurrentPresetClickHandler() =
 
 type appendToTargetedPlaylistClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let presetService = Mock<IAppendToTargetedPlaylist>()
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
@@ -634,7 +631,6 @@ type appendToTargetedPlaylistClickHandler() =
   let handler =
     Click.appendToTargetedPlaylistClickHandler
       apiClient.Object
-      presetService.Object
       musicPlatformFactory.Object
       resourceProvider.Object
       botService.Object
@@ -647,7 +643,9 @@ type appendToTargetedPlaylistClickHandler() =
     let click =
       createClick [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "a" ]
 
-    presetService.Setup(_.AppendToTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId))).ReturnsAsync(())
+    apiClient
+      .Setup(_.PatchTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId), [ PatchOverwrite false ]))
+      .ReturnsAsync(Ok Mocks.targetedPlaylist)
     musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
@@ -657,7 +655,6 @@ type appendToTargetedPlaylistClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      presetService.VerifyAll()
       musicPlatformFactory.VerifyAll()
       apiClient.VerifyAll()
       botService.VerifyAll()
@@ -678,7 +675,6 @@ type appendToTargetedPlaylistClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      presetService.VerifyNoOtherCalls()
       musicPlatformFactory.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()

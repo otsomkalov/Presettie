@@ -410,7 +410,6 @@ let removeTargetedPlaylistClickHandler (apiClient: IApiClient) (resp: IResourceP
 
 let appendToTargetedPlaylistClickHandler
   (apiClient: IApiClient)
-  (presetService: #IAppendToTargetedPlaylist)
   (musicPlatformFactory: IMusicPlatformFactory)
   (resp: IResourceProvider)
   botService
@@ -420,7 +419,11 @@ let appendToTargetedPlaylistClickHandler
     | [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "a" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId |> WritablePlaylistId
-        do! presetService.AppendToTargetedPlaylist(presetId, playlistId)
+
+        do!
+          apiClient.PatchTargetedPlaylist(presetId, playlistId, [ PatchOverwrite false ])
+          |> Task.ignore
+
         let! mp = musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
         do! TargetedPlaylist.show resp botService apiClient mp click.Id click.MessageId presetId playlistId
         return Some()
@@ -428,8 +431,7 @@ let appendToTargetedPlaylistClickHandler
     | _ -> Task.FromResult(None)
 
 let overwriteTargetedPlaylistClickHandler
-  apiClient
-  (presetService: IPresetService)
+  (apiClient: IApiClient)
   (musicPlatformFactory: IMusicPlatformFactory)
   (resp: IResourceProvider)
   botService
@@ -439,7 +441,11 @@ let overwriteTargetedPlaylistClickHandler
     | [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "o" ] -> task {
         let presetId = PresetId presetId
         let playlistId = PlaylistId playlistId |> WritablePlaylistId
-        do! presetService.OverwriteTargetedPlaylist(presetId, playlistId)
+
+        do!
+          apiClient.PatchTargetedPlaylist(presetId, playlistId, [ PatchOverwrite true ])
+          |> Task.ignore
+
         let! mp = musicPlatformFactory.GetMusicPlatform(chat.UserId.ToMusicPlatformId())
         do! TargetedPlaylist.show resp botService apiClient mp click.Id click.MessageId presetId playlistId
         return Some()

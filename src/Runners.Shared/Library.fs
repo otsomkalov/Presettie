@@ -43,6 +43,9 @@ type IApiClient =
   abstract GetCurrentUser: unit -> Task<User>
   abstract PatchCurrentUser: PatchUserCommand list -> Task<User>
 
+  abstract PatchTargetedPlaylist:
+    PresetId * TargetedPlaylistId * PatchTargetedPlaylistCommand list -> TaskResult<TargetedPlaylist, Preset.GetPresetError>
+
 type ApiClient(httpClient: HttpClient) =
   interface IApiClient with
     member this.ListPresets() = task { return! httpClient.GetFromJsonAsync<SimplePreset list>("presets", JSON.options) }
@@ -194,4 +197,14 @@ type ApiClient(httpClient: HttpClient) =
       use! response = httpClient.PatchAsJsonAsync("users/current", patches, JSON.options)
 
       return! response.Content.ReadFromJsonAsync<User>(JSON.options)
+    }
+
+    member this.PatchTargetedPlaylist(PresetId presetId, WritablePlaylistId(PlaylistId playlistId), patches) = taskResult {
+      use! response =
+        httpClient.PatchAsJsonAsync($"presets/{presetId}/targeted-playlists/{playlistId}", patches, JSON.options)
+
+      match response.StatusCode with
+      | HttpStatusCode.OK -> return! response.Content.ReadFromJsonAsync<TargetedPlaylist>(JSON.options)
+      | HttpStatusCode.NotFound -> return! Error Preset.GetPresetError.NotFound
+      | HttpStatusCode.Forbidden -> return! Error Preset.GetPresetError.Forbidden
     }

@@ -48,7 +48,7 @@ let private buildMessageHandlers authService resp botService buildMusicPlatform 
   backMessageButtonHandler apiClient resp botService
 }
 
-let private buildClickHandlers presetService resp botService buildMusicPlatform (apiClient: IApiClient) = clickHandlers {
+let private buildClickHandlers resp botService buildMusicPlatform (apiClient: IApiClient) = clickHandlers {
   listPresetsClickHandler apiClient resp botService
   presetInfoClickHandler apiClient resp botService
   presetSettingsClickHandler apiClient resp botService
@@ -69,8 +69,8 @@ let private buildClickHandlers presetService resp botService buildMusicPlatform 
   excludeLikedTracksClickHandler apiClient resp botService
   ignoreLikedTracksClickHandler apiClient resp botService
 
-  appendToTargetedPlaylistClickHandler apiClient presetService buildMusicPlatform resp botService
-  overwriteTargetedPlaylistClickHandler apiClient presetService buildMusicPlatform resp botService
+  appendToTargetedPlaylistClickHandler apiClient buildMusicPlatform resp botService
+  overwriteTargetedPlaylistClickHandler apiClient buildMusicPlatform resp botService
 
   showIncludedContentClickHandler apiClient resp botService
   showExcludedContentClickHandler apiClient resp botService
@@ -148,7 +148,7 @@ let private contextEnricherMiddleware (enrichers: BotContextEnricher<Update> lis
     do! next context
   }
 
-let private router (logger: ILogger) buildMusicPlatform authService presetService : BotHandler<Update> =
+let private router (logger: ILogger) buildMusicPlatform authService : BotHandler<Update> =
   fun context ->
     let chat = context.GetFeature<Chat>()
     let resp = context.GetFeature<IResourceProvider>()
@@ -168,7 +168,7 @@ let private router (logger: ILogger) buildMusicPlatform authService presetServic
           return! context.Client.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
       | Click click ->
         let! result =
-          buildClickHandlers presetService resp context.Client buildMusicPlatform apiClient chat click
+          buildClickHandlers resp context.Client buildMusicPlatform apiClient chat click
 
         match result with
         | Some() -> return ()
@@ -178,18 +178,7 @@ let private router (logger: ILogger) buildMusicPlatform authService presetServic
           return! context.Client.SendNotification(click.Id, resp[Notifications.UnknownCommand])
     }
 
-let main
-  authService
-  presetService
-  buildMusicPlatform
-  buildBotClient
-  chatRepo
-  appOAuthClient
-  apiClientFactory
-  buildDefaultResp
-  buildResp
-  logger
-  =
+let main authService buildMusicPlatform buildBotClient chatRepo appOAuthClient apiClientFactory buildDefaultResp buildResp logger =
   fun (update: Update) -> task {
     let botSvc = buildBotClient update.ChatId
     let botCtx = BotContext(update, botSvc)
@@ -198,7 +187,7 @@ let main
       exceptionHandlingMiddleware logger
       << authenticationMiddleware buildDefaultResp appOAuthClient chatRepo apiClientFactory
       << contextEnricherMiddleware [ resourceProviderEnricher buildResp ]
-      <| router logger buildMusicPlatform authService presetService
+      <| router logger buildMusicPlatform authService
 
     do! pipeline botCtx
   }
