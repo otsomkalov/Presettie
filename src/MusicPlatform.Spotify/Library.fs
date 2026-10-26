@@ -219,6 +219,7 @@ type SpotifyOAuthMusicPlatformFactory
             AccessToken = completedAuth.AccessToken.Value,
             RefreshToken = (completedAuth.RefreshToken |> Option.get |> _.Value),
             Scope = (oAuthSettings.Scope |> String.concat " "),
+            TokenType = "Bearer",
             ExpiresIn =
               (completedAuth.AccessToken.ExpiresAt - DateTime.UtcNow
                |> _.TotalSeconds
