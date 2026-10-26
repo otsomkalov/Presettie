@@ -13,7 +13,6 @@ open Xunit
 open otsom.fs.Bot
 open otsom.fs.Resources
 open Domain.Repos
-open otsom.fs.Auth
 open Bot.Tests
 
 let private createMessage (text: string) : Message =
@@ -32,12 +31,11 @@ let private createMessageWithReply (text: string) (replyText: string) : Message 
 
 type StartMessageHandler() =
   let apiClient = Mock<IApiClient>()
-  let authService = Mock<ICompleteAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
   let handler =
-    Message.startMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.startMessageHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle /start command and send current preset``() =
@@ -71,64 +69,6 @@ type StartMessageHandler() =
     }
 
   [<Fact>]
-  member _.``should handle /start command with state and complete auth successfully``() =
-    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
-    chatCtx.Setup(_.SendMessage(It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-    authService.Setup(_.CompleteAuth(It.IsAny<AccountId>(), It.IsAny<State>())).ReturnsAsync(Ok())
-
-    let testState = "test-state"
-    let message = createMessage $"{Commands.start} {testState}"
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-
-      apiClient.VerifyAll()
-      chatCtx.VerifyAll()
-      authService.VerifyAll()
-    }
-
-  [<Fact>]
-  member _.``should handle /start command with invalid state and send StateNotFound error``() =
-    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
-    chatCtx.Setup(_.SendMessage(It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-    authService.Setup(_.CompleteAuth(It.IsAny<AccountId>(), It.IsAny<State>())).ReturnsAsync(Error CompleteError.StateNotFound)
-
-    let testState = "invalid-state"
-    let message = createMessage $"{Commands.start} {testState}"
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-
-      apiClient.VerifyAll()
-      chatCtx.VerifyAll()
-      authService.VerifyAll()
-    }
-
-  [<Fact>]
-  member _.``should handle /start command with state that doesn't belong to user``() =
-    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
-    chatCtx.Setup(_.SendMessage(It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-
-    authService.Setup(_.CompleteAuth(It.IsAny<AccountId>(), It.IsAny<State>())).ReturnsAsync(Error CompleteError.StateDoesntBelongToUser)
-
-    let testState = "other-user-state"
-    let message = createMessage $"{Commands.start} {testState}"
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-
-      apiClient.VerifyAll()
-      chatCtx.VerifyAll()
-      authService.VerifyAll()
-    }
-
-  [<Fact>]
   member _.``should return None for unmatched message``() =
     let message = createMessage "some random text"
 
@@ -138,7 +78,6 @@ type StartMessageHandler() =
       Assert.Equal(None, result)
 
       apiClient.VerifyNoOtherCalls()
-      authService.VerifyNoOtherCalls()
       chatCtx.VerifyNoOtherCalls()
     }
 
@@ -978,10 +917,6 @@ type CreatePresetMessageHandler() =
     }
 
 type IncludePlaylistButtonMessageHandler() =
-  let musicPlatform = Mock<IMusicPlatform>()
-  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
-
-  let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -994,12 +929,10 @@ type IncludePlaylistButtonMessageHandler() =
     |> ignore
 
   let handler =
-    Message.includePlaylistButtonMessageHandler musicPlatformFactory.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.includePlaylistButtonMessageHandler resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should ask for included playlist when platform present``() =
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some musicPlatform.Object)
-
     chatCtx.Setup(_.AskForReply(It.IsAny())).ReturnsAsync(())
 
     let message = createMessage Buttons.IncludePlaylist
@@ -1012,28 +945,7 @@ type IncludePlaylistButtonMessageHandler() =
       chatCtx.Verify(_.AskForReply(Messages.SendIncludedPlaylist))
     }
 
-  [<Fact>]
-  member _.``should send login when platform missing``() =
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(None)
-
-    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-
-    let message = createMessage Buttons.IncludePlaylist
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-
-      chatCtx.VerifyAll()
-      chatCtx.VerifyNoOtherCalls()
-    }
-
 type ExcludePlaylistButtonMessageHandler() =
-  let musicPlatform = Mock<IMusicPlatform>()
-  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
-
-  let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -1046,12 +958,10 @@ type ExcludePlaylistButtonMessageHandler() =
     |> ignore
 
   let handler =
-    Message.excludePlaylistButtonMessageHandler musicPlatformFactory.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.excludePlaylistButtonMessageHandler resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should ask for excluded playlist when platform present``() =
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some musicPlatform.Object)
-
     chatCtx.Setup(_.AskForReply(It.IsAny())).ReturnsAsync(())
 
     let message = createMessage Buttons.ExcludePlaylist
@@ -1064,28 +974,7 @@ type ExcludePlaylistButtonMessageHandler() =
       chatCtx.Verify(_.AskForReply(Messages.SendExcludedPlaylist))
     }
 
-  [<Fact>]
-  member _.``should send login when platform missing``() =
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(None)
-
-    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-
-    let message = createMessage Buttons.ExcludePlaylist
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-
-      chatCtx.VerifyAll()
-      chatCtx.VerifyNoOtherCalls()
-    }
-
 type ExcludeArtistButtonMessageHandler() =
-  let musicPlatform = Mock<IMusicPlatform>()
-  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
-
-  let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -1098,11 +987,10 @@ type ExcludeArtistButtonMessageHandler() =
     |> ignore
 
   let handler =
-    Message.excludeArtistButtonMessageHandler musicPlatformFactory.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.excludeArtistButtonMessageHandler resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should ask for excluded artist when platform present``() =
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some musicPlatform.Object)
     chatCtx.Setup(_.AskForReply(Messages.SendExcludedArtist)).ReturnsAsync(())
 
     let message = createMessage Buttons.ExcludeArtist
@@ -1111,33 +999,11 @@ type ExcludeArtistButtonMessageHandler() =
       let! result = handler Mocks.chat message
 
       Assert.Equal(Some(), result)
-      musicPlatformFactory.VerifyAll()
-      chatCtx.VerifyAll()
-      chatCtx.VerifyNoOtherCalls()
-    }
-
-  [<Fact>]
-  member _.``should send login when platform missing``() =
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(None)
-
-    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-
-    let message = createMessage Buttons.ExcludeArtist
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-
       chatCtx.VerifyAll()
       chatCtx.VerifyNoOtherCalls()
     }
 
 type TargetPlaylistButtonMessageHandler() =
-  let musicPlatform = Mock<IMusicPlatform>()
-  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
-
-  let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -1150,12 +1016,10 @@ type TargetPlaylistButtonMessageHandler() =
     |> ignore
 
   let handler =
-    Message.targetPlaylistButtonMessageHandler musicPlatformFactory.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.targetPlaylistButtonMessageHandler resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should ask for targeted playlist when platform present``() =
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(Some musicPlatform.Object)
-
     chatCtx.Setup(_.AskForReply(It.IsAny())).ReturnsAsync(())
 
     let message = createMessage Buttons.TargetPlaylist
@@ -1168,26 +1032,8 @@ type TargetPlaylistButtonMessageHandler() =
       chatCtx.Verify(_.AskForReply(Messages.SendTargetedPlaylist))
     }
 
-  [<Fact>]
-  member _.``should send login when platform missing``() =
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.userId.ToMusicPlatformId())).ReturnsAsync(None)
-
-    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-
-    let message = createMessage Buttons.TargetPlaylist
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-
-      chatCtx.VerifyAll()
-      chatCtx.VerifyNoOtherCalls()
-    }
-
 type IncludePlaylistMessageHandler() =
   let apiClient = Mock<IApiClient>()
-  let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -1196,7 +1042,7 @@ type IncludePlaylistMessageHandler() =
     |> ignore
 
   let handler =
-    Message.includePlaylistMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.includePlaylistMessageHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with included playlist and send message``() =
@@ -1320,37 +1166,8 @@ type IncludePlaylistMessageHandler() =
       chatCtx.VerifyNoOtherCalls()
     }
 
-  [<Fact>]
-  member _.``should trigger login when unauthorized``() =
-    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
-
-    apiClient
-      .Setup(
-        _.IncludePlaylist(
-          Mocks.presetId,
-          {
-            Id = Playlist.RawPlaylistId "playlist789"
-          }
-        )
-      )
-      .ReturnsAsync(Error IncludePlaylist.Error.Unauthorized)
-
-    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-
-    let message = createMessage $"{Commands.includePlaylist} playlist789"
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-      apiClient.VerifyAll()
-      chatCtx.VerifyAll()
-      chatCtx.VerifyNoOtherCalls()
-    }
-
 type ExcludePlaylistMessageHandler() =
   let apiClient = Mock<IApiClient>()
-  let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -1359,7 +1176,7 @@ type ExcludePlaylistMessageHandler() =
     |> ignore
 
   let handler =
-    Message.excludePlaylistMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.excludePlaylistMessageHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with excluded playlist and send message``() =
@@ -1483,37 +1300,8 @@ type ExcludePlaylistMessageHandler() =
       chatCtx.VerifyNoOtherCalls()
     }
 
-  [<Fact>]
-  member _.``should trigger login when unauthorized``() =
-    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
-
-    apiClient
-      .Setup(
-        _.ExcludePlaylist(
-          Mocks.presetId,
-          {
-            Id = Playlist.RawPlaylistId "playlist789"
-          }
-        )
-      )
-      .ReturnsAsync(Error ExcludePlaylist.Error.Unauthorized)
-
-    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-
-    let message = createMessage $"{Commands.excludePlaylist} playlist789"
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-      apiClient.VerifyAll()
-      chatCtx.VerifyAll()
-      chatCtx.VerifyNoOtherCalls()
-    }
-
 type ExcludeArtistMessageHandler() =
   let apiClient = Mock<IApiClient>()
-  let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -1522,7 +1310,7 @@ type ExcludeArtistMessageHandler() =
     |> ignore
 
   let handler =
-    Message.excludeArtistMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.excludeArtistMessageHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with excluded artist and send message``() =
@@ -1621,31 +1409,9 @@ type ExcludeArtistMessageHandler() =
       chatCtx.VerifyNoOtherCalls()
     }
 
-  [<Fact>]
-  member _.``should trigger login when unauthorized``() =
-    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
-
-    apiClient
-      .Setup(_.ExcludeArtist(Mocks.presetId, { Id = Artist.RawArtistId "artist789" }))
-      .ReturnsAsync(Error(ExcludeArtist.Error.Unauthorized))
-
-    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-
-    let message = createMessageWithReply "artist789" Messages.SendExcludedArtist
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-      apiClient.VerifyAll()
-      chatCtx.VerifyAll()
-      chatCtx.VerifyNoOtherCalls()
-    }
-
 type IncludeArtistMessageHandler() =
   let userRepo = Mock<ILoadUser>()
   let apiClient = Mock<IApiClient>()
-  let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -1654,7 +1420,7 @@ type IncludeArtistMessageHandler() =
     |> ignore
 
   let handler =
-    Message.includeArtistMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.includeArtistMessageHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with included artist and send message``() =
@@ -1775,32 +1541,9 @@ type IncludeArtistMessageHandler() =
       chatCtx.VerifyNoOtherCalls()
     }
 
-  [<Fact>]
-  member _.``should trigger login when unauthorized``() =
-    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
-
-    apiClient
-      .Setup(_.IncludeArtist(Mocks.presetId, { Id = Artist.RawArtistId "artist789" }))
-      .ReturnsAsync(Error(IncludeArtist.Error.Unauthorized))
-
-    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
-
-    let message = createMessageWithReply "artist789" Messages.SendIncludedArtist
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
-      apiClient.VerifyAll()
-      chatCtx.VerifyAll()
-      chatCtx.VerifyNoOtherCalls()
-    }
-
 type TargetPlaylistMessageHandler() =
   let userRepo = Mock<ILoadUser>()
   let apiClient = Mock<IApiClient>()
-  let authService = Mock<IInitAuth>()
   let resourceProvider = Mock<IResourceProvider>()
   let chatCtx = Mock<IBotService>()
 
@@ -1809,7 +1552,7 @@ type TargetPlaylistMessageHandler() =
     |> ignore
 
   let handler =
-    Message.targetPlaylistMessageHandler apiClient.Object authService.Object resourceProvider.Object chatCtx.Object
+    Message.targetPlaylistMessageHandler apiClient.Object resourceProvider.Object chatCtx.Object
 
   [<Fact>]
   member _.``should handle reply with targeted playlist and send message``() =
@@ -1953,35 +1696,6 @@ type TargetPlaylistMessageHandler() =
     resourceProvider.Setup(_.Item(Messages.PlaylistIsReadonly)).Returns(Messages.PlaylistIsReadonly)
 
     chatCtx.Setup(_.SendMessage(Messages.PlaylistIsReadonly)).ReturnsAsync(Mocks.botMessageId)
-
-    let message = createMessageWithReply "playlist-url" Messages.SendTargetedPlaylist
-
-    task {
-      let! result = handler Mocks.chat message
-
-      Assert.Equal(Some(), result)
-      userRepo.VerifyAll()
-      apiClient.VerifyAll()
-      chatCtx.VerifyAll()
-      chatCtx.VerifyNoOtherCalls()
-    }
-
-  [<Fact>]
-  member _.``should trigger login when unauthorized``() =
-    apiClient.Setup(_.GetCurrentUser()).ReturnsAsync(Mocks.user)
-
-    apiClient
-      .Setup(
-        _.TargetPlaylist(
-          Mocks.presetId,
-          {
-            Id = Playlist.RawPlaylistId "playlist-url"
-          }
-        )
-      )
-      .ReturnsAsync(Error TargetPlaylist.Error.Unauthorized)
-
-    chatCtx.Setup(_.SendLink(It.IsAny(), It.IsAny(), It.IsAny())).ReturnsAsync(Mocks.botMessageId)
 
     let message = createMessageWithReply "playlist-url" Messages.SendTargetedPlaylist
 

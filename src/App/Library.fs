@@ -13,8 +13,6 @@ open Domain.Repos
 open FsToolkit.ErrorHandling
 open otsom.fs.Extensions
 
-type DomainEvent<'a> = { UserId: UserId; Data: 'a }
-
 [<RequireQualifiedAccess>]
 module rec RunPreset =
   type Cmd = { UserId: UserId; PresetId: PresetId }

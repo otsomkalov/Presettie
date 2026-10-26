@@ -12,7 +12,6 @@ open Bot.Telegram.Repos
 open Bot.Telegram.Settings
 open otsom.fs.Extensions.DependencyInjection
 open otsom.fs.Bot.Telegram
-open otsom.fs.Auth.Spotify
 open otsom.fs.Resources.Mongo
 
 let private configureTelegramBotClient (options: IOptions<TelegramSettings>) =
@@ -26,7 +25,6 @@ let addTelegram (cfg: IConfiguration) (services: IServiceCollection) =
   services.BuildSingleton<ITelegramBotClient, IOptions<TelegramSettings>>(configureTelegramBotClient)
 
   services
-  |> Startup.addSpotifyAuth
   |> Startup.addTelegramBot cfg
   |> Startup.addMongoResources cfg
 

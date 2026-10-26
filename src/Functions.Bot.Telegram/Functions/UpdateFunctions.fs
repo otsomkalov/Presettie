@@ -1,25 +1,19 @@
 ﻿namespace Functions.Bot.Telegram
 
-open App
 open Bot.Handlers
 open Bot.Repos
 open Bot.Workflows
-open Domain.Core
-open Domain.Repos
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
 open Microsoft.Extensions.Logging
 open Telegram.Bot.Types
-open otsom.fs.Auth
 open otsom.fs.OAuth
 open otsom.fs.Resources
 
 type UpdateFunctions
   (
-    authSvc: IAuthService,
-    buildMusicPlatform,
     buildChatContext,
     chatRepo: IChatRepo,
     appOAuthClient: IOAuthClient,
@@ -31,7 +25,7 @@ type UpdateFunctions
   inherit ControllerBase()
 
   let updateHandler =
-    Update.main authSvc buildMusicPlatform buildChatContext chatRepo appOAuthClient apiClientFactory createDefaultResp createResp logger
+    Update.main buildChatContext chatRepo appOAuthClient apiClientFactory createDefaultResp createResp logger
 
   [<Function("HandleUpdateAsync")>]
   member this.HandleUpdateAsync

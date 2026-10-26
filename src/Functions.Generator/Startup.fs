@@ -18,7 +18,6 @@ open Microsoft.Azure.Functions.Worker
 open MusicPlatform
 open MusicPlatform.Cached
 open MusicPlatform.Spotify
-open otsom.fs.Auth
 
 [<RequireQualifiedAccess>]
 module KeyVault =
@@ -32,12 +31,11 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
   services.AddApplicationInsightsTelemetryWorkerService()
   services.ConfigureFunctionsApplicationInsights()
 
-  services.AddSingleton<IMusicPlatformFactory, SpotifyMusicPlatformFactory>()
+  services.AddSingleton<IMusicPlatformFactory, SpotifyOAuthMusicPlatformFactory>()
 
   services
   |> Startup.addDomain cfg
   |> Startup.addApp
-  |> Startup.addAuthCore cfg
   |> Startup.addSpotifyMusicPlatform cfg
   |> Startup.addCachedMusicPlatform cfg
   |> Startup.addInfrastructure cfg

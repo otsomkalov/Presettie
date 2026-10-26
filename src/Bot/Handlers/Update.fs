@@ -15,8 +15,8 @@ open otsom.fs.Bot.Builders
 open otsom.fs.OAuth
 open otsom.fs.Resources
 
-let private buildMessageHandlers authService resp botService buildMusicPlatform apiClient = messageHandlers {
-  startMessageHandler apiClient authService resp botService
+let private buildMessageHandlers resp botService apiClient = messageHandlers {
+  startMessageHandler apiClient resp botService
 
   faqMessageHandler resp botService
   privacyMessageHandler resp botService
@@ -33,22 +33,22 @@ let private buildMessageHandlers authService resp botService buildMusicPlatform 
   setPresetSizeMessageButtonHandler resp botService
   setPresetSizeMessageHandler apiClient resp botService
 
-  includePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
-  excludePlaylistButtonMessageHandler buildMusicPlatform authService resp botService
-  targetPlaylistButtonMessageHandler buildMusicPlatform authService resp botService
+  includePlaylistButtonMessageHandler resp botService
+  excludePlaylistButtonMessageHandler resp botService
+  targetPlaylistButtonMessageHandler resp botService
 
-  excludeArtistButtonMessageHandler buildMusicPlatform authService resp botService
+  excludeArtistButtonMessageHandler resp botService
 
-  includePlaylistMessageHandler apiClient authService resp botService
-  includeArtistMessageHandler apiClient authService resp botService
-  excludePlaylistMessageHandler apiClient authService resp botService
-  excludeArtistMessageHandler apiClient authService resp botService
-  targetPlaylistMessageHandler apiClient authService resp botService
+  includePlaylistMessageHandler apiClient resp botService
+  includeArtistMessageHandler apiClient resp botService
+  excludePlaylistMessageHandler apiClient resp botService
+  excludeArtistMessageHandler apiClient resp botService
+  targetPlaylistMessageHandler apiClient resp botService
 
   backMessageButtonHandler apiClient resp botService
 }
 
-let private buildClickHandlers resp botService buildMusicPlatform (apiClient: IApiClient) = clickHandlers {
+let private buildClickHandlers resp botService (apiClient: IApiClient) = clickHandlers {
   listPresetsClickHandler apiClient resp botService
   presetInfoClickHandler apiClient resp botService
   presetSettingsClickHandler apiClient resp botService
@@ -69,8 +69,8 @@ let private buildClickHandlers resp botService buildMusicPlatform (apiClient: IA
   excludeLikedTracksClickHandler apiClient resp botService
   ignoreLikedTracksClickHandler apiClient resp botService
 
-  appendToTargetedPlaylistClickHandler apiClient buildMusicPlatform resp botService
-  overwriteTargetedPlaylistClickHandler apiClient buildMusicPlatform resp botService
+  appendToTargetedPlaylistClickHandler apiClient resp botService
+  overwriteTargetedPlaylistClickHandler apiClient resp botService
 
   showIncludedContentClickHandler apiClient resp botService
   showExcludedContentClickHandler apiClient resp botService
@@ -85,9 +85,9 @@ let private buildClickHandlers resp botService buildMusicPlatform (apiClient: IA
   listExcludedPlaylistsClickHandler apiClient resp botService
   listTargetedPlaylistsClickHandler apiClient resp botService
 
-  showIncludedPlaylistClickHandler apiClient buildMusicPlatform resp botService
-  showExcludedPlaylistClickHandler apiClient buildMusicPlatform resp botService
-  showTargetedPlaylistClickHandler apiClient buildMusicPlatform resp botService
+  showIncludedPlaylistClickHandler apiClient resp botService
+  showExcludedPlaylistClickHandler apiClient resp botService
+  showTargetedPlaylistClickHandler apiClient resp botService
 
   removeIncludedArtistClickHandler apiClient resp botService
   removeExcludedArtistClickHandler apiClient resp botService
@@ -148,7 +148,7 @@ let private contextEnricherMiddleware (enrichers: BotContextEnricher<Update> lis
     do! next context
   }
 
-let private router (logger: ILogger) buildMusicPlatform authService : BotHandler<Update> =
+let private router (logger: ILogger) : BotHandler<Update> =
   fun context ->
     let chat = context.GetFeature<Chat>()
     let resp = context.GetFeature<IResourceProvider>()
@@ -158,7 +158,7 @@ let private router (logger: ILogger) buildMusicPlatform authService : BotHandler
       match context.Update.Data with
       | Msg msg ->
         let! result =
-          buildMessageHandlers authService resp context.Client buildMusicPlatform apiClient chat msg
+          buildMessageHandlers resp context.Client apiClient chat msg
 
         match result with
         | Some() -> return ()
@@ -168,7 +168,7 @@ let private router (logger: ILogger) buildMusicPlatform authService : BotHandler
           return! context.Client.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
       | Click click ->
         let! result =
-          buildClickHandlers resp context.Client buildMusicPlatform apiClient chat click
+          buildClickHandlers resp context.Client apiClient chat click
 
         match result with
         | Some() -> return ()
@@ -178,7 +178,7 @@ let private router (logger: ILogger) buildMusicPlatform authService : BotHandler
           return! context.Client.SendNotification(click.Id, resp[Notifications.UnknownCommand])
     }
 
-let main authService buildMusicPlatform buildBotClient chatRepo appOAuthClient apiClientFactory buildDefaultResp buildResp logger =
+let main buildBotClient chatRepo appOAuthClient apiClientFactory buildDefaultResp buildResp logger =
   fun (update: Update) -> task {
     let botSvc = buildBotClient update.ChatId
     let botCtx = BotContext(update, botSvc)
@@ -187,7 +187,7 @@ let main authService buildMusicPlatform buildBotClient chatRepo appOAuthClient a
       exceptionHandlingMiddleware logger
       << authenticationMiddleware buildDefaultResp appOAuthClient chatRepo apiClientFactory
       << contextEnricherMiddleware [ resourceProviderEnricher buildResp ]
-      <| router logger buildMusicPlatform authService
+      <| router logger
 
     do! pipeline botCtx
   }

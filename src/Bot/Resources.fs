@@ -17,7 +17,7 @@ module Messages =
   let Login = "messages.login"
 
   [<Literal>]
-  let LoginToSpotify = "messages.login-to-spotify"
+  let MusicPlatformLogin = "messages.music-platform-login"
 
   [<Literal>]
   let SendPresetSize = "messages.send-preset-size"

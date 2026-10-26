@@ -3,7 +3,6 @@
 open MusicPlatform
 open MusicPlatform.Spotify.Helpers
 open SpotifyAPI.Web
-open otsom.fs.Auth
 
 [<RequireQualifiedAccess>]
 module Artist =
@@ -48,6 +47,3 @@ module Album =
 [<RequireQualifiedAccess>]
 module User =
   let fromPrivate (user: PrivateUser) : User = { Id = UserId user.Id }
-
-type UserId with
-  member this.ToAccountId() = this.Value |> AccountId

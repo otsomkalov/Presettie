@@ -350,3 +350,5 @@ type IPresetService =
 
 type IUserService =
   abstract PatchUser: UserId * PatchUserCommand list -> Task<User>
+
+type DomainEvent<'a> = { UserId: UserId; Data: 'a }

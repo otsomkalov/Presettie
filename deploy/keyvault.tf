@@ -44,30 +44,6 @@ resource "azurerm_key_vault_secret" "kvs-telegram-bot-url" {
   depends_on = [azurerm_key_vault_access_policy.kvap-terraform]
 }
 
-resource "azurerm_key_vault_secret" "kvs-auth-client-id" {
-  key_vault_id = azurerm_key_vault.kv-presettie.id
-  name         = "Auth--ClientId"
-  value        = var.auth-client-id
-
-  depends_on = [azurerm_key_vault_access_policy.kvap-terraform]
-}
-
-resource "azurerm_key_vault_secret" "kvs-auth-client-secret" {
-  key_vault_id = azurerm_key_vault.kv-presettie.id
-  name         = "Auth--ClientSecret"
-  value        = var.auth-client-secret
-
-  depends_on = [azurerm_key_vault_access_policy.kvap-terraform]
-}
-
-resource "azurerm_key_vault_secret" "kvs-auth-callback-url" {
-  key_vault_id = azurerm_key_vault.kv-presettie.id
-  name         = "Auth--CallbackUrl"
-  value        = var.auth-callback-url
-
-  depends_on = [azurerm_key_vault_access_policy.kvap-terraform]
-}
-
 resource "azurerm_key_vault_secret" "kvs-database-connection-string" {
   key_vault_id = azurerm_key_vault.kv-presettie.id
   name         = "Database--ConnectionString"

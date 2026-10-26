@@ -259,8 +259,6 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
 
       Resources__DefaultLang = var.resources-default-lang
 
-      Auth__CallbackUrl = var.auth-callback-url
-
       Database__Name = var.database-name
 
       Storage__QueueName              = azurerm_storage_queue.stq-bot-requests-presettie.name
@@ -274,9 +272,6 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
       API__Url = "https://${azurerm_function_app_flex_consumption.func-presettie-api.default_hostname}/"
 
       "Logging__LogLevel__Microsoft.Hosting" = "Warning"
-    },
-    {
-      for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
     },
     {
       for idx, scope in var.oauth-keycloak-scope : "OAuth__Keycloak__Scope__${idx}" => scope
@@ -331,7 +326,7 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-generator" {
       "Logging__LogLevel__Microsoft.Hosting" = "Warning"
     },
     {
-      for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
+      for idx, scope in var.oauth-keycloak-scope : "OAuth__Spotify__Scope__${idx}" => scope
     }
   )
 

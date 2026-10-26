@@ -2,7 +2,6 @@
 
 open System
 open System.Net
-open FsToolkit.ErrorHandling
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Options
 open Microsoft.FSharp.Control
@@ -10,11 +9,11 @@ open MusicPlatform
 open MusicPlatform.Spotify.Mappings
 open SpotifyAPI.Web
 open MusicPlatform.Spotify.Helpers
-open otsom.fs.Auth
-open otsom.fs.Auth.Repo
-open otsom.fs.Auth.Settings
 open otsom.fs.Extensions
 open FSharp.Control
+open otsom.fs.OAuth
+open otsom.fs.OAuth.Spotify
+open FsToolkit.ErrorHandling
 
 [<RequireQualifiedAccess>]
 module Playlist =
@@ -205,22 +204,29 @@ type SpotifyMusicPlatform(client: ISpotifyClient, logger: ILogger<SpotifyMusicPl
       return me |> User.fromPrivate
     }
 
-type SpotifyMusicPlatformFactory(authRepo: IAuthRepo, authOptions: IOptions<AuthSettings>, logger) =
-  let authSettings = authOptions.Value
+type SpotifyOAuthMusicPlatformFactory
+  (oAuthClient: IOAuthClient, oAuthOptions: IOptions<SpotifyOAuthSettings>, logger: ILogger<SpotifyMusicPlatform>) =
+  let oAuthSettings = oAuthOptions.Value
 
   interface IMusicPlatformFactory with
     member this.GetMusicPlatform(userId) = taskOption {
-      let! completedAuth = authRepo.LoadCompletedAuth(userId.ToAccountId())
+      let! completedAuth = oAuthClient.GetCompleted(userId.Value |> AccountId)
 
-      let! tokenResponse =
-        AuthorizationCodeRefreshRequest(authSettings.ClientId, authSettings.ClientSecret, completedAuth.Token.Value)
-        |> OAuthClient().RequestToken
+      let pkceAuthenticator =
+        PKCEAuthenticator(
+          oAuthSettings.ClientId,
+          PKCETokenResponse(
+            AccessToken = completedAuth.AccessToken.Value,
+            RefreshToken = (completedAuth.RefreshToken |> Option.get |> _.Value),
+            Scope = (oAuthSettings.Scope |> String.concat " ")
+          )
+        )
 
       let retryHandler =
         SimpleRetryHandler(RetryAfter = TimeSpan.FromSeconds(30L), RetryTimes = 3, TooManyRequestsConsumesARetry = true)
 
       let config =
-        SpotifyClientConfig.CreateDefault().WithRetryHandler(retryHandler).WithToken(tokenResponse.AccessToken)
+        SpotifyClientConfig.CreateDefault().WithRetryHandler(retryHandler).WithAuthenticator(pkceAuthenticator)
 
       let client = config |> SpotifyClient :> ISpotifyClient
 

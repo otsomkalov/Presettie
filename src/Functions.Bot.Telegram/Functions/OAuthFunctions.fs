@@ -12,11 +12,11 @@ open Domain.Core
 open Domain.Repos
 open Domain.Workflows
 open FsToolkit.ErrorHandling
-open Infrastructure.Core
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Extensions.Options
+open Runners.Shared
 open otsom.fs.Bot
 open otsom.fs.OAuth
 open otsom.fs.OAuth.Keycloak

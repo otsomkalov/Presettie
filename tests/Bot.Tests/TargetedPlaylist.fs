@@ -5,7 +5,6 @@
 open Bot.Constants
 open Domain.Core
 open Moq
-open MusicPlatform
 open Bot.Handlers.Click
 open Runners.Shared
 open Tests.Shared
@@ -16,8 +15,6 @@ open otsom.fs.Resources
 type TargetedPlaylist() =
   let botService = Mock<IBotService>()
   let resourceProvider = Mock<IResourceProvider>()
-  let musicPlatform = Mock<IMusicPlatform>()
-  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let apiClient = Mock<IApiClient>()
 
   let createClick data : Click =
@@ -70,11 +67,7 @@ type TargetedPlaylist() =
       apiClient.Setup(_.GetPreset(Mocks.preset.Id)).ReturnsAsync(Ok Mocks.preset)
       |> ignore
 
-    musicPlatform.Setup(_.LoadPlaylist(Mocks.targetedPlaylistId)).ReturnsAsync(Ok Mocks.writablePlatformPlaylist)
-
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
-
-    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
 
     let click =
       createClick
@@ -89,7 +82,6 @@ type TargetedPlaylist() =
     let! result =
       showTargetedPlaylistClickHandler
         apiClient.Object
-        musicPlatformFactory.Object
         resourceProvider.Object
         botService.Object
         Mocks.chat
@@ -99,23 +91,15 @@ type TargetedPlaylist() =
 
     apiClient.VerifyAll()
     botService.VerifyAll()
-    musicPlatform.VerifyAll()
   }
 
   [<Fact>]
   member _.``show click should not send playlist details if data does not match``() = task {
-    do
-      apiClient.Setup(_.GetPreset(Mocks.preset.Id)).ReturnsAsync(Ok Mocks.preset)
-      |> ignore
-
-    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
-
     let click = createClick []
 
     let! result =
       showTargetedPlaylistClickHandler
         apiClient.Object
-        musicPlatformFactory.Object
         resourceProvider.Object
         botService.Object
         Mocks.chat
@@ -125,7 +109,6 @@ type TargetedPlaylist() =
 
     apiClient.VerifyNoOtherCalls()
     botService.VerifyNoOtherCalls()
-    musicPlatform.VerifyNoOtherCalls()
   }
 
   [<Fact>]

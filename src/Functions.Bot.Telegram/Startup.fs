@@ -14,8 +14,6 @@ open Bot
 open Bot.Telegram
 open Bot.Workflows
 open Domain
-open Infrastructure
-open Infrastructure.Core
 open Microsoft.Azure.Functions.Worker.Builder
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -23,9 +21,7 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Logging.ApplicationInsights
 open Microsoft.Azure.Functions.Worker
-open MusicPlatform
-open MusicPlatform.Cached
-open MusicPlatform.Spotify
+open Runners.Shared
 open Shared
 open Telegram.Bot.AspNetCore
 open otsom.fs.OAuth
@@ -63,15 +59,10 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
 
   services.AddOAuth().AddKeycloak(cfg).AddMongoStore()
 
-  services.AddSingleton<IMusicPlatformFactory, SpotifyMusicPlatformFactory>()
-
   services
-  |> Startup.addSpotifyMusicPlatform cfg
-  |> Startup.addCachedMusicPlatform cfg
   |> Startup.addDomain cfg
   |> Startup.addApp
   |> Startup.addBot cfg
-  |> Startup.addInfrastructure cfg
   |> Startup.addTelegram cfg
 
   builder.Services.AddHttpClient<ApiClientFactory>(configureHttpClient)

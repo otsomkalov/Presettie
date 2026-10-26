@@ -173,10 +173,8 @@ let getArtistButtons (resp: IResourceProvider) =
       yield seq { MessageButton(resp[Buttons.Back], sprintf "p|%s|%s|%i" presetId.Value artistType 0) }
     }
 
-let sendLoginMessage (authService: #otsom.fs.Auth.IInitAuth) (resp: IResourceProvider) (chatCtx: #ISendLink) =
-  fun (userId: UserId) ->
-    authService.InitAuth(userId.ToAuthAccountId())
-    |> Task.bind (fun uri -> chatCtx.SendLink(resp[Messages.LoginToSpotify], resp[Buttons.Login], uri))
+let sendLoginMessage (resp: IResourceProvider) (chatCtx: #ISendMessage) =
+  chatCtx.SendMessage(resp[Messages.MusicPlatformLogin]) |> Task.ignore
 
 let sendPresetErrorMessage (resp: IResourceProvider) (botClient: #IReplyToMessage) messageId =
   function
@@ -254,7 +252,7 @@ module IncludedPlaylist =
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.IncludedPlaylists, [| preset.Name |]], replyMarkup)
     }
 
-  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (apiClient: IApiClient) (mp: #ILoadPlaylist option) =
+  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (apiClient: IApiClient)=
     fun clickId messageId presetId playlistId -> task {
       match! apiClient.GetPreset presetId with
       | Ok preset ->
@@ -262,21 +260,8 @@ module IncludedPlaylist =
           preset.IncludedPlaylists
           |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
 
-        let! playlistTracksCount =
-          mp
-          |> Option.taskMap (fun m -> m.LoadPlaylist playlistId)
-          |> Task.map (
-            Option.map (
-              Result.map (function
-                | Writable p -> p.TracksCount
-                | Readable r -> r.TracksCount)
-              >> Result.defaultValue 0
-            )
-            >> Option.defaultValue 0
-          )
-
         let messageText =
-          resp[Messages.IncludedPlaylistDetails, [| includedPlaylist.Name; playlistTracksCount; includedPlaylist.LikedOnly |]]
+          resp[Messages.IncludedPlaylistDetails, [| includedPlaylist.Name; includedPlaylist.LikedOnly |]]
 
         let buttonText, buttonDataBuilder =
           if includedPlaylist.LikedOnly then
@@ -310,7 +295,7 @@ module ExcludedPlaylist =
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.ExcludedPlaylists, [| preset.Name |]], replyMarkup)
     }
 
-  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (apiClient: IApiClient) (mp: #ILoadPlaylist option) =
+  let show (resp: IResourceProvider) (botService: #IEditMessageButtons) (apiClient: IApiClient) =
     fun clickId messageId presetId playlistId -> task {
       match! apiClient.GetPreset presetId with
       | Ok preset ->
@@ -318,21 +303,8 @@ module ExcludedPlaylist =
           preset.ExcludedPlaylists
           |> List.find (fun p -> p.Id = ReadablePlaylistId playlistId)
 
-        let! playlistTracksCount =
-          mp
-          |> Option.taskMap (fun m -> m.LoadPlaylist playlistId)
-          |> Task.map (
-            Option.map (
-              Result.map (function
-                | Writable p -> p.TracksCount
-                | Readable r -> r.TracksCount)
-              >> Result.defaultValue 0
-            )
-            >> Option.defaultValue 0
-          )
-
         let messageText =
-          resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name; playlistTracksCount |]]
+          resp[Messages.ExcludedPlaylistDetails, [| excludedPlaylist.Name |]]
 
         let buttons =
           getPlaylistButtons resp presetId playlistId CallbackQueryConstants.excludedPlaylists Seq.empty
@@ -421,7 +393,6 @@ module TargetedPlaylist =
     (resp: IResourceProvider)
     (botClient: #IEditMessageButtons & #ISendNotification)
     (apiClient: IApiClient)
-    (mp: #ILoadPlaylist option)
     =
     fun clickId messageId presetId playlistId -> task {
       match! apiClient.GetPreset presetId with
@@ -429,21 +400,8 @@ module TargetedPlaylist =
         let targetedPlaylist =
           preset.TargetedPlaylists |> List.find (fun p -> p.Id = playlistId)
 
-        let! playlistTracksCount =
-          mp
-          |> Option.taskMap (fun m -> m.LoadPlaylist playlistId.Value)
-          |> Task.map (
-            Option.map (
-              Result.map (function
-                | Writable p -> p.TracksCount
-                | Readable r -> r.TracksCount)
-              >> Result.defaultValue 0
-            )
-            >> Option.defaultValue 0
-          )
-
         let messageText =
-          resp[Messages.TargetedPlaylistDetails, [| targetedPlaylist.Name; playlistTracksCount; targetedPlaylist.Overwrite |]]
+          resp[Messages.TargetedPlaylistDetails, [| targetedPlaylist.Name; targetedPlaylist.Overwrite |]]
 
         let buttonText, buttonDataBuilder =
           if targetedPlaylist.Overwrite then
