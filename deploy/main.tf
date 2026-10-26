@@ -183,6 +183,10 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
     unauthenticated_action = "Return401"
     default_provider       = "keycloak"
 
+    excluded_paths = [
+      "/oauth/music-platform/callback"
+    ]
+
     custom_oidc_v2 {
       name                          = "keycloak"
       client_id                     = var.oauth-keycloak-api-client-id

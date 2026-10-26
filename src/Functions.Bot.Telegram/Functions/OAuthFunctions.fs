@@ -38,7 +38,6 @@ type UserInfo =
 
 type OAuthFunctions
   (
-    userRepo: IUserRepo,
     chatRepo: IChatRepo,
     oAuthClient: IOAuthClient,
     resourcesOptions: IOptions<ResourcesSettings>,
@@ -75,12 +74,10 @@ type OAuthFunctions
 
         let! userInfo = response.Content.ReadFromJsonAsync<UserInfo>()
 
-        let! user = User.loadOrCreate userRepo (UserId userInfo.Id)
-
         let chat: Chat =
           {
             Id = completedAuth.AccountId.Value |> int64 |> ChatId
-            UserId = user.Id
+            UserId = UserId userInfo.Id
             Lang = resourcesSettings.DefaultLang
           }
 
