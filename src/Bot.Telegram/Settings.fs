@@ -8,3 +8,12 @@ type TelegramSettings =
   }
 
   static member SectionName = "Telegram"
+
+[<CLIMutable>]
+type DatabaseSettings =
+  {
+    ConnectionString: string
+    Name: string
+  }
+
+  static member SectionName = "Database"

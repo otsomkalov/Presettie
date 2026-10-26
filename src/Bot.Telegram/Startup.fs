@@ -19,8 +19,23 @@ let private configureTelegramBotClient (options: IOptions<TelegramSettings>) =
 
   settings.Token |> TelegramBotClient :> ITelegramBotClient
 
+let private configureMongoClient (options: IOptions<DatabaseSettings>) =
+  let settings = options.Value
+
+  new MongoClient(settings.ConnectionString) :> IMongoClient
+
+let private configureMongoDatabase (options: IOptions<DatabaseSettings>) (mongoClient: IMongoClient) =
+  let settings = options.Value
+
+  mongoClient.GetDatabase(settings.Name)
+
 let addTelegram (cfg: IConfiguration) (services: IServiceCollection) =
   services.Configure<TelegramSettings>(cfg.GetSection TelegramSettings.SectionName)
+
+  services.Configure<DatabaseSettings>(cfg.GetSection(DatabaseSettings.SectionName))
+
+  services.BuildSingleton<IMongoClient, IOptions<DatabaseSettings>>(configureMongoClient)
+  services.BuildSingleton<IMongoDatabase, IOptions<DatabaseSettings>, IMongoClient>(configureMongoDatabase)
 
   services.BuildSingleton<ITelegramBotClient, IOptions<TelegramSettings>>(configureTelegramBotClient)
 
