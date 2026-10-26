@@ -11,15 +11,17 @@
     <PackageReference Include="Azure.Storage.Queues" Version="12.28.1" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.52.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.5.4"/>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.5.4" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.51.0" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.5.2" />
+    <PackageReference Include="otsom.fs.OAuth.Spotify" Version="0.3.1" />
+    <PackageReference Include="otsom.fs.OAuth.Storage.Mongo" Version="0.3.1" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="Functions.fs" />
-    <Compile Include="Startup.fs"/>
+    <Compile Include="Startup.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +36,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\App\App.fsproj" />
-    <ProjectReference Include="..\Infrastructure\Infrastructure.fsproj"/>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.fsproj" />
   </ItemGroup>
 </Project>

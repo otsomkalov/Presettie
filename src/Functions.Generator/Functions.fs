@@ -30,6 +30,6 @@ type Functions(notificationSender: INotificationSender, mediator: IMediator, _lo
         notificationSender.Send
           {
             UserId = userId
-            Data = RunPreset.Event.Finished(runResult |> Result.map _.Id)
+            Data = RunPreset.Event.Finished(runResult |> Result.map Preset.toSimple)
           }
     }

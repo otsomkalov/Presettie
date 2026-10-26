@@ -18,6 +18,9 @@ open Microsoft.Azure.Functions.Worker
 open MusicPlatform
 open MusicPlatform.Cached
 open MusicPlatform.Spotify
+open otsom.fs.OAuth
+open otsom.fs.OAuth.Spotify
+open otsom.fs.OAuth.Storage.Mongo
 
 [<RequireQualifiedAccess>]
 module KeyVault =
@@ -30,6 +33,8 @@ let private configureServices (builder: FunctionsApplicationBuilder) =
 
   services.AddApplicationInsightsTelemetryWorkerService()
   services.ConfigureFunctionsApplicationInsights()
+
+  services.AddOAuth().AddMongoStore().AddSpotify(cfg)
 
   services.AddSingleton<IMusicPlatformFactory, SpotifyOAuthMusicPlatformFactory>()
 
