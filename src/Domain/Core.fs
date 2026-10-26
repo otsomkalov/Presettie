@@ -283,12 +283,6 @@ module TargetPlaylist =
 type ITargetPlaylist =
   abstract TargetPlaylist: TargetPlaylist.Cmd -> Task<Result<TargetedPlaylist, TargetPlaylist.Error>>
 
-type IAppendToTargetedPlaylist =
-  abstract AppendToTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<unit>
-
-type IOverwriteTargetedPlaylist =
-  abstract OverwriteTargetedPlaylist: PresetId * TargetedPlaylistId -> Task<unit>
-
 type IRemoveIncludedPlaylist =
   abstract RemoveIncludedPlaylist: PresetId * IncludedPlaylistId -> Task<Preset>
 
@@ -324,6 +318,12 @@ type PatchPresetSettingsCommand =
 type IPatchPresetSettings =
   abstract PatchSettings: UserId * PresetId * PatchPresetSettingsCommand list -> TaskResult<Preset, Preset.GetPresetError>
 
+type PatchTargetedPlaylistCommand = PatchOverwrite of bool
+
+type IPatchTargetedPlaylist =
+  abstract PatchTargetedPlaylist:
+    UserId * PresetId * TargetedPlaylistId * PatchTargetedPlaylistCommand list -> TaskResult<TargetedPlaylist, Preset.GetPresetError>
+
 type IPresetService =
   inherit IQueueRun
 
@@ -337,14 +337,13 @@ type IPresetService =
   inherit IExcludeArtist
   inherit ITargetPlaylist
 
-  inherit IAppendToTargetedPlaylist
-  inherit IOverwriteTargetedPlaylist
-
   inherit IRemoveIncludedPlaylist
   inherit IRemoveExcludedPlaylist
   inherit IRemoveIncludedArtist
   inherit IRemoveExcludedArtist
   inherit IRemoveTargetedPlaylist
+
+  inherit IPatchTargetedPlaylist
 
   inherit ISetOnlyLiked
   inherit ISetAll

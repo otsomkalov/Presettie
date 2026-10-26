@@ -215,6 +215,26 @@ type PresetFunctions(presetRepo: IPresetRepo, presetService: IPresetService, med
     |> TaskResult.foldResult (fun playlist -> OkObjectResult(playlist) :> IActionResult) (function
       | Operation error -> BadRequestObjectResult(error) :> IActionResult)
 
+  [<Function("PatchTargetedPlaylist")>]
+  member this.PatchTargetedPlaylist
+    (
+      [<HttpTrigger(AuthorizationLevel.Function, "PATCH", Route = "presets/{presetId}/targeted-playlists/{playlistId}")>] request:
+        HttpRequest,
+      presetId: string,
+      playlistId: string,
+      [<FromBody>] patches: PatchTargetedPlaylistCommand list
+    ) : Task<IActionResult> =
+    let handler (userId: UserId) = taskResult {
+      return!
+        presetService.PatchTargetedPlaylist(userId, PresetId presetId, MusicPlatform.PlaylistId playlistId |> WritablePlaylistId, patches)
+        |> TaskResult.mapError Operation
+    }
+
+    handler request.UserId
+    |> TaskResult.foldResult (fun playlist -> OkObjectResult(playlist) :> IActionResult) (function
+      | Operation Preset.GetPresetError.NotFound -> NotFoundResult() :> IActionResult
+      | Operation Preset.GetPresetError.Forbidden -> ForbidResult() :> IActionResult)
+
   [<Function("RemoveTargetedPlaylist")>]
   member this.RemoveTargetedPlaylist
     (

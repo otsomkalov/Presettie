@@ -510,6 +510,13 @@ module TargetedPlaylist =
 
   let appendTracks presetRepo = setPlaylistOverwriting presetRepo false
 
+  let patch targetedPlaylist patches =
+    let patcher playlist patch =
+      match patch with
+      | PatchOverwrite overwrite -> { playlist with Overwrite = overwrite }
+
+    List.fold patcher targetedPlaylist patches
+
   let remove (presetRepo: #ILoadPreset & #ISavePreset) =
     fun presetId targetPlaylistId -> task {
       let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
@@ -565,12 +572,6 @@ type PresetService
     member this.TargetPlaylist(cmd) =
       Preset.targetPlaylist parsePlaylistId presetRepo musicPlatformFactory cmd
 
-    member this.AppendToTargetedPlaylist(presetId, playlistId) =
-      TargetedPlaylist.appendTracks presetRepo presetId playlistId
-
-    member this.OverwriteTargetedPlaylist(presetId, playlistId) =
-      TargetedPlaylist.overwriteTracks presetRepo presetId playlistId
-
     member this.RemoveExcludedPlaylist(presetId, playlistId) =
       ExcludedPlaylist.remove presetRepo presetId playlistId
 
@@ -605,6 +606,29 @@ type PresetService
       do! presetRepo.SavePreset updatedPreset
 
       return updatedPreset
+    }
+
+    member this.PatchTargetedPlaylist(userId, presetId, playlistId, patches) = taskResult {
+      let! preset = Preset.get presetRepo userId presetId
+
+      let idx, playlist =
+        preset.TargetedPlaylists
+        |> List.indexed
+        |> List.pick (fun (idx, playlist) ->
+          match playlist.Id with
+          | id when id = playlistId -> Some(idx, playlist)
+          | _ -> None)
+
+      let updatedPlaylist = TargetedPlaylist.patch playlist patches
+
+      let updatedPreset =
+        { preset with
+            TargetedPlaylists = preset.TargetedPlaylists |> List.updateAt idx updatedPlaylist
+        }
+
+      do! presetRepo.SavePreset updatedPreset
+
+      return updatedPlaylist
     }
 
 type UserService(userRepo: IUserRepo) =
