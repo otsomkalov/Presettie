@@ -24,9 +24,7 @@ let addTelegram (cfg: IConfiguration) (services: IServiceCollection) =
 
   services.BuildSingleton<ITelegramBotClient, IOptions<TelegramSettings>>(configureTelegramBotClient)
 
-  services
-  |> Startup.addTelegramBot cfg
-  |> Startup.addMongoResources cfg
+  services |> Startup.addTelegramBot cfg |> Startup.addMongoResources cfg
 
   services.BuildSingleton<IMongoCollection<Entities.Chat>, IMongoDatabase>(fun db -> db.GetCollection "chats")
 

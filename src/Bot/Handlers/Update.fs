@@ -157,8 +157,7 @@ let private router (logger: ILogger) : BotHandler<Update> =
     task {
       match context.Update.Data with
       | Msg msg ->
-        let! result =
-          buildMessageHandlers resp context.Client apiClient chat msg
+        let! result = buildMessageHandlers resp context.Client apiClient chat msg
 
         match result with
         | Some() -> return ()
@@ -167,8 +166,7 @@ let private router (logger: ILogger) : BotHandler<Update> =
 
           return! context.Client.SendMessage resp[Messages.UnknownCommand] |> Task.map ignore
       | Click click ->
-        let! result =
-          buildClickHandlers resp context.Client apiClient chat click
+        let! result = buildClickHandlers resp context.Client apiClient chat click
 
         match result with
         | Some() -> return ()

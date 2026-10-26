@@ -252,7 +252,7 @@ module IncludedPlaylist =
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.IncludedPlaylists, [| preset.Name |]], replyMarkup)
     }
 
-  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (apiClient: IApiClient)=
+  let show (resp: IResourceProvider) (botMessageCtx: #IEditMessageButtons) (apiClient: IApiClient) =
     fun clickId messageId presetId playlistId -> task {
       match! apiClient.GetPreset presetId with
       | Ok preset ->
@@ -389,11 +389,7 @@ module TargetedPlaylist =
       do! botMessageCtx.EditMessageButtons(messageId, resp[Messages.TargetedPlaylists, [| preset.Name |]], replyMarkup)
     }
 
-  let show
-    (resp: IResourceProvider)
-    (botClient: #IEditMessageButtons & #ISendNotification)
-    (apiClient: IApiClient)
-    =
+  let show (resp: IResourceProvider) (botClient: #IEditMessageButtons & #ISendNotification) (apiClient: IApiClient) =
     fun clickId messageId presetId playlistId -> task {
       match! apiClient.GetPreset presetId with
       | Ok preset ->

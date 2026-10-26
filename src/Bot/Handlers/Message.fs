@@ -17,11 +17,7 @@ open Bot.Core
 open Bot.Resources
 open FsToolkit.ErrorHandling
 
-let startMessageHandler
-  (apiClient: IApiClient)
-  (resp: IResourceProvider)
-  (chatCtx: #ISendMessage)
-  : MessageHandler<Chat, Message> =
+let startMessageHandler (apiClient: IApiClient) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler<Chat, Message> =
   fun chat message -> task {
     match message with
     | { Text = Equals Commands.start } ->
@@ -235,10 +231,7 @@ let includeArtistButtonMessageHandler (resp: IResourceProvider) (chatCtx: #IAskF
     | _ -> return None
   }
 
-let excludeArtistButtonMessageHandler
-  (resp: IResourceProvider)
-  (chatCtx: #IAskForReply)
-  : MessageHandler<Chat, Message> =
+let excludeArtistButtonMessageHandler (resp: IResourceProvider) (chatCtx: #IAskForReply) : MessageHandler<Chat, Message> =
   fun chat message -> task {
     match message.Text with
     | Equals(resp.Item(Buttons.ExcludeArtist)) ->
@@ -362,11 +355,7 @@ let excludePlaylistMessageHandler
     | _ -> return None
   }
 
-let excludeArtistMessageHandler
-  (apiClient: IApiClient)
-  (resp: IResourceProvider)
-  (chatCtx: #ISendMessage)
-  : MessageHandler<Chat, Message> =
+let excludeArtistMessageHandler (apiClient: IApiClient) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler<Chat, Message> =
   let excludeArtist =
     fun userId rawArtistId -> task {
       let! currentPresetId =
@@ -414,11 +403,7 @@ let excludeArtistMessageHandler
     | _ -> return None
   }
 
-let includeArtistMessageHandler
-  (apiClient: IApiClient)
-  (resp: IResourceProvider)
-  (chatCtx: #ISendMessage)
-  : MessageHandler<Chat, Message> =
+let includeArtistMessageHandler (apiClient: IApiClient) (resp: IResourceProvider) (chatCtx: #ISendMessage) : MessageHandler<Chat, Message> =
   let includeArtist =
     fun userId rawArtistId -> task {
       let! currentPresetId =

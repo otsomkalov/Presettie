@@ -253,11 +253,7 @@ let ignoreLikedTracksClickHandler
       }
     | _ -> Task.FromResult(None)
 
-let showIncludedPlaylistClickHandler
-  (apiClient: IApiClient)
-  (resp: IResourceProvider)
-  botService
-  : ClickHandler<Chat> =
+let showIncludedPlaylistClickHandler (apiClient: IApiClient) (resp: IResourceProvider) botService : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "i" ] -> task {
@@ -373,11 +369,7 @@ let removeIncludedArtistClickHandler (apiClient: IApiClient) (resp: IResourcePro
       }
     | _ -> Task.FromResult(None)
 
-let showTargetedPlaylistClickHandler
-  apiClient
-  (resp: IResourceProvider)
-  botService
-  : ClickHandler<Chat> =
+let showTargetedPlaylistClickHandler apiClient (resp: IResourceProvider) botService : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId'; "tp"; playlistId'; "i" ] -> task {
@@ -402,11 +394,7 @@ let removeTargetedPlaylistClickHandler (apiClient: IApiClient) (resp: IResourceP
       }
     | _ -> Task.FromResult(None)
 
-let appendToTargetedPlaylistClickHandler
-  (apiClient: IApiClient)
-  (resp: IResourceProvider)
-  botService
-  : ClickHandler<Chat> =
+let appendToTargetedPlaylistClickHandler (apiClient: IApiClient) (resp: IResourceProvider) botService : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "a" ] -> task {
@@ -416,16 +404,13 @@ let appendToTargetedPlaylistClickHandler
         do!
           apiClient.PatchTargetedPlaylist(presetId, playlistId, [ PatchOverwrite false ])
           |> Task.ignore
+
         do! TargetedPlaylist.show resp botService apiClient click.Id click.MessageId presetId playlistId
         return Some()
       }
     | _ -> Task.FromResult(None)
 
-let overwriteTargetedPlaylistClickHandler
-  (apiClient: IApiClient)
-  (resp: IResourceProvider)
-  botService
-  : ClickHandler<Chat> =
+let overwriteTargetedPlaylistClickHandler (apiClient: IApiClient) (resp: IResourceProvider) botService : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; "tp"; playlistId; "o" ] -> task {
@@ -630,12 +615,7 @@ let setOnlyLikedIncludedPlaylistClickHandler
       }
     | _ -> Task.FromResult(None)
 
-let setAllTracksIncludedPlaylistClickHandler
-  apiClient
-  (presetService: #ISetAll)
-  (resp: IResourceProvider)
-  botService
-  : ClickHandler<Chat> =
+let setAllTracksIncludedPlaylistClickHandler apiClient (presetService: #ISetAll) (resp: IResourceProvider) botService : ClickHandler<Chat> =
   fun chat click ->
     match click.Data with
     | [ CallbackQueryConstants.preset; presetId; CallbackQueryConstants.includedPlaylists; playlistId; "a" ] -> task {

@@ -6,5 +6,4 @@ open otsom.fs.Resources
 
 #nowarn "20"
 
-let addBot (cfg: IConfiguration) (services: IServiceCollection) =
-  services |> Startup.addResources cfg
+let addBot (cfg: IConfiguration) (services: IServiceCollection) = services |> Startup.addResources cfg

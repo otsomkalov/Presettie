@@ -85,12 +85,7 @@ type ExcludedPlaylist() =
         ]
 
     let! result =
-      showExcludedPlaylistClickHandler
-        apiClient.Object
-        resourceProvider.Object
-        botService.Object
-        Mocks.chat
-        click
+      showExcludedPlaylistClickHandler apiClient.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(Some(), result)
 
@@ -103,12 +98,7 @@ type ExcludedPlaylist() =
     let click = createClick []
 
     let! result =
-      showExcludedPlaylistClickHandler
-        apiClient.Object
-        resourceProvider.Object
-        botService.Object
-        Mocks.chat
-        click
+      showExcludedPlaylistClickHandler apiClient.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(None, result)
 

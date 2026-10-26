@@ -778,11 +778,7 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.setOnlyLikedIncludedPlaylistClickHandler
-      apiClient.Object
-      presetService.Object
-      resourceProvider.Object
-      botService.Object
+    Click.setOnlyLikedIncludedPlaylistClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -842,11 +838,7 @@ type setAllTracksIncludedPlaylistClickHandler() =
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.setAllTracksIncludedPlaylistClickHandler
-      apiClient.Object
-      presetService.Object
-      resourceProvider.Object
-      botService.Object
+    Click.setAllTracksIncludedPlaylistClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =

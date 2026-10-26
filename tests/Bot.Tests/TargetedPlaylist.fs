@@ -80,12 +80,7 @@ type TargetedPlaylist() =
         ]
 
     let! result =
-      showTargetedPlaylistClickHandler
-        apiClient.Object
-        resourceProvider.Object
-        botService.Object
-        Mocks.chat
-        click
+      showTargetedPlaylistClickHandler apiClient.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(Some(), result)
 
@@ -98,12 +93,7 @@ type TargetedPlaylist() =
     let click = createClick []
 
     let! result =
-      showTargetedPlaylistClickHandler
-        apiClient.Object
-        resourceProvider.Object
-        botService.Object
-        Mocks.chat
-        click
+      showTargetedPlaylistClickHandler apiClient.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(None, result)
 
