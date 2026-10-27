@@ -6,22 +6,6 @@ variable "telegram-bot-url" {
   type = string
 }
 
-variable "auth-client-id" {
-  type = string
-}
-
-variable "auth-client-secret" {
-  type = string
-}
-
-variable "auth-callback-url" {
-  type = string
-}
-
-variable "auth-scopes" {
-  type = list(string)
-}
-
 variable "database-connection-string" {
   type = string
 }

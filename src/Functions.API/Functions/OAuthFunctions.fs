@@ -2,7 +2,6 @@
 
 open System
 open System.Threading.Tasks
-open Infrastructure.Core
 open Microsoft.Extensions.Options
 open MusicPlatform
 open Domain.Core
@@ -13,6 +12,7 @@ open Functions.API.Shared
 open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.Functions.Worker
+open Runners.Shared
 open otsom.fs.OAuth
 
 type OAuthFunctions

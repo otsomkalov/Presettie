@@ -23,6 +23,14 @@ type CreatePresetRequest =
     Name: string
   }
 
+[<CLIMutable>]
+type AdditionalOAuthSettings =
+  {
+    ReturnUri: string
+  }
+
+  static member SectionName = "OAuth"
+
 type IApiClient =
   abstract ListPresets: unit -> Task<SimplePreset list>
   abstract GetPreset: PresetId -> TaskResult<Preset, Preset.GetPresetError>

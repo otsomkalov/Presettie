@@ -14,7 +14,6 @@ open otsom.fs.Resources
 type NotificationFunctions
   (
     chatRepo: IChatRepo,
-    presetRepo: IPresetRepo,
     buildBotService: BuildBotService,
     createResourceProvider: CreateDefaultResourceProvider,
     logger: ILogger<NotificationFunctions>
@@ -33,9 +32,7 @@ type NotificationFunctions
 
       match event.Data with
       | RunPreset.Event.Started -> return! chatCtx.SendMessage(resp[Messages.RunningPreset]) |> Task.ignore
-      | RunPreset.Event.Finished(Ok presetId) ->
-        let! preset = presetRepo.LoadPreset presetId |> Task.map Option.get
-
+      | RunPreset.Event.Finished(Ok preset) ->
         return!
           chatCtx.SendMessage resp[Messages.PresetExecuted, [| preset.Name |]]
           |> Task.ignore

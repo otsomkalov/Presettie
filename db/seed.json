@@ -10,8 +10,8 @@
     "Lang": "en"
   },
   {
-    "Key": "messages.login-to-spotify",
-    "Value": "Seems like my access to your Spotify library has expired. Please, re-login using link below",
+    "Key": "messages.music-platform-login",
+    "Value": "Seems like my access to your Spotify library has expired. Please, re-login through web",
     "Lang": "en"
   },
   {
@@ -181,12 +181,12 @@
   },
   {
     "Key": "messages.included-playlist-details",
-    "Value": "*Name*: {0}\n*Tracks*: {1}\n*Only liked*: {2}",
+    "Value": "*Name*: {0}\n*Only liked*: {2}",
     "Lang": "en"
   },
   {
     "Key": "messages.excluded-playlist-details",
-    "Value": "*Name*: {0}\n*Tracks*: {1}",
+    "Value": "*Name*: {0}",
     "Lang": "en"
   },
   {
@@ -201,7 +201,7 @@
   },
   {
     "Key": "messages.targeted-playlist-details",
-    "Value": "*Name*: {0}\n*Tracks*: {1}\n*Overwrite*: {2}",
+    "Value": "*Name*: {0}\n*Overwrite*: {2}",
     "Lang": "en"
   },
   {

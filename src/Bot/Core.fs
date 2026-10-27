@@ -32,9 +32,6 @@ type Message =
 type UserId with
   member this.ToOAuthAccountId() = this.Value |> string |> AccountId
 
-  member this.ToAuthAccountId() =
-    this.Value |> string |> otsom.fs.Auth.AccountId
-
 type UpdateData =
   | Msg of Message
   | Click of Click

@@ -25,7 +25,6 @@
   <ItemGroup>
     <Compile Include="Extensions.fs"/>
     <Compile Include="Functions\OAuthFunctions.fs" />
-    <Compile Include="Functions\SpotifyFunctions.fs"/>
     <Compile Include="Functions\UpdateFunctions.fs"/>
     <Compile Include="Functions\NotificationFunctions.fs" />
     <Compile Include="Startup.fs"/>
@@ -42,8 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\App\App.fsproj" />
     <ProjectReference Include="..\Bot.Telegram\Bot.Telegram.fsproj" />
-    <ProjectReference Include="..\MusicPlatform.Cached\MusicPlatform.Cached.fsproj" />
   </ItemGroup>
 
 </Project>

@@ -134,6 +134,8 @@ module Preset =
     | NotFound
     | Forbidden
 
+  let toSimple (preset: Preset) : SimplePreset = { Id = preset.Id; Name = preset.Name }
+
 [<RequireQualifiedAccess>]
 module IncludedPlaylist =
   let fromSpotifyPlaylist =
@@ -350,3 +352,5 @@ type IPresetService =
 
 type IUserService =
   abstract PatchUser: UserId * PatchUserCommand list -> Task<User>
+
+type DomainEvent<'a> = { UserId: UserId; Data: 'a }

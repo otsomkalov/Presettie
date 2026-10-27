@@ -3,7 +3,6 @@
 #nowarn "20"
 
 open App
-open Azure.Storage.Queues
 open Domain.Repos
 open Infrastructure.Repos
 open Infrastructure.Settings
@@ -14,7 +13,6 @@ open MongoDB.Driver
 open MusicPlatform.Musicae
 open MusicPlatform.ReccoBeats
 open otsom.fs.Extensions.DependencyInjection
-open otsom.fs.Auth.Spotify
 
 let private configureMongoClient (options: IOptions<DatabaseSettings>) =
   let settings = options.Value
@@ -38,7 +36,6 @@ let addInfrastructure (configuration: IConfiguration) (services: IServiceCollect
   services.BuildSingleton<IMongoDatabase, IOptions<DatabaseSettings>, IMongoClient>(configureMongoDatabase)
 
   services
-  |> Startup.addSpotifyAuth
   |> Startup.addReccoBeatsMusicPlatform configuration
   |> Startup.addMusicaeMusicPlatform configuration
 

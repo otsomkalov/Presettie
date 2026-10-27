@@ -183,6 +183,10 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-api" {
     unauthenticated_action = "Return401"
     default_provider       = "keycloak"
 
+    excluded_paths = [
+      "/oauth/music-platform/callback"
+    ]
+
     custom_oidc_v2 {
       name                          = "keycloak"
       client_id                     = var.oauth-keycloak-api-client-id
@@ -259,8 +263,6 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
 
       Resources__DefaultLang = var.resources-default-lang
 
-      Auth__CallbackUrl = var.auth-callback-url
-
       Database__Name = var.database-name
 
       Storage__QueueName              = azurerm_storage_queue.stq-bot-requests-presettie.name
@@ -274,9 +276,6 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-bot" {
       API__Url = "https://${azurerm_function_app_flex_consumption.func-presettie-api.default_hostname}/"
 
       "Logging__LogLevel__Microsoft.Hosting" = "Warning"
-    },
-    {
-      for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
     },
     {
       for idx, scope in var.oauth-keycloak-scope : "OAuth__Keycloak__Scope__${idx}" => scope
@@ -328,10 +327,15 @@ resource "azurerm_function_app_flex_consumption" "func-presettie-generator" {
       Storage__QueueName              = azurerm_storage_queue.stq-bot-requests-presettie.name
       Storage__NotificationsQueueName = azurerm_storage_queue.stq-bot-notifications-presettie.name
 
+      OAuth__Spotify__ClientId              = var.oauth-spotify-client-id
+      OAuth__Spotify__RedirectUri           = var.oauth-spotify-redirect-uri
+      OAuth__Spotify__AuthorizationEndpoint = var.oauth-spotify-authorization-endpoint
+      OAuth__Spotify__TokenEndpoint         = var.oauth-spotify-token-endpoint
+
       "Logging__LogLevel__Microsoft.Hosting" = "Warning"
     },
     {
-      for idx, scope in var.auth-scopes : "Auth__Scopes__${idx}" => scope
+      for idx, scope in var.oauth-keycloak-scope : "OAuth__Spotify__Scope__${idx}" => scope
     }
   )
 

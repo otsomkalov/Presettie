@@ -526,12 +526,11 @@ type ignoreLikedTracksClickHandler() =
 
 type overwriteTargetedPlaylistClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.overwriteTargetedPlaylistClickHandler apiClient.Object musicPlatformFactory.Object resourceProvider.Object botService.Object
+    Click.overwriteTargetedPlaylistClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -545,7 +544,6 @@ type overwriteTargetedPlaylistClickHandler() =
       .Setup(_.PatchTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId), [ PatchOverwrite true ]))
       .ReturnsAsync(Ok Mocks.targetedPlaylist)
 
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
 
@@ -554,7 +552,6 @@ type overwriteTargetedPlaylistClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      musicPlatformFactory.VerifyAll()
       apiClient.VerifyAll()
       botService.VerifyAll()
     }
@@ -574,7 +571,6 @@ type overwriteTargetedPlaylistClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      musicPlatformFactory.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
@@ -621,12 +617,11 @@ type setCurrentPresetClickHandler() =
 
 type appendToTargetedPlaylistClickHandler() =
   let apiClient = Mock<IApiClient>()
-  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.appendToTargetedPlaylistClickHandler apiClient.Object musicPlatformFactory.Object resourceProvider.Object botService.Object
+    Click.appendToTargetedPlaylistClickHandler apiClient.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -640,16 +635,12 @@ type appendToTargetedPlaylistClickHandler() =
       .Setup(_.PatchTargetedPlaylist(Mocks.presetId, WritablePlaylistId(Mocks.targetedPlaylistId), [ PatchOverwrite false ]))
       .ReturnsAsync(Ok Mocks.targetedPlaylist)
 
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok Mocks.preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
-
-    // TargetedPlaylist.show is called, but we don't need to mock its internals for this test
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
-      musicPlatformFactory.VerifyAll()
       apiClient.VerifyAll()
       botService.VerifyAll()
     }
@@ -669,7 +660,6 @@ type appendToTargetedPlaylistClickHandler() =
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
-      musicPlatformFactory.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
@@ -784,17 +774,11 @@ type presetSettingsClickHandler() =
 type setOnlyLikedIncludedPlaylistClickHandler() =
   let apiClient = Mock<IApiClient>()
   let presetService = Mock<ISetOnlyLiked>()
-  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.setOnlyLikedIncludedPlaylistClickHandler
-      apiClient.Object
-      presetService.Object
-      musicPlatformFactory.Object
-      resourceProvider.Object
-      botService.Object
+    Click.setOnlyLikedIncludedPlaylistClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -816,17 +800,13 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
         ]
 
     presetService.Setup(_.SetOnlyLiked(Mocks.presetId, ReadablePlaylistId(Mocks.includedPlaylistId))).ReturnsAsync(())
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
-
-    // IncludedPlaylist.show is called, but we don't need to mock its internals for this test
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
       presetService.VerifyAll()
-      musicPlatformFactory.VerifyAll()
       apiClient.VerifyAll()
       botService.VerifyAll()
     }
@@ -847,7 +827,6 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
-      musicPlatformFactory.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }
@@ -855,17 +834,11 @@ type setOnlyLikedIncludedPlaylistClickHandler() =
 type setAllTracksIncludedPlaylistClickHandler() =
   let apiClient = Mock<IApiClient>()
   let presetService = Mock<ISetAll>()
-  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let resourceProvider = Mock<IResourceProvider>()
   let botService = Mock<IBotService>()
 
   let handler =
-    Click.setAllTracksIncludedPlaylistClickHandler
-      apiClient.Object
-      presetService.Object
-      musicPlatformFactory.Object
-      resourceProvider.Object
-      botService.Object
+    Click.setAllTracksIncludedPlaylistClickHandler apiClient.Object presetService.Object resourceProvider.Object botService.Object
 
   [<Fact>]
   member _.``should handle valid click data``() =
@@ -887,17 +860,13 @@ type setAllTracksIncludedPlaylistClickHandler() =
         ]
 
     presetService.Setup(_.SetAll(Mocks.presetId, ReadablePlaylistId(Mocks.includedPlaylistId))).ReturnsAsync(())
-    musicPlatformFactory.Setup(_.GetMusicPlatform(Mocks.chat.UserId.ToMusicPlatformId())).ReturnsAsync(None)
     apiClient.Setup(_.GetPreset(Mocks.presetId)).ReturnsAsync(Ok preset)
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny<string>(), It.IsAny<MessageButtons>())).ReturnsAsync(())
-
-    // IncludedPlaylist.show is called, but we don't need to mock its internals for this test
 
     task {
       let! result = handler Mocks.chat click
       Assert.Equal(Some(), result)
       presetService.VerifyAll()
-      musicPlatformFactory.VerifyAll()
       apiClient.VerifyAll()
       botService.VerifyAll()
     }
@@ -918,7 +887,6 @@ type setAllTracksIncludedPlaylistClickHandler() =
       let! result = handler Mocks.chat click
       Assert.Equal(None, result)
       presetService.VerifyNoOtherCalls()
-      musicPlatformFactory.VerifyNoOtherCalls()
       apiClient.VerifyNoOtherCalls()
       botService.VerifyNoOtherCalls()
     }

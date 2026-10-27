@@ -5,7 +5,6 @@ namespace Bot.Tests
 open Bot.Constants
 open Domain.Core
 open Moq
-open MusicPlatform
 open Bot.Handlers.Click
 open Bot.Tests
 open Runners.Shared
@@ -17,8 +16,6 @@ open otsom.fs.Resources
 type ExcludedPlaylist() =
   let botService = Mock<IBotService>()
   let resourceProvider = Mock<IResourceProvider>()
-  let musicPlatform = Mock<IMusicPlatform>()
-  let musicPlatformFactory = Mock<IMusicPlatformFactory>()
   let apiClient = Mock<IApiClient>()
 
   let preset =
@@ -75,11 +72,7 @@ type ExcludedPlaylist() =
   member _.``show click should send excluded playlist details``() = task {
     do apiClient.Setup(_.GetPreset(Mocks.preset.Id)).ReturnsAsync(Ok preset) |> ignore
 
-    musicPlatform.Setup(_.LoadPlaylist(Mocks.excludedPlaylistId)).ReturnsAsync(Ok Mocks.readablePlatformPlaylist)
-
     botService.Setup(_.EditMessageButtons(Mocks.botMessageId, It.IsAny(), It.IsAny())).ReturnsAsync(())
-
-    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
 
     let click =
       createClick
@@ -92,43 +85,25 @@ type ExcludedPlaylist() =
         ]
 
     let! result =
-      showExcludedPlaylistClickHandler
-        apiClient.Object
-        musicPlatformFactory.Object
-        resourceProvider.Object
-        botService.Object
-        Mocks.chat
-        click
+      showExcludedPlaylistClickHandler apiClient.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(Some(), result)
 
     apiClient.VerifyAll()
     botService.VerifyAll()
-    musicPlatform.VerifyAll()
   }
 
   [<Fact>]
   member _.``show click should not send playlist details if data does not match``() = task {
-    do apiClient.Setup(_.GetPreset(Mocks.preset.Id)).ReturnsAsync(Ok preset) |> ignore
-
-    musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some musicPlatform.Object)
-
     let click = createClick []
 
     let! result =
-      showExcludedPlaylistClickHandler
-        apiClient.Object
-        musicPlatformFactory.Object
-        resourceProvider.Object
-        botService.Object
-        Mocks.chat
-        click
+      showExcludedPlaylistClickHandler apiClient.Object resourceProvider.Object botService.Object Mocks.chat click
 
     Assert.Equal(None, result)
 
     apiClient.VerifyNoOtherCalls()
     botService.VerifyNoOtherCalls()
-    musicPlatform.VerifyNoOtherCalls()
   }
 
   [<Fact>]

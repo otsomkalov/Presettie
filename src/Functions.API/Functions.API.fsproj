@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <Compile Include="Shared.fs" />
-    <Compile Include="SpotifyOAuthMusicPlatformFactory.fs" />
     <Compile Include="Functions\OAuthFunctions.fs" />
     <Compile Include="Functions\PresetFunctions.fs"/>
     <Compile Include="Functions\UserFunctions.fs" />
