@@ -138,10 +138,8 @@ module rec RunPreset =
     (shuffler: Shuffler<Track>)
     (recommenderFactory: IRecommenderFactory)
     (notifier: INotifier)
-    (loggerFactory: ILoggerFactory)
     : Handler =
     let getRecommendations = getRecommendations recommenderFactory
-    let logger = loggerFactory.CreateLogger(nameof RunPreset)
 
     fun (cmd: Cmd) -> taskResult {
       let! preset =
@@ -155,16 +153,14 @@ module rec RunPreset =
       // Shuffle first to get recommendations based on different tracks each time
       let! includedTracks = listIncludedTracks musicPlatform preset |> Task.map shuffler
 
+      do! includedTracks |> Result.requireNotEmpty Error.NoIncludedTracks
+
       do!
         notifier.Send
           {
             UserId = cmd.UserId
             Data = Event.IncludedTracksLoaded includedTracks.Length
           }
-
-      logger.LogInformation("Loaded {IncludedTracksCount} included tracks", includedTracks.Length)
-
-      do! includedTracks |> Result.requireNotEmpty Error.NoIncludedTracks
 
       let! recommendedTracks =
         getRecommendations musicPlatform preset includedTracks |> Task.map shuffler
@@ -175,8 +171,6 @@ module rec RunPreset =
             UserId = cmd.UserId
             Data = Event.RecommendedTracksLoaded recommendedTracks.Length
           }
-
-      logger.LogInformation("Loaded {RecommendedTracksCount} recommended tracks", recommendedTracks.Length)
 
       let! excludedTracks = listExcludedTracks musicPlatform preset
 
@@ -190,21 +184,19 @@ module rec RunPreset =
       let potentialTracks =
         (recommendedTracks @ includedTracks) |> List.except excludedTracks
 
+      let filteredPotentialTracks =
+        match preset.Settings.UniqueArtists with
+        | true -> potentialTracks |> Tracks.uniqueByArtists
+        | false -> potentialTracks
+
+      do! filteredPotentialTracks |> Result.requireNotEmpty Error.NoPotentialTracks
+
       do!
         notifier.Send
           {
             UserId = cmd.UserId
             Data = Event.PotentialTracksGathered potentialTracks.Length
           }
-
-      let filteredPotentialTracks =
-        match preset.Settings.UniqueArtists with
-        | true -> potentialTracks |> Tracks.uniqueByArtists
-        | false -> potentialTracks
-
-      logger.LogInformation("{PotentialTracksCount} potential tracks", potentialTracks.Length)
-
-      do! filteredPotentialTracks |> Result.requireNotEmpty Error.NoPotentialTracks
 
       let tracksToSave =
         filteredPotentialTracks |> List.takeSafe preset.Settings.Size.Value
