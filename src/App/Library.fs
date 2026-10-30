@@ -13,6 +13,9 @@ open Domain.Repos
 open FsToolkit.ErrorHandling
 open otsom.fs.Extensions
 
+type INotifier =
+  abstract Send: DomainEvent<'a> -> Task<unit>
+
 [<RequireQualifiedAccess>]
 module rec RunPreset =
   type Cmd = { UserId: UserId; PresetId: PresetId }
@@ -27,6 +30,10 @@ module rec RunPreset =
   [<RequireQualifiedAccess>]
   type Event =
     | Started
+    | IncludedTracksLoaded of int
+    | RecommendedTracksLoaded of int
+    | ExcludedTracksLoaded of int
+    | PotentialTracksGathered of int
     | Finished of Result<SimplePreset, Error>
 
   type Handler = Cmd -> TaskResult<Preset, Error>
@@ -130,6 +137,7 @@ module rec RunPreset =
     (musicPlatformFactory: IMusicPlatformFactory)
     (shuffler: Shuffler<Track>)
     (recommenderFactory: IRecommenderFactory)
+    (notifier: INotifier)
     (loggerFactory: ILoggerFactory)
     : Handler =
     let getRecommendations = getRecommendations recommenderFactory
@@ -147,6 +155,13 @@ module rec RunPreset =
       // Shuffle first to get recommendations based on different tracks each time
       let! includedTracks = listIncludedTracks musicPlatform preset |> Task.map shuffler
 
+      do!
+        notifier.Send
+          {
+            UserId = cmd.UserId
+            Data = Event.IncludedTracksLoaded includedTracks.Length
+          }
+
       logger.LogInformation("Loaded {IncludedTracksCount} included tracks", includedTracks.Length)
 
       do! includedTracks |> Result.requireNotEmpty Error.NoIncludedTracks
@@ -154,12 +169,33 @@ module rec RunPreset =
       let! recommendedTracks =
         getRecommendations musicPlatform preset includedTracks |> Task.map shuffler
 
+      do!
+        notifier.Send
+          {
+            UserId = cmd.UserId
+            Data = Event.RecommendedTracksLoaded recommendedTracks.Length
+          }
+
       logger.LogInformation("Loaded {RecommendedTracksCount} recommended tracks", recommendedTracks.Length)
 
       let! excludedTracks = listExcludedTracks musicPlatform preset
 
+      do!
+        notifier.Send
+          {
+            UserId = cmd.UserId
+            Data = Event.ExcludedTracksLoaded excludedTracks.Length
+          }
+
       let potentialTracks =
         (recommendedTracks @ includedTracks) |> List.except excludedTracks
+
+      do!
+        notifier.Send
+          {
+            UserId = cmd.UserId
+            Data = Event.PotentialTracksGathered potentialTracks.Length
+          }
 
       let filteredPotentialTracks =
         match preset.Settings.UniqueArtists with
@@ -209,6 +245,3 @@ type Mediator(sp: IServiceProvider) =
       let handler = sp.GetRequiredService<'cmd -> Task<'result>>()
 
       handler cmd
-
-type INotificationSender =
-  abstract Send: DomainEvent<'a> -> Task<unit>

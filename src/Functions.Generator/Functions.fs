@@ -6,7 +6,7 @@ open Domain.Core
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Extensions.Logging
 
-type Functions(notificationSender: INotificationSender, mediator: IMediator, _logger: ILogger<Functions>) =
+type Functions(notifier: INotifier, mediator: IMediator, _logger: ILogger<Functions>) =
   [<Function("GenerateAsync")>]
   member this.GenerateAsync([<QueueTrigger("%Storage:QueueName%")>] command: {| UserId: Guid; PresetId: string |}, _: FunctionContext) =
     _logger.LogInformation("Running playlist generation for user {UserId} and preset %s{PresetId}", command.UserId, command.PresetId)
@@ -16,7 +16,7 @@ type Functions(notificationSender: INotificationSender, mediator: IMediator, _lo
 
     task {
       do!
-        notificationSender.Send
+        notifier.Send
           {
             UserId = userId
             Data = RunPreset.Event.Started
@@ -27,7 +27,7 @@ type Functions(notificationSender: INotificationSender, mediator: IMediator, _lo
       let! runResult: Result<Preset, RunPreset.Error> = mediator.Send cmd
 
       do!
-        notificationSender.Send
+        notifier.Send
           {
             UserId = userId
             Data = RunPreset.Event.Finished(runResult |> Result.map Preset.toSimple)
