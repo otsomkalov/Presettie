@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.12" />
     <PackageReference Include="otsom.fs.Extensions" Version="0.1.9" />
     <PackageReference Include="SpotifyAPI.Web" Version="7.4.2" />
-    <PackageReference Include="otsom.fs.OAuth" Version="0.3.1" />
+    <PackageReference Include="otsom.fs.OAuth" Version="0.3.2" />
     <PackageReference Include="otsom.fs.OAuth.Spotify" Version="0.3.1" />
   </ItemGroup>
 

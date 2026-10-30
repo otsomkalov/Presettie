@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="otsom.fs.Bot" Version="0.1.11" />
-    <PackageReference Include="otsom.fs.OAuth" Version="0.3.1" />
+    <PackageReference Include="otsom.fs.OAuth" Version="0.3.2" />
     <PackageReference Include="otsom.fs.Resources" Version="0.1.13" />
   </ItemGroup>
 
