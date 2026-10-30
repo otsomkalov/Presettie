@@ -232,6 +232,18 @@ module Messages =
   [<Literal>]
   let PresetAccessForbidden = "messages.preset-access-forbidden"
 
+  [<Literal>]
+  let IncludedTracksLoaded = "messages.included-tracks-loaded"
+
+  [<Literal>]
+  let ExcludedTracksLoaded = "messages.excluded-tracks-loaded"
+
+  [<Literal>]
+  let RecommendedTracksLoaded = "messages.recommended-tracks-loaded"
+
+  [<Literal>]
+  let PotentialTracksGathered = "messages.potential-tracks-gathered"
+
 [<RequireQualifiedAccess>]
 module Buttons =
   [<Literal>]

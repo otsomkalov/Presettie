@@ -379,6 +379,27 @@
     "Value": "You cannot access this preset!",
     "Lang": "en"
   },
+  {
+    "Key": "messages.included-tracks-loaded",
+    "Value": "Loaded {0} included tracks",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.excluded-tracks-loaded",
+    "Value": "Loaded {0} excluded tracks",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.recommended-tracks-loaded",
+    "Value": "Loaded {0} recommended tracks",
+    "Lang": "en"
+  },
+  {
+    "Key": "messages.potential-tracks-gathered",
+    "Value": "Gathered {0} potential tracks",
+    "Lang": "en"
+  },
+
 
   {
     "Key": "buttons.run-preset",

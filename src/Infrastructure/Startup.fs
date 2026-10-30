@@ -30,7 +30,7 @@ let addInfrastructure (configuration: IConfiguration) (services: IServiceCollect
 
   services.AddSingleton<IRecommenderFactory, RecommenderFactory>()
 
-  services.AddSingleton<INotificationSender, AzureStorageQueueNotificationSender>()
+  services.AddSingleton<INotifier, AzureStorageQueueNotifier>()
 
   services.BuildSingleton<IMongoClient, IOptions<DatabaseSettings>>(configureMongoClient)
   services.BuildSingleton<IMongoDatabase, IOptions<DatabaseSettings>, IMongoClient>(configureMongoDatabase)

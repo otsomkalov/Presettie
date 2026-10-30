@@ -6,7 +6,6 @@ open Domain.Core.PresetSettings
 open Domain.Repos
 open Domain.Workflows
 open FSharp.Control
-open Microsoft.Extensions.Logging
 open Moq
 open MusicPlatform
 open Xunit
@@ -19,14 +18,9 @@ type RunPreset() =
   let platform = Mock<IMusicPlatform>()
   let presetRepo = Mock<IPresetRepo>()
   let musicPlatformFactory = Mock<IMusicPlatformFactory>()
+  let notifier = Mock<INotifier>()
   let recommender = Mock<IRecommender>()
   let recommenderFactory = Mock<IRecommenderFactory>()
-  let logger = Mock<ILogger<PresetService>>()
-  let loggerFactory = Mock<ILoggerFactory>()
-
-  do
-    loggerFactory.Setup(_.CreateLogger(It.IsAny<string>())).Returns(logger.Object)
-    |> ignore
 
   do
     recommenderFactory.Setup(_.Create(It.IsAny<IMusicPlatform>(), It.IsAny<RecommendationsEngine>())).Returns(recommender.Object)
@@ -36,8 +30,12 @@ type RunPreset() =
     musicPlatformFactory.Setup(_.GetMusicPlatform(It.IsAny())).ReturnsAsync(Some platform.Object)
     |> ignore
 
+  do
+    notifier.Setup(_.Send(It.IsAny<DomainEvent<RunPreset.Event>>())).ReturnsAsync(())
+    |> ignore
+
   let sut: RunPreset.Handler =
-    RunPreset.handler presetRepo.Object musicPlatformFactory.Object shuffler recommenderFactory.Object loggerFactory.Object
+    RunPreset.handler presetRepo.Object musicPlatformFactory.Object shuffler recommenderFactory.Object notifier.Object
 
   [<Fact>]
   member _.``takes only liked tracks from included playlists if configured``() =

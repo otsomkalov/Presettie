@@ -128,13 +128,13 @@ type RecommenderFactory
       | RecommendationsEngine.Spotify -> musicPlatform
       | RecommendationsEngine.Musicae -> musicaeRecommender
 
-type AzureStorageQueueNotificationSender(options: IOptions<StorageSettings>) =
+type AzureStorageQueueNotifier(options: IOptions<StorageSettings>) =
   let settings = options.Value
 
   let queueClient =
     QueueClient(settings.ConnectionString, settings.NotificationsQueueName)
 
-  interface INotificationSender with
+  interface INotifier with
     member this.Send(event) =
       let serialize = event |> JSON.serialize
       serialize |> queueClient.SendMessageAsync |> Task.ignore

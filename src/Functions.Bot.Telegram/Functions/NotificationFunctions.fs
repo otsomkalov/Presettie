@@ -32,6 +32,22 @@ type NotificationFunctions
 
       match event.Data with
       | RunPreset.Event.Started -> return! chatCtx.SendMessage(resp[Messages.RunningPreset]) |> Task.ignore
+      | RunPreset.Event.IncludedTracksLoaded count ->
+        return!
+          chatCtx.SendMessage(resp[Messages.IncludedTracksLoaded, [| count |]])
+          |> Task.ignore
+      | RunPreset.Event.ExcludedTracksLoaded count ->
+        return!
+          chatCtx.SendMessage(resp[Messages.ExcludedTracksLoaded, [| count |]])
+          |> Task.ignore
+      | RunPreset.Event.RecommendedTracksLoaded count ->
+        return!
+          chatCtx.SendMessage(resp[Messages.RecommendedTracksLoaded, [| count |]])
+          |> Task.ignore
+      | RunPreset.Event.PotentialTracksGathered i ->
+        return!
+          chatCtx.SendMessage(resp[Messages.PotentialTracksGathered, [| i.ToString() |]])
+          |> Task.ignore
       | RunPreset.Event.Finished(Ok preset) ->
         return!
           chatCtx.SendMessage resp[Messages.PresetExecuted, [| preset.Name |]]
